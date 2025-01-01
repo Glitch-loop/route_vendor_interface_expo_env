@@ -38,6 +38,7 @@ import {
   ISyncRecord,
 } from '../../interfaces/interfaces';
 import { createApiResponse } from '../../utils/apiResponse';
+import { current } from '@reduxjs/toolkit';
 
 // Function to create database
 export async function createEmbeddedDatabase():Promise<IResponse<null>> {
@@ -181,26 +182,28 @@ export async function insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-      [
-      id_work_day,
-      start_date,
-      finish_date,
-      start_petty_cash,
-      final_petty_cash,
-      /*Fields related to IRoute interface*/
-      id_route,
-      route_name,
-      description,
-      route_status,
-      // id_vendor,
-      /*Fields related to IDay interface*/
-      id_day,
-      // day_name,
-      // order_to_show,
-      /*Fields relate to IRouteDay*/
-      id_route_day,
-    ]);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+        [
+        id_work_day,
+        start_date,
+        finish_date,
+        start_petty_cash,
+        final_petty_cash,
+        /*Fields related to IRoute interface*/
+        id_route,
+        route_name,
+        description,
+        route_status,
+        // id_vendor,
+        /*Fields related to IDay interface*/
+        id_day,
+        // day_name,
+        // order_to_show,
+        /*Fields relate to IRouteDay*/
+        id_route_day,
+      ]);
+    })
 
 
     return createApiResponse(201, workday, null, 'Work day inserted sucessfully');
@@ -212,9 +215,9 @@ export async function insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
 export async function deleteAllWorkDayInformation():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
-
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+    
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
     });
 
     return createApiResponse<null>(200, null, null, 'work day deleted successfully.');
@@ -246,8 +249,8 @@ export async function updateWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET 
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET 
         start_date = ?, 
         end_date = ?, 
         start_petty_cash = ?, 
@@ -308,13 +311,22 @@ export async function getWorkDay()
     id_route_day: '',
   };
   try {
+    let record:(IRoute&IDayGeneralInformation&IDay&IRouteDay)[] = [];
+    let recordResult:IRoute&IDayGeneralInformation&IDay&IRouteDay = workDayState;
+
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+    const result = statement.executeSync<IRoute&IDayGeneralInformation&IDay&IRouteDay>();
 
-    const record = result[0];
+    for (const row of result) {
+      record.push(row);
+    }
 
-
-    return createApiResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>(200, record.rows.item(0), null, null);
+    if (record[0] !== undefined){
+      recordResult = record[0];
+    }
+    
+    return createApiResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>(200, recordResult, null, null);
   } catch (error) {
     return createApiResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>(500, workDayState, null, 'Failed to get the work day.');
   }
@@ -332,12 +344,12 @@ export async function insertUser(user: IUser):Promise<IResponse<IUser>> {
 
   try {
     const sqlite = await createSQLiteConnection();
-    
-    const result = await sqlite.runAsync(`
-        INSERT INTO ${EMBEDDED_TABLES.USER} (id_vendor, cellphone, name, password, status) VALUES (?, ?, ?, ?, ?)
-      `, [id_vendor, cellphone, name, password, status]);
-    
-    console.log("this is the result of embedded database: ", result)
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`
+          INSERT INTO ${EMBEDDED_TABLES.USER} (id_vendor, cellphone, name, password, status) VALUES (?, ?, ?, ?, ?)
+        `, [id_vendor, cellphone, name, password, status]);
+      
+    });
 
     return createApiResponse<IUser>(201, user, null, 'User inserted sucessfully');
   } catch(error) {
@@ -402,14 +414,13 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
   Fucntion for starting a day.
   With this function is created/declared the vendor's inventory.
 */
-export async function insertProducts(products: IProductInventory[])
-:Promise<IResponse<IProductInventory[]>> {
+export async function insertProducts(products: IProductInventory[]):Promise<IResponse<IProductInventory[]>> {
   const insertedProducts:IProductInventory[] = [];
   try {
     const sqlite = await createSQLiteConnection();
-    await sqlite.transaction(async (tx) => {
-      for (let i = 0; i < products.length; i++) {
-        const product:IProductInventory = products[i];
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      const promises = products.map((current_product:IProductInventory) => {
+        const product:IProductInventory = current_product;
         const {
           id_product,
           product_name,
@@ -422,8 +433,8 @@ export async function insertProducts(products: IProductInventory[])
           order_to_show,
           amount,
         } = product;
-
-        tx.executeSql(`
+ 
+        tx.runAsync(`
           INSERT INTO ${EMBEDDED_TABLES.PRODUCTS} (id_product, product_name, barcode, weight, unit, comission, price, product_status, order_to_show, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `, [
           id_product,
@@ -436,10 +447,13 @@ export async function insertProducts(products: IProductInventory[])
           product_status,
           order_to_show,
           amount,
-        ]).then(() => {
+        ])
+        .then(() => {
           insertedProducts.push(product);
         });
-      }
+      });
+
+      await Promise.all(promises)
     });
     return createApiResponse<IProductInventory[]>(201, insertedProducts, null, 'Products inserted correctly.');
   } catch(error) {
@@ -458,13 +472,12 @@ export async function insertProducts(products: IProductInventory[])
   This function receives the products to update, idoneally, all the product of the
   inventory.
 */
-export async function updateProducts(products: IProductInventory[])
-:Promise<IResponse<IProductInventory[]>> {
+export async function updateProducts(products: IProductInventory[]):Promise<IResponse<IProductInventory[]>> {
   const updatedProducts:IProductInventory[] = [];
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       const promises = products.map((current_product:IProductInventory) => {
         const product:IProductInventory = current_product;
         const {
@@ -479,7 +492,7 @@ export async function updateProducts(products: IProductInventory[])
           order_to_show,
           amount,
         } = product;
-        tx.executeSql(`
+        tx.runAsync(`
           UPDATE ${EMBEDDED_TABLES.PRODUCTS} SET 
             product_name = ?, 
             barcode = ?,
@@ -506,8 +519,6 @@ export async function updateProducts(products: IProductInventory[])
         })
       });
       await Promise.all(promises);
-      // for(let i = 0; i < products.length; i++) {
-      // }
     });
 
     return createApiResponse<IProductInventory[]>(200, products, null, 'Products updated successfully.');
@@ -528,13 +539,12 @@ export async function getProducts():Promise<IResponse<IProductInventory[]>> {
     const product:IProductInventory[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+    const result = statement.executeSync<IProductInventory>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        product.push(record.rows.item(index));
-      }
-    });
+    for(let row of result) {
+      product.push(row);
+    }
 
     return createApiResponse<IProductInventory[]>(200, product, null, null);
   } catch(error) {
@@ -546,8 +556,8 @@ export async function deleteAllProducts():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.PRODUCTS};`);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCTS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Inventory products deleted successfully.');
@@ -563,7 +573,7 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
 
   try {
     const sqlite = await createSQLiteConnection();
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       for(let i = 0; i < stores.length; i++) {
         const store:IStore&IStoreStatusDay = stores[i];
         const {
@@ -584,7 +594,7 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
           status_store,
           route_day_state,
         } = store;
-        tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.STORES} (id_store, street, ext_number, colony, postal_code, address_reference, store_name, owner_name, cellphone, latitude, longuitude, id_creator, creation_date, creation_context, status_store, route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (id_store, street, ext_number, colony, postal_code, address_reference, store_name, owner_name, cellphone, latitude, longuitude, id_creator, creation_date, creation_context, status_store, route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
           id_store,
           street,
           ext_number,
@@ -616,67 +626,62 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
   }
 }
 
-export async function updateStore(store: IStore&IStoreStatusDay)
-:Promise<IResponse<IStore&IStoreStatusDay>> {
+export async function updateStore(store: IStore&IStoreStatusDay):Promise<IResponse<IStore&IStoreStatusDay>> {
   try {
     const sqlite = await createSQLiteConnection();
-    await sqlite.transaction(async (tx) => {
-      try {
-        const {
-          id_store,
-          street,
-          ext_number,
-          colony,
-          postal_code,
-          address_reference,
-          store_name,
-          owner_name,
-          cellphone,
-          latitude,
-          longuitude,
-          id_creator,
-          creation_date,
-          creation_context,
-          status_store,
-          route_day_state,
-        } = store;
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      const {
+        id_store,
+        street,
+        ext_number,
+        colony,
+        postal_code,
+        address_reference,
+        store_name,
+        owner_name,
+        cellphone,
+        latitude,
+        longuitude,
+        id_creator,
+        creation_date,
+        creation_context,
+        status_store,
+        route_day_state,
+      } = store;
 
-        await tx.executeSql(`UPDATE ${EMBEDDED_TABLES.STORES} SET 
-          street = ?, 
-          ext_number = ?, 
-          colony = ?, 
-          postal_code = ?, 
-          address_reference = ?, 
-          store_name = ?, 
-          owner_name = ?, 
-          cellphone = ?, 
-          latitude = ?, 
-          longuitude = ?, 
-          id_creator = ?, 
-          creation_date = ?, 
-          creation_context = ?, 
-          status_store = ?, 
-          route_day_state = ? 
-          WHERE id_store = '${id_store}';`, [
-          street,
-          ext_number,
-          colony,
-          postal_code,
-          address_reference,
-          store_name,
-          owner_name,
-          cellphone,
-          latitude,
-          longuitude,
-          id_creator,
-          creation_date,
-          creation_context,
-          status_store,
-          route_day_state,
-        ]);
-      } catch (error) {
-        return createApiResponse<IStore&IStoreStatusDay>(500, store, null, 'Failed updating the store (sql execution)');
-      }
+      await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.STORES} SET 
+        street = ?, 
+        ext_number = ?, 
+        colony = ?, 
+        postal_code = ?, 
+        address_reference = ?, 
+        store_name = ?, 
+        owner_name = ?, 
+        cellphone = ?, 
+        latitude = ?, 
+        longuitude = ?, 
+        id_creator = ?, 
+        creation_date = ?, 
+        creation_context = ?, 
+        status_store = ?, 
+        route_day_state = ? 
+        WHERE id_store = '${id_store}';`, [
+        street,
+        ext_number,
+        colony,
+        postal_code,
+        address_reference,
+        store_name,
+        owner_name,
+        cellphone,
+        latitude,
+        longuitude,
+        id_creator,
+        creation_date,
+        creation_context,
+        status_store,
+        route_day_state,
+      ]);
     });
     return createApiResponse<IStore&IStoreStatusDay>(200, store, null, 'Store updated successfully');
   } catch(error) {
@@ -689,14 +694,12 @@ export async function getStores():Promise<IResponse<(IStore&IStoreStatusDay)[]>>
     const stores:(IStore&IStoreStatusDay)[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
+    const result = statement.executeSync<IStore&IStoreStatusDay>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        stores.push(record.rows.item(index));
-      }
-    });
-
+    for(let row of result) {
+      stores.push(row);
+    }
 
     return createApiResponse<(IStore&IStoreStatusDay)[]>(200, stores, null, null);
   } catch(error) {
@@ -708,8 +711,8 @@ export async function deleteAllStores():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.STORES};`);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.STORES};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Stores deleted successfully.');
@@ -723,7 +726,7 @@ export async function insertDayOperation(dayOperation: IDayOperation)
 :Promise<IResponse<IDayOperation>> {
   try {
     const sqlite = await createSQLiteConnection();
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       const {
         id_day_operation,
         id_item,
@@ -732,7 +735,7 @@ export async function insertDayOperation(dayOperation: IDayOperation)
         current_operation,
       } = dayOperation;
 
-      await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
+      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
         id_day_operation,
         id_item,
         id_type_operation,
@@ -754,7 +757,7 @@ export async function insertDayOperations(dayOperations: IDayOperation[])
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       for(let i = 0; i < dayOperations.length; i++) {
         const dayOperation:IDayOperation = dayOperations[i];
 
@@ -766,7 +769,7 @@ export async function insertDayOperations(dayOperations: IDayOperation[])
           current_operation,
         } = dayOperation;
 
-        tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
+        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
           id_day_operation,
           id_item,
           id_type_operation,
@@ -789,7 +792,7 @@ export async function updateDayOperation(dayOperation: IDayOperation)
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       const {
         id_day_operation,
         id_item,
@@ -798,7 +801,7 @@ export async function updateDayOperation(dayOperation: IDayOperation)
         current_operation,
       } = dayOperation;
 
-      await tx.executeSql(`UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS} SET     
+      await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS} SET     
         id_item = ?, 
         id_type_operation = ?,
         operation_order = ?,
@@ -822,22 +825,12 @@ export async function getDayOperations():Promise<IResponse<IDayOperation[]>> {
   try {
     const arrDayOperations:IDayOperation[] = [];
     const sqlite = await createSQLiteConnection();
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
+    const result = statement.executeSync<IDayOperation>();
 
-    await sqlite.transaction(async (tx) => {
-      try {
-        const result  = await tx.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
-
-        const rows = result[1].rows;
-        const length = result[1].rows.length;
-
-        for (let index = 0; index < length; index++) {
-          arrDayOperations.push(rows.item(index));
-        }
-
-      } catch (error) {
-        return createApiResponse<IDayOperation[]>(500, [], null, 'Failed retrieving day operations (query execution level).');
-      }
-    });
+    for(let row of result) {
+      arrDayOperations.push(row);
+    }
 
     return createApiResponse<IDayOperation[]>(200, arrDayOperations, null);
   } catch(error) {
@@ -849,8 +842,8 @@ export async function deleteAllDayOperations():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Day operations deleted successfully.');
@@ -865,13 +858,12 @@ export async function getInventoryOperation(id_inventory_operation:string):Promi
     const inventoryOperation:IInventoryOperation[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = '${id_inventory_operation}'`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = '${id_inventory_operation}'`);
+    const result = statement.executeSync<IInventoryOperation>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        inventoryOperation.push(record.rows.item(index));
-      }
-    });
+    for(let row of result) {
+      inventoryOperation.push(row);
+    }
 
     return createApiResponse<IInventoryOperation[]>(200, inventoryOperation, null);
   } catch(error) {
@@ -884,14 +876,12 @@ export async function getAllInventoryOperations():Promise<IResponse<IInventoryOp
     const inventoryOperations:IInventoryOperation[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}`);
+    const result = statement.executeSync<IInventoryOperation>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        inventoryOperations.push(record.rows.item(index));
-      }
-    });
-
+    for(let row of result) {
+      inventoryOperations.push(row);
+    }
 
     return createApiResponse<IInventoryOperation[]>(200, inventoryOperations, 'All the inventory operations were retrieved successfully.');
   } catch(error) {
@@ -914,8 +904,8 @@ export async function insertInventoryOperation(inventoryOperation: IInventoryOpe
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`
         INSERT INTO ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} (id_inventory_operation, sign_confirmation, date, state, audit, id_inventory_operation_type, id_work_day) VALUES (?, ?, ?, ?, ?, ?, ?);
       `, [
           id_inventory_operation,
@@ -959,8 +949,8 @@ export async function updateInventoryOperation(inventoryOperation: IInventoryOpe
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`
         UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
         sign_confirmation = ?, 
         date = ?, 
@@ -1003,13 +993,12 @@ export async function getInventoryOperationDescription(id_inventory_operation:st
     const inventoryOperation:IInventoryOperationDescription[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = '${id_inventory_operation}'`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = '${id_inventory_operation}'`);
+    const result = statement.executeSync<IInventoryOperationDescription>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        inventoryOperation.push(record.rows.item(index));
-      }
-    });
+    for(let row of result) {
+      inventoryOperation.push(row);
+    }
 
     return createApiResponse<IInventoryOperationDescription[]>(200, inventoryOperation, null, 'The inventory operation description was retrieved successfully.');
   } catch(error) {
@@ -1022,14 +1011,12 @@ export async function getAllInventoryOperationDescription():Promise<IResponse<II
     const inventoryOperation:IInventoryOperationDescription[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite
-      .executeSql(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        inventoryOperation.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}`);
+    const result = statement.executeSync<IInventoryOperationDescription>();
+  
+    for(let row of result) {
+      inventoryOperation.push(row);
+    }
 
     return createApiResponse<IInventoryOperationDescription[]>(200, inventoryOperation, null, 'All the inventory operations descriptions were retrieved successfully.');
   } catch(error) {
@@ -1044,7 +1031,7 @@ export async function insertInventoryOperationDescription(inventoryOperationDesc
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       for(let i = 0; i < inventoryOperationDescriptions.length; i++) {
         const inventoryOperationDescription:IInventoryOperationDescription
         = inventoryOperationDescriptions[i];
@@ -1057,7 +1044,7 @@ export async function insertInventoryOperationDescription(inventoryOperationDesc
           id_product,
         } = inventoryOperationDescription;
 
-        tx.executeSql(`
+        tx.runAsync(`
           INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} (id_product_operation_description, price_at_moment, amount, id_inventory_operation, id_product) VALUES (?, ?, ?, ?, ?);
         `, [
             id_product_operation_description,
@@ -1093,8 +1080,8 @@ export async function deleteAllInventoryOperations():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Inventory operations deleted successfully.');
@@ -1107,9 +1094,9 @@ export async function deleteAllInventoryOperationsDescriptions():Promise<IRespon
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx
-      .executeSql(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS};`);
+      .runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Inventory operation descriptions deleted successfully.');
@@ -1128,8 +1115,8 @@ export async function deleteInventoryOperationsById(inventoryOperation: IInvento
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [id_inventory_operation]);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [id_inventory_operation]);
     });
 
     return createApiResponse<null>(200, null, null, 'Route transaction deleted (by id) successfully.');
@@ -1149,8 +1136,8 @@ export async function deleteInventoryOperationDescriptionsById(inventoryOperatio
       const {
         id_product_operation_description,
       } = inventoryOperationDescriptions[i];
-        await sqlite.transaction(async (tx) => {
-          await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_product_operation_description = ?;`, [id_product_operation_description]);
+        await sqlite.withExclusiveTransactionAsync(async (tx) => {
+          await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_product_operation_description = ?;`, [id_product_operation_description]);
         });
         inventoryOperationDescriptionsDeleted.push(inventoryOperationDescriptions[i]);
     }
@@ -1176,22 +1163,18 @@ export async function insertRouteTransaction(transactionOperation: IRouteTransac
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      try {
-        await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (id_route_transaction, date, state, cash_received, id_work_day, id_payment_method, id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
-        `,
-        [
-          id_route_transaction,
-          date,
-          state,
-          cash_received,
-          id_work_day,
-          id_payment_method,
-          id_store,
-        ]);
-      } catch (error) {
-        return createApiResponse<IRouteTransaction>(500, transactionOperation, null, 'Failed inserting route transaction (query execution level).');
-      }
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (id_route_transaction, date, state, cash_received, id_work_day, id_payment_method, id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
+      `,
+      [
+        id_route_transaction,
+        date,
+        state,
+        cash_received,
+        id_work_day,
+        id_payment_method,
+        id_store,
+      ]);
     });
 
     return createApiResponse<IRouteTransaction>(201, transactionOperation, null, 'Route transaction inserted successfully.');
@@ -1210,8 +1193,8 @@ export async function insertRouteTransactionOperation(transactionOperation: IRou
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} (id_route_transaction_operation, id_route_transaction, id_route_transaction_operation_type) VALUES (?, ?, ?);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} (id_route_transaction_operation, id_route_transaction, id_route_transaction_operation_type) VALUES (?, ?, ?);
       `,
       [
         id_route_transaction_operation,
@@ -1232,7 +1215,7 @@ export async function insertRouteTransactionOperationDescription(transactionOper
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       for(let i = 0; i < transactionOperationDescriptions.length; i++) {
         const transactionOperationDescription:IRouteTransactionOperationDescription
         = transactionOperationDescriptions[i];
@@ -1245,7 +1228,7 @@ export async function insertRouteTransactionOperationDescription(transactionOper
           id_product,
         } = transactionOperationDescription;
 
-        tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (id_route_transaction_operation_description, price_at_moment, amount, id_route_transaction_operation, id_product) VALUES (?, ?, ?, ?, ?);
+        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (id_route_transaction_operation_description, price_at_moment, amount, id_route_transaction_operation, id_product) VALUES (?, ?, ?, ?, ?);
           `, [
             id_route_transaction_operation_description,
             price_at_moment,
@@ -1279,13 +1262,12 @@ export async function getRouteTransactionByStore(id_store:string):Promise<IRespo
     const transactions:IRouteTransaction[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = '${id_store}';`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        transactions.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = '${id_store}';`);
+    const result = statement.executeSync<IRouteTransaction>();
+ 
+    for(let row of result) {
+      transactions.push(row);
+    }
 
     return createApiResponse<IRouteTransaction[]>(200, transactions, null, null);
   } catch(error) {
@@ -1302,13 +1284,12 @@ export async function getRouteTransactionOperations(id_route_transaction:string)
     const transactionsOperations:IRouteTransactionOperation[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} WHERE id_route_transaction = '${id_route_transaction}';`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        transactionsOperations.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} WHERE id_route_transaction = '${id_route_transaction}';`);
+    const result = statement.executeSync<IRouteTransactionOperation>();
+  
+    for(let row of result) {
+      transactionsOperations.push(row);
+    }
 
     return createApiResponse<IRouteTransactionOperation[]>(200, transactionsOperations, null, null);
   } catch(error) {
@@ -1321,13 +1302,12 @@ export async function getRouteTransactionOperationDescriptions(id_route_transact
     const transactionsOperationDescriptions:IRouteTransactionOperationDescription[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} WHERE id_route_transaction_operation = '${id_route_transaction_operation}';`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        transactionsOperationDescriptions.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} WHERE id_route_transaction_operation = '${id_route_transaction_operation}';`);
+    const result = statement.executeSync<IRouteTransactionOperationDescription>();
+  
+    for(let row of result) {
+      transactionsOperationDescriptions.push(row);
+    }
 
     return createApiResponse<IRouteTransactionOperationDescription[]>(200, transactionsOperationDescriptions, null, null);
   } catch(error) {
@@ -1340,14 +1320,12 @@ export async function getAllRouteTransactions():Promise<IResponse<IRouteTransact
     const routeTransactions:IRouteTransaction[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite
-      .executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        routeTransactions.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
+    const result = statement.executeSync<IRouteTransaction>();
+  
+    for(let row of result) {
+      routeTransactions.push(row);
+    }
 
     return createApiResponse<IRouteTransaction[]>(200, routeTransactions, null, 'All the route transactions were retrieved successfully.');
   } catch(error) {
@@ -1360,14 +1338,12 @@ export async function getAllRouteTransactionsOperations():Promise<IResponse<IRou
     const routeTransactionsOperations:IRouteTransactionOperation[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite
-      .executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS}`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        routeTransactionsOperations.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS}`);
+    const result = statement.executeSync<IRouteTransactionOperation>();
+  
+    for(let row of result) {
+      routeTransactionsOperations.push(row);
+    }
 
     return createApiResponse<IRouteTransactionOperation[]>(200, routeTransactionsOperations, null, 'All the route transactions operations were retrieved successfully.');
   } catch(error) {
@@ -1380,14 +1356,12 @@ export async function getAllRouteTransactionsOperationDescriptions():Promise<IRe
     const routeTransactionsOperationsDescriptions:IRouteTransactionOperationDescription[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite
-      .executeSql(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS}`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        routeTransactionsOperationsDescriptions.push(record.rows.item(index));
-      }
-    });
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS}`);
+    const result = statement.executeSync<IRouteTransactionOperationDescription>();
+  
+    for(let row of result) {
+      routeTransactionsOperationsDescriptions.push(row);
+    }
 
     return createApiResponse<IRouteTransactionOperationDescription[]>(200, routeTransactionsOperationsDescriptions, null, 'All the route transactions operations descriptions were retrieved successfully.');
   } catch(error) {
@@ -1408,8 +1382,8 @@ export async function updateTransaction(routeTransaction: IRouteTransaction):Pro
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-        await tx.executeSql(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+        await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
           date = ?, 
           state = ?, 
           id_work_day = ?, 
@@ -1436,8 +1410,8 @@ export async function deleteAllRouteTransactions():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS};`);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Route transactions deleted successfully.');
@@ -1450,9 +1424,9 @@ export async function deleteAllRouteTransactionOperations():Promise<IResponse<nu
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx
-      .executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS};`);
+      .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Route transaction operation descriptions deleted successfully.');
@@ -1465,9 +1439,9 @@ export async function deleteAllRouteTransactionOperationDescriptions():Promise<I
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx
-      .executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS};`);
+      .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Route transactions operations  descriptions deleted successfully.');
@@ -1484,8 +1458,8 @@ export async function deleteRouteTransactionById(routeTransaction:IRouteTransact
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction = ?;`, [id_route_transaction]);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction = ?;`, [id_route_transaction]);
     });
 
     return createApiResponse<null>(200, null, null, 'Route transaction deleted successfully.');
@@ -1501,9 +1475,9 @@ export async function deleteRouteTransactionOperationById(routeTransactionOperat
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx
-      .executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} WHERE id_route_transaction_operation = ?;`,
+      .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS} WHERE id_route_transaction_operation = ?;`,
         [id_route_transaction_operation]);
     });
 
@@ -1520,16 +1494,12 @@ export async function deleteRouteTransactionOperationDescriptionsById(routeTrans
 
     const totalOperationDescriptions:number = routeTransactionOperationDescription.length;
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       for (let i = 0; i < totalOperationDescriptions; i++) {
         const { id_route_transaction_operation_description } = routeTransactionOperationDescription[i];
-        try {
-          await tx
-          .executeSql(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} WHERE id_route_transaction_operation_description = ?;`, 
-          [ id_route_transaction_operation_description ]);
-        } catch (error) {
-          return createApiResponse<null>(500, null, null, 'Failed deleting route transaction operation description (loop level).');
-        }
+        await tx
+        .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} WHERE id_route_transaction_operation_description = ?;`, 
+        [ id_route_transaction_operation_description ]);
       }
     });
 
@@ -1554,8 +1524,8 @@ export async function insertSyncQueueRecord(recordToSync: ISyncRecord):Promise<I
     if (typeof payload === 'string' && id_record !== '') {
       /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
       const sqlite = await createSQLiteConnection();
-      await sqlite.transaction(async (tx) => {
-        await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+      await sqlite.withExclusiveTransactionAsync(async (tx) => {
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
           id_record,
           status,
           payload,
@@ -1579,7 +1549,7 @@ export async function insertSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       let totalRecordsToSync:number = recordsToSync.length;
       for (let  i = 0; i < totalRecordsToSync; i++) {
         const recordToSync:ISyncRecord = recordsToSync[i];
@@ -1594,7 +1564,7 @@ export async function insertSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
 
         if (typeof payload === 'string' && id_record !== '') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+          tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
             id_record,
             status,
             payload,
@@ -1605,13 +1575,6 @@ export async function insertSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
             insertedRecordsToSync.push(recordToSync);
           });
 
-        } else {
-          return createApiResponse<ISyncRecord[]>(
-            400,
-            insertedRecordsToSync,
-            null,
-            'Failed inserting record in the sync queue: Payload must be a string.'
-          );
         }
       }
     });
@@ -1637,7 +1600,7 @@ export async function updateSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       let totalRecordsToSync:number = recordsToSync.length;
       for (let i = 0; i < totalRecordsToSync; i++) {
         const recordToSync:ISyncRecord = recordsToSync[i];
@@ -1652,7 +1615,7 @@ export async function updateSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
 
         if (typeof payload === 'string' && id_record !== '') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.executeSql(`UPDATE ${EMBEDDED_TABLES.SYNC_QUEUE} 
+          tx.runAsync(`UPDATE ${EMBEDDED_TABLES.SYNC_QUEUE} 
             SET
             status = ?, 
             payload = ?,
@@ -1671,14 +1634,6 @@ export async function updateSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
           ]).then(() => {
             insertedRecordsToSync.push(recordToSync);
           });
-
-        } else {
-          return createApiResponse<ISyncRecord[]>(
-            400,
-            insertedRecordsToSync,
-            null,
-            'Failed inserting record in the sync queue: Payload must be a string.'
-          );
         }
       }
     });
@@ -1703,13 +1658,13 @@ export async function deleteSyncQueueRecord(recordToSync: ISyncRecord):Promise<I
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       const {
         id_record,
         action,
        } = recordToSync;
 
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]);
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]);
 
     });
     return createApiResponse<null>(200, null, null, 'Record to sync has been deleted successfully.');
@@ -1724,14 +1679,14 @@ export async function deleteSyncQueueRecords(deleteRecordsToSync: ISyncRecord[])
     console.log("Deleting records: ", deleteRecordsToSync.length)
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       let totalRecordsToSync:number = deleteRecordsToSync.length;
 
       for (let  i = 0; i < totalRecordsToSync; i++){
         const deleteRecordToSync = deleteRecordsToSync[i];
         const { id_record, action } = deleteRecordToSync;
         console.log("status: ", action, " - record: ", id_record)
-        tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]).then(() => {
+        tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]).then(() => {
           deletedRecordsToSync.push(deleteRecordToSync);
         });
       }
@@ -1759,9 +1714,9 @@ export async function deleteAllSyncQueueRecords():Promise<IResponse<null>> {
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx
-      .executeSql(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE};`);
+      .runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE};`);
     });
 
     return createApiResponse<null>(200, null, null, 'Records to sync deleted successfully.');
@@ -1775,13 +1730,13 @@ export async function getAllSyncQueueRecords():Promise<IResponse<ISyncRecord[]>>
     const syncQueueRecords:ISyncRecord[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.SYNC_QUEUE}`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.SYNC_QUEUE}`);
+    const result = statement.executeSync<ISyncRecord>();
+  
+    for(let row of result) {
+      syncQueueRecords.push(row);
+    }
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        syncQueueRecords.push(record.rows.item(index));
-      }
-    });
     return createApiResponse<ISyncRecord[]>(200, syncQueueRecords, 'All the sync queue records were retrieved successfully.');
   } catch(error) {
     console.log(error)
@@ -1803,8 +1758,8 @@ export async function insertSyncHistoricRecord(recordToSync: ISyncRecord):Promis
     if (typeof payload === 'string') {
       /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
       const sqlite = await createSQLiteConnection();
-      await sqlite.transaction(async (tx) => {
-        await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+      await sqlite.withExclusiveTransactionAsync(async (tx) => {
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
           id_record,
           status,
           payload,
@@ -1827,7 +1782,7 @@ export async function insertSyncHistoricRecords(recordsToSync: ISyncRecord[]):Pr
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
       let totalRecordsToSync:number = recordsToSync.length;
       for (let  i = 0; i < totalRecordsToSync; i++) {
         const recordToSync = recordsToSync[i];
@@ -1843,7 +1798,7 @@ export async function insertSyncHistoricRecords(recordsToSync: ISyncRecord[]):Pr
 
         if (typeof payload === 'string') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+          tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
             id_record,
             status,
             payload,
@@ -1854,8 +1809,6 @@ export async function insertSyncHistoricRecords(recordsToSync: ISyncRecord[]):Pr
           .then(() => {
             insertedRecordsToSync.push(recordToSync);
           });
-        } else {
-          return createApiResponse<ISyncRecord[]>(400, insertedRecordsToSync, null, 'Failed inserting record in the sync historic: Payload must be a string.');
         }
       }
     });
@@ -1873,8 +1826,8 @@ export async function deleteSyncHistoricRecordById(recordToSync: ISyncRecord)
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM ${EMBEDDED_TABLES.SYNC_HISTORIC}  WHERE id_record = ? AND action = ?`, [id_record, action]);
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_HISTORIC}  WHERE id_record = ? AND action = ?`, [id_record, action]);
     });
 
     return createApiResponse<null>(200, null, null, 'Historic record deleted successfully.');
@@ -1889,14 +1842,13 @@ export async function getAllSyncHistoricRecords():Promise<IResponse<ISyncRecord[
     const syncQueueRecords:ISyncRecord[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.SYNC_HISTORIC}`);
-
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        syncQueueRecords.push(record.rows.item(index));
-      }
-    });
-
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.SYNC_HISTORIC}`);
+    const result = statement.executeSync<ISyncRecord>();
+  
+    for(let row of result) {
+      syncQueueRecords.push(row);
+    }
+    
     return createApiResponse<ISyncRecord[]>(200, syncQueueRecords, 'All the sync historic records were retrieved successfully.');
   } catch(error) {
     return createApiResponse<ISyncRecord[]>(500, [], null, 'Failed retrieving the sync historic records.');

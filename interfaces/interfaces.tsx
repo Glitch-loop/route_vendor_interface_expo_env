@@ -8,9 +8,9 @@ export interface IDay {
 export interface IProduct {
   id_product: string;
   product_name: string;
-  barcode?: string;
-  weight?: string;
-  unit?: string;
+  barcode: string|null;
+  weight: string|null;
+  unit: string|null;
   comission: number;
   price: number
   product_status: number;
@@ -27,10 +27,10 @@ export interface IStore {
   ext_number: string;
   colony: string;
   postal_code: string;
-  address_reference?: string;
+  address_reference: string|null;
   store_name: string;
-  owner_name?: string;
-  cellphone?: string;
+  owner_name: string|null;
+  cellphone: string |null;
   latitude: string;
   longuitude: string;
   id_creator: number;
@@ -55,8 +55,8 @@ export interface IUser {
 export interface ICurrency {
   id_denomination: number;
   value: number;
-  amount?: number; // Field to describe the amount of that currency they currently have.
-  coin?: boolean;
+  amount: number|null; // Field to describe the amount of that currency they currently have.
+  coin: boolean|null;
 }
 
 export interface IDayGeneralInformation {
@@ -77,7 +77,7 @@ export interface IRouteDayStores {
 export interface IRoute {
   id_route: string;
   route_name: string;
-  description?: string;
+  description: string|null;
   route_status: string;
   id_vendor: string;
 }

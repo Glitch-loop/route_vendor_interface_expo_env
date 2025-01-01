@@ -17,7 +17,7 @@ const Card = ({
   }:{
     routeName:string,
     day:string,
-    description:string|undefined,
+    description:string|undefined|null,
     onSelectCard:any,
     route:IRoute,
     routeDay:ICompleteRouteDay,

@@ -87,7 +87,7 @@ export default function Index() {
     <Provider store={store}>
       <View>
         <Text>This is another thing</Text>
-        <Redirect href="/routeSelection" />
+        <Redirect href="/login" />
       </View>
     </Provider>
     // <Provider store={store}>
