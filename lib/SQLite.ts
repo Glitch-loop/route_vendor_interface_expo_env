@@ -16,7 +16,7 @@ SQLite.enablePromise(true);
 
 export async function createSQLiteConnection() {
   try {
-  
+    console.log("AAAAAAAAAAAAAAA")
     if (!db) {
       console.log("Try again")
       db = await SQLite.openDatabase({ name: 'mydb.db', location: 'default' },openCB, errorCB);
