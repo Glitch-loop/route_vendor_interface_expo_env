@@ -17,7 +17,6 @@ import { IResponse, IUser } from '../interfaces/interfaces';
 // Componentes
 import Toast from 'react-native-toast-message';
 
-/*
 export default function login() {
   // Redux states
   const dispatch:AppDispatch = useDispatch();
@@ -36,6 +35,7 @@ export default function login() {
       text2: 'Validando credenciales para acceder.',
     });
 
+    console.log("Consulting controller database")
     const response:IResponse<IUser> = await loginUser({
       id_vendor: '',
       cellphone: cellphone,
@@ -45,6 +45,8 @@ export default function login() {
     });
 
     const { responseCode, data } = response;
+    console.log("In response: ", data)
+
 
     if(responseCode === 200) {
       dispatch(setUser(data));
@@ -60,6 +62,7 @@ export default function login() {
       });
     }
   };
+
 
   return (
     <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
@@ -86,13 +89,13 @@ export default function login() {
     </View>
   );
 };
-*/
 
 
-export default function login() {
-    return (
-        <View>
-            <Text>AAAAAAAAAAAA</Text>
-        </View>
-    )
-}
+
+// export default function login() {
+//     return (
+//         <View>
+//             <Text>AAAAAAAAAAAA</Text>
+//         </View>
+//     )
+// }

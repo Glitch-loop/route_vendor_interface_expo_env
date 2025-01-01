@@ -245,6 +245,7 @@ export class SupabaseRepository implements IRepository {
 
   // TODO: Related to users
   async getUserDataByCellphone(user: IUser):Promise<IResponse<IUser>> {
+    console.log("main database")
     const emptyUser:IUser = {
       id_vendor:  '',
       cellphone:  '',
@@ -267,6 +268,8 @@ export class SupabaseRepository implements IRepository {
         .select()
         .eq('cellphone', cellphone);
 
+        console.log("main error: ", error)
+        console.log("main data: ", data)
         console.log(error)
         if (error) {
           return createApiResponse<IUser>(

@@ -370,6 +370,7 @@ export async function getUsers():Promise<IResponse<IUser[]>> {
 }
 
 export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUser>> {
+  console.log("Consulting information")
   const emptyUser:IUser = {
     id_vendor:  '',
     cellphone:  '',
@@ -392,7 +393,7 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
         }
       });
 
-      return createApiResponse<IUser>(200, users, null, 'The user has been retrieved successfully.');
+      return createApiResponse<IUser>(200, emptyUser, null, 'The user has been retrieved successfully.');
     } else {
       return createApiResponse<IUser>(400, emptyUser, null, 'Something was wrong: Cellphone not provided.');
     }

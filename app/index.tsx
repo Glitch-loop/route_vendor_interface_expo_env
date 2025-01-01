@@ -2,6 +2,9 @@ import "./global.css"
 import { Redirect } from "expo-router";
 import { Text, View } from "react-native";
 
+import { Provider } from "react-redux";
+import store from '../redux/store';
+
 // // Libraries
 // import React, {useEffect} from 'react';
 // import { AppRegistry } from 'react-native';
@@ -81,10 +84,12 @@ export default function Index() {
   // },[]);
 
   return (
-    <View>
-      <Text>This is another thing</Text>
-      <Redirect href="/routeSelection" />
-    </View>
+    <Provider store={store}>
+      <View>
+        <Text>This is another thing</Text>
+        <Redirect href="/routeSelection" />
+      </View>
+    </Provider>
     // <Provider store={store}>
     //   <NavigationContainer>
     //     <PaperProvider>

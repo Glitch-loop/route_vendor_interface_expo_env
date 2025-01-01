@@ -81,6 +81,7 @@ async function loginUserUsingEmbeddedDatabase(userToLog:IUser):Promise<IResponse
   let finalMessage:string = '';
   let finalUserInformation:IUser = {...emptyUser};
 
+  console.log("getUserDatabaByCellphone")
   const response:IResponse<IUser> = await getUserDataByCellphone(userToLog);
 
   const { responseCode } = response;
@@ -177,18 +178,22 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
   let wrongAnswer = createApiResponse<IUser>(500, emptyUser, null, 'Failed getting users.');
   let finalResponse = wrongAnswer;
 
+  console.log("Consulting embedded database")
   const responseLoginUsingEmbeddedDatabase = await loginUserUsingEmbeddedDatabase(userToLog);
 
   if(apiResponseStatus(responseLoginUsingEmbeddedDatabase , 200)) {
     finalResponse = responseLoginUsingEmbeddedDatabase;
   } else {
+    console.log("main database")
     const responseLoginUsingCentralDatabase = await loginUserUsingCentralDatabase(userToLog);
     if(apiResponseStatus(responseLoginUsingCentralDatabase, 200)) {
       // That means the user is not in the embedded database
 
       const userInformation:IUser = getDataFromApiResponse(responseLoginUsingCentralDatabase);
 
+      console.log("resonse from main database: ", userInformation)
       finalResponse = await insertUser(userInformation);
+      console.log("inserting: ", finalResponse)
       if (apiResponseStatus(finalResponse, 201)) {
         finalResponse = responseLoginUsingCentralDatabase;
       } else {
