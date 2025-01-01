@@ -46,10 +46,10 @@ export interface ICoordinates {
 
 export interface IUser {
   id_vendor: string;
-  cellphone?: string;
+  cellphone: string|null;
   name: string;
-  password?: string;
-  status?: number;
+  password: string|null;
+  status: number|null;
 }
 
 export interface ICurrency {

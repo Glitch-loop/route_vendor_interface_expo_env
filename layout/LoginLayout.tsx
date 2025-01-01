@@ -59,17 +59,13 @@ const LoginLayout = ({ navigation }:{navigation:any}) => {
 
   return (
     <KeyboardAvoidingView>
-      <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
+      <View className={tw`w-full h-full flex flex-col justify-center items-center`}>
         <TextInput
-        style={tw`w-3/4
-          border border-black rounded-lg px-4 bg-gray-100 
-          text-base text-black text-center`}
+        className={`w-3/4 border border-black rounded-lg px-4 bg-gray-100 text-base text-black text-center`}
         placeholder="Numero de telefóno"
         onChangeText={(text) => { setInputCellphone(text); }}/>
         <TextInput
-        style={tw`w-3/4 my-6
-          border border-black rounded-lg px-4 bg-gray-100 
-          text-base text-black text-center`}
+        className='w-3/4 my-6 border border-black rounded-lg px-4 bg-gray-100 text-base text-black text-center'
         placeholder="Contraseña"
         onChangeText={(text) => { setInputPassword(text); }}
         />

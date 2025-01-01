@@ -1,20 +1,20 @@
-import "./global.css"
+// // Libraries
+import React, {useEffect} from 'react';
+import { AppRegistry } from 'react-native';
 import { Redirect } from "expo-router";
 import { Text, View } from "react-native";
+import "./global.css"
 
+// Redux context
 import { Provider } from "react-redux";
 import store from '../redux/store';
 
-// // Libraries
-// import React, {useEffect} from 'react';
-// import { AppRegistry } from 'react-native';
 // import tw from 'twrnc';
 // import { PaperProvider } from 'react-native-paper';
 // import { NavigationContainer } from '@react-navigation/native';
 // import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
-// // Redux context
 // import { Provider } from 'react-redux';
 // import store from '../redux/store';
 
@@ -30,17 +30,17 @@ import store from '../redux/store';
 // // Components
 // import ToastMessage from '../components/generalComponents/ToastMessage';
 
-// // Embedded database
-// // Queries
-// import {
-//   createEmbeddedDatabase,
-//   dropEmbeddedDatabase,
-//  } from '../queries/SQLite/sqlLiteQueries';
+// Embedded database
+// Queries
+import {
+  createEmbeddedDatabase,
+  dropEmbeddedDatabase,
+ } from '../queries/SQLite/sqlLiteQueries';
 
-// // Services
-// import { getPrinterBluetoothConnection } from '../services/printerService';
-// import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
-// import { createBackgroundSyncProcess } from '../services/syncService';
+// Services
+import { getPrinterBluetoothConnection } from '../services/printerService';
+import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
+import { createBackgroundSyncProcess } from '../services/syncService';
 
 // export type RootStackParamList = {
 //   login: undefined;
@@ -52,36 +52,36 @@ import store from '../redux/store';
 //   sales: undefined;
 // };
 
-// async function appInitialization() {
-//   try {
-//     // Dropping database
-//     //console.log("deleting database")
-//     // await dropEmbeddedDatabase();
+async function appInitialization() {
+  try {
+    // Dropping database
+    //console.log("deleting database")
+    // await dropEmbeddedDatabase();
 
-//     // Creating database
-//     console.log("creating database")
-//     await createEmbeddedDatabase();
+    // Creating database
+    console.log("creating database")
+    await createEmbeddedDatabase();
 
-//     //await createBackgroundSyncProcess();
-//     // Verifying permissions
-//     // Connecting to the printer
-//     //await getPrinterBluetoothConnection();
+    //await createBackgroundSyncProcess();
+    // Verifying permissions
+    // Connecting to the printer
+    //await getPrinterBluetoothConnection();
 
-//     // Geolocalization permissions
-//     await requestGeolocalizationPermissionsProcess();
-//   } catch (error) {
-//     console.log('Error: ', error);
-//   }
-// }
+    // Geolocalization permissions
+    await requestGeolocalizationPermissionsProcess();
+  } catch (error) {
+    console.log('Error: ', error);
+  }
+}
 
 // const Stack = createNativeStackNavigator<RootStackParamList>();
 
 
 export default function Index() {
-  // useEffect(() => {
-  //   // Initializing database
-  //   appInitialization();
-  // },[]);
+  useEffect(() => {
+    // Initializing database
+    appInitialization();
+  },[]);
 
   return (
     <Provider store={store}>

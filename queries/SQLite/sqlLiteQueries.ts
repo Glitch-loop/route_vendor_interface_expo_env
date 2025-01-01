@@ -59,15 +59,12 @@ export async function createEmbeddedDatabase():Promise<IResponse<null>> {
 
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-
-      const createTablePromises:any[] = tablesToCreate
-      .map((queryToCreateTable:string) => {
-        return tx.executeSql(queryToCreateTable);
-      });
-
-      Promise.all(createTablePromises);
+    const createTablePromises:any[] = tablesToCreate
+    .map((queryToCreateTable:string) => {
+      return sqlite.runAsync(queryToCreateTable);
     });
+
+    Promise.all(createTablePromises);
 
     return createApiResponse(201, null, null, 'Database created sucessfully');
   } catch(error) {
@@ -91,16 +88,16 @@ export async function dropEmbeddedDatabase():Promise<IResponse<null>> {
       EMBEDDED_TABLES.SYNC_QUEUE,
       EMBEDDED_TABLES.SYNC_HISTORIC,
     ];
+
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      const dropTablePromises:any[] = tablesToDelete
-      .map((tableName:string) => {
-        return tx.executeSql(`DROP TABLE IF EXISTS ${tableName};`);
-      });
-
-      Promise.all(dropTablePromises);
+    const dropTablePromises:any[] = tablesToDelete
+    .map((tableName:string) => {
+      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
     });
+
+    Promise.all(dropTablePromises);
+
     return createApiResponse(200, null, null, 'Embedded database dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed dropping database.');
@@ -122,16 +119,16 @@ export async function cleanEmbeddedDatbase():Promise<IResponse<null>> {
       EMBEDDED_TABLES.SYNC_QUEUE,
       EMBEDDED_TABLES.SYNC_HISTORIC,
     ];
+
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      const dropTablePromises:any[] = tablesToDelete
-      .map((tableName:string) => {
-        return tx.executeSql(`DROP TABLE IF EXISTS ${tableName};`);
-      });
-
-      Promise.all(dropTablePromises);
+    const dropTablePromises:any[] = tablesToDelete
+    .map((tableName:string) => {
+      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
     });
+
+    Promise.all(dropTablePromises);
+
     return createApiResponse(200, null, null, 'Embedded database dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed cleaning database.');
@@ -145,14 +142,13 @@ export async function dropUsersEmbeddedTable():Promise<IResponse<null>> {
     ];
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      const dropTablePromises:any[] = tablesToDelete
-      .map((tableName:string) => {
-        return tx.executeSql(`DROP TABLE IF EXISTS ${tableName};`);
-      });
-
-      Promise.all(dropTablePromises);
+    const dropTablePromises:any[] = tablesToDelete
+    .map((tableName:string) => {
+      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
     });
+
+    Promise.all(dropTablePromises);
+
     return createApiResponse(200, null, null, 'Users embedded table dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed dropping users embedded table.');
@@ -185,27 +181,27 @@ export async function insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
   try {
     const sqlite = await createSQLiteConnection();
 
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-        id_work_day,
-        start_date,
-        finish_date,
-        start_petty_cash,
-        final_petty_cash,
-        /*Fields related to IRoute interface*/
-        id_route,
-        route_name,
-        description,
-        route_status,
-        // id_vendor,
-        /*Fields related to IDay interface*/
-        id_day,
-        // day_name,
-        // order_to_show,
-        /*Fields relate to IRouteDay*/
-        id_route_day,
-      ]);
-    });
+    await sqlite.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      [
+      id_work_day,
+      start_date,
+      finish_date,
+      start_petty_cash,
+      final_petty_cash,
+      /*Fields related to IRoute interface*/
+      id_route,
+      route_name,
+      description,
+      route_status,
+      // id_vendor,
+      /*Fields related to IDay interface*/
+      id_day,
+      // day_name,
+      // order_to_show,
+      /*Fields relate to IRouteDay*/
+      id_route_day,
+    ]);
+
 
     return createApiResponse(201, workday, null, 'Work day inserted sucessfully');
   } catch (error) {
@@ -336,15 +332,16 @@ export async function insertUser(user: IUser):Promise<IResponse<IUser>> {
 
   try {
     const sqlite = await createSQLiteConnection();
-
-    await sqlite.transaction(async (tx) => {
-      await tx.executeSql(`
+    
+    const result = await sqlite.runAsync(`
         INSERT INTO ${EMBEDDED_TABLES.USER} (id_vendor, cellphone, name, password, status) VALUES (?, ?, ?, ?, ?)
       `, [id_vendor, cellphone, name, password, status]);
-    });
+    
+    console.log("this is the result of embedded database: ", result)
 
     return createApiResponse<IUser>(201, user, null, 'User inserted sucessfully');
   } catch(error) {
+    console.log(error)
     return createApiResponse<IUser>(500, user, null, 'Failed insterting user.');
   }
 }
@@ -355,13 +352,12 @@ export async function getUsers():Promise<IResponse<IUser[]>> {
     const users:IUser[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.USER}`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.USER}`);
+    const result = statement.executeSync<IUser>();
 
-    result.forEach((record:any) => {
-      for (let index = 0; index < record.rows.length; index++) {
-        users.push(record.rows.item(index));
-      }
-    });
+    for (const row of result) {
+      users.push(row);
+    }
 
     return createApiResponse<IUser[]>(200, users, null, null);
   } catch(error) {
@@ -383,17 +379,16 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
 
     let users:IUser = emptyUser;
 
-    if (cellphone !== undefined) {
+    if (cellphone !== undefined || cellphone !== null) {
       const sqlite = await createSQLiteConnection();
-      const result = await sqlite.executeSql(`SELECT * FROM ${EMBEDDED_TABLES.USER} WHERE cellphone = ?`, [cellphone]);
+      const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.USER} WHERE cellphone = ?`);
+      const result = statement.executeSync<IUser>([cellphone]);
 
-      result.forEach((record:any) => {
-        for (let index = 0; index < record.rows.length; index++) {
-          users = record.rows.item(index);
-        }
-      });
+      for (const row of result) {
+        users = row;
+      }
 
-      return createApiResponse<IUser>(200, emptyUser, null, 'The user has been retrieved successfully.');
+      return createApiResponse<IUser>(200, user, null, 'The user has been retrieved successfully.');
     } else {
       return createApiResponse<IUser>(400, emptyUser, null, 'Something was wrong: Cellphone not provided.');
     }

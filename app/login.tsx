@@ -65,8 +65,8 @@ export default function login() {
 
 
   return (
-    <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
-        <KeyboardAvoidingView>
+    <KeyboardAvoidingView>
+        <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
             <TextInput
             style={tw`w-3/4
             border border-black rounded-lg px-4 bg-gray-100 
@@ -74,28 +74,16 @@ export default function login() {
             placeholder="Numero de telefóno"
             onChangeText={(text) => { setInputCellphone(text); }}/>
             <TextInput
-            style={tw`w-3/4 my-6
-            border border-black rounded-lg px-4 bg-gray-100 
-            text-base text-black text-center`}
+            style={tw`w-3/4 my-6 border border-black rounded-lg bg-gray-100 text-base text-black text-center`}
             placeholder="Contraseña"
             onChangeText={(text) => { setInputPassword(text); }}
             />
             <Pressable
-            style={tw`w-3/4 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center`}
+            style={tw`w-3/4 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
             onPress={() => { handlerLogin(inputCellphone, inputPassword); }}>
-            <Text style={tw`text-slate-100`}> Login </Text>
+            <Text style={tw`text-slate-100 text-center`}> Login </Text>
             </Pressable>
-        </KeyboardAvoidingView>
-    </View>
+        </View>
+    </KeyboardAvoidingView>
   );
 };
-
-
-
-// export default function login() {
-//     return (
-//         <View>
-//             <Text>AAAAAAAAAAAA</Text>
-//         </View>
-//     )
-// }

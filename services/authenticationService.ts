@@ -30,8 +30,8 @@ async function loginUserUsingCentralDatabase(userToLog:IUser):Promise<IResponse<
   const userInformation:IUser = getDataFromApiResponse(response);
 
   if (responseCode === 200) {
-    const passwordToLog:string|undefined = userToLog.password;
-    const passwordRegistered:string|undefined = userInformation.password;
+    const passwordToLog:string|null = userToLog.password;
+    const passwordRegistered:string|null = userInformation.password;
 
     if (passwordToLog === undefined) {
       finalResponseCode = 400;
@@ -88,8 +88,8 @@ async function loginUserUsingEmbeddedDatabase(userToLog:IUser):Promise<IResponse
   const userInformation:IUser = getDataFromApiResponse(response);
 
   if (responseCode === 200) {
-    const passwordToLog:string|undefined = userToLog.password;
-    const passwordRegistered:string|undefined = userInformation.password;
+    const passwordToLog:string|null = userToLog.password;
+    const passwordRegistered:string|null = userInformation.password;
 
     if (passwordToLog === undefined) {
       finalResponseCode = 400;
