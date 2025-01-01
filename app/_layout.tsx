@@ -5,11 +5,14 @@ import "./global.css"
 // Redux
 import { Provider } from "react-redux";
 import store from "@/redux/store";
+import { PaperProvider } from "react-native-paper";
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <Slot/>
+      <PaperProvider>
+        <Slot/>
+      </PaperProvider>
     </Provider>
 
   )

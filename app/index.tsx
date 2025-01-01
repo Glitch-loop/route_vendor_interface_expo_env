@@ -35,12 +35,14 @@ import store from '../redux/store';
 import {
   createEmbeddedDatabase,
   dropEmbeddedDatabase,
+  dropUsersEmbeddedTable,
  } from '../queries/SQLite/sqlLiteQueries';
 
 // Services
 import { getPrinterBluetoothConnection } from '../services/printerService';
 import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
 import { createBackgroundSyncProcess } from '../services/syncService';
+import { PaperProvider } from 'react-native-paper';
 
 // export type RootStackParamList = {
 //   login: undefined;
@@ -55,9 +57,9 @@ import { createBackgroundSyncProcess } from '../services/syncService';
 async function appInitialization() {
   try {
     // Dropping database
-    //console.log("deleting database")
-    // await dropEmbeddedDatabase();
-
+    console.log("deleting database")
+    console.log(await dropEmbeddedDatabase());
+    //await dropUsersEmbeddedTable()
     // Creating database
     console.log("creating database")
     await createEmbeddedDatabase();
@@ -85,10 +87,12 @@ export default function Index() {
 
   return (
     <Provider store={store}>
-      <View>
-        <Text>This is another thing</Text>
-        <Redirect href="/login" />
-      </View>
+      <PaperProvider>
+        <View>
+          <Text>This is another thing</Text>
+          <Redirect href="/loginLayout" />
+        </View>
+      </PaperProvider>
     </Provider>
     // <Provider store={store}>
     //   <NavigationContainer>

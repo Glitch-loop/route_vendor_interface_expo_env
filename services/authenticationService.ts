@@ -12,7 +12,8 @@ import { dropUsersEmbeddedTable, getUserDataByCellphone, getUsers, insertUser } 
 let repository = RepositoryFactory.createRepository('supabase');
 
 
-async function loginUserUsingCentralDatabase(userToLog:IUser):Promise<IResponse<IUser>> {
+function credentialsValidator(userToLog:IUser, userInformation:IUser):IResponse<IUser> {
+  console.log('CREDENTIALS VALIDATOR')
   const emptyUser:IUser = {
     id_vendor:  '',
     cellphone:  '',
@@ -20,44 +21,42 @@ async function loginUserUsingCentralDatabase(userToLog:IUser):Promise<IResponse<
     password:   '',
     status:     0,
   };
+
   let finalResponseCode:number = 400;
   let finalMessage:string = '';
   let finalUserInformation:IUser = {...emptyUser};
+  let isBadRequest:boolean = false;
 
-  const response:IResponse<IUser> = await repository.getUserDataByCellphone(userToLog);
 
-  const { responseCode } = response;
-  const userInformation:IUser = getDataFromApiResponse(response);
+  console.log("userInformation: ", userInformation)
+  console.log("userToLog: ", userToLog)
 
-  if (responseCode === 200) {
-    const passwordToLog:string|null = userToLog.password;
-    const passwordRegistered:string|null = userInformation.password;
+  const passwordToLog:string|null = userToLog.password;
+  const passwordRegistered:string|null = userInformation.password;
 
-    if (passwordToLog === undefined) {
-      finalResponseCode = 400;
-      finalMessage = 'Missing information.';
-      finalUserInformation = { ...emptyUser };
-    } else { /* There are no instructions */ }
-
-    if (passwordRegistered === undefined) {
-      finalResponseCode = 400;
-      finalMessage = 'Missing information.';
-      finalUserInformation = { ...emptyUser };
-    } else { /* There are no instructions */ }
-
-    if (passwordToLog === passwordRegistered) {
-      finalResponseCode = 200;
-      finalMessage = 'The user was autheticated successfully.';
-      finalUserInformation = { ...userInformation };
-    } else {
-      finalResponseCode = 400;
-      finalMessage = 'Incorrect cellphone or password.';
-      finalUserInformation = { ...emptyUser };
-    }
-
+  if (passwordToLog === "" || passwordToLog === null || passwordToLog === undefined) {
+    finalResponseCode = 400;
+    finalMessage = 'Missing information.';
+    finalUserInformation = { ...emptyUser };
+    isBadRequest = true
+  } 
+  
+  if (passwordRegistered === "" || passwordRegistered === null || passwordRegistered === undefined) {
+    finalResponseCode = 400;
+    finalMessage = 'Missing information.';
+    finalUserInformation = { ...emptyUser };
+    isBadRequest = true
+  } 
+  
+  
+  if (passwordToLog === passwordRegistered && !isBadRequest) {
+    console.log("VAAAAALLIIIIDDDDD.... isBadRequest: ", isBadRequest)
+    finalResponseCode = 200;
+    finalMessage = 'The user was autheticated successfully.';
+    finalUserInformation = { ...userInformation };
   } else {
-    finalResponseCode = 500;
-    finalMessage = 'Something was wrong during logging.';
+    finalResponseCode = 400;
+    finalMessage = 'Incorrect cellphone or password.';
     finalUserInformation = { ...emptyUser };
   }
 
@@ -69,6 +68,33 @@ async function loginUserUsingCentralDatabase(userToLog:IUser):Promise<IResponse<
   );
 }
 
+async function loginUserUsingCentralDatabase(userToLog:IUser):Promise<IResponse<IUser>> {
+  const emptyUser:IUser = {
+    id_vendor:  '',
+    cellphone:  '',
+    name:       '',
+    password:   '',
+    status:     0,
+  };
+
+  const response:IResponse<IUser> = await repository.getUserDataByCellphone(userToLog);
+
+  const { responseCode } = response;
+  const userInformation:IUser = getDataFromApiResponse(response);
+
+  if (responseCode === 200) {
+    return credentialsValidator(userToLog, userInformation);
+  } else {
+    return createApiResponse(
+      500,
+      { ...emptyUser },
+      null,
+      'Something was wrong during logging.',
+    );
+  }
+
+}
+
 async function loginUserUsingEmbeddedDatabase(userToLog:IUser):Promise<IResponse<IUser>> {
   const emptyUser:IUser = {
     id_vendor:  '',
@@ -77,54 +103,21 @@ async function loginUserUsingEmbeddedDatabase(userToLog:IUser):Promise<IResponse
     password:   '',
     status:     0,
   };
-  let finalResponseCode:number = 400;
-  let finalMessage:string = '';
-  let finalUserInformation:IUser = {...emptyUser};
-
-  console.log("getUserDatabaByCellphone")
   const response:IResponse<IUser> = await getUserDataByCellphone(userToLog);
 
   const { responseCode } = response;
   const userInformation:IUser = getDataFromApiResponse(response);
 
   if (responseCode === 200) {
-    const passwordToLog:string|null = userToLog.password;
-    const passwordRegistered:string|null = userInformation.password;
-
-    if (passwordToLog === undefined) {
-      finalResponseCode = 400;
-      finalMessage = 'Missing information.';
-      finalUserInformation = { ...emptyUser };
-    } else { /* There are no instructions */ }
-
-    if (passwordRegistered === undefined) {
-      finalResponseCode = 400;
-      finalMessage = 'Missing information.';
-      finalUserInformation = { ...emptyUser };
-    } else { /* There are no instructions */ }
-
-    if (passwordToLog === passwordRegistered) {
-      finalResponseCode = 200;
-      finalMessage = 'The user was autheticated successfully.';
-      finalUserInformation = { ...userInformation };
-    } else {
-      finalResponseCode = 400;
-      finalMessage = 'Incorrect cellphone or password.';
-      finalUserInformation = { ...emptyUser };
-    }
-
+    return credentialsValidator(userToLog, userInformation);
   } else {
-    finalResponseCode = 500;
-    finalMessage = 'Something was wrong during logging.';
-    finalUserInformation = { ...emptyUser };
+    return createApiResponse(
+      500,
+      { ...emptyUser },
+      null,
+      'Something was wrong during logging.',
+    );
   }
-
-  return createApiResponse(
-    finalResponseCode,
-    finalUserInformation,
-    null,
-    finalMessage,
-  );
 }
 
 /*
@@ -180,12 +173,13 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
 
   console.log("Consulting embedded database")
   const responseLoginUsingEmbeddedDatabase = await loginUserUsingEmbeddedDatabase(userToLog);
-
+  console.log("responseLoginUsingEmbeddedDatabase: ", responseLoginUsingEmbeddedDatabase)
   if(apiResponseStatus(responseLoginUsingEmbeddedDatabase , 200)) {
     finalResponse = responseLoginUsingEmbeddedDatabase;
   } else {
     console.log("main database")
     const responseLoginUsingCentralDatabase = await loginUserUsingCentralDatabase(userToLog);
+    console.log("responseLoginUsingCentralDatabase: ", responseLoginUsingCentralDatabase)
     if(apiResponseStatus(responseLoginUsingCentralDatabase, 200)) {
       // That means the user is not in the embedded database
 

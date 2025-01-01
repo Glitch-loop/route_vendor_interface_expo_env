@@ -35,7 +35,6 @@ export default function login() {
       text2: 'Validando credenciales para acceder.',
     });
 
-    console.log("Consulting controller database")
     const response:IResponse<IUser> = await loginUser({
       id_vendor: '',
       cellphone: cellphone,
@@ -50,7 +49,7 @@ export default function login() {
 
     if(responseCode === 200) {
       dispatch(setUser(data));
-      router.replace('/routeSelection')
+      router.replace('/routeSelectionLayout')
     //   navigation.reset({
     //     index: 0,
     //     routes: [{ name: 'routeSelection' }],

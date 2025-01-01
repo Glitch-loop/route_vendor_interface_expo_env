@@ -94,7 +94,9 @@ export async function dropEmbeddedDatabase():Promise<IResponse<null>> {
 
     const dropTablePromises:any[] = tablesToDelete
     .map((tableName:string) => {
-      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
+      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`)
+      .then(data => console.log("OK: ", data))
+      .catch(error => console.log("ERROR: ", error));
     });
 
     Promise.all(dropTablePromises);
@@ -342,6 +344,7 @@ export async function insertUser(user: IUser):Promise<IResponse<IUser>> {
     status,
   } = user;
 
+  console.log("inserting user: ", user)
   try {
     const sqlite = await createSQLiteConnection();
     await sqlite.withExclusiveTransactionAsync(async (tx) => {
@@ -389,7 +392,7 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
   try {
     const { cellphone } = user;
 
-    let users:IUser = emptyUser;
+    let userFound:IUser = emptyUser;
 
     if (cellphone !== undefined || cellphone !== null) {
       const sqlite = await createSQLiteConnection();
@@ -397,10 +400,11 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
       const result = statement.executeSync<IUser>([cellphone]);
 
       for (const row of result) {
-        users = row;
+        userFound = row;
       }
 
-      return createApiResponse<IUser>(200, user, null, 'The user has been retrieved successfully.');
+
+      return createApiResponse<IUser>(200, userFound, null, 'The user has been retrieved successfully.');
     } else {
       return createApiResponse<IUser>(400, emptyUser, null, 'Something was wrong: Cellphone not provided.');
     }
@@ -1848,7 +1852,7 @@ export async function getAllSyncHistoricRecords():Promise<IResponse<ISyncRecord[
     for(let row of result) {
       syncQueueRecords.push(row);
     }
-    
+
     return createApiResponse<ISyncRecord[]>(200, syncQueueRecords, 'All the sync historic records were retrieved successfully.');
   } catch(error) {
     return createApiResponse<ISyncRecord[]>(500, [], null, 'Failed retrieving the sync historic records.');
