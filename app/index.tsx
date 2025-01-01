@@ -1,13 +1,7 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { Text, View } from "react-native";
 // Libraries
 import React, {useEffect} from 'react';
-import { AppRegistry, View } from 'react-native';
-import { registerRootComponent } from 'expo';
+import { AppRegistry } from 'react-native';
 import tw from 'twrnc';
 import { PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,31 +10,31 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Redux context
 import { Provider } from 'react-redux';
-import store from './redux/store';
+import store from '../redux/store';
 
 // Layouts
-import RouteSelectionLayout from './layout/RouteSelectionLayout';
-import SelectionRouteOperationLayout from './layout/SelectionRouteOperationLayout';
-import InventoryOperationLayout from './layout/InventoryOperationLayout';
-import RouteOperationMenuLayout from './layout/RouteOperationMenuLayout';
-import StoreMenuLayout from './layout/StoreMenuLayout';
-import SalesLayout from './layout/SalesLayout';
-import LoginLayout from './layout/LoginLayout';
+import RouteSelectionLayout from '../layout/RouteSelectionLayout';
+import SelectionRouteOperationLayout from '../layout/SelectionRouteOperationLayout';
+import InventoryOperationLayout from '../layout/InventoryOperationLayout';
+import RouteOperationMenuLayout from '../layout/RouteOperationMenuLayout';
+import StoreMenuLayout from '../layout/StoreMenuLayout';
+import SalesLayout from '../layout/SalesLayout';
+import LoginLayout from '../layout/LoginLayout';
 
 // Components
-import ToastMessage from './components/generalComponents/ToastMessage';
+import ToastMessage from '../components/generalComponents/ToastMessage';
 
 // Embedded database
 // Queries
 import {
   createEmbeddedDatabase,
   dropEmbeddedDatabase,
- } from './queries/SQLite/sqlLiteQueries';
+ } from '../queries/SQLite/sqlLiteQueries';
 
 // Services
-import { getPrinterBluetoothConnection } from './services/printerService';
-import { requestGeolocalizationPermissionsProcess } from './services/geolocationService';
-import { createBackgroundSyncProcess } from './services/syncService';
+import { getPrinterBluetoothConnection } from '../services/printerService';
+import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
+import { createBackgroundSyncProcess } from '../services/syncService';
 
 export type RootStackParamList = {
   login: undefined;
@@ -52,12 +46,6 @@ export type RootStackParamList = {
   sales: undefined;
 };
 
-
-/*
-  TODO: Place the database initilization at the beginning of the program
-*/
-
-
 async function appInitialization() {
   try {
     // Dropping database
@@ -66,7 +54,7 @@ async function appInitialization() {
 
     // Creating database
     console.log("creating database")
-    //await createEmbeddedDatabase();
+    await createEmbeddedDatabase();
 
     //await createBackgroundSyncProcess();
     // Verifying permissions
@@ -74,7 +62,7 @@ async function appInitialization() {
     //await getPrinterBluetoothConnection();
 
     // Geolocalization permissions
-    //await requestGeolocalizationPermissionsProcess();
+    await requestGeolocalizationPermissionsProcess();
   } catch (error) {
     console.log('Error: ', error);
   }
@@ -82,12 +70,12 @@ async function appInitialization() {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function App(): React.JSX.Element {
+
+export default function Index() {
   useEffect(() => {
     // Initializing database
     appInitialization();
   },[]);
-
 
   return (
     <Provider store={store}>
@@ -132,7 +120,3 @@ function App(): React.JSX.Element {
     </Provider>
   );
 }
-
-registerRootComponent(App);
-
-export default App;
