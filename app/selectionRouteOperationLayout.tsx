@@ -2,16 +2,19 @@ import React from 'react';
 import { Pressable, View, Text } from 'react-native';
 import tw from 'twrnc';
 import RouteHeader from '../components/RouteHeader';
+import { Router, useRouter } from 'expo-router';
 
+const selectionRouteOperationLayout = () => {
+  //Router
+  const router:Router = useRouter()
 
-const selectionRouteOperationLayout = ({navigation}:{navigation:any}) => {
   // Handlers
   const handlerGoBack = () => {
-    navigation.navigate('routeSelection');
+    router.push('/routeSelectionLayout');
   };
 
   const handlerGoToInventory = () => {
-    navigation.navigate('inventoryOperation');
+    router.push('/inventoryOperationLayout');
   };
 
   return (

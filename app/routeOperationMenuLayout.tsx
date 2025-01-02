@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { BackHandler, ScrollView, View, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import tw from 'twrnc';
+import { Router, useRouter } from 'expo-router';
 
 // Databases
 // Embedded
@@ -42,13 +43,16 @@ import Toast from 'react-native-toast-message';
 import ActionDialog from '../components/ActionDialog';
 import { maintainUserTable } from '../services/authenticationService';
 
-const routeOperationMenuLayout = ({ navigation }:{ navigation:any }) => {
+const routeOperationMenuLayout = () => {
   // Redux (context definitions)
   const dispatch:AppDispatch = useDispatch();
   const dayOperations = useSelector((state: RootState) => state.dayOperations);
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const stores = useSelector((state: RootState) => state.stores);
   const user = useSelector((state: RootState) => state.user);
+
+  // Routing
+  const router:Router = useRouter();
 
   // States for logic of the layout
   const [isDayWorkClosed, setIsDayWorkClosed] = useState<boolean>(false);
@@ -90,12 +94,13 @@ const routeOperationMenuLayout = ({ navigation }:{ navigation:any }) => {
   // Handlers
   const onSelectStore = (dayOperation: IDayOperation):void => {
     dispatch(setCurrentOperation(dayOperation));
-    navigation.navigate('storeMenu');
+    
+    router.push('/storeMenuLayout');
   };
 
   const onSelectInventoryOperation = (dayOperation: IDayOperation):void => {
     dispatch(setCurrentOperation(dayOperation));
-    navigation.navigate('inventoryOperation');
+    router.push('/inventoryOperationLayout');
   };
 
   const onRestockInventory = ():void => {
@@ -106,7 +111,7 @@ const routeOperationMenuLayout = ({ navigation }:{ navigation:any }) => {
       operation_order: 0,
       current_operation: 0,
     }));
-    navigation.navigate('inventoryOperation');
+    router.push('/inventoryOperationLayout');
   };
 
   const onFinishInventory = ():void => {
@@ -143,7 +148,7 @@ const routeOperationMenuLayout = ({ navigation }:{ navigation:any }) => {
         current_operation: 0,
       }));
     }
-    navigation.navigate('inventoryOperation');
+    router.push('/inventoryOperationLayout');
   };
 
   // Related with to the end of  the day.
@@ -185,13 +190,14 @@ const routeOperationMenuLayout = ({ navigation }:{ navigation:any }) => {
           cleanStores();
 
           // Resetting the navigation stack (avoiding user go back to the route operation).
-          navigation.reset({
-            index: 0, // Set the index of the new state (0 means first screen)
-            routes: [{ name: 'routeSelection' }], // Array of route objects, with the route to navigate to
-          });
+          // navigation.reset({
+          //   index: 0, // Set the index of the new state (0 means first screen)
+          //   routes: [{ name: 'routeSelection' }], // Array of route objects, with the route to navigate to
+          // });
+          // navigation.navigate('routeSelection');
 
           // Redirecting to main menu.
-          navigation.navigate('routeSelection');
+          router.replace('/routeSelectionLayout');
         } else {
           /* Something was wrong*/
           Toast.show({

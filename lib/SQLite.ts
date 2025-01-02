@@ -2,12 +2,10 @@ import * as SQLite from 'expo-sqlite';
 
 
 export async function createSQLiteConnection() {
-  console.log("creating a connection")
   try {
     
     let db = await SQLite.openDatabaseAsync('mydb.db');
 
-    console.log("This is an attempt: ", db)
     return db;
 
   } catch (error) {

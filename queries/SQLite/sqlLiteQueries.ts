@@ -94,9 +94,7 @@ export async function dropEmbeddedDatabase():Promise<IResponse<null>> {
 
     const dropTablePromises:any[] = tablesToDelete
     .map((tableName:string) => {
-      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`)
-      .then(data => console.log("OK: ", data))
-      .catch(error => console.log("ERROR: ", error));
+      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
     });
 
     Promise.all(dropTablePromises);
@@ -575,6 +573,7 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
 :Promise<IResponse<(IStore&IStoreStatusDay)[]>> {
   const insertedStores:(IStore&IStoreStatusDay)[] = [];
 
+  console.log(stores)
   try {
     const sqlite = await createSQLiteConnection();
     await sqlite.withExclusiveTransactionAsync(async (tx) => {

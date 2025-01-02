@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, BackHandler, Pressable } from 'react-native';
 import 'react-native-get-random-values'; // Necessary for uuid
 import tw from 'twrnc';
+import { Router, useRouter } from 'expo-router';
 
 // Redux context
 import { useSelector, useDispatch } from 'react-redux';
@@ -119,7 +120,7 @@ const settingAllInventoryOperations:any = {
   toastMessageError: 'Ha habido un error durante la consulta de las operaciones de inventario del dia, por favor intente nuevamente',
 };
 
-const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
+const inventoryOperationLayout = () => {
   // Defining redux context
   const dispatch:AppDispatch = useDispatch();
   const productsInventory = useSelector((state: RootState) => state.productsInventory);
@@ -127,6 +128,9 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
+
+  // Routing
+  const router:Router = useRouter();
 
   // Defining states
   /* States related to 'movements' in the operation. */
@@ -514,9 +518,9 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
     const backAction = () => {
       if (currentOperation.id_type_operation === '') {
-        navigation.navigate('selectionRouteOperation');
+        router.push('/selectionRouteOperationLayout');
       } else {
-        navigation.navigate('routeOperationMenu');
+        router.push('/routeOperationMenuLayout');
       }
       return true;
     };
@@ -527,7 +531,7 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
     );
 
     return () => backHandler.remove();
-  }, [currentOperation, dayOperations, stores, navigation]);
+  }, [currentOperation, dayOperations, stores]);
 
   // Handlers
   const handlerGoBack = ():void => {
@@ -541,14 +545,14 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
       should return to the route menu.
     */
     if (currentOperation.id_type_operation === '') {
-      navigation.navigate('selectionRouteOperation');
+      router.push('/selectionRouteOperationLayout');
     } else {
-      navigation.navigate('routeOperationMenu');
+      router.push('/routeOperationMenuLayout');
     }
   };
 
   const handlerReturnToRouteMenu = async ():Promise<void> => {
-    navigation.navigate('routeOperationMenu');
+    router.push('/routeOperationMenuLayout');
   };
 
   const handlerOnContinueInventoryOperationProcess = ():void => {
@@ -766,12 +770,13 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
         }
 
         if (processResult) {
-          navigation.reset({
-            index: 0, // Set the index of the new state (0 means first screen)
-            routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
-          });
+          router.replace('/routeOperationMenuLayout');
+          // navigation.reset({
+          //   index: 0, // Set the index of the new state (0 means first screen)
+          //   routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
+          // });
 
-          navigation.navigate('routeOperationMenu');
+          // navigation.navigate('routeOperationMenu');
         }
       } else {
         // Determining the type of inventory operation.
@@ -816,6 +821,7 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
           const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[]
             = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
 
+          console.log(arrListStoreOfRouteDay)
           const arrStoresOfRouteDay:IRouteDayStores[]
             = getDataFromApiResponse(resulGetStoresOfRouteOfRouteDay);
 
@@ -859,6 +865,7 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
         && apiResponseStatus(resultCreateInventoryOperation, 201)
         && apiResponseStatus(resultCreateVendorInventoryOperation, 201)
         && apiResponseStatus(resultCreateListOfDayOperations, 201)) {
+            console.log("All is ok")
             /* The process has been finished successfully */
             /* Updating redux states */
     
@@ -903,24 +910,26 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
             processResult = false;
           }
           if (processResult) {
-            navigation.reset({
-              index: 0, // Set the index of the new state (0 means first screen)
-              routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
-            });
+            router.push('/routeOperationMenuLayout');
+            // navigation.reset({
+            //   index: 0, // Set the index of the new state (0 means first screen)
+            //   routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
+            // });
     
-            navigation.navigate('routeOperationMenu');
+            // navigation.navigate('routeOperationMenu');
           } else {
             /*
               Since this is the operations of the day, it is important to ensure the integrity of
               the workflow, thus, to achieve this, it is needed to redirect the user to the main manu
               to force complete all the process again.
             */
-              navigation.reset({
-                index: 0, // Set the index of the new state (0 means first screen)
-                routes: [{ name: 'selectionRouteOperation' }], // Array of route objects, with the route to navigate to
-              });
+            router.push('/selectionRouteOperationLayout');
+              // navigation.reset({
+              //   index: 0, // Set the index of the new state (0 means first screen)
+              //   routes: [{ name: 'selectionRouteOperation' }], // Array of route objects, with the route to navigate to
+              // });
     
-              navigation.navigate('selectionRouteOperation');
+              // navigation.navigate('selectionRouteOperation');
           }
         } else if(currentOperation.id_type_operation === DAYS_OPERATIONS.restock_inventory
         || currentOperation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
@@ -1014,11 +1023,12 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
           if(processResult) {
             if (currentOperation.id_type_operation === DAYS_OPERATIONS.restock_inventory) {
               /* The inventory operation was a "restock inventory" */
-              navigation.reset({
-                index: 0, // Set the index of the new state (0 means first screen)
-                routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
-              });
-              navigation.navigate('routeOperationMenu');
+              router.push('/routeOperationMenuLayout');
+              // navigation.reset({
+              //   index: 0, // Set the index of the new state (0 means first screen)
+              //   routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
+              // });
+              // navigation.navigate('routeOperationMenu');
             } else {
               Toast.show({
                 type: 'info',
@@ -1132,11 +1142,12 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
             }
   
           if(processResult) {
-            navigation.reset({
-              index: 0, // Set the index of the new state (0 means first screen)
-              routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
-            });
-            navigation.navigate('routeOperationMenu');
+            router.push('/routeOperationMenuLayout');
+            // navigation.reset({
+            //   index: 0, // Set the index of the new state (0 means first screen)
+            //   routes: [{ name: 'routeOperationMenu' }], // Array of route objects, with the route to navigate to
+            // });
+            // navigation.navigate('routeOperationMenu');
           } else {
             /*
               In case of error, the user can make another petition to process the inventory.
@@ -1163,12 +1174,12 @@ const inventoryOperationLayout = ({ navigation }:{ navigation:any }) => {
         In this case, the application must redirect to the route operation selection to
         make able to the vendor to select a route.
       */
-     navigation.navigate('routeSelection');
+      router.push('/routeSelectionLayout');
     } else {
       /*
         Since it is not the start shift inventory, it means the vendor is already making a route.
       */
-      navigation.navigate('routeOperationMenu');
+      router.push('/routeOperationMenuLayout');
     }
   };
 

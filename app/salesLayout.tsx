@@ -5,6 +5,8 @@ import tw from 'twrnc';
 import 'react-native-get-random-values'; // Necessary for uuid
 import {v4 as uuidv4 } from 'uuid';
 import Toast from 'react-native-toast-message';
+import { Router, useRouter } from 'expo-router';
+
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
@@ -77,6 +79,7 @@ import {
 import { apiResponseStatus } from '../utils/apiResponse';
 import { createSyncItem, createSyncItems } from '../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../services/syncService';
+import { useSearchParams } from 'expo-router/build/hooks';
 
 const initialStateStore:IStore&IStoreStatusDay = {
   id_store: '',
@@ -524,17 +527,22 @@ async function insertionSyncRecordTransactionOperationAndOperationDescriptions(
   }
 }
 
-const salesLayout = ({ route, navigation }:{ route:any, navigation:any }) => {
+const salesLayout = ({ 
+  information, 
+  }:{
+    information:any, 
+  }) => {
+
   // Auxiliar variables
   // Getting information from parameters
-  let initialProductDevolution:IProductInventory[]
-  = getInitialInventoryParametersFromRoute(route.params, 'initialProductDevolution');
+  let initialProductDevolution:IProductInventory[] 
+  = getInitialInventoryParametersFromRoute(information, 'initialProductDevolution');
 
   let initialProductResposition:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(route.params, 'initialProductReposition');
+    = getInitialInventoryParametersFromRoute(information, 'initialProductReposition');
 
   let initialSaleProduct:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(route.params, 'initialProductSale');
+    = getInitialInventoryParametersFromRoute(information, 'initialProductSale');
 
 
   // Redux context definitions
@@ -545,6 +553,10 @@ const salesLayout = ({ route, navigation }:{ route:any, navigation:any }) => {
 
   const stores = useSelector((state: RootState) => state.stores);
   const productInventory = useSelector((state: RootState) => state.productsInventory);
+
+  // Routing
+  const router:Router = useRouter();
+
 
   // Use states
   /* States to store the current product according with their context. */
@@ -573,11 +585,11 @@ const salesLayout = ({ route, navigation }:{ route:any, navigation:any }) => {
 
   // Handlers
   const handleCancelSale = () => {
-    navigation.navigate('storeMenu');
+    router.push('/storeMenuLayout');
   };
 
   const handleOnGoBack = () => {
-    navigation.navigate('storeMenu');
+    router.push('/storeMenuLayout');
   };
 
   const handleSalePaymentProcess = () => {
@@ -953,13 +965,13 @@ const salesLayout = ({ route, navigation }:{ route:any, navigation:any }) => {
   };
 
   const handlerOnSuccessfullCompletionSale = async () => {
-    navigation.navigate('routeOperationMenu');
+    router.push('/routeOperationMenuLayout');
   };
 
   const handlerOnFailedCompletionSale = () => {
     // Updating the status of the store and moving to the next operation.
     dispatch(setNextOperation());
-    navigation.navigate('routeOperationMenu');
+    router.push('/routeOperationMenuLayout');
   };
 
   const handlerOnPrintTicket = async () => {

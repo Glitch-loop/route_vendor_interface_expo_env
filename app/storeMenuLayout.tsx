@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import tw from 'twrnc';
+import { Router, useRouter } from 'expo-router';
 
 // Interface and enums
 import {
@@ -80,13 +81,16 @@ function displayingClientInformation(store:IStore) {
   return ownerStoreInformation;
 }
 
-const storeMenuLayout = ({ navigation }:{ navigation:any}) => {
+const storeMenuLayout = () => {
 
   //Defining redux context
   const dispatch: AppDispatch = useDispatch();
   const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
   const dayOperations = useSelector((state: RootState) => state.dayOperations);
+
+  //Router
+  const router:Router = useRouter()
 
   // Defining state
   const [isConsultTransaction, setIsConsultTransaction] = useState<boolean>(false);
@@ -104,7 +108,7 @@ const storeMenuLayout = ({ navigation }:{ navigation:any}) => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
-    navigation.navigate('routeOperationMenu');
+    router.push('/routeOperationMenuLayout');
   };
 
   const handlerGoBackToStoreMenu = () => {
@@ -112,7 +116,7 @@ const storeMenuLayout = ({ navigation }:{ navigation:any}) => {
   };
 
   const handlerOnStartSale = () => {
-    navigation.navigate('sales');
+    router.push('/salesLayout');
   };
 
   const handlerOnConsultTransactions = async() => {
@@ -286,7 +290,6 @@ const storeMenuLayout = ({ navigation }:{ navigation:any}) => {
               return (
                 <SummarizeTransaction
                   key={id_current_transaction}
-                  navigation={navigation}
                   routeTransaction={current_transaction}
                   routeTransactionOperations={current_transaction_operations}
                   routeTransactionOperationDescriptions={current_transaction_operation_descriptions}

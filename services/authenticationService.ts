@@ -13,7 +13,6 @@ let repository = RepositoryFactory.createRepository('supabase');
 
 
 function credentialsValidator(userToLog:IUser, userInformation:IUser):IResponse<IUser> {
-  console.log('CREDENTIALS VALIDATOR')
   const emptyUser:IUser = {
     id_vendor:  '',
     cellphone:  '',
@@ -26,10 +25,6 @@ function credentialsValidator(userToLog:IUser, userInformation:IUser):IResponse<
   let finalMessage:string = '';
   let finalUserInformation:IUser = {...emptyUser};
   let isBadRequest:boolean = false;
-
-
-  console.log("userInformation: ", userInformation)
-  console.log("userToLog: ", userToLog)
 
   const passwordToLog:string|null = userToLog.password;
   const passwordRegistered:string|null = userInformation.password;
@@ -50,7 +45,6 @@ function credentialsValidator(userToLog:IUser, userInformation:IUser):IResponse<
   
   
   if (passwordToLog === passwordRegistered && !isBadRequest) {
-    console.log("VAAAAALLIIIIDDDDD.... isBadRequest: ", isBadRequest)
     finalResponseCode = 200;
     finalMessage = 'The user was autheticated successfully.';
     finalUserInformation = { ...userInformation };
@@ -171,23 +165,17 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
   let wrongAnswer = createApiResponse<IUser>(500, emptyUser, null, 'Failed getting users.');
   let finalResponse = wrongAnswer;
 
-  console.log("Consulting embedded database")
   const responseLoginUsingEmbeddedDatabase = await loginUserUsingEmbeddedDatabase(userToLog);
-  console.log("responseLoginUsingEmbeddedDatabase: ", responseLoginUsingEmbeddedDatabase)
   if(apiResponseStatus(responseLoginUsingEmbeddedDatabase , 200)) {
     finalResponse = responseLoginUsingEmbeddedDatabase;
   } else {
-    console.log("main database")
     const responseLoginUsingCentralDatabase = await loginUserUsingCentralDatabase(userToLog);
-    console.log("responseLoginUsingCentralDatabase: ", responseLoginUsingCentralDatabase)
     if(apiResponseStatus(responseLoginUsingCentralDatabase, 200)) {
       // That means the user is not in the embedded database
 
       const userInformation:IUser = getDataFromApiResponse(responseLoginUsingCentralDatabase);
 
-      console.log("resonse from main database: ", userInformation)
       finalResponse = await insertUser(userInformation);
-      console.log("inserting: ", finalResponse)
       if (apiResponseStatus(finalResponse, 201)) {
         finalResponse = responseLoginUsingCentralDatabase;
       } else {

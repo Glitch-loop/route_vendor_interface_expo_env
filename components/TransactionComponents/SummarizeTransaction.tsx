@@ -1,6 +1,8 @@
+// Libraries
 import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
+import { Router, useRouter } from 'expo-router';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
@@ -126,16 +128,16 @@ function getConceptTransactionOperation(idTransactionOperationType:string,
   }
 
 const SummarizeTransaction = ({
-  navigation,
   routeTransaction,
   routeTransactionOperations,
   routeTransactionOperationDescriptions,
 }:{
-  navigation:any,
   routeTransaction:IRouteTransaction,
   routeTransactionOperations:IRouteTransactionOperation[],
   routeTransactionOperationDescriptions: Map<string,IRouteTransactionOperationDescription[]>,
 }) => {
+  //Router
+  const router:Router = useRouter()
 
   /* Declaring redux context */
   const dispatch: AppDispatch = useDispatch();
@@ -319,11 +321,20 @@ const SummarizeTransaction = ({
   };
 
   const handleOnStartASale = async () => {
-    navigation.replace('sales', {
-      initialProductDevolution: productsDevolution,
-      initialProductReposition: productsReposition,
-      initialProductSale: productsSale,
-    });
+    router.push(
+      {
+        pathname: '/salesLayout',
+        
+        params: {
+          information: JSON.stringify(
+            {
+              'initialProductDevolution': productsDevolution,
+              'initialProductReposition': productsReposition,
+              'initialProductSale': productsSale,
+            }            
+          )
+        }
+      });
   };
 
   const handleOnShowDialog = () => {

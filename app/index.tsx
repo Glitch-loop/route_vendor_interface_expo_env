@@ -4,6 +4,7 @@ import { AppRegistry } from 'react-native';
 import { Redirect } from "expo-router";
 import { Text, View } from "react-native";
 import "./global.css"
+import ToastMessage from '@/components/generalComponents/ToastMessage';
 
 // Redux context
 import { Provider } from "react-redux";
@@ -58,7 +59,8 @@ async function appInitialization() {
   try {
     // Dropping database
     console.log("deleting database")
-    console.log(await dropEmbeddedDatabase());
+    //await dropEmbeddedDatabase()
+
     //await dropUsersEmbeddedTable()
     // Creating database
     console.log("creating database")
@@ -89,8 +91,8 @@ export default function Index() {
     <Provider store={store}>
       <PaperProvider>
         <View>
-          <Text>This is another thing</Text>
-          <Redirect href="/loginLayout" />
+          <ToastMessage />
+          <Redirect href="/routeSelectionLayout" />
         </View>
       </PaperProvider>
     </Provider>

@@ -4,6 +4,7 @@ import { View, Text } from 'react-native';
 import tw from 'twrnc';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import { Router, useRouter } from 'expo-router';
 
 // Redux States and reducers
 import { useDispatch, useSelector } from 'react-redux';
@@ -46,10 +47,13 @@ import { getWorkDayFromToday } from '../controllers/WorkDayController';
 import { getCurrentVendorInventory } from '../controllers/InventoryController';
 import { getStoresOfTheCurrentWorkDay } from '../controllers/StoreController';
 
-const routeSelectionLayout = ({ navigation }:{navigation:any}) => {
+const routeSelectionLayout = () => {
   // Redux (context definitions)
   const dispatch: AppDispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
+
+  // Routing
+  const router:Router = useRouter();
 
   // Use states definition
   const [routes, setRoutes] = useState<ICompleteRoute[]>([]);
@@ -81,13 +85,14 @@ const routeSelectionLayout = ({ navigation }:{navigation:any}) => {
         dispatch(setAllGeneralInformation(
           getDataFromApiResponse(await getWorkDayFromToday())));
 
+        console.log("dayOperations: ", dayOperations.length)
         dispatch(setArrayDayOperations(dayOperations));
 
         dispatch(setProductInventory(await getCurrentVendorInventory()));
 
         dispatch(setStores(getDataFromApiResponse(await getStoresOfTheCurrentWorkDay())));
 
-        navigation.navigate('routeOperationMenu');
+        router.push('/routeOperationMenuLayout');
       } else {
         /* It is a new 'work' day. */
         // Getting all the routes assigned to a vendor
@@ -132,7 +137,7 @@ const routeSelectionLayout = ({ navigation }:{navigation:any}) => {
     //Storing information related to the relation between the route and the day.
     dispatch(setRouteDay(routeDay));
 
-    navigation.navigate('selectionRouteOperation');
+    router.push('/selectionRouteOperationLayout');
   };
 
   //Handlers
