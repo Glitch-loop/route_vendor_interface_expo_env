@@ -597,7 +597,7 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
           status_store,
           route_day_state,
         } = store;
-        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (id_store, street, ext_number, colony, postal_code, address_reference, store_name, owner_name, cellphone, latitude, longuitude, id_creator, creation_date, creation_context, status_store, route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (id_store, street, ext_number, colony, postal_code, address_reference, store_name, owner_name, cellphone, latitude, longuitude, id_creator, creation_date, creation_context, status_store, route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
           id_store,
           street,
           ext_number,
@@ -772,7 +772,7 @@ export async function insertDayOperations(dayOperations: IDayOperation[])
           current_operation,
         } = dayOperation;
 
-        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (id_day_operation, id_item, id_type_operation, operation_order,  current_operation) VALUES (?, ?, ?, ?, ?)`, [
           id_day_operation,
           id_item,
           id_type_operation,
@@ -1047,7 +1047,7 @@ export async function insertInventoryOperationDescription(inventoryOperationDesc
           id_product,
         } = inventoryOperationDescription;
 
-        tx.runAsync(`
+        await tx.runAsync(`
           INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} (id_product_operation_description, price_at_moment, amount, id_inventory_operation, id_product) VALUES (?, ?, ?, ?, ?);
         `, [
             id_product_operation_description,
@@ -1231,7 +1231,7 @@ export async function insertRouteTransactionOperationDescription(transactionOper
           id_product,
         } = transactionOperationDescription;
 
-        tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (id_route_transaction_operation_description, price_at_moment, amount, id_route_transaction_operation, id_product) VALUES (?, ?, ?, ?, ?);
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (id_route_transaction_operation_description, price_at_moment, amount, id_route_transaction_operation, id_product) VALUES (?, ?, ?, ?, ?);
           `, [
             id_route_transaction_operation_description,
             price_at_moment,
@@ -1567,7 +1567,7 @@ export async function insertSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
 
         if (typeof payload === 'string' && id_record !== '') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+          await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_QUEUE} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
             id_record,
             status,
             payload,
@@ -1618,7 +1618,7 @@ export async function updateSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
 
         if (typeof payload === 'string' && id_record !== '') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.runAsync(`UPDATE ${EMBEDDED_TABLES.SYNC_QUEUE} 
+          await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.SYNC_QUEUE} 
             SET
             status = ?, 
             payload = ?,
@@ -1689,7 +1689,7 @@ export async function deleteSyncQueueRecords(deleteRecordsToSync: ISyncRecord[])
         const deleteRecordToSync = deleteRecordsToSync[i];
         const { id_record, action } = deleteRecordToSync;
         console.log("status: ", action, " - record: ", id_record)
-        tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]).then(() => {
+        await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]).then(() => {
           deletedRecordsToSync.push(deleteRecordToSync);
         });
       }
@@ -1801,7 +1801,7 @@ export async function insertSyncHistoricRecords(recordsToSync: ISyncRecord[]):Pr
 
         if (typeof payload === 'string') {
           /* Since "payload" can be of different type of interfaces, it is needed to guarantee that it is a string to avoid column type issues in the embedded database. */
-          tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
+          await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.SYNC_HISTORIC} (id_record, status, payload,table_name, action, timestamp) VALUES (?, ?, ?, ?, ?, ?)`, [
             id_record,
             status,
             payload,

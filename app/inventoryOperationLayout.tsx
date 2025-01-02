@@ -79,7 +79,6 @@ import {
   cancelDesactivateInventoryOperation,
   getStatusOfInventoryOperation,
   deterimenIfExistsMovement,
-
 } from '../controllers/InventoryController';
 
 import {
@@ -846,6 +845,7 @@ const inventoryOperationLayout = () => {
               - A day operation for the start shift inventory operation.
               - A day for each store in the route day.
           */
+         console.log("stores: ", arrStoresOfRouteDay.length)
           const resultCreateListOfDayOperations = await createListOfDayOperations(
             inventoryOperation, arrStoresOfRouteDay
           );
@@ -853,6 +853,8 @@ const inventoryOperationLayout = () => {
           const arrDayOperations:IDayOperation[] = getDataFromApiResponse(
             resultCreateListOfDayOperations
           );
+
+          console.log("List of day operaions: ", arrDayOperations.length)
         /*
           At this point the records needed to start a database have been created.
           In the workflow of the application, the first operation has been completed (starting
