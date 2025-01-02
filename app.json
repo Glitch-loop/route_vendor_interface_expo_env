@@ -8,15 +8,20 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.renet_perez.route_vendor_interface"
+      "package": "com.renet_perez.route_vendor_interface",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -46,6 +51,9 @@
       "eas": {
         "projectId": "03a7605b-325c-4f2c-9133-42e0f0fcc4e4"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/03a7605b-325c-4f2c-9133-42e0f0fcc4e4"
     }
   }
 }

@@ -4,7 +4,7 @@ import { AppRegistry } from 'react-native';
 import { Redirect } from "expo-router";
 import { Text, View } from "react-native";
 import "./global.css"
-import ToastMessage from '@/components/generalComponents/ToastMessage';
+import tw from 'twrnc';
 
 // Redux context
 import { Provider } from "react-redux";
@@ -41,9 +41,11 @@ import {
 
 // Services
 import { getPrinterBluetoothConnection } from '../services/printerService';
-import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
+// import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
 import { createBackgroundSyncProcess } from '../services/syncService';
 import { PaperProvider } from 'react-native-paper';
+import ToastMessage from '@/components/generalComponents/ToastMessage';
+import Toast from 'react-native-toast-message';
 
 // export type RootStackParamList = {
 //   login: undefined;
@@ -59,7 +61,7 @@ async function appInitialization() {
   try {
     // Dropping database
     console.log("deleting database")
-    //await dropEmbeddedDatabase()
+    await dropEmbeddedDatabase()
 
     //await dropUsersEmbeddedTable()
     // Creating database
@@ -72,7 +74,7 @@ async function appInitialization() {
     //await getPrinterBluetoothConnection();
 
     // Geolocalization permissions
-    await requestGeolocalizationPermissionsProcess();
+    // await requestGeolocalizationPermissionsProcess();
   } catch (error) {
     console.log('Error: ', error);
   }
@@ -88,14 +90,14 @@ export default function Index() {
   },[]);
 
   return (
-    <Provider store={store}>
-      <PaperProvider>
-        <View>
-          <ToastMessage />
-          <Redirect href="/routeSelectionLayout" />
-        </View>
-      </PaperProvider>
-    </Provider>
+    <Redirect href="/loginLayout" />
+    // <Provider store={store}>
+    //   <PaperProvider>
+    //     <View style={tw`w-full h-full`}>
+          
+    //     </View>
+    //   </PaperProvider>
+    // </Provider>
     // <Provider store={store}>
     //   <NavigationContainer>
     //     <PaperProvider>

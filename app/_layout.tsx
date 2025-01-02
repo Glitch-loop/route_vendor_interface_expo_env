@@ -6,11 +6,13 @@ import "./global.css"
 import { Provider } from "react-redux";
 import store from "@/redux/store";
 import { PaperProvider } from "react-native-paper";
+import ToastMessage from "@/components/generalComponents/ToastMessage";
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <PaperProvider>
+        <ToastMessage />
         <Slot/>
       </PaperProvider>
     </Provider>

@@ -178,7 +178,7 @@ const routeOperationMenuLayout = () => {
 
         // Maintaining user's table
         const resultMaintainUsersTable:IResponse<null> = await maintainUserTable(user);
-
+        console.log("finishing work day")
         if(apiResponseStatus(resultCleanDatabase, 200)
         && apiResponseStatus(resultCreateDatabase, 201)
         && apiResponseStatus(resultMaintainUsersTable, 200)) {
@@ -197,6 +197,7 @@ const routeOperationMenuLayout = () => {
           // navigation.navigate('routeSelection');
 
           // Redirecting to main menu.
+          console.log("okok")
           router.replace('/routeSelectionLayout');
         } else {
           /* Something was wrong*/

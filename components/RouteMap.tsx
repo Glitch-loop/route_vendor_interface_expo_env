@@ -4,9 +4,9 @@ import MapView, { Marker } from 'react-native-maps';
 import tw from 'twrnc';
 
 // Services
-import {
-  getCurrentLocation,
-} from '../services/geolocationService';
+// import {
+//   getCurrentLocation,
+// } from '../services/geolocationService';
 
 import { ICoordinates } from '../interfaces/interfaces';
 
