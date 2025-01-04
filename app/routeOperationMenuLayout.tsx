@@ -160,10 +160,8 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       // Storing the information in the main database.
-      console.log("Hello")
       const resultSyncingProcess:boolean = await syncingRecordsWithCentralDatabase();
 
-        console.log("resultSyncingProcess: ", resultSyncingProcess)
       /* The user only will be capable to finish the day if all the records were correctly
       synchronized with the database. */
       if (resultSyncingProcess) {

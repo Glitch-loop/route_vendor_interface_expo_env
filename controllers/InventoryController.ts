@@ -584,24 +584,18 @@ export async function getTotalInventoryOfAllTransactionByIdOperationType(
       id_product,
     } = transactionDescription;
 
-    console.log("transaction description")
     if(id_route_transaction_operation !== undefined) {
-      console.log("route operation")
       if(dictRouteTransactionOperations[id_route_transaction_operation] !== undefined) {
         const {
           id_route_transaction_operation_type,
           id_route_transaction,
         } = dictRouteTransactionOperations[id_route_transaction_operation];
-        console.log("route transaction")
         if (id_route_transaction_operation_type !== undefined) {
-          console.log("determining operatin day")
           if (id_route_transaction_operation_type === id_day_operation) {
             if (dictRouteTransactions[id_route_transaction] !== undefined) {
-              console.log("store")
               const { state } = dictRouteTransactions[id_route_transaction];
               // Verifyng transaction is acive
               if (state === 1) {
-                console.log("Adding product: ", amount)
                 dictProducts = addingInformationParticularFieldOfObject(
                   dictProducts,
                   id_product,
@@ -655,6 +649,7 @@ export async function getInventoryOperationForInventoryVisualization(id_inventor
   const resultGetInventoryOperationDescription:IResponse<IInventoryOperationDescription[]>
     = await getInventoryOperationDescription(id_inventory_operation);
 
+  console.log("+++++++++++++++++++++++++")
   if(
     apiResponseStatus(resultGetInventoryOperationDescription, 200)
     && apiResponseStatus(responseGetAllProductFromEmbeddedDatabase, 200)
@@ -686,6 +681,12 @@ export async function getInventoryOperationForInventoryVisualization(id_inventor
     });
   } else {
     /* There is not extra instructions */
+    const a:IResponse<IProductInventory[]>
+  =  await getProducts()
+  let b:IInventoryOperationDescription[] = getDataFromApiResponse(
+    resultGetInventoryOperationDescription)
+    console.log(b.length)
+
   }
 
   return createApiResponse(
@@ -705,7 +706,6 @@ export async function getAllInventoryOperationsForInventoryVisualization():Promi
 
 export async function getCurrentVendorInventory():Promise<IProductInventory[]> {
   const responseGetVendorInventory:IResponse<IProductInventory[]> = await getProducts();
-  console.log(responseGetVendorInventory)
   return getDataFromApiResponse(responseGetVendorInventory);
 }
 

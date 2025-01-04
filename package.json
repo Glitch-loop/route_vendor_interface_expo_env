@@ -13,7 +13,10 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "testMatch": ["**/__testing__/**/*.test.[jt]s?(x)", "**/__testing__/**/*.spec.[jt]s?(x)"]
+    "testMatch": [
+      "**/__testing__/**/*.test.[jt]s?(x)",
+      "**/__testing__/**/*.spec.[jt]s?(x)"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
