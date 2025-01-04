@@ -705,6 +705,7 @@ export async function getAllInventoryOperationsForInventoryVisualization():Promi
 
 export async function getCurrentVendorInventory():Promise<IProductInventory[]> {
   const responseGetVendorInventory:IResponse<IProductInventory[]> = await getProducts();
+  console.log(responseGetVendorInventory)
   return getDataFromApiResponse(responseGetVendorInventory);
 }
 

@@ -820,10 +820,12 @@ const inventoryOperationLayout = () => {
           const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[]
             = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
 
-          console.log(arrListStoreOfRouteDay)
+          console.log("List of stores: ", arrListStoreOfRouteDay.length)
           const arrStoresOfRouteDay:IRouteDayStores[]
             = getDataFromApiResponse(resulGetStoresOfRouteOfRouteDay);
 
+          console.log("Array of all stores with information: ", arrStoresOfRouteDay.length)
+          
           console.log("Creating inventory operation")
           // Inventory operations.
           const resultCreateInventoryOperation = await createInventoryOperation(

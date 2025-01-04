@@ -12,7 +12,8 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testMatch": ["**/__testing__/**/*.test.[jt]s?(x)", "**/__testing__/**/*.spec.[jt]s?(x)"]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
@@ -63,6 +64,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.26.0",
+    "@testing-library/react-native": "^13.0.0",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-native-sqlite-storage": "^6.0.5",

@@ -541,7 +541,7 @@ export async function getProducts():Promise<IResponse<IProductInventory[]>> {
     const product:IProductInventory[] = [];
 
     const sqlite = await createSQLiteConnection();
-    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
     const result = statement.executeSync<IProductInventory>();
 
     for(let row of result) {
