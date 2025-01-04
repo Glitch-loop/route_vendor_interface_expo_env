@@ -5,7 +5,6 @@ export async function createSQLiteConnection() {
   try {
     
     let db = await SQLite.openDatabaseAsync('mydb.db');
-
     return db;
 
   } catch (error) {

@@ -61,7 +61,7 @@ async function appInitialization() {
   try {
     // Dropping database
     console.log("deleting database")
-    await dropEmbeddedDatabase()
+    //await dropEmbeddedDatabase()
 
     //await dropUsersEmbeddedTable()
     // Creating database

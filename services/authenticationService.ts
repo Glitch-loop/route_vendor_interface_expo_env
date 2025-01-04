@@ -6,7 +6,7 @@ import { RepositoryFactory } from '../queries/repositories/RepositoryFactory';
 // Interfaces
 import { IResponse, IUser } from '../interfaces/interfaces';
 import { apiResponseProcess, apiResponseStatus, createApiResponse, getDataFromApiResponse } from '../utils/apiResponse';
-import { dropUsersEmbeddedTable, getUserDataByCellphone, getUsers, insertUser } from '../queries/SQLite/sqlLiteQueries';
+import { deleteUsersFromUsersEmbeddedTable, getUserDataByCellphone, getUsers, insertUser } from '../queries/SQLite/sqlLiteQueries';
 
 // Initializing database connection
 let repository = RepositoryFactory.createRepository('supabase');
@@ -127,20 +127,24 @@ export async function maintainUserTable(currentUser:IUser):Promise<IResponse<nul
 
     if (cellphone && password && name !== '') {
       const responseGetUserByCellphone = await repository.getUserDataByCellphone(currentUser);
-
       if(apiResponseStatus(responseGetUserByCellphone, 200)) {
-        const responseDropUsersTable:IResponse<null> = await dropUsersEmbeddedTable();
+        const responseDropUsersTable:IResponse<null> = await deleteUsersFromUsersEmbeddedTable();
 
         if(apiResponseStatus(responseDropUsersTable, 200)) {
           const responseInsertUser:IResponse<IUser> = await insertUser(currentUser);
 
           if (apiResponseStatus(responseInsertUser, 201)) {
+            console
             finalResponseCode = 200;
             finalMessage = 'Process finalized successfully';
+          } else {
+            finalResponseCode = 400;
+            finalMessage = 'Something was wrong during user insertion';
+
           }
         } else {
           finalResponseCode = 400;
-          finalMessage = 'Something was wrong during droping the users table';
+          finalMessage = 'Something was wrong during deleting users table';
         }
       } else {
         finalResponseCode = 400;

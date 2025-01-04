@@ -67,6 +67,7 @@ export async function createEmbeddedDatabase():Promise<IResponse<null>> {
 
     Promise.all(createTablePromises);
 
+    sqlite.closeSync();
     return createApiResponse(201, null, null, 'Database created sucessfully');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed during embedded database creation (transaction creation level).');
@@ -97,8 +98,8 @@ export async function dropEmbeddedDatabase():Promise<IResponse<null>> {
       return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
     });
 
-    Promise.all(dropTablePromises);
-
+    await Promise.all(dropTablePromises);
+    sqlite.closeSync();
     return createApiResponse(200, null, null, 'Embedded database dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed dropping database.');
@@ -125,18 +126,18 @@ export async function cleanEmbeddedDatbase():Promise<IResponse<null>> {
 
     const dropTablePromises:any[] = tablesToDelete
     .map((tableName:string) => {
-      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
+      return sqlite.runAsync(`DELETE FROM ${tableName};`);
     });
 
-    Promise.all(dropTablePromises);
-
+    await Promise.all(dropTablePromises);
+    sqlite.closeSync();
     return createApiResponse(200, null, null, 'Embedded database dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed cleaning database.');
   }
 }
 
-export async function dropUsersEmbeddedTable():Promise<IResponse<null>> {
+export async function deleteUsersFromUsersEmbeddedTable():Promise<IResponse<null>> {
   try {
     const tablesToDelete:string[] = [
       EMBEDDED_TABLES.USER,
@@ -145,11 +146,14 @@ export async function dropUsersEmbeddedTable():Promise<IResponse<null>> {
 
     const dropTablePromises:any[] = tablesToDelete
     .map((tableName:string) => {
-      return sqlite.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
+      console.log("Table to delete: ", `DELETE FROM  ${tableName};`)
+      return sqlite.runAsync(`DELETE FROM  ${tableName};`)
+      .then(()=>{console.log("TABLE DELETED")}).catch((error) => {console.log("Something was wrong during table deletion: ", error)})
+      ;
     });
 
-    Promise.all(dropTablePromises);
-
+    await Promise.all(dropTablePromises);
+    sqlite.closeSync();
     return createApiResponse(200, null, null, 'Users embedded table dropped successfully.');
   } catch(error) {
     return createApiResponse(500, null, null, 'Failed dropping users embedded table.');
@@ -205,7 +209,7 @@ export async function insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
       ]);
     })
 
-
+    sqlite.closeSync();
     return createApiResponse(201, workday, null, 'Work day inserted sucessfully');
   } catch (error) {
     return createApiResponse(500, workday, null, 'Failed to insert work day');
@@ -220,6 +224,7 @@ export async function deleteAllWorkDayInformation():Promise<IResponse<null>> {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'work day deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting work day.');
@@ -282,6 +287,8 @@ export async function updateWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
       ]);
     });
 
+
+    sqlite.closeSync();
     return createApiResponse(200, workday, null, 'Work day updated sucessfully.');
   } catch (error) {
     return createApiResponse(500, workday, null, 'Failed updating work day.');
@@ -326,6 +333,7 @@ export async function getWorkDay()
       recordResult = record[0];
     }
     
+    sqlite.closeSync();
     return createApiResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>(200, recordResult, null, null);
   } catch (error) {
     return createApiResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>(500, workDayState, null, 'Failed to get the work day.');
@@ -352,6 +360,7 @@ export async function insertUser(user: IUser):Promise<IResponse<IUser>> {
       
     });
 
+    sqlite.closeSync();
     return createApiResponse<IUser>(201, user, null, 'User inserted sucessfully');
   } catch(error) {
     console.log(error)
@@ -363,7 +372,7 @@ export async function insertUser(user: IUser):Promise<IResponse<IUser>> {
 export async function getUsers():Promise<IResponse<IUser[]>> {
   try {
     const users:IUser[] = [];
-
+    console.log("users")
     const sqlite = await createSQLiteConnection();
     const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.USER}`);
     const result = statement.executeSync<IUser>();
@@ -372,6 +381,7 @@ export async function getUsers():Promise<IResponse<IUser[]>> {
       users.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IUser[]>(200, users, null, null);
   } catch(error) {
     return createApiResponse<IUser[]>(500, [], null, 'Failed getting users.');
@@ -401,7 +411,7 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
         userFound = row;
       }
 
-
+      sqlite.closeSync();
       return createApiResponse<IUser>(200, userFound, null, 'The user has been retrieved successfully.');
     } else {
       return createApiResponse<IUser>(400, emptyUser, null, 'Something was wrong: Cellphone not provided.');
@@ -457,6 +467,8 @@ export async function insertProducts(products: IProductInventory[]):Promise<IRes
 
       await Promise.all(promises)
     });
+
+    sqlite.closeSync();
     return createApiResponse<IProductInventory[]>(201, insertedProducts, null, 'Products inserted correctly.');
   } catch(error) {
     return createApiResponse<IProductInventory[]>(500, insertedProducts, null, 'Failed inserting products');
@@ -523,6 +535,7 @@ export async function updateProducts(products: IProductInventory[]):Promise<IRes
       await Promise.all(promises);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IProductInventory[]>(200, products, null, 'Products updated successfully.');
   } catch(error) {
     console.error(error)
@@ -548,6 +561,7 @@ export async function getProducts():Promise<IResponse<IProductInventory[]>> {
       product.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IProductInventory[]>(200, product, null, null);
   } catch(error) {
     return createApiResponse<IProductInventory[]>(500, [], null, 'Failed getting products.');
@@ -562,6 +576,7 @@ export async function deleteAllProducts():Promise<IResponse<null>> {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCTS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Inventory products deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting inventory products.');
@@ -621,6 +636,7 @@ export async function insertStores(stores: (IStore&IStoreStatusDay)[])
       }
     });
 
+    sqlite.closeSync();
     return createApiResponse<(IStore&IStoreStatusDay)[]>(201, stores, null,
       'Stores inserted correctly.');
   } catch(error) {
@@ -686,6 +702,8 @@ export async function updateStore(store: IStore&IStoreStatusDay):Promise<IRespon
         route_day_state,
       ]);
     });
+
+    sqlite.closeSync();
     return createApiResponse<IStore&IStoreStatusDay>(200, store, null, 'Store updated successfully');
   } catch(error) {
     return createApiResponse<IStore&IStoreStatusDay>(500, store, null, 'Failed updating the store (transaction level)');
@@ -704,6 +722,7 @@ export async function getStores():Promise<IResponse<(IStore&IStoreStatusDay)[]>>
       stores.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<(IStore&IStoreStatusDay)[]>(200, stores, null, null);
   } catch(error) {
     return createApiResponse<(IStore&IStoreStatusDay)[]>(500, [], null, 'Failed getting stores.');
@@ -747,7 +766,7 @@ export async function insertDayOperation(dayOperation: IDayOperation)
       ]);
     });
 
-
+    sqlite.closeSync();
     return createApiResponse<IDayOperation>(201, dayOperation, null, 'Day operation inserted successfully.');
   } catch(error) {
     return createApiResponse<IDayOperation>(500, dayOperation, null, 'Failed insterting day operation.');
@@ -784,6 +803,7 @@ export async function insertDayOperations(dayOperations: IDayOperation[])
       }
     });
 
+    sqlite.closeSync();
     return createApiResponse<IDayOperation[]>(201, insertedDayOperations, null, 'Day operations inserted successfully.');
   } catch(error) {
     return createApiResponse<IDayOperation[]>(500, insertedDayOperations, null, 'Failed insterting day operations.');
@@ -817,6 +837,7 @@ export async function updateDayOperation(dayOperation: IDayOperation)
       ]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IDayOperation>(200, dayOperation, null, 'Day operation updated successfully.');
   } catch(error) {
 
@@ -835,6 +856,7 @@ export async function getDayOperations():Promise<IResponse<IDayOperation[]>> {
       arrDayOperations.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IDayOperation[]>(200, arrDayOperations, null);
   } catch(error) {
     return createApiResponse<IDayOperation[]>(500, [], null, 'Failed retrieving day operations (transaction level).');
@@ -849,6 +871,7 @@ export async function deleteAllDayOperations():Promise<IResponse<null>> {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Day operations deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting day operations.');
@@ -868,6 +891,7 @@ export async function getInventoryOperation(id_inventory_operation:string):Promi
       inventoryOperation.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperation[]>(200, inventoryOperation, null);
   } catch(error) {
     return createApiResponse<IInventoryOperation[]>(500, [], null, 'Failed retrieving the inventory operation.');
@@ -886,6 +910,7 @@ export async function getAllInventoryOperations():Promise<IResponse<IInventoryOp
       inventoryOperations.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperation[]>(200, inventoryOperations, 'All the inventory operations were retrieved successfully.');
   } catch(error) {
     return createApiResponse<IInventoryOperation[]>(500, [], null, 'Failed retrieving the inventory operations.');
@@ -921,6 +946,7 @@ export async function insertInventoryOperation(inventoryOperation: IInventoryOpe
         ]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperation>(
       201,
       inventoryOperation,
@@ -973,6 +999,7 @@ export async function updateInventoryOperation(inventoryOperation: IInventoryOpe
         ]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperation>(
       200,
       inventoryOperation,
@@ -1003,6 +1030,7 @@ export async function getInventoryOperationDescription(id_inventory_operation:st
       inventoryOperation.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperationDescription[]>(200, inventoryOperation, null, 'The inventory operation description was retrieved successfully.');
   } catch(error) {
     return createApiResponse<IInventoryOperationDescription[]>(500, [], null, 'Failed retrieving the inventory operation description.');
@@ -1021,6 +1049,7 @@ export async function getAllInventoryOperationDescription():Promise<IResponse<II
       inventoryOperation.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperationDescription[]>(200, inventoryOperation, null, 'All the inventory operations descriptions were retrieved successfully.');
   } catch(error) {
     return createApiResponse<IInventoryOperationDescription[]>(500, [], null, 'Failed retrieving all the inventory operation descriptions.');
@@ -1062,7 +1091,7 @@ export async function insertInventoryOperationDescription(inventoryOperationDesc
       }
     });
 
-
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperationDescription[]>(
       201,
       insertedInventoryOperationDescription,
@@ -1087,6 +1116,7 @@ export async function deleteAllInventoryOperations():Promise<IResponse<null>> {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Inventory operations deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting inventory operations.');
@@ -1102,6 +1132,7 @@ export async function deleteAllInventoryOperationsDescriptions():Promise<IRespon
       .runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Inventory operation descriptions deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting Inventory operation descriptions.');
@@ -1122,6 +1153,7 @@ export async function deleteInventoryOperationsById(inventoryOperation: IInvento
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [id_inventory_operation]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transaction deleted (by id) successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction by id.');
@@ -1145,6 +1177,7 @@ export async function deleteInventoryOperationDescriptionsById(inventoryOperatio
         inventoryOperationDescriptionsDeleted.push(inventoryOperationDescriptions[i]);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IInventoryOperationDescription[]>(200, inventoryOperationDescriptionsDeleted, null, 'Route transactions deleted successfully.');
   } catch(error) {
     return createApiResponse<IInventoryOperationDescription[]>(500, inventoryOperationDescriptionsDeleted, null, 'Failed deleting route transactions.');
@@ -1154,6 +1187,7 @@ export async function deleteInventoryOperationDescriptionsById(inventoryOperatio
 // Related to transcations
 export async function insertRouteTransaction(transactionOperation: IRouteTransaction):Promise<IResponse<IRouteTransaction>> {
   try {
+    console.log("data to add: ", transactionOperation)
     const {
       id_route_transaction,
       date,
@@ -1180,8 +1214,10 @@ export async function insertRouteTransaction(transactionOperation: IRouteTransac
       ]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransaction>(201, transactionOperation, null, 'Route transaction inserted successfully.');
   } catch(error) {
+    console.log("Error in transaction: ", error)
     return createApiResponse<IRouteTransaction>(500, transactionOperation, null, 'Failed inserting route transaction (transaction creation level).');
   }
 }
@@ -1206,6 +1242,7 @@ export async function insertRouteTransactionOperation(transactionOperation: IRou
       ]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperation>(201, transactionOperation, null, 'Route transaction operation inserted successfully.');
   } catch(error) {
     return createApiResponse<IRouteTransactionOperation>(500, transactionOperation, null, 'Failed inserting route transaction operation (transaction creation level).');
@@ -1244,6 +1281,8 @@ export async function insertRouteTransactionOperationDescription(transactionOper
         });
       }
     });
+
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperationDescription[]>(
       201,
       insertedTransactionOperationDescription,
@@ -1263,15 +1302,15 @@ export async function insertRouteTransactionOperationDescription(transactionOper
 export async function getRouteTransactionByStore(id_store:string):Promise<IResponse<IRouteTransaction[]>> {
   try {
     const transactions:IRouteTransaction[] = [];
-
     const sqlite = await createSQLiteConnection();
-    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = '${id_store}';`);
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = '${id_store}'`);
     const result = statement.executeSync<IRouteTransaction>();
  
     for(let row of result) {
       transactions.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransaction[]>(200, transactions, null, null);
   } catch(error) {
     return createApiResponse<IRouteTransaction[]>(
@@ -1294,8 +1333,10 @@ export async function getRouteTransactionOperations(id_route_transaction:string)
       transactionsOperations.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperation[]>(200, transactionsOperations, null, null);
   } catch(error) {
+    console.log(error)
     return createApiResponse<IRouteTransactionOperation[]>(500, [], null, 'Failed retrieving the transaction operations of the route transaction');
   }
 }
@@ -1312,6 +1353,7 @@ export async function getRouteTransactionOperationDescriptions(id_route_transact
       transactionsOperationDescriptions.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperationDescription[]>(200, transactionsOperationDescriptions, null, null);
   } catch(error) {
     return createApiResponse<IRouteTransactionOperationDescription[]>(500, [], null, 'Failed retrieving the transaction operations description of the route transaction operation');
@@ -1330,6 +1372,7 @@ export async function getAllRouteTransactions():Promise<IResponse<IRouteTransact
       routeTransactions.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransaction[]>(200, routeTransactions, null, 'All the route transactions were retrieved successfully.');
   } catch(error) {
     return createApiResponse<IRouteTransaction[]>(500, [], null, 'Failed retrieving all the route transactions.');
@@ -1348,6 +1391,7 @@ export async function getAllRouteTransactionsOperations():Promise<IResponse<IRou
       routeTransactionsOperations.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperation[]>(200, routeTransactionsOperations, null, 'All the route transactions operations were retrieved successfully.');
   } catch(error) {
     return createApiResponse<IRouteTransactionOperation[]>(500, [], null, 'Failed retrieving all the route transactions operations.');
@@ -1366,6 +1410,7 @@ export async function getAllRouteTransactionsOperationDescriptions():Promise<IRe
       routeTransactionsOperationsDescriptions.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<IRouteTransactionOperationDescription[]>(200, routeTransactionsOperationsDescriptions, null, 'All the route transactions operations descriptions were retrieved successfully.');
   } catch(error) {
     return createApiResponse<IRouteTransactionOperationDescription[]>(500, [], null, 'Failed retrieving all the route transactions operation descriptions.');
@@ -1403,6 +1448,8 @@ export async function updateTransaction(routeTransaction: IRouteTransaction):Pro
           id_route_transaction,
         ]);
     });
+
+    sqlite.closeSync();
     return createApiResponse<IRouteTransaction>(200, routeTransaction, null, 'Route transaction operation description inserted successfully.');
   } catch(error) {
     return createApiResponse<IRouteTransaction>(500, routeTransaction, null, 'Failed updating route transaction (transaction creation level).');
@@ -1417,6 +1464,7 @@ export async function deleteAllRouteTransactions():Promise<IResponse<null>> {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transactions deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transactions.');
@@ -1432,6 +1480,7 @@ export async function deleteAllRouteTransactionOperations():Promise<IResponse<nu
       .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transaction operation descriptions deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction operations.');
@@ -1447,6 +1496,7 @@ export async function deleteAllRouteTransactionOperationDescriptions():Promise<I
       .runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transactions operations  descriptions deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction operation descriptions.');
@@ -1465,6 +1515,7 @@ export async function deleteRouteTransactionById(routeTransaction:IRouteTransact
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction = ?;`, [id_route_transaction]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transaction deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction.');
@@ -1484,6 +1535,7 @@ export async function deleteRouteTransactionOperationById(routeTransactionOperat
         [id_route_transaction_operation]);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transaction operation description deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction operation.');
@@ -1506,6 +1558,7 @@ export async function deleteRouteTransactionOperationDescriptionsById(routeTrans
       }
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Route transactions operations description deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting route transaction operation description (function level).');
@@ -1537,6 +1590,7 @@ export async function insertSyncQueueRecord(recordToSync: ISyncRecord):Promise<I
           timestamp,
         ]);
       });
+      sqlite.closeSync();
       return createApiResponse<null>(201, null, null, 'Record has been inserted successfully.');
     } else {
       return createApiResponse<null>(400, null, null, 'Failed inserting record in the sync queue: Payload must be a string.');
@@ -1581,7 +1635,7 @@ export async function insertSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
         }
       }
     });
-
+    sqlite.closeSync();
     return createApiResponse<ISyncRecord[]>(
       201,
       insertedRecordsToSync,
@@ -1640,7 +1694,7 @@ export async function updateSyncQueueRecords(recordsToSync: ISyncRecord[]):Promi
         }
       }
     });
-
+    sqlite.closeSync();
     return createApiResponse<ISyncRecord[]>(
       201,
       insertedRecordsToSync,
@@ -1670,6 +1724,7 @@ export async function deleteSyncQueueRecord(recordToSync: ISyncRecord):Promise<I
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE} WHERE id_record = ? AND action = ?`, [ id_record, action ]);
 
     });
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Record to sync has been deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting day operations.');
@@ -1695,6 +1750,7 @@ export async function deleteSyncQueueRecords(deleteRecordsToSync: ISyncRecord[])
       }
     });
 
+    sqlite.closeSync();
     console.log("Deleted records: ", deletedRecordsToSync.length)
     return createApiResponse<ISyncRecord[]>(
       200,
@@ -1722,6 +1778,7 @@ export async function deleteAllSyncQueueRecords():Promise<IResponse<null>> {
       .runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_QUEUE};`);
     });
 
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Records to sync deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting records to sync.');
@@ -1735,11 +1792,12 @@ export async function getAllSyncQueueRecords():Promise<IResponse<ISyncRecord[]>>
     const sqlite = await createSQLiteConnection();
     const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.SYNC_QUEUE}`);
     const result = statement.executeSync<ISyncRecord>();
-  
+    console.log("result sync records: ", result)
     for(let row of result) {
       syncQueueRecords.push(row);
     }
 
+    sqlite.closeSync();
     return createApiResponse<ISyncRecord[]>(200, syncQueueRecords, 'All the sync queue records were retrieved successfully.');
   } catch(error) {
     console.log(error)
@@ -1771,6 +1829,7 @@ export async function insertSyncHistoricRecord(recordToSync: ISyncRecord):Promis
           timestamp,
         ]);
       });
+      sqlite.closeSync();
       return createApiResponse<null>(201, null, null, 'Record has been inserted successfully.');
     } else {
       return createApiResponse<null>(400, null, null, 'Failed inserting record in the sync historic: Payload must be a string.');
@@ -1815,6 +1874,7 @@ export async function insertSyncHistoricRecords(recordsToSync: ISyncRecord[]):Pr
         }
       }
     });
+    sqlite.closeSync();
     return createApiResponse<ISyncRecord[]>(201, insertedRecordsToSync, null, 'Record has been inserted successfully.');
   } catch(error) {
     return createApiResponse<ISyncRecord[]>(500, insertedRecordsToSync, null, 'Failed insterting record in the sync historic.');
@@ -1832,7 +1892,7 @@ export async function deleteSyncHistoricRecordById(recordToSync: ISyncRecord)
     await sqlite.withExclusiveTransactionAsync(async (tx) => {
       await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.SYNC_HISTORIC}  WHERE id_record = ? AND action = ?`, [id_record, action]);
     });
-
+    sqlite.closeSync();
     return createApiResponse<null>(200, null, null, 'Historic record deleted successfully.');
   } catch(error) {
     return createApiResponse<null>(500, null, null, 'Failed deleting historic record.');
@@ -1851,7 +1911,7 @@ export async function getAllSyncHistoricRecords():Promise<IResponse<ISyncRecord[
     for(let row of result) {
       syncQueueRecords.push(row);
     }
-
+    sqlite.closeSync();
     return createApiResponse<ISyncRecord[]>(200, syncQueueRecords, 'All the sync historic records were retrieved successfully.');
   } catch(error) {
     return createApiResponse<ISyncRecord[]>(500, [], null, 'Failed retrieving the sync historic records.');

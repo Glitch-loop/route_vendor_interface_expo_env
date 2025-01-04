@@ -160,8 +160,10 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       // Storing the information in the main database.
+      console.log("Hello")
       const resultSyncingProcess:boolean = await syncingRecordsWithCentralDatabase();
 
+        console.log("resultSyncingProcess: ", resultSyncingProcess)
       /* The user only will be capable to finish the day if all the records were correctly
       synchronized with the database. */
       if (resultSyncingProcess) {
@@ -170,17 +172,23 @@ const routeOperationMenuLayout = () => {
           text1:'Se ha guardado toda la inforamción correctamente',
           text2: 'Se ha sincronizado toda la información correctamente con la base de datos.'});
 
-        // Dropping database for freeing space.
+        // Deleting all data from database.
         const resultCleanDatabase:IResponse<null> = await cleanEmbeddedDatbase();
 
+        console.log(resultCleanDatabase)
         // Creating database with new information.
-        const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
+        //const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
 
+        // console.log(resultCreateDatabase)
         // Maintaining user's table
         const resultMaintainUsersTable:IResponse<null> = await maintainUserTable(user);
         console.log("finishing work day")
+        console.log(apiResponseStatus(resultCleanDatabase, 200))
+        // console.log(apiResponseStatus(resultCreateDatabase, 201))
+        console.log(apiResponseStatus(resultMaintainUsersTable, 200))
+        console.log("resultMaintainUsersTable: ", resultMaintainUsersTable)
         if(apiResponseStatus(resultCleanDatabase, 200)
-        && apiResponseStatus(resultCreateDatabase, 201)
+        // && apiResponseStatus(resultCreateDatabase, 201)
         && apiResponseStatus(resultMaintainUsersTable, 200)) {
           // Clean states
           cleanCurrentOperation();
