@@ -66,7 +66,7 @@ async function appInitialization() {
     //await dropUsersEmbeddedTable()
     // Creating database
     console.log("creating database")
-    await createEmbeddedDatabase();
+    //await createEmbeddedDatabase();
 
     //await createBackgroundSyncProcess();
     // Verifying permissions

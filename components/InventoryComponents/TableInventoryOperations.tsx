@@ -1,6 +1,6 @@
 // Libraries
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { DataTable, ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 
@@ -80,111 +80,132 @@ const TableInventoryOperations = (
   }) => {
     let outflowProductFromFactory:boolean = determineFlowOfProduct(currentOperation);
   return (
-    <DataTable style={tw`w-full`}>
-      {/* Header section */}
-      <DataTable.Header>
-        {/* This field is never empty since it is necessary anytime */}
-        <DataTable.Title style={tw`w-32 flex flex-row justify-center`}>
-          <Text style={tw`text-black text-center`}>Producto</Text>
-        </DataTable.Title>
-        { suggestedInventory.length > 0 &&
-          <DataTable.Title style={tw`w-20 flex flex-row justify-center`}>
-            <Text style={tw`text-black text-center`}>Sugerido</Text>
-          </DataTable.Title>
-        }
-        { currentInventory.length > 0 &&
-          <DataTable.Title style={tw`w-24 flex flex-row justify-center`}>
-            <Text style={tw`text-black text-center`}>Inventario Actual</Text>
-          </DataTable.Title>
-        }
-        {/*
-          This field is never empty since it is the reason of this component (inventory operation)
-        */}
-        <DataTable.Title style={tw`w-28 flex flex-row justify-center`}>
-          <View style={tw`max-w-20`}>
-            <Text style={tw`text-black text-center`}>
-              { outflowProductFromFactory ?
-                'Producto a recibir' :
-                'Producto a entregar'
-              }
-            </Text>
-          </View>
-        </DataTable.Title>
-        <DataTable.Title style={tw`w-28 flex flex-row justify-center`}>
-          <View style={tw`max-w-20`}>
-            <Text style={tw`text-black text-center`}>
-              { outflowProductFromFactory ?
-                'Inventario total' :
-                'Inventario a entregar'
-              }
-            </Text>
-          </View>
-        </DataTable.Title>
-      </DataTable.Header>
-      {/* Body section */}
-      { operationInventory.length > 0 ?
-        operationInventory.map((product) => {
-          // Propierties that are always going to be present.
-          let id_product = product.id_product;
-          let amount = product.amount;
-
-          // Properties that might not appear
-          let suggestedAmount = 0;
-          let currentInventoryAmount = 0;
-
-          // Searching products for each array
-          suggestedAmount = foundCurrentProductInArray(suggestedInventory, id_product);
-          currentInventoryAmount = foundCurrentProductInArray(currentInventory, id_product);
-
-          // Handlers
-          const handlerChangeInventory = (input: number) => {
-            // Creating a copy og the inventory operation.
-            const updatedInventory: IProductInventory[] = [...operationInventory];
-
-            // Looking for the product to update.
-            const index:number = operationInventory
-              .findIndex((productOperationInventory:IProductInventory) => productOperationInventory.id_product === id_product);
-
-            if (index !== -1) { // The product exists in the inventory.
-              const updatedProduct = { ...updatedInventory[index], amount: input };
-
-              updatedInventory[index] = updatedProduct;
-
-              setInventoryOperation(updatedInventory);
-            } else {
-              /* The product is not in the inventory */
-            }
-          };
-
-          return (
-            <DataTable.Row key={product.id_product}>
+    <View style={tw`w-full flex flex-row`}>
+      { operationInventory.length ?
+        <View style={tw`w-full flex flex-row`}>
+          <DataTable style={tw`w-1/3`}>
+            {/* Header section */}
+            <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Cell style={tw`w-32  flex flex-row justify-center`}>
-                <Text style={tw`text-black`}>{product.product_name}</Text>
-              </DataTable.Cell>
-              { suggestedInventory.length > 0 &&
-                <DataTable.Cell style={tw`w-20 flex flex-row justify-center`}>
-                  <Text style={tw`text-black`}>{suggestedAmount}</Text>
-                </DataTable.Cell>
+              <DataTable.Title style={tw`w-32 flex flex-row justify-center`}>
+                <Text style={tw`text-black text-center`}>Producto</Text>
+              </DataTable.Title>
+            </DataTable.Header>
+            {/* Body section */}
+            { operationInventory.length > 0 &&
+              operationInventory.map((product) => {
+                return (
+                  <DataTable.Row key={product.id_product}>
+                    {/* This field is never empty since it is necessary anytime */}
+                    <DataTable.Cell style={tw`w-32  flex flex-row justify-center`}>
+                      <Text style={tw`text-black`}>{product.product_name}</Text>
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                );
+              })
+            }
+          </DataTable>
+          <ScrollView horizontal={true}>
+            <DataTable>
+              <DataTable.Header>
+                { suggestedInventory.length > 0 &&
+                  <DataTable.Title style={tw`w-20 flex flex-row justify-center`}>
+                    <Text style={tw`text-black text-center`}>Sugerido</Text>
+                  </DataTable.Title>
+                }
+                { currentInventory.length > 0 &&
+                  <DataTable.Title style={tw`w-24 flex flex-row justify-center`}>
+                    <Text style={tw`text-black text-center`}>Inventario Actual</Text>
+                  </DataTable.Title>
+                }
+                {/*
+                  This field is never empty since it is the reason of this component (inventory operation)
+                */}
+                <DataTable.Title style={tw`w-28 flex flex-row justify-center`}>
+                  <View style={tw`max-w-20`}>
+                    <Text style={tw`text-black text-center`}>
+                      { outflowProductFromFactory ?
+                        'Producto a recibir' :
+                        'Producto a entregar'
+                      }
+                    </Text>
+                  </View>
+                </DataTable.Title>
+                <DataTable.Title style={tw`w-28 flex flex-row justify-center`}>
+                  <View style={tw`max-w-16`}>
+                    <Text style={tw`text-black text-center`}>
+                      { outflowProductFromFactory ?
+                        'Inventario total' :
+                        'Inventario a entregar'
+                      }
+                    </Text>
+                  </View>
+                </DataTable.Title>
+              </DataTable.Header>
+              {/* Body section*/}
+              { operationInventory.length > 0 &&
+                operationInventory.map((product) => {
+                  // Propierties that are always going to be present.
+                  let id_product = product.id_product;
+                  let amount = product.amount;
+
+                  // Properties that might not appear
+                  let suggestedAmount = 0;
+                  let currentInventoryAmount = 0;
+
+                  // Searching products for each array
+                  suggestedAmount = foundCurrentProductInArray(suggestedInventory, id_product);
+                  currentInventoryAmount = foundCurrentProductInArray(currentInventory, id_product);
+
+                  // Handlers
+                  const handlerChangeInventory = (input: number) => {
+                    // Creating a copy og the inventory operation.
+                    const updatedInventory: IProductInventory[] = [...operationInventory];
+
+                    // Looking for the product to update.
+                    const index:number = operationInventory
+                      .findIndex((productOperationInventory:IProductInventory) => productOperationInventory.id_product === id_product);
+
+                    if (index !== -1) { // The product exists in the inventory.
+                      const updatedProduct = { ...updatedInventory[index], amount: input };
+
+                      updatedInventory[index] = updatedProduct;
+
+                      setInventoryOperation(updatedInventory);
+                    } else {
+                      /* The product is not in the inventory */
+                    }
+                  };
+
+                  return (
+                    <DataTable.Row key={product.id_product}>
+                      { suggestedInventory.length > 0 &&
+                        <DataTable.Cell style={tw`w-20 flex flex-row justify-center`}>
+                          <Text style={tw`text-black`}>{suggestedAmount}</Text>
+                        </DataTable.Cell>
+                      }
+                      { currentInventory.length > 0 &&
+                        <DataTable.Cell style={tw`w-24 flex flex-row justify-center`}>
+                          <Text style={tw`text-black`}>{currentInventoryAmount}</Text>
+                        </DataTable.Cell>
+                      }
+                      <DataTable.Cell style={tw`w-28 flex flex-row justify-center`}>
+                        <View style={tw`w-8/12`}>
+                          <AutomatedCorrectionNumberInput
+                            amount={amount}
+                            onChangeAmount={handlerChangeInventory}/>
+                        </View>
+                      </DataTable.Cell>
+                      <DataTable.Cell style={tw`w-28 flex flex-row justify-center`}>
+                        <Text style={tw`text-black`}>{ amount + currentInventoryAmount }</Text>
+                      </DataTable.Cell>
+                    </DataTable.Row>
+                  );
+                })
               }
-              { currentInventory.length > 0 &&
-                <DataTable.Cell style={tw`w-24 flex flex-row justify-center`}>
-                  <Text style={tw`text-black`}>{currentInventoryAmount}</Text>
-                </DataTable.Cell>
-              }
-              <DataTable.Cell style={tw`w-28 flex flex-row justify-center`}>
-                <View style={tw`w-8/12`}>
-                  <AutomatedCorrectionNumberInput
-                    amount={amount}
-                    onChangeAmount={handlerChangeInventory}/>
-                </View>
-              </DataTable.Cell>
-                <DataTable.Cell style={tw`w-28 flex flex-row justify-center`}>
-                  <Text style={tw`text-black`}>{ amount + currentInventoryAmount }</Text>
-                </DataTable.Cell>
-            </DataTable.Row>
-          );
-        })
+            </DataTable>
+          </ScrollView>
+        </View> 
         :
         <DataTable.Row>
           <View style={tw`w-full h-full flex flex-col justify-center`}>
@@ -192,7 +213,8 @@ const TableInventoryOperations = (
           </View>
         </DataTable.Row>
       }
-    </DataTable>
+
+    </View>
   );
 };
 

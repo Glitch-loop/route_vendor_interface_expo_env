@@ -12,6 +12,8 @@ import { ICoordinates } from '../interfaces/interfaces';
 
 
 const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => {
+  console.log("latitude: ", latitude)
+  console.log("longitude: ", longitude)
   const [location, setLocation] = useState(
     {
       latitude: latitude,
@@ -20,6 +22,7 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
       longitudeDelta: 0.0421,
     });
 
+  console.log("Locaion: ", location)
   return (
     <MapView
       style={tw`flex-1 w-full`}
@@ -29,10 +32,7 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
     >
       {/* Add a marker at the user's current position */}
       <Marker
-        coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-        title="You are here"
-        description="This is your current location"
-      />
+        coordinate={{ latitude: location.latitude, longitude: location.longitude }}/>
     </MapView>
   );
 };
