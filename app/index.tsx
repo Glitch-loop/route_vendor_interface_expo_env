@@ -60,7 +60,7 @@ import Toast from 'react-native-toast-message';
 async function appInitialization() {
   try {
     // Dropping database
-    console.log("deleting database")
+    //console.log("deleting database")
     //await dropEmbeddedDatabase()
 
     //await dropUsersEmbeddedTable()

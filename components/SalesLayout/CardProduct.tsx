@@ -74,10 +74,12 @@ const CardProduct = ({
           onClick={handleOnMinusOne}>
           <Icon name="minus" style={tw`text-base text-center`} color="#000"/>
         </ActionButton>
+        <View style={tw`w-14`}>
           <AutomatedCorrectionNumberInput
             amount={amount}
             onChangeAmount={handlerManualTextChange}
           />
+        </View>
         <ActionButton
           style={'bg-blue-700'}
           onClick={handleOnPlusOne}>
