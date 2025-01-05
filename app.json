@@ -18,10 +18,29 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "unstable_reactLegacyComponentNames": [
+          "AIRMap",
+          "AIRMapCallout",
+          "AIRMapCalloutSubview",
+          "AIRMapCircle",
+          "AIRMapHeatmap",
+          "AIRMapLocalTile",
+          "AIRMapMarker",
+          "AIRMapOverlay",
+          "AIRMapPolygon",
+          "AIRMapPolyline",
+          "AIRMapUrlTile",
+          "AIRMapWMSTile"
+        ]
       },
       "package": "com.renet_perez.route_vendor_interface",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "bundler": "metro",

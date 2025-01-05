@@ -2,11 +2,9 @@
 import React, { useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import tw from 'twrnc';
-import 'react-native-get-random-values'; // Necessary for uuid
-import {v4 as uuidv4 } from 'uuid';
 import Toast from 'react-native-toast-message';
 import { Router, useRouter } from 'expo-router';
-
+import { generateUUIDv4 } from '../utils/generalFunctions';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
@@ -382,7 +380,7 @@ function createRouteTransactionOperation(
   const { id_route_transaction } = routeTransaction;
 
   const routeTransactionOperation:IRouteTransactionOperation = {
-    id_route_transaction_operation: uuidv4(),
+    id_route_transaction_operation: generateUUIDv4(),
     id_route_transaction: id_route_transaction,
     id_route_transaction_operation_type: typeOfOperation,
   };
@@ -406,7 +404,7 @@ function createRouteTransactionOperationDescription(
     } = product;
     if(amount > 0) {
       routeTransactionOperationDescriptions.push({
-        id_route_transaction_operation_description: uuidv4(),
+        id_route_transaction_operation_description: generateUUIDv4(),
         price_at_moment: price,
         amount: amount,
         id_route_transaction_operation: id_route_transaction_operation,
@@ -641,7 +639,7 @@ const salesLayout = ({
 
     // Creating transaction
     const routeTransaction:IRouteTransaction = {
-      id_route_transaction: uuidv4(),
+      id_route_transaction: generateUUIDv4(),
       date: timestamp_format(),
       state: 1, // Indicating "active transaction"
       cash_received: receivedCash,

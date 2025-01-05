@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
@@ -36,6 +36,7 @@ import { getStoreFromContext } from '../utils/routesFunctions';
 import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import { apiResponseProcess } from '../utils/apiResponse';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 
 function buildAddress(store:IStore) {
@@ -81,6 +82,14 @@ function displayingClientInformation(store:IStore) {
   return ownerStoreInformation;
 }
 
+const INITIAL_REGION = {
+  latitude: 20.641640381312676,
+  longitude: -105.2190063835951,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+  zoom: 5
+}
+
 const storeMenuLayout = () => {
 
   //Defining redux context
@@ -102,13 +111,19 @@ const storeMenuLayout = () => {
     setRouteTransactionOperationDescriptions,
   ] = useState<Map<string, IRouteTransactionOperationDescription[]>>(new Map());
 
-  // Definig only-read variables
-  let store:IStore&IStoreStatusDay = getStoreFromContext(currentOperation, stores);
+  const [store, setStore] = useState<IStore&IStoreStatusDay|null>(null)
+
+
+  useEffect(() => {
+    // Definig only-read variables
+    setStore(getStoreFromContext(currentOperation, stores))
+  }, []);
+
 
   // handlers
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
-    router.push('/routeOperationMenuLayout');
+    router.replace('/routeOperationMenuLayout');
   };
 
   const handlerGoBackToStoreMenu = () => {
@@ -180,41 +195,55 @@ const storeMenuLayout = () => {
     }
   };
 
+  console.log("This is store: ", store)
   return (!isConsultTransaction ?
     // Main menu of store
     <View style={tw`w-full flex-1 justify-center items-center`}>
       <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
         <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/>
       </View>
-      <View style={tw`h-1/2 w-11/12 flex-1 border-solid border-2 rounded-sm`}>
-        <RouteMap
-          latitude={parseFloat(store.latitude)}
-          longitude={parseFloat(store.longuitude)}/>
+      <View style={tw`h-1/2 w-11/12 flex-1/2 border-solid border-2 rounded-sm`}>
+        { store !== null &&
+        <MapView
+        style={tw`flex-1 w-full`}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={INITIAL_REGION} // Initial perspective of the map
+        showsUserLocation={true}  // Show the user's current location
+        showsMyLocationButton={true}  // Button to return to user's location
+        >
+          {/* Add a marker at the user's current position */}
+          <Marker coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longuitude) }}/>
+        </MapView>
+        }
       </View>
       <View style={tw`flex-1 w-11/12 flex-col`}>
-        <View style={tw`flex flex-row basis-1/3 justify-around items-center`}>
-          <View style={tw`flex flex-col basis-1/2 justify-around`}>
-            <Text style={tw`text-black text-xl`}>Dirección</Text>
-            <Text style={tw`text-black`}>{buildAddress(store)}</Text>
+        { store !== null &&
+          <View style={tw`flex flex-row basis-1/3 justify-around items-center`}>
+            <View style={tw`flex flex-col basis-1/2 justify-around`}>
+              <Text style={tw`text-black text-xl`}>Dirección</Text>
+              <Text style={tw`text-black`}>{buildAddress(store)}</Text>
+            </View>
+            <View style={tw`flex flex-col basis-1/2 justify-around`}>
+              <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
+                Información del cliente
+              </Text>
+              <Text style={tw`text-black`}> {displayingClientInformation(store)} </Text>
+            </View>
           </View>
-          <View style={tw`flex flex-col basis-1/2 justify-around`}>
-            <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
-              Información del cliente
+        }
+        { store !== null &&
+          <View style={tw`flex flex-col basis-1/3 justify-center`}>
+            <Text style={tw`text-black text-xl`}>Referencia</Text>
+            <Text style={tw`text-black`}>
+              { store.address_reference === '' || store.address_reference === null ?
+                'No Disponible' :
+                store.address_reference
+              }
             </Text>
-            <Text style={tw`text-black`}> {displayingClientInformation(store)} </Text>
           </View>
-        </View>
-        <View style={tw`flex flex-col basis-1/3 justify-center`}>
-          <Text style={tw`text-black text-xl`}>Referencia</Text>
-          <Text style={tw`text-black`}>
-            { store.address_reference === '' || store.address_reference === null ?
-              'No Disponible' :
-              store.address_reference
-            }
-          </Text>
-        </View>
-        <View style={tw`h-3/5 h-1/2 flex flex-row basis-1/3 justify-around items-center`}>
-          <View style={tw`h-1/2 flex basis-1/2 justify-center items-center`}>
+        }
+        <View style={tw`h-3/5 h-full flex flex-row basis-1/3 justify-around items-center`}>
+          <View style={tw`h-2/3 flex basis-1/2 justify-center items-center`}>
             <Pressable
               style={tw`w-11/12 h-full border-solid border bg-blue-500 
                 rounded flex flex-row justify-center items-center`}
@@ -222,9 +251,9 @@ const storeMenuLayout = () => {
               <Text style={tw`text-center text-black`}>Transacciones de hoy</Text>
             </Pressable>
           </View>
-          <View style={tw`h-1/2 flex basis-1/2 justify-center items-center`}>
+          <View style={tw`h-full flex basis-1/2 justify-center items-center`}>
             <Pressable
-              style={tw`h-full w-11/12 bg-green-500 rounded border-solid border
+              style={tw`h-full h-2/3 w-11/12 bg-green-500 rounded border-solid border
                         flex flex-row justify-center items-center`}
               onPress={() => {
                 const endShiftInventoryOperation:IDayOperation|undefined
