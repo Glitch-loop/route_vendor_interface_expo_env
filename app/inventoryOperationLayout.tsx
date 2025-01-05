@@ -1,7 +1,6 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, BackHandler, Pressable } from 'react-native';
-import 'react-native-get-random-values'; // Necessary for uuid
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 

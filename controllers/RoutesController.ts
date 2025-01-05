@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
-import 'react-native-get-random-values'; // Necessary for uuid
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 

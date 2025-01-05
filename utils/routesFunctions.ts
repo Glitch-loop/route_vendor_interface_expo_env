@@ -1,5 +1,4 @@
 // Libraries
-import 'react-native-get-random-values'; // Necessary for uuid
 
 // Interfaces
 import { enumStoreStates } from '../interfaces/enumStoreStates';
