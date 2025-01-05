@@ -195,7 +195,6 @@ const storeMenuLayout = () => {
     }
   };
 
-  console.log("This is store: ", store)
   return (!isConsultTransaction ?
     // Main menu of store
     <View style={tw`w-full flex-1 justify-center items-center`}>
