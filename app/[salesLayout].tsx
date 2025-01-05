@@ -77,7 +77,7 @@ import {
 import { apiResponseStatus } from '../utils/apiResponse';
 import { createSyncItem, createSyncItems } from '../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../services/syncService';
-import { useSearchParams } from 'expo-router/build/hooks';
+import { useGlobalSearchParams, useLocalSearchParams, useSearchParams } from 'expo-router/build/hooks';
 
 const initialStateStore:IStore&IStoreStatusDay = {
   id_store: '',
@@ -99,10 +99,34 @@ const initialStateStore:IStore&IStoreStatusDay = {
 };
 
 function getInitialInventoryParametersFromRoute(params:any, inventoryName:string) {
-  if (params === undefined) {
+  try {
+    
+    let parsedInformation:any = {};
+    if (params === undefined) {
+      return [];
+    } else {
+      console.log("parsing: ", params)
+      console.log(params)
+    
+      if (typeof params === 'string') {
+        console.log("It is a string")
+        parsedInformation = JSON.parse(params);
+
+        console.log("parsedInformation: ", parsedInformation)
+      } else if (typeof params === 'object') {
+        console.log("JSON")
+        parsedInformation = params;
+      } else {
+        console.log("other")
+        parsedInformation = {};
+      }
+      console.log("INFORMATION: ", inventoryName, " - ", parsedInformation[inventoryName])
+
+      return avoidingUndefinedItem(parsedInformation[inventoryName], []);
+    }
+  } catch (error) {
+    console.error(error)
     return [];
-  } else {
-    return avoidingUndefinedItem(params[inventoryName], []);
   }
 }
 
@@ -526,22 +550,26 @@ async function insertionSyncRecordTransactionOperationAndOperationDescriptions(
 }
 
 const salesLayout = ({ 
-  information, 
+  informationA, 
   }:{
-    information:any, 
+    informationA:any, 
   }) => {
+
+  const glob = useGlobalSearchParams();
+
 
   // Auxiliar variables
   // Getting information from parameters
   let initialProductDevolution:IProductInventory[] 
-  = getInitialInventoryParametersFromRoute(information, 'initialProductDevolution');
+  = getInitialInventoryParametersFromRoute(glob.information, 'initialProductDevolution');
 
   let initialProductResposition:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(information, 'initialProductReposition');
+    = getInitialInventoryParametersFromRoute(glob.information, 'initialProductReposition');
 
   let initialSaleProduct:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(information, 'initialProductSale');
+    = getInitialInventoryParametersFromRoute(glob.information, 'initialProductSale');
 
+  console.log("++++++++++++++++++++++++++initialSaleProduct: ", initialSaleProduct)
 
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
@@ -554,7 +582,6 @@ const salesLayout = ({
 
   // Routing
   const router:Router = useRouter();
-
 
   // Use states
   /* States to store the current product according with their context. */

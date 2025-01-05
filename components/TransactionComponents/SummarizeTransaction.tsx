@@ -321,19 +321,17 @@ const SummarizeTransaction = ({
   };
 
   const handleOnStartASale = async () => {
+    const information:string =  JSON.stringify(
+      {
+        'initialProductDevolution': productsDevolution,
+        'initialProductReposition': productsReposition,
+        'initialProductSale': productsSale,
+      }            
+    )
     router.push(
       {
         pathname: '/salesLayout',
-        
-        params: {
-          information: JSON.stringify(
-            {
-              'initialProductDevolution': productsDevolution,
-              'initialProductReposition': productsReposition,
-              'initialProductSale': productsSale,
-            }            
-          )
-        }
+        params: { information },
       });
   };
 

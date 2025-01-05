@@ -1,3 +1,4 @@
+// Libraries
 import React from 'react';
 import { Pressable, View, Text } from 'react-native';
 import tw from 'twrnc';
