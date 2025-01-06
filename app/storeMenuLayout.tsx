@@ -15,7 +15,7 @@ import {
 } from '../interfaces/interfaces';
 
 // Components
-import RouteMap from '../components/RouteMap';
+// import RouteMap from '../components/RouteMap';
 import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
 import MenuHeader from '../components/generalComponents/MenuHeader';
 
