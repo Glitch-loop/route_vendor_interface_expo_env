@@ -15,9 +15,10 @@ import {
 } from '../interfaces/interfaces';
 
 // Components
-import RouteMap from '../components/RouteMap';
+// import RouteMap from '../components/RouteMap';
 import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
 import MenuHeader from '../components/generalComponents/MenuHeader';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -201,7 +202,7 @@ const storeMenuLayout = () => {
       <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
         <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/>
       </View>
-      <View style={tw`h-1/2 w-11/12 flex-1/2 border-solid border-2 rounded-sm`}>
+      <View style={tw`h-1/2 w-11/12 flex basis-1/2 border-solid border-2 rounded-sm`}>
         { store !== null &&
         <MapView
         style={tw`flex-1 w-full`}
