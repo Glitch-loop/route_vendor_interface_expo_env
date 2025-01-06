@@ -37,6 +37,7 @@ import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import { apiResponseProcess } from '../utils/apiResponse';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 
 function buildAddress(store:IStore) {
@@ -201,7 +202,7 @@ const storeMenuLayout = () => {
       <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
         <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/>
       </View>
-      <View style={tw`h-1/2 w-11/12 flex-1/2 border-solid border-2 rounded-sm`}>
+      <View style={tw`h-1/2 w-11/12 flex basis-1/2 border-solid border-2 rounded-sm`}>
         { store !== null &&
         <MapView
         style={tw`flex-1 w-full`}

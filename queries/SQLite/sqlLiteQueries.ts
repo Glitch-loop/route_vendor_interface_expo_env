@@ -65,7 +65,7 @@ export async function createEmbeddedDatabase():Promise<IResponse<null>> {
       return sqlite.runAsync(queryToCreateTable);
     });
 
-    Promise.all(createTablePromises);
+    await Promise.all(createTablePromises);
 
     sqlite.closeSync();
     return createApiResponse(201, null, null, 'Database created sucessfully');

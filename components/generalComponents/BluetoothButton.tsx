@@ -11,6 +11,11 @@ import {
   getBluetoothPrinterConnection,
   disconnectPrinter,
 } from '../../services/printerService';
+
+// Hooks
+// import useBLE from '@/hooks/useBLE';
+
+// Components
 import ActionDialog from '../ActionDialog';
 import Toast from 'react-native-toast-message';
 
@@ -20,8 +25,18 @@ const BluetoothButton = () => {
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
   const [renderingComponent, setRenderingComponent] = useState<boolean>(true);
-
+  
+  // const { 
+  //   scanForPeripherals,
+  //   requestPermissions,
+  //   allDevices
+  // }
+  // = useBLE();
+  
+  // useBLE();
   useEffect(() => {
+
+
     // Determine the status for the first time
     getPrinterConnectionStatus()
     .then((response:boolean) => {
@@ -62,18 +77,28 @@ const BluetoothButton = () => {
   }, [isBeingConnected]);
 
   const handlerConnectPrinter = async () => {
-    if (isBeingConnected === false){ // Avoiding multiple click from the user
-      if (await getPrinterConnectionStatus()) {
-        /* Maybe the user wants to disconnect the printer from the device */
-        setIsConnected(true);
-        setShowDialog(true);
+    try {
+      // if (await requestPermissions()) {
+      //   await scanForPeripherals()
+
+      // } else {
+
+      // }
+      if (isBeingConnected === false){ // Avoiding multiple click from the user
+        if (await getPrinterConnectionStatus()) {
+          /* Maybe the user wants to disconnect the printer from the device */
+          setIsConnected(true);
+          setShowDialog(true);
+        } else {
+          /* Beginning process for printer connection */
+          setIsBeingConnected(true);
+          setIsConnected(false);
+        }
       } else {
-        /* Beginning process for printer connection */
-        setIsBeingConnected(true);
-        setIsConnected(false);
+        /* User cannot start a connection process more than once. */
       }
-    } else {
-      /* User cannot start a connection process more than once. */
+    } catch (error) {
+      console.log(error)
     }
   };
 
