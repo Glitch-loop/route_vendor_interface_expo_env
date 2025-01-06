@@ -26,6 +26,8 @@ import { PaperProvider } from 'react-native-paper';
 import ToastMessage from '@/components/generalComponents/ToastMessage';
 import Toast from 'react-native-toast-message';
 
+// hooks
+import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 async function appInitialization() {
   try {
@@ -54,9 +56,15 @@ async function appInitialization() {
 
 
 export default function Index() {
+  const { getCurrentUserLocation } = useCurrentLocation();
+  
   useEffect(() => {
     // Initializing database
     appInitialization();
+
+    console.log("Getting current location")
+    console.log(getCurrentUserLocation())
+
   },[]);
 
   return (
