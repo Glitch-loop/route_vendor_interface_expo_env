@@ -179,7 +179,6 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
 
       const userInformation:IUser = getDataFromApiResponse(responseLoginUsingCentralDatabase);
 
-      console.log("User data: ", userInformation)
       const responseInformationOfUserInEmbeddedDatabase = await getUserDataById(userInformation);
       
       if (apiResponseProcess(responseInformationOfUserInEmbeddedDatabase, 200)) {
@@ -187,7 +186,6 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
 
           const { id_vendor } = informationOfUserInEmbeddedDatabase;
 
-          console.log("Determining if insertion or an updation: ", id_vendor)
           if (id_vendor === '') {
             finalResponse = await insertUser(userInformation);
           } else {

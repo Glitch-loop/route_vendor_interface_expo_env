@@ -126,6 +126,7 @@ const inventoryOperationLayout = () => {
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
+  const workDay = useSelector((state: RootState) => state.routeDay);
 
   // Routing
   const router:Router = useRouter();
@@ -181,6 +182,7 @@ const inventoryOperationLayout = () => {
 
     // Dertermining if the current process is an inventory visualization or and inventory operation
     if (currentOperation.id_item !== '') { // It is a visualization of inventory operation.
+      console.log("It is an inventory visualization")
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -468,7 +470,7 @@ const inventoryOperationLayout = () => {
         });
       });
     } else { // It is a new inventory operation
-      console.log("operation")
+      console.log("It's an inventory operation")
       /*
         It is a product inventory operation.
 
@@ -510,6 +512,9 @@ const inventoryOperationLayout = () => {
 
       /* State for determining if it is a product inventory operation or if it is an operation. */
       setIsOperation(true);
+
+      console.log("ALL is ok to start inventory operation: ", currentOperation)
+      console.log("Work day is: ", workDay)
     }
 
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
@@ -541,16 +546,17 @@ const inventoryOperationLayout = () => {
       Following the scenario below, once the user finishes the first operation, all of the following operations
       should return to the route menu.
     */
-   console.log("Go back: ", currentOperation.id_type_operation)
-    if (currentOperation.id_type_operation === '') {
-      router.push('/selectionRouteOperationLayout');
+
+    if (workDay.id_work_day === '') {
+      router.back();
+      //router.push('/selectionRouteOperationLayout');
     } else {
       router.push('/routeOperationMenuLayout');
     }
   };
 
   const handlerReturnToRouteMenu = async ():Promise<void> => {
-    router.push('/routeOperationMenuLayout');
+    router.replace('/routeOperationMenuLayout');
   };
 
   const handlerOnContinueInventoryOperationProcess = ():void => {

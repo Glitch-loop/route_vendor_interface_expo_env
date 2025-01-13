@@ -38,9 +38,9 @@ export default function login() {
 
     const response:IResponse<IUser> = await loginUser({
       id_vendor: '',
-      cellphone: cellphone,
+      cellphone: cellphone.trim(),
       name: '',
-      password: password,
+      password: password.trim(),
       status: 0,
     });
 
