@@ -126,8 +126,8 @@ const storeMenuLayout = () => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
-    // router.replace('/routeOperationMenuLayout');
-    router.back();
+    router.replace('/routeOperationMenuLayout');
+    // router.back();
   };
 
   const handlerGoBackToStoreMenu = () => {

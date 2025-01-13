@@ -190,7 +190,7 @@ const inventoryOperationLayout = () => {
         setInventory(getDataFromApiResponse(response));
       })
       .catch(() => { setInventory([]); });
-      
+
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -519,9 +519,6 @@ const inventoryOperationLayout = () => {
 
       /* State for determining if it is a product inventory operation or if it is an operation. */
       setIsOperation(true);
-
-      console.log("ALL is ok to start inventory operation: ", currentOperation)
-      console.log("Work day is: ", workDay)
     }
 
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
