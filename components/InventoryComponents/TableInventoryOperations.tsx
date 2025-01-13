@@ -131,7 +131,7 @@ const TableInventoryOperations = (
                     </Text>
                   </View>
                 </DataTable.Title>
-                <DataTable.Title style={tw`w-36 flex flex-row justify-center`}>
+                <DataTable.Title style={tw`w-48 flex flex-row justify-center`}>
                   <View style={tw`max-w-28`}>
                     <Text style={tw`text-black text-center`}>
                       { outflowProductFromFactory ?
@@ -196,7 +196,7 @@ const TableInventoryOperations = (
                             onChangeAmount={handlerChangeInventory}/>
                         </View>
                       </DataTable.Cell>
-                      <DataTable.Cell style={tw`w-36 flex flex-row justify-center`}>
+                      <DataTable.Cell style={tw`w-48 flex flex-row justify-center`}>
                         <Text style={tw`text-black`}>{ amount + currentInventoryAmount }</Text>
                       </DataTable.Cell>
                     </DataTable.Row>
