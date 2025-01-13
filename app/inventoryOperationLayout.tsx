@@ -190,7 +190,7 @@ const inventoryOperationLayout = () => {
         setInventory(getDataFromApiResponse(response));
       })
       .catch(() => { setInventory([]); });
-      
+
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -519,9 +519,6 @@ const inventoryOperationLayout = () => {
 
       /* State for determining if it is a product inventory operation or if it is an operation. */
       setIsOperation(true);
-
-      console.log("ALL is ok to start inventory operation: ", currentOperation)
-      console.log("Work day is: ", workDay)
     }
 
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
@@ -961,6 +958,8 @@ const inventoryOperationLayout = () => {
             text2: 'Comenzado el registro de la operación de inventario.',
           });
   
+
+          inventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
           // Inventory operations
           const resultCreateInventoryOperation = await createInventoryOperation(
             routeDay,
@@ -1092,6 +1091,8 @@ const inventoryOperationLayout = () => {
           const resultUpdateVendorInventory:IResponse<IProductInventory[]>
             = await updateVendorInventory(currentInventory, inventory, false);
   
+
+          console.log("resultUpdateVendorInventory: ", resultUpdateVendorInventory)
           /* Closing work day operation */
           Toast.show({
             type: 'info',
