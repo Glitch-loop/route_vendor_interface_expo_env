@@ -541,6 +541,7 @@ const inventoryOperationLayout = () => {
       Following the scenario below, once the user finishes the first operation, all of the following operations
       should return to the route menu.
     */
+   console.log("Go back: ", currentOperation.id_type_operation)
     if (currentOperation.id_type_operation === '') {
       router.push('/selectionRouteOperationLayout');
     } else {
@@ -1335,7 +1336,10 @@ const inventoryOperationLayout = () => {
             2. End shift inventory operation.
         */
         <View style={tw`flex basis-auto w-full mt-3`}>
-          <Text style={tw`w-full text-center text-black text-2xl`}>Dinero</Text>
+          <Text style={tw`w-full text-center text-black text-2xl`}>
+            {currentOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory && 'Fondo'}
+            {currentOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory && 'Fondo + dinero de venta (efectivo)'}
+          </Text>
           <TableCashReception
             cashInventoryOperation={cashInventory}
             setCashInventoryOperation={setCashInventory}
