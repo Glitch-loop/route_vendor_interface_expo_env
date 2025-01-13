@@ -183,6 +183,14 @@ const inventoryOperationLayout = () => {
     // Dertermining if the current process is an inventory visualization or and inventory operation
     if (currentOperation.id_item !== '') { // It is a visualization of inventory operation.
       console.log("It is an inventory visualization")
+
+      /* Getting the available products for the inventory operation */
+      getProductForInventoryOperation()
+      .then((response:IResponse<IProductInventory[]>) => {
+        setInventory(getDataFromApiResponse(response));
+      })
+      .catch(() => { setInventory([]); });
+      
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -470,7 +478,6 @@ const inventoryOperationLayout = () => {
         });
       });
     } else { // It is a new inventory operation
-      console.log("It's an inventory operation")
       /*
         It is a product inventory operation.
 
@@ -519,8 +526,8 @@ const inventoryOperationLayout = () => {
 
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
     const backAction = () => {
-      if (currentOperation.id_type_operation === '') {
-        router.push('/selectionRouteOperationLayout');
+      if (workDay.id_work_day === '') {
+        router.back();
       } else {
         router.push('/routeOperationMenuLayout');
       }
@@ -1197,11 +1204,14 @@ const inventoryOperationLayout = () => {
     let newInventoryOperation:IProductInventory[] = [];
 
     if (id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
+      console.log("initial inventory: ", initialShiftInventory)
       newInventoryOperation = mergeInventories(inventory, initialShiftInventory);
     } else if (id_type_operation === DAYS_OPERATIONS.restock_inventory
-            || id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
+      || id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
+      console.log("medium inventory: ", restockInventories)
       newInventoryOperation = mergeInventories(inventory, restockInventories[0]);
     } else if (id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
+      console.log("final inventory: ", finalShiftInventory)
       newInventoryOperation = mergeInventories(inventory, finalShiftInventory);
     } else {
       /* Other invalid day operation */
@@ -1228,6 +1238,8 @@ const inventoryOperationLayout = () => {
       setCurrentInventory([]);
     }
 
+
+    console.log("Preparing inventory to modify: ", newInventoryOperation)
     setInventory(newInventoryOperation); // Set information that has the inventory operation
     setIsOperation(true);
     setIsOperationToUpdate(true);
