@@ -55,6 +55,7 @@ export default function login() {
     //     routes: [{ name: 'routeSelection' }],
     //   });
     } else {
+      console.log("Error")
       Toast.show({type: 'error',
         text1:'Error durante autenticación.',
         text2: 'Ha habido un error durante la autenticación de las credenciales.',
