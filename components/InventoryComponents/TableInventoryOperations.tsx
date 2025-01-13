@@ -106,7 +106,7 @@ const TableInventoryOperations = (
             }
           </DataTable>
           <ScrollView horizontal={true}>
-            <DataTable>
+            <DataTable style={tw`w-auto`}>
               <DataTable.Header>
                 { suggestedInventory.length > 0 &&
                   <DataTable.Title style={tw`w-20 flex flex-row justify-center`}>
@@ -125,17 +125,17 @@ const TableInventoryOperations = (
                   <View style={tw`max-w-20`}>
                     <Text style={tw`text-black text-center`}>
                       { outflowProductFromFactory ?
-                        'Producto a recibir' :
-                        'Producto a entregar'
+                        'Producto a llevar' :
+                        'Producto a devolver'
                       }
                     </Text>
                   </View>
                 </DataTable.Title>
-                <DataTable.Title style={tw`w-28 flex flex-row justify-center`}>
-                  <View style={tw`max-w-16`}>
+                <DataTable.Title style={tw`w-48 flex flex-row justify-center`}>
+                  <View style={tw`max-w-28`}>
                     <Text style={tw`text-black text-center`}>
                       { outflowProductFromFactory ?
-                        'Inventario total' :
+                        'Inventario total a llevar' :
                         'Inventario a entregar'
                       }
                     </Text>
@@ -196,7 +196,7 @@ const TableInventoryOperations = (
                             onChangeAmount={handlerChangeInventory}/>
                         </View>
                       </DataTable.Cell>
-                      <DataTable.Cell style={tw`w-28 flex flex-row justify-center`}>
+                      <DataTable.Cell style={tw`w-48 flex flex-row justify-center`}>
                         <Text style={tw`text-black`}>{ amount + currentInventoryAmount }</Text>
                       </DataTable.Cell>
                     </DataTable.Row>
