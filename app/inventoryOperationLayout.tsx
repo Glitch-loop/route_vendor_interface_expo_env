@@ -183,6 +183,14 @@ const inventoryOperationLayout = () => {
     // Dertermining if the current process is an inventory visualization or and inventory operation
     if (currentOperation.id_item !== '') { // It is a visualization of inventory operation.
       console.log("It is an inventory visualization")
+
+      /* Getting the available products for the inventory operation */
+      getProductForInventoryOperation()
+      .then((response:IResponse<IProductInventory[]>) => {
+        setInventory(getDataFromApiResponse(response));
+      })
+      .catch(() => { setInventory([]); });
+      
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -470,7 +478,6 @@ const inventoryOperationLayout = () => {
         });
       });
     } else { // It is a new inventory operation
-      console.log("It's an inventory operation")
       /*
         It is a product inventory operation.
 
