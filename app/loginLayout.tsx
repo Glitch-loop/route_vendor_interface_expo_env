@@ -82,7 +82,7 @@ export default function login() {
             <Pressable
             style={tw`w-3/4 h-10 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
             onPress={() => { handlerLogin(inputCellphone, inputPassword); }}>
-            <Text style={tw`text-slate-100 text-center`}> Login </Text>
+            <Text style={tw`text-slate-100 text-center`}> Iniciar sesión </Text>
             </Pressable>
         </View>
     </KeyboardAvoidingView>
