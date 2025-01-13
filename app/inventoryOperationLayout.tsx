@@ -550,10 +550,9 @@ const inventoryOperationLayout = () => {
       Following the scenario below, once the user finishes the first operation, all of the following operations
       should return to the route menu.
     */
-
-    if (workDay.id_work_day === '') {
-      router.back();
-      //router.push('/selectionRouteOperationLayout');
+   console.log("Go back: ", currentOperation.id_type_operation)
+    if (currentOperation.id_type_operation === '') {
+      router.push('/selectionRouteOperationLayout');
     } else {
       router.push('/routeOperationMenuLayout');
     }
