@@ -389,7 +389,6 @@ export async function getUsers():Promise<IResponse<IUser[]>> {
 }
 
 export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUser>> {
-  console.log("Consulting information")
   const emptyUser:IUser = {
     id_vendor:  '',
     cellphone:  '',
@@ -418,6 +417,65 @@ export async function getUserDataByCellphone(user: IUser):Promise<IResponse<IUse
     }
   } catch(error) {
     return createApiResponse<IUser>(500, emptyUser, null, 'Failed getting users.');
+  }
+}
+
+export async function getUserDataById(user: IUser):Promise<IResponse<IUser>> {
+  const emptyUser:IUser = {
+    id_vendor:  '',
+    cellphone:  '',
+    name:       '',
+    password:   '',
+    status:     0,
+  };
+  try {
+    const { id_vendor } = user;
+
+    let userFound:IUser = emptyUser;
+
+    const sqlite = await createSQLiteConnection();
+    const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.USER} WHERE id_vendor = ?`);
+    const result = statement.executeSync<IUser>([id_vendor]);
+
+    for (const row of result) {
+      userFound = row;
+    }
+
+    sqlite.closeSync();
+    return createApiResponse<IUser>(200, userFound, null, 'The user has been retrieved successfully.');
+
+  } catch(error) {
+    return createApiResponse<IUser>(500, emptyUser, null, 'Failed getting users.');
+  }
+}
+
+export async function updateUser(user: IUser):Promise<IResponse<IUser>> {
+  const {
+    id_vendor,
+    cellphone,
+    name,
+    password,
+    status,
+  } = user;
+
+  try {
+    const sqlite = await createSQLiteConnection();
+    await sqlite.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(`
+          UPDATE ${EMBEDDED_TABLES.USER} SET 
+            cellphone = ?, 
+            name = ?, 
+            password = ?, 
+            status = ?
+            WHERE id_vendor = ?`, [cellphone, name, password, status, id_vendor]);
+      
+    });
+
+    sqlite.closeSync();
+    return createApiResponse<IUser>(200, user, null, 'User inserted sucessfully');
+  } catch(error) {
+    console.log(error)
+    return createApiResponse<IUser>(500, user, null, 'Failed insterting user.');
   }
 }
 

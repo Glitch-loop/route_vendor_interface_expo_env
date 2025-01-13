@@ -30,6 +30,7 @@ export default function login() {
 
   // Handlers
   const handlerLogin = async (cellphone:string, password:string) => {
+    console.log("cellphone: ", cellphone, "pass: ", password)
     Toast.show({type: 'info',
       text1:'Validando información.',
       text2: 'Validando credenciales para acceder.',
@@ -43,8 +44,8 @@ export default function login() {
       status: 0,
     });
 
+    console.log("OK: ", response)
     const { responseCode, data } = response;
-    console.log("In response: ", data)
 
 
     if(responseCode === 200) {
