@@ -1,6 +1,6 @@
 // Libraries
 import React, { useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Pressable, Text } from 'react-native';
 import tw from 'twrnc';
 import Toast from 'react-native-toast-message';
 import { Router, useRouter } from 'expo-router';
@@ -78,6 +78,7 @@ import { apiResponseStatus } from '../utils/apiResponse';
 import { createSyncItem, createSyncItems } from '../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../services/syncService';
 import { useGlobalSearchParams, useLocalSearchParams, useSearchParams } from 'expo-router/build/hooks';
+import ActionButton from '@/components/SalesLayout/ActionButton';
 
 const initialStateStore:IStore&IStoreStatusDay = {
   id_store: '',
@@ -354,8 +355,7 @@ function determinigNextOperation(currentOperation: IDayOperation,
   return nextDayOperation;
 }
 
-async function updateDayOperations(currentOperation: IDayOperation, nextDayOperation: IDayOperation)
-:Promise<boolean> {
+async function updateDayOperations(currentOperation: IDayOperation, nextDayOperation: IDayOperation):Promise<boolean> {
   try {
     let resultProcess:boolean = true;
     let resultUpdateCurrentDay:IResponse<IDayOperation>;
@@ -1054,6 +1054,11 @@ const salesLayout = ({
               productsReposition={productReposition}
               productsSale={productSale}/>
           </View>
+        </View>
+        <View style={tw`w-full flex flex-row justify-center my-3`}>
+          <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => {handlerOnPrintTicket()}}>
+            <Text>Imprimir ticket</Text>
+          </ActionButton>
         </View>
         <ConfirmationBand
           textOnAccept={'Continuar'}
