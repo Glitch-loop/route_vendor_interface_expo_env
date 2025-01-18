@@ -30,7 +30,10 @@ import Toast from 'react-native-toast-message';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 async function appInitialization() {
+
+  
   try {
+
     // Dropping database
     //console.log("deleting database")
     //await dropEmbeddedDatabase()
@@ -43,6 +46,7 @@ async function appInitialization() {
     //await createBackgroundSyncProcess();
     // Verifying permissions
     // Connecting to the printer
+
     //await getPrinterBluetoothConnection();
 
     // Geolocalization permissions

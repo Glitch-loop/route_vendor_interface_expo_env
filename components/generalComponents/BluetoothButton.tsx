@@ -11,6 +11,11 @@ import {
   getBluetoothPrinterConnection,
   disconnectPrinter,
 } from '../../services/printerService';
+
+// Hooks
+// import useBLE from '@/hooks/useBLE';
+
+// Components
 import ActionDialog from '../ActionDialog';
 import Toast from 'react-native-toast-message';
 
@@ -22,6 +27,8 @@ const BluetoothButton = () => {
   const [renderingComponent, setRenderingComponent] = useState<boolean>(true);
   
   useEffect(() => {
+
+
     // Determine the status for the first time
     getPrinterConnectionStatus()
     .then((response:boolean) => {

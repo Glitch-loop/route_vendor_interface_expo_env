@@ -203,7 +203,6 @@ const routeOperationMenuLayout = () => {
           // navigation.navigate('routeSelection');
 
           // Redirecting to main menu.
-          console.log("okok")
           router.replace('/routeSelectionLayout');
         } else {
           /* Something was wrong*/
