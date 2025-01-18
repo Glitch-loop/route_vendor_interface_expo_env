@@ -30,6 +30,7 @@ export default function login() {
 
   // Handlers
   const handlerLogin = async (cellphone:string, password:string) => {
+    console.log("cellphone: ", cellphone, "pass: ", password)
     Toast.show({type: 'info',
       text1:'Validando información.',
       text2: 'Validando credenciales para acceder.',
@@ -37,14 +38,14 @@ export default function login() {
 
     const response:IResponse<IUser> = await loginUser({
       id_vendor: '',
-      cellphone: cellphone,
+      cellphone: cellphone.trim(),
       name: '',
-      password: password,
+      password: password.trim(),
       status: 0,
     });
 
+    console.log("OK: ", response)
     const { responseCode, data } = response;
-    console.log("In response: ", data)
 
 
     if(responseCode === 200) {
@@ -55,6 +56,7 @@ export default function login() {
     //     routes: [{ name: 'routeSelection' }],
     //   });
     } else {
+      console.log("Error")
       Toast.show({type: 'error',
         text1:'Error durante autenticación.',
         text2: 'Ha habido un error durante la autenticación de las credenciales.',
@@ -73,16 +75,15 @@ export default function login() {
             placeholder="Numero de telefóno"
             onChangeText={(text) => { setInputCellphone(text); }}/>
             <TextInput
-            secureTextEntry={true}
             style={tw`w-3/4 h-10 my-6 border border-black rounded-lg bg-gray-100 text-base text-black text-center`}
             placeholder="Contraseña"
             
             onChangeText={(text) => { setInputPassword(text); }}
             />
             <Pressable
-            style={tw`w-3/4  bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
+            style={tw`w-3/4 h-10 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
             onPress={() => { handlerLogin(inputCellphone, inputPassword); }}>
-            <Text style={tw`text-slate-100 text-center`}> Login </Text>
+            <Text style={tw`text-slate-100 text-center`}> Iniciar sesión </Text>
             </Pressable>
         </View>
     </KeyboardAvoidingView>

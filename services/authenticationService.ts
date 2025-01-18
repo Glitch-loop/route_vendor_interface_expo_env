@@ -6,7 +6,7 @@ import { RepositoryFactory } from '../queries/repositories/RepositoryFactory';
 // Interfaces
 import { IResponse, IUser } from '../interfaces/interfaces';
 import { apiResponseProcess, apiResponseStatus, createApiResponse, getDataFromApiResponse } from '../utils/apiResponse';
-import { deleteUsersFromUsersEmbeddedTable, getUserDataByCellphone, getUsers, insertUser } from '../queries/SQLite/sqlLiteQueries';
+import { deleteUsersFromUsersEmbeddedTable, getUserDataByCellphone, getUserDataById, getUsers, insertUser, updateUser } from '../queries/SQLite/sqlLiteQueries';
 
 // Initializing database connection
 let repository = RepositoryFactory.createRepository('supabase');
@@ -179,9 +179,25 @@ export async function loginUser(userToLog:IUser):Promise<IResponse<IUser>> {
 
       const userInformation:IUser = getDataFromApiResponse(responseLoginUsingCentralDatabase);
 
-      finalResponse = await insertUser(userInformation);
-      if (apiResponseStatus(finalResponse, 201)) {
-        finalResponse = responseLoginUsingCentralDatabase;
+      const responseInformationOfUserInEmbeddedDatabase = await getUserDataById(userInformation);
+      
+      if (apiResponseProcess(responseInformationOfUserInEmbeddedDatabase, 200)) {
+          const informationOfUserInEmbeddedDatabase = getDataFromApiResponse(responseInformationOfUserInEmbeddedDatabase);
+
+          const { id_vendor } = informationOfUserInEmbeddedDatabase;
+
+          if (id_vendor === '') {
+            finalResponse = await insertUser(userInformation);
+          } else {
+            finalResponse = await updateUser(userInformation);
+          }
+          
+          if (apiResponseStatus(finalResponse, 200) || apiResponseStatus(finalResponse, 201)) {
+            finalResponse = responseLoginUsingCentralDatabase;
+          } else {
+            finalResponse = wrongAnswer;
+          }
+
       } else {
         finalResponse = wrongAnswer;
       }

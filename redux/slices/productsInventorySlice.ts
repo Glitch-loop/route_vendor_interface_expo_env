@@ -29,31 +29,43 @@ const productsInventorySlice = createSlice({
         }));
     },
     addProductsInventory: (state, action: PayloadAction<IProductInventory[]>) => {
-      for (let i = 0; i < state.length; i++) {
-        const foundProduct:undefined|IProductInventory = action.payload
-          .find((product) => {return product.id_product === state[i].id_product;});
+      const newInventory:IProductInventory[] = [];
+      const totalProductsToAdd:number = action.payload.length;
+      
+      for (let i = 0; i < totalProductsToAdd; i++) {
+        const foundProductInState:undefined|IProductInventory = state
+          .find((currentProductInState) => {return currentProductInState.id_product === action.payload[i].id_product;});
 
-        if(foundProduct === undefined) {
-          /* Do nothing*/
+          if(foundProductInState === undefined) {
+          newInventory.push({
+            ...action.payload[i]
+          })
         } else {
-          state[i] = {
-            ...foundProduct,
-            amount: state[i].amount + foundProduct.amount,
-           };
+          newInventory.push({
+            ...foundProductInState,
+            amount: action.payload[i].amount + foundProductInState.amount,
+          })
         }
       }
+      console.log("Updating state++++++++++++++++++++++++++++++++++++++++")
+      newInventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
+      return newInventory;
     },
     updateProductsInventory: (state, action: PayloadAction<IProductInventory[]>) => {
-      for (let i = 0; i < state.length; i++) {
-        const foundProduct:undefined|IProductInventory = action.payload
-          .find((product) => {return product.id_product === state[i].id_product;});
+      const totalProductsToUpdate:number = action.payload.length;
+      
+      for (let i = 0; i < totalProductsToUpdate; i++) {
+        const foundProductInStateIndex:undefined|number = state
+          .findIndex((currentProductInState) => {return currentProductInState.id_product === action.payload[i].id_product;});
 
-        if(foundProduct === undefined) {
-          /* Do nothing*/
+          if(foundProductInStateIndex === -1) {
+          state.push({
+            ...action.payload[i]
+          })
         } else {
-          state[i] = {
-            ...foundProduct,
-           };
+          state[foundProductInStateIndex] = {
+            ...action.payload[i]
+          }
         }
       }
     },

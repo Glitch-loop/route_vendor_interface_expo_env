@@ -37,6 +37,9 @@ import { getStoreFromContext } from '../utils/routesFunctions';
 import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import { apiResponseProcess } from '../utils/apiResponse';
+
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 
@@ -125,6 +128,7 @@ const storeMenuLayout = () => {
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
     router.replace('/routeOperationMenuLayout');
+    // router.back();
   };
 
   const handlerGoBackToStoreMenu = () => {

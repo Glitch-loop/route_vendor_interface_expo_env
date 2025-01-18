@@ -69,6 +69,8 @@ const BluetoothButton = () => {
   }, [isBeingConnected]);
 
   const handlerConnectPrinter = async () => {
+    try {
+
       if (isBeingConnected === false){ // Avoiding multiple click from the user
         if (await getPrinterConnectionStatus()) {
           /* Maybe the user wants to disconnect the printer from the device */
@@ -82,6 +84,9 @@ const BluetoothButton = () => {
       } else {
         /* User cannot start a connection process more than once. */
       }
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   const handlerCancelDisconnectDevice = () => {

@@ -28,13 +28,13 @@ const selectionRouteOperationLayout = () => {
         <Pressable
         style={tw`bg-indigo-300 mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
         onPress={() => handlerGoToInventory()}>
-          <Text style={tw`text-3xl text-center text-white`}>
-            Auto-register of inventory
+          <Text style={tw`text-2xl text-center text-white`}>
+            Auto registro de inventario.
           </Text>
         </Pressable>
         <Pressable style={tw`bg-indigo-200 w-52 h-44 rounded-full flex flex-row justify-center items-center max-w-44`}>
-          <Text style={tw`text-3xl text-center text-white`}>
-            Manager register of inventory
+          <Text style={tw`text-2xl text-center text-white`}>
+            Registro de inventario por administrador.
           </Text>
         </Pressable>
       </View>
