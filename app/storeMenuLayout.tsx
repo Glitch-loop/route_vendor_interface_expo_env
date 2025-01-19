@@ -18,7 +18,6 @@ import {
 // import RouteMap from '../components/RouteMap';
 import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
 import MenuHeader from '../components/generalComponents/MenuHeader';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -128,7 +127,6 @@ const storeMenuLayout = () => {
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
     router.replace('/routeOperationMenuLayout');
-    // router.back();
   };
 
   const handlerGoBackToStoreMenu = () => {

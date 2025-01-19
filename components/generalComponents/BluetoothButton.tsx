@@ -70,7 +70,6 @@ const BluetoothButton = () => {
 
   const handlerConnectPrinter = async () => {
     try {
-
       if (isBeingConnected === false){ // Avoiding multiple click from the user
         if (await getPrinterConnectionStatus()) {
           /* Maybe the user wants to disconnect the printer from the device */

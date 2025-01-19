@@ -77,7 +77,7 @@ export default function login() {
             <TextInput
             style={tw`w-3/4 h-10 my-6 border border-black rounded-lg bg-gray-100 text-base text-black text-center`}
             placeholder="Contraseña"
-            
+            secureTextEntry={true}
             onChangeText={(text) => { setInputPassword(text); }}
             />
             <Pressable
