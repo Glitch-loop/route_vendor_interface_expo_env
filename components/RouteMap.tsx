@@ -1,5 +1,6 @@
 // Librarires
 import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import tw from 'twrnc';
 
@@ -11,7 +12,33 @@ import tw from 'twrnc';
 import { ICoordinates } from '../interfaces/interfaces';
 import { Button } from 'react-native';
 import { View } from 'react-native';
+import { LocaleDirContext } from '@react-navigation/native';
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  mapContainer: {
+    flex: 1,
+    overflow: 'hidden', // Fix for Android rendering issues
+  },
+  map: {
+    flex: 1,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    padding: 10,
+    borderRadius: 5,
+    elevation: 5, // Specific to Android for proper layering
+  },
+  text: {
+    fontSize: 16,
+    color: 'black',
+  },
+});
 
 const INITIAL_REGION = {
   latitude: 20.641640381312676,
@@ -34,6 +61,7 @@ const markers:any[] = [
 const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => {
   const mapRef = useRef<MapView|null>(null);
 
+  console.log(latitude)
   const [location, setLocation] = useState(
     {
       latitude: 20.641640381312676,
@@ -42,7 +70,7 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
       longitudeDelta: 0.0421,
     });
 
-    const [locations, setLocations] =useState<any[]>([])
+  const [locations, setLocations] =useState<any[]>([])
 
   const handlerGetStorePosition = () => {
     setLocation(    {
@@ -62,9 +90,9 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
   }
 
   return (
-    <View style={tw`flex-1 w-full`}>
+    <View style={styles.mapContainer}>
       <MapView
-        style={tw`flex-1 w-full`}
+        style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION} // Initial perspective of the map
         showsUserLocation={true}  // Show the user's current location
@@ -74,9 +102,12 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
         {/* Add a marker at the user's current position */}
         <Marker coordinate={{ latitude: latitude, longitude: longitude }}/>
       </MapView>
-        {/* <Button onPress={handlerGetStorePosition} title='heello' /> */}
-
     </View>
   );
 };
+
+
+
+
+
 export default RouteMap;
