@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
@@ -16,6 +16,9 @@
       }
     },
     "android": {
+      "experimental" : {
+        "useNewArchitecture": false
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",

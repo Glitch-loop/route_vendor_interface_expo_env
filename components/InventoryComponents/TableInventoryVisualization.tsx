@@ -249,7 +249,7 @@ const TableInventoryVisualization = (
                   suggestedAmount                   = findProductAmountInArray(suggestedInventory, id_product);
                   initialInventoryOperationAmount   = findProductAmountInArray(initialInventory, id_product);
                   returnedInventoryOperationAmount  = findProductAmountInArray(returnedInventory, id_product);
-                  soldInventoryOperationAmount  = findProductAmountInArray(soldOperations, id_product);
+                  soldInventoryOperationAmount      = findProductAmountInArray(soldOperations, id_product);
                   repositionInventoryOperationAmount
                     = findProductAmountInArray(repositionsOperations, id_product);
 

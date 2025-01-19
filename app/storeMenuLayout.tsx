@@ -37,8 +37,8 @@ import { getStoreFromContext } from '../utils/routesFunctions';
 import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import { apiResponseProcess } from '../utils/apiResponse';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
+import RouteMap from '@/components/RouteMap';
 
 
 function buildAddress(store:IStore) {
@@ -126,6 +126,7 @@ const storeMenuLayout = () => {
   const handlerGoBackToMainOperationMenu = () => {
     dispatch(cleanCurrentOperation());
     router.replace('/routeOperationMenuLayout');
+    // router.back();
   };
 
   const handlerGoBackToStoreMenu = () => {
@@ -199,27 +200,25 @@ const storeMenuLayout = () => {
 
   return (!isConsultTransaction ?
     // Main menu of store
-    <View style={tw`w-full flex-1 justify-center items-center`}>
-      <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
+    <View style={tw`w-full h-full flex-col justify-center items-center`}>
+      <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
         <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/>
       </View>
-      <View style={tw`h-1/2 w-11/12 flex basis-1/2 border-solid border-2 rounded-sm`}>
+      { store != null &&
+        <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
+          <RouteMap 
+            latitude={parseFloat(store.latitude)}
+            longitude={parseFloat(store.longuitude)}
+          /> 
+        </View>
+        // :
+        // <View style={tw`w-11/12 flex justify-center items-center basis-1/2`}>
+        //   <Text> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
+        // </View>
+      }
+      <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
         { store !== null &&
-        <MapView
-        style={tw`flex-1 w-full`}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={INITIAL_REGION} // Initial perspective of the map
-        showsUserLocation={true}  // Show the user's current location
-        showsMyLocationButton={true}  // Button to return to user's location
-        >
-          {/* Add a marker at the user's current position */}
-          <Marker coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longuitude) }}/>
-        </MapView>
-        }
-      </View>
-      <View style={tw`flex-1 w-11/12 flex-col`}>
-        { store !== null &&
-          <View style={tw`flex flex-row basis-1/3 justify-around items-center`}>
+          <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
             <View style={tw`flex flex-col basis-1/2 justify-around`}>
               <Text style={tw`text-black text-xl`}>Dirección</Text>
               <Text style={tw`text-black`}>{buildAddress(store)}</Text>
@@ -233,28 +232,28 @@ const storeMenuLayout = () => {
           </View>
         }
         { store !== null &&
-          <View style={tw`flex flex-col basis-1/3 justify-center`}>
+          <View style={tw`flex basis-1/4 flex-col justify-start items-start`}>
             <Text style={tw`text-black text-xl`}>Referencia</Text>
             <Text style={tw`text-black`}>
               { store.address_reference === '' || store.address_reference === null ?
-                'No Disponible' :
+                'No disponible' :
                 store.address_reference
               }
             </Text>
           </View>
         }
-        <View style={tw`h-3/5 h-full flex flex-row basis-1/3 justify-around items-center`}>
-          <View style={tw`h-2/3 flex basis-1/2 justify-center items-center`}>
+        <View style={tw`flex basis-2/4 flex-row justify-center items-center`}>
+          <View style={tw`flex basis-1/2 justify-center items-center`}>
             <Pressable
-              style={tw`w-11/12 h-full border-solid border bg-blue-500 
+              style={tw`h-14 w-11/12 border-solid border bg-blue-500 
                 rounded flex flex-row justify-center items-center`}
               onPress={() => {handlerOnConsultTransactions();}}>
               <Text style={tw`text-center text-black`}>Transacciones de hoy</Text>
             </Pressable>
           </View>
-          <View style={tw`h-full flex basis-1/2 justify-center items-center`}>
+          <View style={tw`flex basis-1/2 justify-center items-center`}>
             <Pressable
-              style={tw`h-full h-2/3 w-11/12 bg-green-500 rounded border-solid border
+              style={tw`h-14 w-11/12 bg-green-500 rounded border-solid border
                         flex flex-row justify-center items-center`}
               onPress={() => {
                 const endShiftInventoryOperation:IDayOperation|undefined

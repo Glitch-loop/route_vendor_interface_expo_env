@@ -715,23 +715,61 @@ export async function updateVendorInventory(
   inventoryMovements: IProductInventory[],
   isInventoryMovementCancelation: boolean,
 ) {
+
+  console.log("Update vendor inventory")
   const newInventory:IProductInventory[] = calculateNewInventoryAfterAnInventoryOperation(
     currentInventory,
     inventoryMovements,
     isInventoryMovementCancelation);
 
-  // Updating the inventory in embedded database with the last changes.
-  const resultUpdatingInventory:IResponse<IProductInventory[]>
-    = await updateProducts(newInventory);
+  const resultFinalInventoryProduct:IResponse<IProductInventory[]> = createApiResponse(400, [], null, null);
+  const newAddedProducts:IProductInventory[] = [];
 
 
-  if (apiResponseStatus(resultUpdatingInventory, 200)) {
-    /* There is no extra steps */
-  } else {
-    resultUpdatingInventory.responseCode = 400;
+
+  // Determining new added products to the inventory
+  for(let i = 0; i < inventoryMovements.length; i++) {
+    const productInCurrentInventoryFound:IProductInventory|undefined = currentInventory
+      .find((productInCurrentInventory:IProductInventory) => {
+        return productInCurrentInventory.id_product === inventoryMovements[i].id_product;
+      })
+
+
+    if (productInCurrentInventoryFound === undefined) {
+      console.log("new item")
+      newAddedProducts.push(inventoryMovements[i]);
+    } else {
+      /* No instructions */
+    }
   }
 
-  return resultUpdatingInventory;
+  console.log("Inserting daya (inventoryMovements): ",newAddedProducts.length)
+  // Inserting products that are not in the current vendor's inventory
+  const resultInsertingNewProducts:IResponse<IProductInventory[]> = await insertProducts(newAddedProducts);
+
+  // Updating the inventory in embedded database with the last changes.
+  console.log("Updating vendor inventory: ", newInventory.length )
+  const resultUpdatingInventory:IResponse<IProductInventory[]> = await updateProducts(newInventory);
+
+
+  console.log("resultInsertingNewProducts: ", resultInsertingNewProducts.responseCode)
+  console.log("resultUpdatingInventory: ", resultUpdatingInventory.responseCode)
+  if (apiResponseStatus(resultUpdatingInventory, 200) && apiResponseStatus(resultInsertingNewProducts, 201)) {
+    resultFinalInventoryProduct.responseCode = 200;
+    
+    // Mergin both contexts
+    const newProducts = getDataFromApiResponse(resultInsertingNewProducts);
+    const updatedProducts = getDataFromApiResponse(resultUpdatingInventory);
+        
+    resultFinalInventoryProduct.data = updatedProducts.concat(newProducts);
+    
+  } else {
+    resultFinalInventoryProduct.responseCode = 400;
+  }
+
+
+  console.log(resultFinalInventoryProduct.responseCode)
+  return resultFinalInventoryProduct;
 
 }
 

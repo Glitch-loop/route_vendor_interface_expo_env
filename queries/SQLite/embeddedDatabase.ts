@@ -20,7 +20,7 @@ export const userEmbeddedTable = `
     id_vendor TEXT NOT NULL UNIQUE, 
     cellphone TEXT NOT NULL UNIQUE,
     name      TEXT NOT NULL,
-    password  TEXT NOT NULL UNIQUE,
+    password  TEXT NOT NULL,
     status    INT NOT NULL
   );
 `;

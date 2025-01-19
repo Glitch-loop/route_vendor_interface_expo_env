@@ -1,6 +1,8 @@
 // Libraries
 import store from '../redux/store';
 // import BackgroundFetch from 'react-native-background-fetch';
+import * as Network from 'expo-network';
+import { NetworkState } from 'expo-network';
 
 // Interfaces
 import { IDay, IDayGeneralInformation, IInventoryOperation, IInventoryOperationDescription, IResponse, IRoute, IRouteDay, IRouteTransaction, IRouteTransactionOperation, IRouteTransactionOperationDescription, ISyncRecord } from '../interfaces/interfaces';
@@ -239,174 +241,166 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
   const recordsCorrectlyProcessed:ISyncRecord[] = [];
   const recordsWronglyProcessed:ISyncRecord[] = [];
   let resultOfSyncProcess:boolean = false;
+  let isDeviceConnectedToInternet:boolean = false;
+  const netWorkState:NetworkState = await Network.getNetworkStateAsync();
+
+
   try {
-    const responseSynRecords:IResponse<ISyncRecord[]>
-      = await getAllSyncQueueRecords();
+
+    if (netWorkState.isConnected !== undefined) {
+      if (netWorkState.isConnected === true){
+        isDeviceConnectedToInternet = true;
+      } else {
+        isDeviceConnectedToInternet = false;
+      }
+    } else {
+      isDeviceConnectedToInternet = false;
+    }
+
+    if(isDeviceConnectedToInternet === true) {
+      const responseSynRecords:IResponse<ISyncRecord[]> = await getAllSyncQueueRecords();
+      
       if (apiResponseStatus(responseSynRecords, 200)) {
-        const syncQueue:ISyncRecord[] = getDataFromApiResponse(responseSynRecords)
-      .map((record:ISyncRecord) => {
-        return {
-          id_record: record.id_record,
-          status: record.status,
-          payload: JSON.parse(record.payload),
-          table_name: record.table_name,
-          action: record.action,
-          timestamp: record.timestamp,
-        };
-      });
-      /*
-        Since it is a relational database, the process of syncing the records has
-        priotization, so it is needed to identify the type of records and sort them
-        (according with their prioritization) before syncing with the database.
-
-        Prioritization is given by "calculateSyncPriority" function. The function
-        takes account 3 factors (type of record, type of action and time when was
-        inserted).
-
-        Note: At moment of design the sync mechanism the prioritization has
-        an ascending order (being "1" the most important).
-        In this way, if in a future it is needed to add new type of records or
-        type of action it has just to be appended at the end of the list of
-        prioritization (in its respective factor).
-        So, at in the sorting function the "smallest number" will mean that is
-        most important and therefore it has to be synced first.
-      */
-      // Sorting elements by internfaces (descending order)
-      syncQueue.sort((recordA:ISyncRecord, recordB:ISyncRecord) => {
-        const a:number = calculateSyncPriority(recordA);
-        const b:number = calculateSyncPriority(recordB);
-        if(a > b) {
-          return 1;
-        } else if (a < b) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
-
-      // Trying to synchronize records with main database.
-      for(let i = 0; i < syncQueue.length; i++) {
-        let response:IResponse<null> = createApiResponse(500, null, null, null);
-        const currentRecordToSync:ISyncRecord|undefined = syncQueue[i];
-        if (currentRecordToSync === undefined) {
-          /* There is not instructions */
-          response = createApiResponse(500, null, null, null);
-        } else {
-          const currentRecord:any = currentRecordToSync.payload;
-          const currentAction:any = currentRecordToSync.action;
-          if (isTypeIInventoryOperation(currentRecord)) {
-            console.log("Type of record: inventory operation - ", currentRecord.id_inventory_operation)
-            if (currentAction === 'INSERT') {
-              response = await repository.insertInventoryOperation(currentRecord);
-            } else if (currentAction === 'UPDATE') {
-              response = await repository.updateInventoryOperation(currentRecord);
-              // TODO
-            } else {
-              /* Other operation*/
-            }
-          } else if (isTypeIInventoryOperationDescription(currentRecord)) {
-            console.log("Type of record: inventory operation description")
-            if (currentAction === 'INSERT') {
-              response = await repository.insertInventoryOperationDescription([ currentRecord ]);
-            } else if (currentAction === 'UPDATE') {
-              // TODO
-            } else {
-              /* Other operation*/
-            }
-          } else if (isTypeIRouteTransaction(currentRecord)) {
-            console.log("Type of record: route transaction")
-            if (currentAction === 'INSERT') {
-              response = await repository.insertRouteTransaction(currentRecord);
-            } else if (currentAction === 'UPDATE') {
-              response = await repository.updateRouteTransaction(currentRecord);
-            } else {
-              /* Other operation*/
-            }
-          } else if (isTypeIRouteTransactionOperation(currentRecord)) {
-            console.log("Type of record: route transaction operation")
-            if (currentAction === 'INSERT') {
-              response = await repository.insertRouteTransactionOperation(currentRecord);
-            } else if (currentAction === 'UPDATE') {
-              // TODO
-            } else {
-              /* Other operation*/
-            }
-          } else if (isTypeIRouteTransactionOperationDescription(currentRecord)) {
-            console.log("Type of record: route transaction operation description")
-            if (currentAction === 'INSERT') {
-              response = await repository.insertRouteTransactionOperationDescription([ currentRecord ]);
-            } else if (currentAction === 'UPDATE') {
-              // TODO
-            } else {
-              /* Other operation*/
-            }
-          } else if (isTypeWorkDayInstersection(currentRecord)) {
-            console.log("Type of record: general work day")
-            if (currentAction === 'INSERT') {
-              response = await repository.insertWorkDay(currentRecord);
-            } else if (currentAction === 'UPDATE') {
-              response = await repository.updateWorkDay(currentRecord);
-            } else {
-              /* Other operation*/
-            }
+          const syncQueue:ISyncRecord[] = getDataFromApiResponse(responseSynRecords).map((record:ISyncRecord) => {
+          return {
+            id_record: record.id_record,
+            status: record.status,
+            payload: JSON.parse(record.payload),
+            table_name: record.table_name,
+            action: record.action,
+            timestamp: record.timestamp,
+          };
+        });
+        /*
+          Since it is a relational database, the process of syncing the records has
+          priotization, so it is needed to identify the type of records and sort them
+          (according with their prioritization) before syncing with the database.
+  
+          Prioritization is given by "calculateSyncPriority" function. The function
+          takes account 3 factors (type of record, type of action and time when was
+          inserted).
+  
+          Note: At moment of design the sync mechanism the prioritization has
+          an ascending order (being "1" the most important).
+          In this way, if in a future it is needed to add new type of records or
+          type of action it has just to be appended at the end of the list of
+          prioritization (in its respective factor).
+          So, at in the sorting function the "smallest number" will mean that is
+          most important and therefore it has to be synced first.
+        */
+        // Sorting elements by internfaces (descending order)
+        syncQueue.sort((recordA:ISyncRecord, recordB:ISyncRecord) => {
+          const a:number = calculateSyncPriority(recordA);
+          const b:number = calculateSyncPriority(recordB);
+          if(a > b) {
+            return 1;
+          } else if (a < b) {
+            return -1;
           } else {
-            /* The record is not recognized. */
-            response = createApiResponse(500, null, null, null);
+            return 0;
           }
-        }
-
-        console.log("this response: ", response)
-        // Determinig if the record was syncing successfully.
-        if(apiResponseStatus(response, 201) || apiResponseStatus(response, 200)) {
-          console.log("the request was successfully processed")
-          /* The records was successfully synczed; It is not needed to store in the syncing queue
-            table */
+        });
+  
+        // Trying to synchronize records with main database.
+        for(let i = 0; i < syncQueue.length; i++) {
+          let response:IResponse<null> = createApiResponse(500, null, null, null);
+          const currentRecordToSync:ISyncRecord|undefined = syncQueue[i];
           if (currentRecordToSync === undefined) {
-            /* For some reason it was stored a undefined element*/
+            /* There is not instructions */
+            response = createApiResponse(500, null, null, null);
           } else {
-            recordsCorrectlyProcessed.push({
-              id_record: currentRecordToSync.id_record,
-              status: 'SUCCESS',
-              payload: JSON.stringify(currentRecordToSync.payload),
-              table_name: currentRecordToSync.table_name,
-              action: currentRecordToSync.action,
-              timestamp: currentRecordToSync.timestamp,
-            });
+            const currentRecord:any = currentRecordToSync.payload;
+            const currentAction:any = currentRecordToSync.action;
+            if (isTypeIInventoryOperation(currentRecord)) {
+              console.log("Type of record: inventory operation - ", currentRecord.id_inventory_operation)
+              if (currentAction === 'INSERT') {
+                response = await repository.insertInventoryOperation(currentRecord);
+              } else if (currentAction === 'UPDATE') {
+                response = await repository.updateInventoryOperation(currentRecord);
+                // TODO
+              } else {
+                /* Other operation*/
+              }
+            } else if (isTypeIInventoryOperationDescription(currentRecord)) {
+              console.log("Type of record: inventory operation description")
+              if (currentAction === 'INSERT') {
+                response = await repository.insertInventoryOperationDescription([ currentRecord ]);
+              } else if (currentAction === 'UPDATE') {
+                // TODO
+              } else {
+                /* Other operation*/
+              }
+            } else if (isTypeIRouteTransaction(currentRecord)) {
+              console.log("Type of record: route transaction")
+              if (currentAction === 'INSERT') {
+                response = await repository.insertRouteTransaction(currentRecord);
+              } else if (currentAction === 'UPDATE') {
+                response = await repository.updateRouteTransaction(currentRecord);
+              } else {
+                /* Other operation*/
+              }
+            } else if (isTypeIRouteTransactionOperation(currentRecord)) {
+              console.log("Type of record: route transaction operation")
+              if (currentAction === 'INSERT') {
+                response = await repository.insertRouteTransactionOperation(currentRecord);
+              } else if (currentAction === 'UPDATE') {
+                // TODO
+              } else {
+                /* Other operation*/
+              }
+            } else if (isTypeIRouteTransactionOperationDescription(currentRecord)) {
+              console.log("Type of record: route transaction operation description")
+              if (currentAction === 'INSERT') {
+                response = await repository.insertRouteTransactionOperationDescription([ currentRecord ]);
+              } else if (currentAction === 'UPDATE') {
+                // TODO
+              } else {
+                /* Other operation*/
+              }
+            } else if (isTypeWorkDayInstersection(currentRecord)) {
+              console.log("Type of record: general work day")
+              if (currentAction === 'INSERT') {
+                response = await repository.insertWorkDay(currentRecord);
+              } else if (currentAction === 'UPDATE') {
+                response = await repository.updateWorkDay(currentRecord);
+              } else {
+                /* Other operation*/
+              }
+            } else {
+              /* The record is not recognized. */
+              response = createApiResponse(500, null, null, null);
+            }
           }
-        } else {
-          /* Something was wrong during insertion. */
-          if(apiResponseStatus(response, 409)) { // Conflict
-            /*
-              It is probably the record already exists in the central database.
-
-              For this case, it is considered that was successfully synchronized.
-            */
-            recordsCorrectlyProcessed.push({
-              id_record: currentRecordToSync.id_record,
-              status: 'SUCCESS',
-              payload: JSON.stringify(currentRecordToSync.payload),
-              table_name: currentRecordToSync.table_name,
-              action: currentRecordToSync.action,
-              timestamp: currentRecordToSync.timestamp,
-            });
+  
+          console.log("this response: ", response)
+          // Determinig if the record was syncing successfully.
+          if(apiResponseStatus(response, 201) || apiResponseStatus(response, 200)) {
+            console.log("the request was successfully processed")
+            /* The records was successfully synczed; It is not needed to store in the syncing queue
+              table */
+            if (currentRecordToSync === undefined) {
+              /* For some reason it was stored a undefined element*/
+            } else {
+              recordsCorrectlyProcessed.push({
+                id_record: currentRecordToSync.id_record,
+                status: 'SUCCESS',
+                payload: JSON.stringify(currentRecordToSync.payload),
+                table_name: currentRecordToSync.table_name,
+                action: currentRecordToSync.action,
+                timestamp: currentRecordToSync.timestamp,
+              });
+            }
           } else {
-            /*
-              It cannot be determinated why the record cannot be synced.
-
-              If status is "PENDING" it is going to be changed to failed for one more 
-              opportunity.
-
-              Otherwise, it is going to change to failed to delete it from the queue.
-            */
-            if(currentRecordToSync.status === 'FAILED') {
+            /* Something was wrong during insertion. */
+            if(apiResponseStatus(response, 409)) { // Conflict
               /*
-                The records was already processed and twice.
-                It is appended to "recordsCorrectlyProcessed" for being deleted and
-                moved to the historic sync table.
+                It is probably the record already exists in the central database.
+  
+                For this case, it is considered that was successfully synchronized.
               */
               recordsCorrectlyProcessed.push({
                 id_record: currentRecordToSync.id_record,
-                status: 'FAILED',
+                status: 'SUCCESS',
                 payload: JSON.stringify(currentRecordToSync.payload),
                 table_name: currentRecordToSync.table_name,
                 action: currentRecordToSync.action,
@@ -414,46 +408,73 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
               });
             } else {
               /*
-                Record couldn't be processed and is updated to "failed" for one more opportunity
+                It cannot be determinated why the record cannot be synced.
+  
+                If status is "PENDING" it is going to be changed to failed for one more 
+                opportunity.
+  
+                Otherwise, it is going to change to failed to delete it from the queue.
               */
-             console.log("second opportunity")
-             recordsWronglyProcessed.push({
-              id_record: currentRecordToSync.id_record,
-              status: 'FAILED',
-              payload: JSON.stringify(currentRecordToSync.payload),
-              table_name: currentRecordToSync.table_name,
-              action: currentRecordToSync.action,
-              timestamp: currentRecordToSync.timestamp,
-             });
+              if(currentRecordToSync.status === 'FAILED') {
+                /*
+                  The records was already processed and twice.
+                  It is appended to "recordsCorrectlyProcessed" for being deleted and
+                  moved to the historic sync table.
+                */
+                recordsCorrectlyProcessed.push({
+                  id_record: currentRecordToSync.id_record,
+                  status: 'FAILED',
+                  payload: JSON.stringify(currentRecordToSync.payload),
+                  table_name: currentRecordToSync.table_name,
+                  action: currentRecordToSync.action,
+                  timestamp: currentRecordToSync.timestamp,
+                });
+              } else {
+                /*
+                  Record couldn't be processed and is updated to "failed" for one more opportunity
+                */
+               console.log("second opportunity")
+               recordsWronglyProcessed.push({
+                id_record: currentRecordToSync.id_record,
+                status: 'FAILED',
+                payload: JSON.stringify(currentRecordToSync.payload),
+                table_name: currentRecordToSync.table_name,
+                action: currentRecordToSync.action,
+                timestamp: currentRecordToSync.timestamp,
+               });
+              }
             }
           }
         }
-      }
-      console.log("records to syncronize: ", syncQueue.length)
-      console.log("Records correctly syncronized: ", recordsCorrectlyProcessed.length);
-      // Updating records for an other opportunity
-      await updateSyncQueueRecords(recordsWronglyProcessed);
-
-      // Updating local database according with the result of the synchronizations
-      await insertSyncHistoricRecords(recordsCorrectlyProcessed);
-      await deleteSyncQueueRecords(recordsCorrectlyProcessed);
-
-      if (recordsCorrectlyProcessed.length === syncQueue.length) {
-        /* If The records correctly processed are equal to the number of records in the sync queue
-        then it means that all the pending process where synchronized successfully. */
-        console.log("Todo fue procesado correctamente")
-        resultOfSyncProcess = true;
+        console.log("records to syncronize: ", syncQueue.length)
+        console.log("Records correctly syncronized: ", recordsCorrectlyProcessed.length);
+        // Updating records for an other opportunity
+        await updateSyncQueueRecords(recordsWronglyProcessed);
+  
+        // Updating local database according with the result of the synchronizations
+        await insertSyncHistoricRecords(recordsCorrectlyProcessed);
+        await deleteSyncQueueRecords(recordsCorrectlyProcessed);
+  
+        if (recordsCorrectlyProcessed.length === syncQueue.length) {
+          /* If The records correctly processed are equal to the number of records in the sync queue
+          then it means that all the pending process where synchronized successfully. */
+          console.log("Todo fue procesado correctamente")
+          resultOfSyncProcess = true;
+        } else {
+          /* For some reasone there were records that were not capable to be synchronized. */
+          console.log("Hubo datos sin procesar")
+          resultOfSyncProcess = false;
+        }
+  
       } else {
-        /* For some reasone there were records that were not capable to be synchronized. */
-        console.log("Hubo datos sin procesar")
+        /* Something was wrong during records retrieving; There is no extra instructions*/
+        console.log("Algo salio mal al momento de recuperar la informacion")
         resultOfSyncProcess = false;
       }
-
     } else {
-      /* Something was wrong during records retrieving; There is no extra instructions*/
-      console.log("Algo salio mal al momento de recuperar la informacion")
       resultOfSyncProcess = false;
     }
+
     console.log("resultado sincronizacion: ", resultOfSyncProcess)
     return resultOfSyncProcess;
   } catch (error) {

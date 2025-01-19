@@ -72,6 +72,9 @@ export function calculateNewInventoryAfterAnInventoryOperation(
 }
 
 export function mergeInventories(baseInventory:IProductInventory[], targetInventory:IProductInventory[]):IProductInventory[] {
+  console.log("basedInventory: ", baseInventory)
+  console.log("targetInventory: ", targetInventory)
+  
   const newInventoryOperation = baseInventory.map((proudct:IProductInventory) => {
     let amountForInventory:number = 0;
 

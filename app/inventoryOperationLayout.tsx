@@ -126,6 +126,7 @@ const inventoryOperationLayout = () => {
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
+  const workDay = useSelector((state: RootState) => state.routeDay);
 
   // Routing
   const router:Router = useRouter();
@@ -181,6 +182,15 @@ const inventoryOperationLayout = () => {
 
     // Dertermining if the current process is an inventory visualization or and inventory operation
     if (currentOperation.id_item !== '') { // It is a visualization of inventory operation.
+      console.log("It is an inventory visualization")
+
+      /* Getting the available products for the inventory operation */
+      getProductForInventoryOperation()
+      .then((response:IResponse<IProductInventory[]>) => {
+        setInventory(getDataFromApiResponse(response));
+      })
+      .catch(() => { setInventory([]); });
+
       // Variables used for final shift inventory
       const startShiftInventoryProduct:IProductInventory[][] = [];
       const restockInventoryProduct:IProductInventory[][] = [];
@@ -468,7 +478,6 @@ const inventoryOperationLayout = () => {
         });
       });
     } else { // It is a new inventory operation
-      console.log("operation")
       /*
         It is a product inventory operation.
 
@@ -514,8 +523,8 @@ const inventoryOperationLayout = () => {
 
     // Determining where to redirect in case of the user touch the handler "back handler" of the phone
     const backAction = () => {
-      if (currentOperation.id_type_operation === '') {
-        router.push('/selectionRouteOperationLayout');
+      if (workDay.id_work_day === '') {
+        router.back();
       } else {
         router.push('/routeOperationMenuLayout');
       }
@@ -541,15 +550,17 @@ const inventoryOperationLayout = () => {
       Following the scenario below, once the user finishes the first operation, all of the following operations
       should return to the route menu.
     */
-    if (currentOperation.id_type_operation === '') {
-      router.push('/selectionRouteOperationLayout');
+
+    if (workDay.id_work_day === '') {
+      router.back();
+      //router.push('/selectionRouteOperationLayout');
     } else {
       router.push('/routeOperationMenuLayout');
     }
   };
 
   const handlerReturnToRouteMenu = async ():Promise<void> => {
-    router.push('/routeOperationMenuLayout');
+    router.replace('/routeOperationMenuLayout');
   };
 
   const handlerOnContinueInventoryOperationProcess = ():void => {
@@ -947,6 +958,8 @@ const inventoryOperationLayout = () => {
             text2: 'Comenzado el registro de la operación de inventario.',
           });
   
+
+          inventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
           // Inventory operations
           const resultCreateInventoryOperation = await createInventoryOperation(
             routeDay,
@@ -1078,6 +1091,8 @@ const inventoryOperationLayout = () => {
           const resultUpdateVendorInventory:IResponse<IProductInventory[]>
             = await updateVendorInventory(currentInventory, inventory, false);
   
+
+          console.log("resultUpdateVendorInventory: ", resultUpdateVendorInventory)
           /* Closing work day operation */
           Toast.show({
             type: 'info',
@@ -1190,11 +1205,14 @@ const inventoryOperationLayout = () => {
     let newInventoryOperation:IProductInventory[] = [];
 
     if (id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
+      console.log("initial inventory: ", initialShiftInventory)
       newInventoryOperation = mergeInventories(inventory, initialShiftInventory);
     } else if (id_type_operation === DAYS_OPERATIONS.restock_inventory
-            || id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
+      || id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
+      console.log("medium inventory: ", restockInventories)
       newInventoryOperation = mergeInventories(inventory, restockInventories[0]);
     } else if (id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
+      console.log("final inventory: ", finalShiftInventory)
       newInventoryOperation = mergeInventories(inventory, finalShiftInventory);
     } else {
       /* Other invalid day operation */
@@ -1221,6 +1239,8 @@ const inventoryOperationLayout = () => {
       setCurrentInventory([]);
     }
 
+
+    console.log("Preparing inventory to modify: ", newInventoryOperation)
     setInventory(newInventoryOperation); // Set information that has the inventory operation
     setIsOperation(true);
     setIsOperationToUpdate(true);
@@ -1335,7 +1355,10 @@ const inventoryOperationLayout = () => {
             2. End shift inventory operation.
         */
         <View style={tw`flex basis-auto w-full mt-3`}>
-          <Text style={tw`w-full text-center text-black text-2xl`}>Dinero</Text>
+          <Text style={tw`w-full text-center text-black text-2xl`}>
+            {currentOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory && 'Fondo'}
+            {currentOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory && 'Fondo + dinero de venta (efectivo)'}
+          </Text>
           <TableCashReception
             cashInventoryOperation={cashInventory}
             setCashInventoryOperation={setCashInventory}
