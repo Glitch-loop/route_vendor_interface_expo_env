@@ -193,13 +193,11 @@ const routeSelectionLayout = () => {
       <MainMenuHeader/>
       { routes.length > 0 ?
         routes.map((route:ICompleteRoute) => {
-          console.log("printing: ", route.route_name)
           return <View
             style={tw`w-full flex flex-col items-center`}
             key={route.id_route}>
             { route.routeDays.map((routeDay:ICompleteRouteDay) => {
               if (routeDay.id_route === route.id_route) {
-                console.log("day: ", routeDay.id_route)
                 return (
                   <Card
                     key={routeDay.id_route_day}
