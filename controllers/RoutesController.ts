@@ -62,7 +62,7 @@ export async function getAvailableRoutesForTheVendor(vendor:IUser):Promise<IComp
 
     // Getting all vendor's routes
     routes = getDataFromApiResponse(await repository.getAllRoutesByVendor(vendor.id_vendor));
-
+    console.log(routes)
     // Getting all the days in a route
     for (let i = 0; i < routes.length; i++) {
       daysOfRoute = apiResponseProcess(await repository.getAllDaysByRoute(routes[i].id_route));

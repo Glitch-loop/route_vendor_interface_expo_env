@@ -101,7 +101,7 @@ const routeSelectionLayout = () => {
           text2: 'Consultando rutas disponibles para el vendedor'});
 
         getAvailableRoutesForTheVendor(user)
-        .then((routesOfVendor:ICompleteRoute[]) => { setRoutes(routesOfVendor); })
+        .then((routesOfVendor:ICompleteRoute[]) => { console.log(routesOfVendor); setRoutes(routesOfVendor); })
         .catch(() => {
           Toast.show({type: 'error',
             text1:'Error durante la consulta de las rutas',
@@ -193,21 +193,25 @@ const routeSelectionLayout = () => {
       <MainMenuHeader/>
       { routes.length > 0 ?
         routes.map((route:ICompleteRoute) => {
+          console.log("printing: ", route.route_name)
           return <View
-            style={tw`w-full h-full flex flex-col items-center`}
+            style={tw`w-full flex flex-col items-center`}
             key={route.id_route}>
             { route.routeDays.map((routeDay:ICompleteRouteDay) => {
-              return (
-                <Card
-                  key={routeDay.id_day}
-                  routeName={route.route_name}
-                  day={routeDay.day.day_name!}
-                  description={route.description}
-                  route={route}
-                  routeDay={routeDay}
-                  onSelectCard={handlerOnSelectARoute}
-                  />
-              );
+              if (routeDay.id_route === route.id_route) {
+                console.log("day: ", routeDay.id_route)
+                return (
+                  <Card
+                    key={routeDay.id_route_day}
+                    routeName={route.route_name}
+                    day={routeDay.day.day_name!}
+                    description={route.description}
+                    route={route}
+                    routeDay={routeDay}
+                    onSelectCard={handlerOnSelectARoute}
+                    />
+                );
+              }
             })}
           </View>;
         })
