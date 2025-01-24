@@ -649,7 +649,6 @@ export async function getInventoryOperationForInventoryVisualization(id_inventor
   const resultGetInventoryOperationDescription:IResponse<IInventoryOperationDescription[]>
     = await getInventoryOperationDescription(id_inventory_operation);
 
-  console.log("+++++++++++++++++++++++++")
   if(
     apiResponseStatus(resultGetInventoryOperationDescription, 200)
     && apiResponseStatus(responseGetAllProductFromEmbeddedDatabase, 200)
@@ -715,8 +714,6 @@ export async function updateVendorInventory(
   inventoryMovements: IProductInventory[],
   isInventoryMovementCancelation: boolean,
 ) {
-
-  console.log("Update vendor inventory")
   const newInventory:IProductInventory[] = calculateNewInventoryAfterAnInventoryOperation(
     currentInventory,
     inventoryMovements,
@@ -736,24 +733,18 @@ export async function updateVendorInventory(
 
 
     if (productInCurrentInventoryFound === undefined) {
-      console.log("new item")
       newAddedProducts.push(inventoryMovements[i]);
     } else {
       /* No instructions */
     }
   }
 
-  console.log("Inserting daya (inventoryMovements): ",newAddedProducts.length)
   // Inserting products that are not in the current vendor's inventory
   const resultInsertingNewProducts:IResponse<IProductInventory[]> = await insertProducts(newAddedProducts);
 
   // Updating the inventory in embedded database with the last changes.
-  console.log("Updating vendor inventory: ", newInventory.length )
   const resultUpdatingInventory:IResponse<IProductInventory[]> = await updateProducts(newInventory);
 
-
-  console.log("resultInsertingNewProducts: ", resultInsertingNewProducts.responseCode)
-  console.log("resultUpdatingInventory: ", resultUpdatingInventory.responseCode)
   if (apiResponseStatus(resultUpdatingInventory, 200) && apiResponseStatus(resultInsertingNewProducts, 201)) {
     resultFinalInventoryProduct.responseCode = 200;
     
@@ -767,8 +758,6 @@ export async function updateVendorInventory(
     resultFinalInventoryProduct.responseCode = 400;
   }
 
-
-  console.log(resultFinalInventoryProduct.responseCode)
   return resultFinalInventoryProduct;
 
 }

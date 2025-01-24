@@ -362,6 +362,7 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
               if (currentAction === 'INSERT') {
                 response = await repository.insertWorkDay(currentRecord);
               } else if (currentAction === 'UPDATE') {
+                console.log("UPDATE WORK DAY")
                 response = await repository.updateWorkDay(currentRecord);
               } else {
                 /* Other operation*/

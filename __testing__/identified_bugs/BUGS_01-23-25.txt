@@ -9,7 +9,6 @@ There is a problem in the route's inventory operations, it seems that it is not 
 Case:
 During the route, the application said that there was not stock for certain product, but in the reality it still was.
 
-
 Chronological logic in the route.
 There is not strictly a bug but if the vendor doesn't follow the route as it was designed, it is hard to recreate the history.
 Since the list of stores follow a cardinal number, it turns hard to know what comes first.
@@ -27,5 +26,6 @@ Work day finalization
 
 Change from devoluciones de producto to merma
 	- Verify that headers are clear for the user
+STATUS: SOLVED 
 
 In the final inventory there is a bug which displays that there were not a selling of product.

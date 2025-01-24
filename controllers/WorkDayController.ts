@@ -141,6 +141,7 @@ export async function finishWorkDay(
   const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay
     = finishWorkDayConcept(cashInventory, generalInformationOfRouteDay);
 
+  console.log(dayGeneralInformation)
   const resultFinishingWorkDay:IResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>
     = await updateWorkDay(dayGeneralInformation);
 

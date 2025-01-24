@@ -48,8 +48,6 @@ export async function requestBluetoothPermissions():Promise<boolean> {
 
 export async function getBluetoothPrinterConnection():Promise<boolean> {
   try {
-    console.log("Hola mundo")
-    console.log(await getPrinterConnectionStatus())
     let connectionResult:boolean = false;
     if (await getPrinterConnectionStatus()) {
       // There is already a printer connected.

@@ -958,8 +958,6 @@ const inventoryOperationLayout = () => {
             text2: 'Comenzado el registro de la operación de inventario.',
           });
   
-
-          inventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
           // Inventory operations
           const resultCreateInventoryOperation = await createInventoryOperation(
             routeDay,
@@ -1104,7 +1102,7 @@ const inventoryOperationLayout = () => {
             = await finishWorkDay(cashInventory, routeDay);
           const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay
             = getDataFromApiResponse(resultFinishWorkDay);
-  
+          
           const resultAppendDayOperation:IResponse<IDayOperation>
            = await appendDayOperation(inventoryOperation);
           const newDayOperation:IDayOperation

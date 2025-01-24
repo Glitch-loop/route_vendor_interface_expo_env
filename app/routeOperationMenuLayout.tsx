@@ -173,18 +173,13 @@ const routeOperationMenuLayout = () => {
         // Deleting all data from database.
         const resultCleanDatabase:IResponse<null> = await cleanEmbeddedDatbase();
 
-        console.log(resultCleanDatabase)
         // Creating database with new information.
         //const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
 
         // console.log(resultCreateDatabase)
         // Maintaining user's table
         const resultMaintainUsersTable:IResponse<null> = await maintainUserTable(user);
-        console.log("finishing work day")
-        console.log(apiResponseStatus(resultCleanDatabase, 200))
-        // console.log(apiResponseStatus(resultCreateDatabase, 201))
-        console.log(apiResponseStatus(resultMaintainUsersTable, 200))
-        console.log("resultMaintainUsersTable: ", resultMaintainUsersTable)
+
         if(apiResponseStatus(resultCleanDatabase, 200)
         // && apiResponseStatus(resultCreateDatabase, 201)
         && apiResponseStatus(resultMaintainUsersTable, 200)) {

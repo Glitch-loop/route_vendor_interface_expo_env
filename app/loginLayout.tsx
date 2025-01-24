@@ -30,7 +30,6 @@ export default function login() {
 
   // Handlers
   const handlerLogin = async (cellphone:string, password:string) => {
-    console.log("cellphone: ", cellphone, "pass: ", password)
     Toast.show({type: 'info',
       text1:'Validando información.',
       text2: 'Validando credenciales para acceder.',
@@ -44,7 +43,6 @@ export default function login() {
       status: 0,
     });
 
-    console.log("OK: ", response)
     const { responseCode, data } = response;
 
 
@@ -56,7 +54,6 @@ export default function login() {
     //     routes: [{ name: 'routeSelection' }],
     //   });
     } else {
-      console.log("Error")
       Toast.show({type: 'error',
         text1:'Error durante autenticación.',
         text2: 'Ha habido un error durante la autenticación de las credenciales.',
