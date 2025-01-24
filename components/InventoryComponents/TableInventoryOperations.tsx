@@ -53,16 +53,44 @@ function foundCurrentProductInArray(arrProduct: IProductInventory[], current_id_
   return resultAmount;
 }
 
-function determineFlowOfProduct(operation:IDayOperation) {
-  let result:boolean = true;
+function determineFlowOfProduct(operation:IDayOperation):number {
+  let result:number = 0;
+  // This operations are made from the factory perspective
   if (operation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-    result = false; // It is an inflow of product from the factory
+    result = 1; // It is an inflow
+  } else if (operation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory){
+    result = 2; // It is an inflow
   } else {
-    result = true; // It is an outflow of product from the factory
+    result = 0; // It is an outflow
   }
 
   return result;
 }
+
+function determineHeaderOfInputColumn(context:number):string {
+  let result:string = ""
+  if (context === 1) {
+    result = 'Merma a reportar';
+  } else if (context === 2) {
+    result = 'Producto a devolver';
+  } else {
+    result = 'Producto a llevar';
+  }
+  return result;                       
+}
+
+function detemrineHeaderOfTotalColumn(context:number):string {
+  let result:string = ""
+  if (context === 1) {
+    result = 'Merma a entregar';
+  } else if (context === 2) {
+    result = 'Producto a devolver';
+  } else {
+    result = 'Inventario a llevar';
+  }
+  return result;                 
+}
+
 
 const TableInventoryOperations = (
   {
@@ -78,7 +106,7 @@ const TableInventoryOperations = (
     setInventoryOperation:any,
     currentOperation:IDayOperation,
   }) => {
-    let outflowProductFromFactory:boolean = determineFlowOfProduct(currentOperation);
+    let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
   return (
     <View style={tw`w-full flex flex-row`}>
       { operationInventory.length ?
@@ -124,20 +152,14 @@ const TableInventoryOperations = (
                 <DataTable.Title style={tw`w-32 flex flex-row justify-center`}>
                   <View style={tw`max-w-20`}>
                     <Text style={tw`text-black text-center`}>
-                      { outflowProductFromFactory ?
-                        'Producto a llevar' :
-                        'Producto a devolver'
-                      }
+                      { determineHeaderOfInputColumn(contextForTheOperation) }
                     </Text>
                   </View>
                 </DataTable.Title>
                 <DataTable.Title style={tw`w-36 flex flex-row justify-center`}>
                   <View style={tw`max-w-28`}>
                     <Text style={tw`text-black text-center`}>
-                      { outflowProductFromFactory ?
-                        'Inventario total a llevar' :
-                        'Inventario a entregar'
-                      }
+                      { detemrineHeaderOfTotalColumn(contextForTheOperation) }
                     </Text>
                   </View>
                 </DataTable.Title>

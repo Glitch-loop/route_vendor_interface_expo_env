@@ -1003,8 +1003,8 @@ const inventoryOperationLayout = () => {
             ) { // It is an product devolution
               Toast.show({
                 type: 'success',
-                text1: 'Se ha registrado la devolución de producto exitosamente.',
-                text2: 'Se ha registrado el inventario de devolución de producto exitosamente.',
+                text1: 'Se ha registrado la merma de producto exitosamente.',
+                text2: 'Se ha registrado la merma de producto exitosamente.',
               });
   
               /* The inventory operation was an "product devolution inventoy" */

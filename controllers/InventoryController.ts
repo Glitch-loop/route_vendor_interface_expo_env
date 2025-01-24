@@ -95,7 +95,7 @@ export function getTitleOfInventoryOperation(dayOperation: IDayOperation):string
   } else if(dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
     title = 'Inventario final';
   } else if(dayOperation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-    title = 'Devolución de producto';
+    title = 'Merma de producto';
   } else {
     /* There is not instructions */
   }

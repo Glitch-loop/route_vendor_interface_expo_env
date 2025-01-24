@@ -2,7 +2,7 @@
 
 Route selection menu overflowed
 In the route selection menu, the content is overflowed and the use cannot reach those items that are not rendered inside the window.
-
+STATUS: SOLVED
 
 Inconsistency in the route operations.
 There is a problem in the route's inventory operations, it seems that it is not being correctly updated when the vendor sells something.
@@ -16,7 +16,10 @@ Since the list of stores follow a cardinal number, it turns hard to know what co
 
 Style broken
 - The content in cards are being overflowed, breaking the style.
+STATUS: SOLVED
+
 - In store menu, if there is a long address or even the store's name. It breaks the style
+STATUS: PENDING TO REVIEW
 
 Work day finalization
 - When a vendor finishes a work day, it is not being updated the date when the route was finished.
