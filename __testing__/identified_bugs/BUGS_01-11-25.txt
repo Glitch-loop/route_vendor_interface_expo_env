@@ -1,0 +1,63 @@
+--BUGS--
+Bug: Start inventory operation unable to modify
+01/11/25 10:30 AM
+Bug
+It was not possible to modify the start shift inventory.
+
+Context
+Vendor started the route, he declared the products that was going to take and closed the inventory operation. He noticed he made a mistake, so it was necessary to modify the start shift inventory. 
+Vendor was to the menu to modify it and the screen only displayed a menu with a loader (it never showed the inventory to modify it).
+
+
+Replication
+1. Start a new day
+2. Go to the card to "view" the start shift inventory
+3. Click in "modify button".
+
+Considerations
+It was carrying out an alpha testing, vendor created a new work day, but at that moment there were not all the products stored in the system.
+Manager noticed this and the missing products were inserted in the database.
+So, it is possible that this "modifications" in the database could affect in the process of retrieving the information to perform an inventory operation modification.
+
+Bug: When new products are added and there is a workday going on, those new products are not being added to the vendor's inventory operation
+01/11/25 11:20 AM
+
+
+Bug: In the synchronization system, it is not taking care about the network, so records are being deleted because failed responses caused 
+by missing of network connectivity.
+01/11/25 11:25 AM
+	STATUS: SOLVED
+
+
+Bugs: When you want to login to the application with another "registered" number, the application fails in authenticate you.
+01/11/25 11:45 AM
+	STATUS: SOLVED
+
+--IMPROVEMENT AREAS--
+- Homogenize the language. There are parts on which the application uses English when it should be completely in Spanish.
+	STATUS: SOLVED
+
+- At least in inventory operation it is a little confuse the titles that has the table.
+	STATUS: SOLVED
+
+- Following with inventory operations. The name used in the section to declare the pity cash, it can be changed to "Fondo" or "Caja Chica". It will be clear for the vendor... Same for the end shift inventory, instead of "money", it can be changed for a more descriptive name.
+	STATUS: Solved
+
+
+
+--- BUGS --
+Improvements areas:
+- Ticket before selling: At the moment of selling, store owners wants a ticket to verify the product they are buying...
+	- OK
+
+Bug fixed
+	- Testing update of products
+	- Testing if new products are being added if they are new
+	- Testing that products are correctly being updated in the vendor's inventory
+
+Bug related to maps
+	- When the user goes back from "transactions of today" the map got broken covering all the screen
+	- Ensure that the map always shows the pinnes, pointing to the stores.
+
+
+

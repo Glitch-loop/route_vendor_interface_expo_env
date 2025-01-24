@@ -1,6 +1,6 @@
 //Libraries
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import tw from 'twrnc';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -191,33 +191,35 @@ const routeSelectionLayout = () => {
             </View>
         </ActionDialog>
       <MainMenuHeader/>
-      { routes.length > 0 ?
-        routes.map((route:ICompleteRoute) => {
-          return <View
-            style={tw`w-full flex flex-col items-center`}
-            key={route.id_route}>
-            { route.routeDays.map((routeDay:ICompleteRouteDay) => {
-              if (routeDay.id_route === route.id_route) {
-                return (
-                  <Card
-                    key={routeDay.id_route_day}
-                    routeName={route.route_name}
-                    day={routeDay.day.day_name!}
-                    description={route.description}
-                    route={route}
-                    routeDay={routeDay}
-                    onSelectCard={handlerOnSelectARoute}
-                    />
-                );
-              }
-            })}
-          </View>;
-        })
-        :
-        <View style={tw`h-full flex flex-col justify-center`}>
-          <ActivityIndicator size={'large'} />
-        </View>
-      }
+      <ScrollView>
+        { routes.length > 0 ?
+          routes.map((route:ICompleteRoute) => {
+            return <View
+              style={tw`w-full flex flex-col items-center`}
+              key={route.id_route}>
+              { route.routeDays.map((routeDay:ICompleteRouteDay) => {
+                if (routeDay.id_route === route.id_route) {
+                  return (
+                    <Card
+                      key={routeDay.id_route_day}
+                      routeName={route.route_name}
+                      day={routeDay.day.day_name!}
+                      description={route.description}
+                      route={route}
+                      routeDay={routeDay}
+                      onSelectCard={handlerOnSelectARoute}
+                      />
+                  );
+                }
+              })}
+            </View>;
+          })
+          :
+          <View style={tw`h-full flex flex-col justify-center`}>
+            <ActivityIndicator size={'large'} />
+          </View>
+        }
+      </ScrollView>
     </View>
   );
 };

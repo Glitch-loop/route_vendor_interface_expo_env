@@ -24,21 +24,29 @@ const Card = ({
   }) => {
     return (
       <View style={
-        tw`my-2 bg-blue-500 rounded w-11/12 h-16 
+        tw`my-2 bg-blue-500 rounded w-11/12 h-auto 
           flex flex-row justify-center items-center text-white`
         }>
-        <View style={tw`flex basis-1/4 flex-col justify-center`}>
-          <Text style={tw`text-white text-xl `}>{routeName}</Text>
-          <Text style={tw`text-white text-xl`}>{day}</Text>
+        <View style={tw`flex flex-row basis-2/6 justify-start items-center ml-2`}>
+          <View style={tw`w-full flex flex flex-col items-start justify-start`}>
+            <Text style={tw`text-white text-xl`}>{routeName}</Text>
+            <Text style={tw`text-white text-xl`}>{day}</Text>
+          </View>
         </View>
-        <Text style={tw`text-white text-base flex basis-2/4`}>
-          {description}
-        </Text>
-        <Pressable
-        style={tw`bg-blue-700 px-4 py-3 rounded-full flex flex-row justify-center`}
-        onPress={() => { onSelectCard(route, routeDay); }}>
-          <Icon name="chevron-right" style={tw`text-base text-center`} color="#fff" />
-        </Pressable>
+        <View style={tw`flex flex-row basis-3/6 justify-start`}>
+          <Text style={tw`text-white text-base`}>
+            {description}
+          </Text>
+        </View>
+        <View style={tw`flex flex-row basis-1/6 justify-end`}>
+          <View style={tw`mr-2`}>
+            <Pressable
+            style={tw`bg-blue-700 px-4 py-3 rounded-full`}
+            onPress={() => { onSelectCard(route, routeDay); }}>
+              <Icon name="chevron-right" style={tw`text-base text-center`} color="#fff" />
+            </Pressable>
+          </View>
+        </View>
       </View>
     );
   };

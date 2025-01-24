@@ -41,7 +41,7 @@
       "runtimeVersion": "1.0.0",
       "config": {
         "googleMaps": {
-          "apiKey": "<Your API key>"
+          "apiKey": "AIzaSyCkM6bIRELzLGyawIg7GTuD9C3c8Mgsm3s"
         }
       }
     },
