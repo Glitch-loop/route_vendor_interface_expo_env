@@ -26,7 +26,12 @@ import {
 } from '../utils/apiResponse';
 import { isTypeIInventoryOperation } from '../utils/guards';
 import { generateUUIDv4 } from '../utils/generalFunctions';
+import DAYS_OPERATIONS from '@/lib/day_operations';
 
+
+/*
+  Related to day operations
+*/
 export function createDayOperationConcept(
   idItem:string,
   idTypeOperation:string,
@@ -146,6 +151,81 @@ export async function createDayOperationBeforeTheCurrentOperation(operation:any)
   resultInsertionAllDayOperations.data = newDayOperation;
   return resultInsertionAllDayOperations;
 }
+
+/*
+  Function for determining if the inventory operation might be modifiable
+*/
+export async function determineIfInventoryOperationIsModifiable(dayOperations:IDayOperation[], currentOperation:IDayOperation):boolean {
+  let isCurrentInventoryOperationModifiable:boolean = false;
+  
+  const index = dayOperations.findIndex((dayOperation) => {
+    return dayOperation.id_day_operation === currentOperation.id_day_operation;
+  });
+
+  if (index !== -1) {
+    if (currentOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory
+     || currentOperation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
+      /* Per day, there is only 1 product devolution and 1 final inventory.
+        However, it might be another records of these types working as historic records.
+
+        These two type of records are always modifiables.
+      */
+      let isOtherOperationOfTheSameTypeAbove:boolean = false;
+      const { id_type_operation } = currentOperation;
+
+      for(let i = index + 1; i < dayOperations.length; i++) {
+        const dayOperation:IDayOperation = dayOperations[i];
+        // Verifyng there is not another product devolution operation above
+        if(dayOperation.id_type_operation === id_type_operation) {
+          isOtherOperationOfTheSameTypeAbove = true;
+          break;
+        }
+      }
+
+      if (isOtherOperationOfTheSameTypeAbove) {
+        isCurrentInventoryOperationModifiable = false;
+      } else {
+        isCurrentInventoryOperationModifiable = true;
+      }
+    } else {
+      // Verifying the inventory is the last operation (excluding product devolution inventory)
+      let isNextOperationCurrentOne:boolean = false;
+      let isAnotherInventoryOperationAbove:boolean = false;
+      if (dayOperations[index + 1].current_operation === 1) {
+        isNextOperationCurrentOne = true;
+      } else {
+        isNextOperationCurrentOne = false;
+      }
+
+      // Checking if there is another inventory operation above.
+      for(let i = index + 1; i < dayOperations.length; i++) {
+        const dayOperation:IDayOperation = dayOperations[i];
+        if (dayOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
+          isAnotherInventoryOperationAbove = true;
+        } else if(dayOperation.id_type_operation === DAYS_OPERATIONS.restock_inventory) {
+          isAnotherInventoryOperationAbove = true;
+        } else if(dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
+          isAnotherInventoryOperationAbove = true;
+        } else {
+          /* Other operations that doesn't affetc */
+        }
+      }
+
+      if(isAnotherInventoryOperationAbove === false && isNextOperationCurrentOne === true) {
+        isCurrentInventoryOperationModifiable = true;
+      } else {
+        isCurrentInventoryOperationModifiable = false;
+      }
+    }
+  } else {
+    /* It means the record was not found in the array. */
+    isCurrentInventoryOperationModifiable = false;
+  }
+
+  // Determining if the inventory is modifiable
+  return isCurrentInventoryOperationModifiable;
+}
+
 
 /* Function for creating the list of operation for the day */
 export async function createListOfDayOperations(

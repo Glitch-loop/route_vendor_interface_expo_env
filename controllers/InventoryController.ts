@@ -118,6 +118,7 @@ export function deterimenIfExistsMovement(
   return isAtLeastOneMovement;
 }
 
+
 // Related to inventory operation
 function creatingInventoryOperation(dayGeneralInformation:IDayGeneralInformation, idTypeOperation:string):IInventoryOperation {
   const inventoryOperation:IInventoryOperation = {
@@ -643,6 +644,7 @@ export async function getInventoryOperationForInventoryVisualization(id_inventor
   // );
 
   // let resultGetinventoryOperation = getDataFromApiResponse(resultGetInventoryOperation);
+  console.log("solving this function")
   const responseGetAllProductFromEmbeddedDatabase:IResponse<IProductInventory[]>
   =  await getProducts();
 

@@ -621,10 +621,9 @@ export async function getProducts():Promise<IResponse<IProductInventory[]>> {
 
     
     sqlite.closeSync();
-    console.log("Called getProducts")
     return createApiResponse<IProductInventory[]>(200, product, null, null);
   } catch(error) {
-    console.log("getProducts: ", error)
+    console.log(error)
     return createApiResponse<IProductInventory[]>(500, [], null, 'Failed getting products.');
   }
 }
