@@ -10,6 +10,18 @@ import {
  } from '../../interfaces/interfaces';
 import { findProductAmountInArray } from '../../utils/inventoryOperations';
 
+// Styles
+import {
+  headerTitleTableStyle,
+  viewTagHeaderTableStyle,
+  textHeaderTableStyle,
+  rowTableStyle,
+  cellTableStyle,
+  viewTagRowTableStyle,
+  textRowTableStyle,
+} from '../../utils/inventoryOperationTableStyles';
+
+
 /*
   To generalize as much as possible, this component was made to be capable of showing all the possible "inventory operations".
 
@@ -77,14 +89,6 @@ const TableInventoryVisualization = (
     issueInventory:boolean,
     isInventoryOperationModifiable:boolean
   }) => {
-    const headerTableStyle:string = 'w-28 flex flex-row justify-center';
-    const viewTagHeaderTableStyle:string = 'w-full flex flex-row items-center justify-center';
-    const textHeaderTableStyle:string = 'text-black text-center max-w-28 flex flex-row justify-center';
-
-    const rowTableStyle:string = '';
-    const cellTableStyle:string = 'w-28 flex flex-row justify-center';
-    const viewTagRowTableStyle:string = 'w-full flex flex-row items-center justify-center';
-    const textRowTableStyle:string = 'text-center ml-3 text-black max-w-28 flex flex-row justify-center';
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -95,7 +99,7 @@ const TableInventoryVisualization = (
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
             <DataTable.Header>
-              <DataTable.Title style={tw`${headerTableStyle}`}>
+              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                 <View style={tw`${viewTagHeaderTableStyle}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>
                     Producto
@@ -124,7 +128,7 @@ const TableInventoryVisualization = (
               <DataTable.Header>
                 {/* This field is never empty since it is necessary anytime */}
                 { initialInventory.length > 0 &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Inventario inicial
@@ -135,7 +139,7 @@ const TableInventoryVisualization = (
                 { restockInventories.length > 0 &&
                   restockInventories.map((currentInventory, index) => {
                     return (
-                      <DataTable.Title key={index} style={tw`${headerTableStyle}`}>
+                      <DataTable.Title key={index} style={tw`${headerTitleTableStyle}`}>
                         <View style={tw`${viewTagHeaderTableStyle}`}>
                           <Text style={tw`${textHeaderTableStyle}`}>
                             Re-stock
@@ -149,7 +153,7 @@ const TableInventoryVisualization = (
                   This field is never empty since it is the reason of this component (inventory operation)
                 */}
                 { inventoryWithdrawal &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Total producto llevado
@@ -158,7 +162,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { soldOperations.length > 0 &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Venta
@@ -167,7 +171,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { repositionsOperations.length > 0 &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Reposición
@@ -176,7 +180,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { inventoryOutflow &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Total salidas de inventario
@@ -185,7 +189,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { finalOperation &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Inventario final
@@ -194,7 +198,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { returnedInventory.length > 0 &&
-                    <DataTable.Title style={tw`${headerTableStyle}`}>
+                    <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                       <View style={tw`${viewTagHeaderTableStyle}`}>
                         <Text style={tw`${textHeaderTableStyle}`}>
                           Inventario regresado
@@ -203,7 +207,7 @@ const TableInventoryVisualization = (
                   </DataTable.Title>
                 }
                 { issueInventory &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Problema con inventario

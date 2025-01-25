@@ -265,7 +265,9 @@ const inventoryOperationLayout = () => {
               // Variables used by the process.
               let inventoryOperations:IInventoryOperation[] = [];
               // let productInventoryOfInventoryOperation:IProductInventory[] = [];
-  
+
+              // Setting up information used by the 'table visualization' component
+              setNameOfStores(stores.map((currentStore) => {return currentStore.store_name;}));
               setInventoryWithdrawal(true);
               setInventoryOutflow(true);
               setFinalOperation(true);
@@ -379,9 +381,6 @@ const inventoryOperationLayout = () => {
               .catch(() => {
                 setProductSoldByStore([]);
               });
-
-              // Setting up information used by the 'table visualization' component
-              setNameOfStores(stores.map((currentStore) => {return currentStore.store_name;}));
 
             } else {
               // Setting interface of the inventory visualization

@@ -10,6 +10,17 @@ import {
  } from '../../interfaces/interfaces';
 import { findProductAmountInArray } from '../../utils/inventoryOperations';
 
+// Styles 
+import {
+  headerTitleTableStyle,
+  viewTagHeaderTableStyle,
+  textHeaderTableStyle,
+  rowTableStyle,
+  cellTableStyle,
+  viewTagRowTableStyle,
+  textRowTableStyle,
+} from '../../utils/inventoryOperationTableStyles';
+
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
  is what will be displayed, so the order of how the information is stored in the arrays will influence in
@@ -36,16 +47,6 @@ const TableInventoryOperationsVisualization = (
     calculateTotal:boolean
   }) => {
 
-    const headerTableStyle:string = 'w-28 flex flex-row justify-center';
-    const viewTagHeaderTableStyle:string = 'w-full flex flex-row items-center justify-center';
-    const textHeaderTableStyle:string = 'text-black text-center max-w-28 flex flex-row justify-center';
-
-    const rowTableStyle:string = '';
-    const cellTableStyle:string = 'w-28 flex flex-row justify-center';
-    const viewTagRowTableStyle:string = 'w-full flex flex-row items-center justify-center';
-    const textRowTableStyle:string = 'text-center ml-3 text-black max-w-28 flex flex-row justify-center';
-
-
   return (
     <View style={tw`w-full flex flex-row`}>
       {(productInventories.length > 0) ?
@@ -54,7 +55,7 @@ const TableInventoryOperationsVisualization = (
           <DataTable style={tw`w-1/3`}>
             <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Title style={tw`${headerTableStyle}`}>
+              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                 <View style={tw`${viewTagHeaderTableStyle}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>
                     Producto
@@ -86,7 +87,7 @@ const TableInventoryOperationsVisualization = (
                 {/* This field is never empty since it is necessary anytime */}
                 { titleColumns.map((titleColumn, index) => {
                     return (
-                      <DataTable.Title key={index} style={tw`${headerTableStyle}`}>
+                      <DataTable.Title key={index} style={tw`${headerTitleTableStyle}`}>
                         <View style={tw`${viewTagHeaderTableStyle}`}>
                           <Text style={tw`${textHeaderTableStyle}`}>
                             {titleColumn}
@@ -97,7 +98,7 @@ const TableInventoryOperationsVisualization = (
                   })
                 }
                 { calculateTotal &&
-                  <DataTable.Title style={tw`${headerTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
                         Total

@@ -9,6 +9,17 @@ import { IDayOperation, IProductInventory } from '../../interfaces/interfaces';
 import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
 import DAYS_OPERATIONS from '../../lib/day_operations';
 
+// Styles
+import {
+  headerTitleTableStyle,
+  viewTagHeaderTableStyle,
+  textHeaderTableStyle,
+  rowTableStyle,
+  cellTableStyle,
+  viewTagRowTableStyle,
+  textRowTableStyle,
+} from '../../utils/inventoryOperationTableStyles';
+
 /*
   The intnetion of this component is to provide an interface to perform an inventory operation.
   At the moment of write this documentation there are 4 possible operations:
@@ -33,8 +44,6 @@ import DAYS_OPERATIONS from '../../lib/day_operations';
   Note: The param on which the component build the table is "operationInventory" (the information of the other arrays
   display its information around "operationInventory").
 */
-
-
 function foundCurrentProductInArray(arrProduct: IProductInventory[], current_id_product: string):number {
   let resultAmount = 0;
   if (arrProduct.length > 0) {
@@ -115,8 +124,10 @@ const TableInventoryOperations = (
             {/* Header section */}
             <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Title style={tw`w-32 flex flex-row justify-center`}>
-                <Text style={tw`text-black text-center`}>Producto</Text>
+              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                <View style={tw`${viewTagRowTableStyle}`}>
+                  <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
+                </View>
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
@@ -126,7 +137,7 @@ const TableInventoryOperations = (
                   <DataTable.Row key={product.id_product}>
                     {/* This field is never empty since it is necessary anytime */}
                     <DataTable.Cell style={tw`w-32  flex flex-row justify-center`}>
-                      <Text style={tw`text-black`}>{product.product_name}</Text>
+                      <Text style={tw`text-black text-center`}>{product.product_name}</Text>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -137,28 +148,30 @@ const TableInventoryOperations = (
             <DataTable style={tw`w-auto`}>
               <DataTable.Header>
                 { suggestedInventory.length > 0 &&
-                  <DataTable.Title style={tw`w-20 flex flex-row justify-center`}>
-                    <Text style={tw`text-black text-center`}>Sugerido</Text>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                    <View style={tw`${viewTagHeaderTableStyle}`}>
+                      <Text style={tw`${textHeaderTableStyle}`}>Sugerido</Text>
+                    </View>
                   </DataTable.Title>
                 }
                 { currentInventory.length > 0 &&
-                  <DataTable.Title style={tw`w-24 flex flex-row justify-center`}>
-                    <Text style={tw`text-black text-center`}>Inventario Actual</Text>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                    <View style={tw`${viewTagHeaderTableStyle}`}>
+                      <Text style={tw`${textHeaderTableStyle}`}>Inventario Actual</Text>
+                    </View>
                   </DataTable.Title>
                 }
-                {/*
-                  This field is never empty since it is the reason of this component (inventory operation)
-                */}
-                <DataTable.Title style={tw`w-32 flex flex-row justify-center`}>
-                  <View style={tw`max-w-20`}>
-                    <Text style={tw`text-black text-center`}>
+                {/* This field is never empty since it is the reason of this component (inventory operation) */}
+                <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <View style={tw`${viewTagHeaderTableStyle}`}>
+                    <Text style={tw`${textHeaderTableStyle}`}>
                       { determineHeaderOfInputColumn(contextForTheOperation) }
                     </Text>
                   </View>
                 </DataTable.Title>
-                <DataTable.Title style={tw`w-36 flex flex-row justify-center`}>
-                  <View style={tw`max-w-28`}>
-                    <Text style={tw`text-black text-center`}>
+                <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <View style={tw`${viewTagHeaderTableStyle}`}>
+                    <Text style={tw`${textHeaderTableStyle}`}>
                       { detemrineHeaderOfTotalColumn(contextForTheOperation) }
                     </Text>
                   </View>
