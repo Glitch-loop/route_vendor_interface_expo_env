@@ -8,6 +8,23 @@ export function capitalizeFirstLetter(input: string|undefined|null): string {
   }
 }
 
+export function capitalizeFirstLetterOfEachWord(input: string|undefined|null): string {
+  if(!input || input === undefined || input === null) {
+    return '';
+  } else {
+    let arrWords:string[] = input.split(' ');
+    let sentence:string = '';
+
+    arrWords.forEach((word:string) => {
+      sentence = sentence + word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+    });
+
+    sentence = sentence.trimEnd()
+    
+    return sentence;
+  }
+}
+
 export function avoidingUndefinedItem(item: any, itemUndefinedCase: any) {
   if (item === undefined) {
     return itemUndefinedCase;

@@ -25,7 +25,7 @@ const RouteHeader = ({onGoBack}:{onGoBack:any}) => {
       <GoButton
         iconName={'chevron-left'}
         onPressButton={onGoBack}/>
-      <Text style={tw`text-3xl text-black`}>{routeDay.route_name}</Text>
+      <Text style={tw`text-3xl text-black`}>{capitalizeFirstLetter(routeDay.route_name)}</Text>
       <Text style={tw`text-2xl text-black`}>|</Text>
       <View style={tw`flex flex-col`}>
         <Text style={tw`text-base text-black text-center`}>

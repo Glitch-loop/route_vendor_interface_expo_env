@@ -39,6 +39,7 @@ import { apiResponseProcess } from '../utils/apiResponse';
 import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 import RouteMap from '@/components/RouteMap';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 
 function buildAddress(store:IStore) {
@@ -221,13 +222,13 @@ const storeMenuLayout = () => {
           <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
             <View style={tw`flex flex-col basis-1/2 justify-around`}>
               <Text style={tw`text-black text-xl`}>Dirección</Text>
-              <Text style={tw`text-black`}>{buildAddress(store)}</Text>
+              <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(store))}</Text>
             </View>
             <View style={tw`flex flex-col basis-1/2 justify-around`}>
               <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
                 Información del cliente
               </Text>
-              <Text style={tw`text-black`}> {displayingClientInformation(store)} </Text>
+              <Text style={tw`text-black`}> {capitalizeFirstLetterOfEachWord(displayingClientInformation(store))} </Text>
             </View>
           </View>
         }
@@ -237,7 +238,7 @@ const storeMenuLayout = () => {
             <Text style={tw`text-black`}>
               { store.address_reference === '' || store.address_reference === null ?
                 'No disponible' :
-                store.address_reference
+                capitalizeFirstLetter(store.address_reference)
               }
             </Text>
           </View>

@@ -5,6 +5,7 @@ import tw from 'twrnc';
 
 // Components
 import GoButton from './generalComponents/GoButton';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 
 const RouteCard = (
@@ -32,12 +33,12 @@ const RouteCard = (
         { description ?
           <View style={tw`flex basis-8/12 flex-col justify-start`}>
             <Text style={tw`text-black text-lg`} numberOfLines={1} ellipsizeMode="head">
-              {itemName}
+              {capitalizeFirstLetterOfEachWord(itemName)}
             </Text>
-            <Text style={tw`text-black text-xs`}>{description}</Text>
+            <Text style={tw`text-black text-xs`}>{capitalizeFirstLetterOfEachWord(description)}</Text>
           </View> :
           <View style={tw`flex basis-8/12 flex-col justify-start`}>
-            <Text style={tw`text-black text-lg`}>{itemName}</Text>
+            <Text style={tw`text-black text-lg`}>{capitalizeFirstLetterOfEachWord(itemName)}</Text>
           </View>
         }
         {/* <View style={tw`flex basis-1/6 flex-col justify-center`}>

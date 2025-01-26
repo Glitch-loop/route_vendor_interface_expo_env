@@ -14,6 +14,7 @@ import { RootState } from '../../redux/store';
 import GoButton from '../generalComponents/GoButton';
 import BluetoothButton from '../generalComponents/BluetoothButton';
 import { getColorContextOfStore, getStoreFromContext } from '../../utils/routesFunctions';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 // Auxiliar function
 function getJustifyContentConfiguration(showGoBackButton:boolean, showRouteName:boolean, showStoreName:boolean, showPrinterButton:boolean):string {
@@ -89,7 +90,7 @@ const MenuHeader = ({
       }
       { showRouteName &&
         <Text style={tw`text-3xl text-black text-center align-middle`}>
-          { routeDay.route_name }
+          { capitalizeFirstLetter(routeDay.route_name) }
         </Text>
       }
       { showRouteName && showStoreName &&
@@ -97,7 +98,7 @@ const MenuHeader = ({
       }
       { showStoreName &&
         <Text style={tw`max-w-25 ml-3 text-lg text-black text-center align-middle`}>
-          { store.store_name }
+          { capitalizeFirstLetterOfEachWord(store.store_name) }
         </Text>
       }
       { showStoreName &&
