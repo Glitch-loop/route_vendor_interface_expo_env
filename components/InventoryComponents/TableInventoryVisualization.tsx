@@ -302,7 +302,6 @@ const TableInventoryVisualization = (
                       {/* Restock of product */}
                       { restockInventoryOperationAmount.length > 0 &&
                         restockInventoryOperationAmount.map((productAmount, index) => {
-                          console.log(productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle)
                           return (
                             <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                               <View style={tw`${viewTagRowTableStyle}`}>

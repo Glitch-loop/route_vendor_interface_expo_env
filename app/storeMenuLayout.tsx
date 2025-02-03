@@ -220,16 +220,16 @@ const storeMenuLayout = () => {
       <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
         { store !== null &&
           <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
-            <View style={tw`flex flex-col basis-1/2 justify-around`}>
+            <View style={tw`flex flex-col justify-around`}>
               <Text style={tw`text-black text-xl`}>Dirección</Text>
               <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(store))}</Text>
             </View>
-            <View style={tw`flex flex-col basis-1/2 justify-around`}>
+            {/* <View style={tw`flex flex-col basis-1/2 justify-around`}>
               <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
                 Información del cliente
               </Text>
               <Text style={tw`text-black`}> {capitalizeFirstLetterOfEachWord(displayingClientInformation(store))} </Text>
-            </View>
+            </View> */}
           </View>
         }
         { store !== null &&
