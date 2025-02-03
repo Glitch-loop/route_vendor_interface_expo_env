@@ -23,10 +23,19 @@ const userSlice = createSlice({
         status:    action.payload.status,
       };
     },
+    logoutUser: (state, action: PayloadAction<null>) => {
+      return {
+        id_vendor: '',
+        name:      '',
+        cellphone: '',
+        password:  '',
+        status:    1,
+      }
+    }
   },
 });
 
 
-export const { setUser } = userSlice.actions;
+export const { setUser, logoutUser } = userSlice.actions;
 
 export default userSlice.reducer;
