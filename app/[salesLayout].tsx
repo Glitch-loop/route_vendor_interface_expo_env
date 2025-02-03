@@ -132,6 +132,7 @@ function productCommitedValidation(productInventory:IProductInventory[],
   let errorTitle:string = 'Cantidad a vender excede el inventario.';
   let errorCaption:string = '';
   const productCommited:IProductInventory[] = [];
+  const orderedProductCommited:IProductInventory[] = [];
 
   // Verify the amount between selling and repositioning don't be grater than the current inventory
   productInventory.forEach((product:IProductInventory) => {
@@ -228,8 +229,23 @@ function productCommitedValidation(productInventory:IProductInventory[],
     Toast.show({type: 'error', text1:errorTitle, text2: errorCaption});
   }
 
-  return productCommited;
-  //productsToCommit;
+  // Ordering the product by how they were added during the route
+  productsToCommit.forEach((productToCommit:IProductInventory) => {
+    const { id_product } = productToCommit;
+
+    const productCommitedFound:IProductInventory|undefined = productCommited.find((currentProductCommited:IProductInventory) => {
+      return id_product === currentProductCommited.id_product;
+    });
+    console.log(productCommitedFound)
+    if(productCommitedFound !== undefined) {
+      orderedProductCommited.push(productCommitedFound)
+    }
+  });
+
+  //orderedProductCommited.reverse();
+
+  return orderedProductCommited;//productCommited;
+
 }
 
 function determiningNextStatusOfStore(foundStore: IStore&IStoreStatusDay|undefined):IStore&IStoreStatusDay {
