@@ -1,6 +1,6 @@
 //Libraries
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import tw from 'twrnc';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -62,6 +62,7 @@ const routeSelectionLayout = () => {
   const [pendingToAcceptRouteDay, setPendingToAcceptRouteDay]
     = useState<ICompleteRouteDay|undefined>(undefined);
 
+  const [refreshing, setRefreshing] = useState(false);
 
   // Setting the current operation 'start shift inventory' (first operation of the day).
   dispatch(setCurrentOperation({
@@ -72,7 +73,32 @@ const routeSelectionLayout = () => {
     current_operation: 0,
   }));
 
-  useEffect(() => {
+
+  useEffect(() => { startApplication() },[]);
+
+  // Auxiliar functions
+  const storeRouteSelected = (route:IRoute, routeDay:ICompleteRouteDay) => {
+    /*
+      In this function, it is only stored information in the redux state and not in the
+      embedded database, because it is not know if the vendor is going to change from one route
+      to another route.
+      In this way, when the vendor finishes the initial inventory process is when the route information is
+      actually stored in the embedded database.
+    */
+
+    // Storing information realted to the route.
+    dispatch(setRouteInformation(route));
+
+    // Storing information related to the day
+    dispatch(setDayInformation(routeDay.day));
+
+    //Storing information related to the relation between the route and the day.
+    dispatch(setRouteDay(routeDay));
+
+    router.push('/selectionRouteOperationLayout');
+  };
+
+  const startApplication = () => {
     getDayOperationsOfTheWorkDay()
     .then(async (dayOperationsResponse:IResponse<IDayOperation[]>) => {
       let dayOperations:IDayOperation[] = getDataFromApiResponse(dayOperationsResponse);
@@ -116,29 +142,9 @@ const routeSelectionLayout = () => {
         text2: 'Ha habido un error durante la consulta de la información de las rutas, por favor intente nuevamente',
       });
     });
-  },[]);
+  }
 
-  // Auxiliar functions
-  const storeRouteSelected = (route:IRoute, routeDay:ICompleteRouteDay) => {
-    /*
-      In this function, it is only stored information in the redux state and not in the
-      embedded database, because it is not know if the vendor is going to change from one route
-      to another route.
-      In this way, when the vendor finishes the initial inventory process is when the route information is
-      actually stored in the embedded database.
-    */
-
-    // Storing information realted to the route.
-    dispatch(setRouteInformation(route));
-
-    // Storing information related to the day
-    dispatch(setDayInformation(routeDay.day));
-
-    //Storing information related to the relation between the route and the day.
-    dispatch(setRouteDay(routeDay));
-
-    router.push('/selectionRouteOperationLayout');
-  };
+  
 
   //Handlers
   const handlerOnSelectARoute = (route:IRoute, routeDay:ICompleteRouteDay) => {
@@ -162,6 +168,15 @@ const routeSelectionLayout = () => {
     setPendingToAcceptRoute(undefined);
     setPendingToAcceptRouteDay(undefined);
   };
+
+  const onRefresh = () => {
+    startApplication();
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+
+  }
 
   const handlerOnAcceptMakeRoute = () => {
     if(pendingToAcceptRoute !== undefined && pendingToAcceptRouteDay !== undefined) {
@@ -191,7 +206,9 @@ const routeSelectionLayout = () => {
             </View>
         </ActionDialog>
       <MainMenuHeader/>
-      <ScrollView>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
         { routes.length > 0 ?
           routes.map((route:ICompleteRoute) => {
             return <View

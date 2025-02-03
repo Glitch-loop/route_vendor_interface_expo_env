@@ -30,10 +30,12 @@ application to the application gets closed for one reason.
 
 ### Add the action to refresh the screen.
 
+
 ### In route selection, mark the day that is is turn.
+- DONE
 
 ### Add logic to the exit buttom.
-
+- DONE
 ### 
 
 ### Implementing a sequential addition for the new products

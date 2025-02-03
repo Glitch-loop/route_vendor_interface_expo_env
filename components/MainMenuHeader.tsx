@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import tw from 'twrnc';
 
-import { logoutUser } from '../redux/slices/userSlice'
 
+import { useRouter, Router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { useRouter, Router } from 'expo-router';
+import { logoutUser } from '../redux/slices/userSlice'
 
 
 const MainMenuHeader = () => {
