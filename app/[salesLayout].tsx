@@ -166,7 +166,6 @@ function productCommitedValidation(productInventory:IProductInventory[],
         isNewAmountAllowed = false;
         errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
       } else if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
-        console.log("a")
         productCommited.unshift({
           ...productToCommitFound,
           amount: amountToCommit,
@@ -176,7 +175,6 @@ function productCommitedValidation(productInventory:IProductInventory[],
 
         if (amountInStockOfCurrentProduct - amountShared > 0) {
           errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
-          console.log("b")
           productCommited.unshift({
             ...productToCommitFound,
             amount: amountInStockOfCurrentProduct - amountShared,
@@ -193,7 +191,6 @@ function productCommitedValidation(productInventory:IProductInventory[],
       amountToCommit = productToCommitFound.amount;
       /* It means that only one concept (product reposition or sale) is outflowing product. */
       if (amountToCommit <= amountInStockOfCurrentProduct) {
-        console.log("c")
         productCommited.unshift({
           ...productToCommitFound,
           amount: amountToCommit,
@@ -201,7 +198,6 @@ function productCommitedValidation(productInventory:IProductInventory[],
       } else {
         isNewAmountAllowed = false;
         if(amountInStockOfCurrentProduct > 0) {
-          console.log("d")
           productCommited.unshift({
             ...productToCommitFound,
             amount: amountInStockOfCurrentProduct,
@@ -236,7 +232,6 @@ function productCommitedValidation(productInventory:IProductInventory[],
     const productCommitedFound:IProductInventory|undefined = productCommited.find((currentProductCommited:IProductInventory) => {
       return id_product === currentProductCommited.id_product;
     });
-    console.log(productCommitedFound)
     if(productCommitedFound !== undefined) {
       orderedProductCommited.push(productCommitedFound)
     }

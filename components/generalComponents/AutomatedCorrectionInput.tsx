@@ -53,14 +53,21 @@ const AutomatedCorrectionNumberInput = ({
     setTimeout(() => {
       // input === '' && lastInput === ''
       if (input === '' && !Keyboard.isVisible()) {
+        console.log("verifying if user type something")
         /* User didn't type anything */
         if (lastInput === '') {
+          console.log("nothing")
           input = '0';
         } else {
+          console.log("something")
           /* There is instructions */
         }
+
+
         handleTextChange(input);
       } else {
+        handleTextChange(inputValue)
+        console.log("user didn't type anything")
         /* There is no instructions */
       }
     }, 300);
