@@ -56,13 +56,13 @@ const routeSelectionLayout = () => {
   const router:Router = useRouter();
 
   // Use states definition
-  const [routes, setRoutes] = useState<ICompleteRoute[]>([]);
+  const [routes, setRoutes] = useState<ICompleteRoute[]|undefined>(undefined);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [pendingToAcceptRoute, setPendingToAcceptRoute] = useState<IRoute|undefined>(undefined);
   const [pendingToAcceptRouteDay, setPendingToAcceptRouteDay]
     = useState<ICompleteRouteDay|undefined>(undefined);
-
   const [refreshing, setRefreshing] = useState(false);
+
 
   // Setting the current operation 'start shift inventory' (first operation of the day).
   dispatch(setCurrentOperation({
@@ -127,7 +127,7 @@ const routeSelectionLayout = () => {
           text2: 'Consultando rutas disponibles para el vendedor'});
 
         getAvailableRoutesForTheVendor(user)
-        .then((routesOfVendor:ICompleteRoute[]) => { console.log(routesOfVendor); setRoutes(routesOfVendor); })
+        .then((routesOfVendor:ICompleteRoute[]) => { setRoutes(routesOfVendor); })
         .catch(() => {
           Toast.show({type: 'error',
             text1:'Error durante la consulta de las rutas',
@@ -171,6 +171,7 @@ const routeSelectionLayout = () => {
 
   const onRefresh = () => {
     startApplication();
+    setRoutes(undefined);
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
@@ -209,7 +210,12 @@ const routeSelectionLayout = () => {
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-        { routes.length > 0 ?
+        { routes === undefined ?
+          <View style={tw`h-64 flex flex-col justify-center items-center`}>
+            <ActivityIndicator size={'large'} />
+          </View>
+        :        
+          routes.length > 0 ?
           routes.map((route:ICompleteRoute) => {
             return <View
               style={tw`w-full flex flex-col items-center`}
@@ -233,8 +239,8 @@ const routeSelectionLayout = () => {
             </View>;
           })
           :
-          <View style={tw`h-full flex flex-col justify-center`}>
-            <ActivityIndicator size={'large'} />
+          <View style={tw`h-64 flex flex-row justify-center items-center`}>
+            <Text style={tw`text-2xl font-bold`}>No tienes rutas asignadas</Text>
           </View>
         }
       </ScrollView>
