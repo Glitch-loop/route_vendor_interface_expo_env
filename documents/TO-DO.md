@@ -42,5 +42,7 @@ application to the application gets closed for one reason.
 
 
 ### Fixing inventory visualization bug.
+- SOLVED
 
 
+### Implementing a more clear header for the inventory operation visualization.

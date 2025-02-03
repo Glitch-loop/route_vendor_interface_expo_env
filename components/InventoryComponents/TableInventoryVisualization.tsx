@@ -156,8 +156,8 @@ const TableInventoryVisualization = (
                 { inventoryWithdrawal &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Total producto llevado
+                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
+                        Salida total
                       </Text>
                     </View>
                   </DataTable.Title>
@@ -175,7 +175,7 @@ const TableInventoryVisualization = (
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
-                        Reposición
+                        Cambio
                       </Text>
                     </View>
                   </DataTable.Title>
@@ -183,8 +183,8 @@ const TableInventoryVisualization = (
                 { inventoryOutflow &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Total salidas de inventario
+                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
+                        Total vendido y cambiado
                       </Text>
                     </View>
                   </DataTable.Title>
@@ -202,7 +202,7 @@ const TableInventoryVisualization = (
                     <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                       <View style={tw`${viewTagHeaderTableStyle}`}>
                         <Text style={tw`${textHeaderTableStyle}`}>
-                          Inventario regresado
+                          Inventario físico
                         </Text>
                       </View>
                   </DataTable.Title>
@@ -210,7 +210,7 @@ const TableInventoryVisualization = (
                 { issueInventory &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
+                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
                         Problema con inventario
                       </Text>
                     </View>
