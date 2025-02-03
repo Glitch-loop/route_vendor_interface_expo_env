@@ -208,6 +208,7 @@ const routeSelectionLayout = () => {
                       route={route}
                       routeDay={routeDay}
                       onSelectCard={handlerOnSelectARoute}
+                      todayTurn={determineCurrentDayByDayName(routeDay.day.day_name!)}
                       />
                   );
                 }

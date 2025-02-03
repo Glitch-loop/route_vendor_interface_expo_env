@@ -14,6 +14,7 @@ const RouteSelectionCard = ({
     onSelectCard,
     route,
     routeDay,
+    todayTurn
   }:{
     routeName:string,
     day:string,
@@ -21,11 +22,13 @@ const RouteSelectionCard = ({
     onSelectCard:any,
     route:IRoute,
     routeDay:ICompleteRouteDay,
+    todayTurn:boolean
   }) => {
     return (
       <View style={
-        tw`my-2 bg-blue-500 rounded w-11/12 h-auto 
-          flex flex-row justify-center items-center text-white`
+        tw`my-2 rounded w-11/12 h-auto 
+          flex flex-row justify-center items-center text-white
+          ${todayTurn ? 'bg-green-700' : 'bg-blue-500'}`
         }>
         <View style={tw`flex flex-row basis-2/6 justify-start items-center ml-2`}>
           <View style={tw`w-full flex flex flex-col items-start justify-start`}>
