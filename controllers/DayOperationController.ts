@@ -155,7 +155,7 @@ export async function createDayOperationBeforeTheCurrentOperation(operation:any)
 /*
   Function for determining if the inventory operation might be modifiable
 */
-export async function determineIfInventoryOperationIsModifiable(dayOperations:IDayOperation[], currentOperation:IDayOperation):boolean {
+export function determineIfInventoryOperationIsModifiable(dayOperations:IDayOperation[], currentOperation:IDayOperation):boolean {
   let isCurrentInventoryOperationModifiable:boolean = false;
   
   const index = dayOperations.findIndex((dayOperation) => {
