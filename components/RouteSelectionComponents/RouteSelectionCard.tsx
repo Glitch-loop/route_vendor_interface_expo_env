@@ -5,9 +5,9 @@ import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 // Utils
-import { IRoute, ICompleteRouteDay } from '../interfaces/interfaces';
+import { IRoute, ICompleteRouteDay } from '../../interfaces/interfaces';
 
-const Card = ({
+const RouteSelectionCard = ({
     routeName,
     day,
     description,
@@ -51,4 +51,4 @@ const Card = ({
     );
   };
 
-export default Card;
+export default RouteSelectionCard;

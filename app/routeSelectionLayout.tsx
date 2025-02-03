@@ -21,7 +21,7 @@ import { setProductInventory } from '../redux/slices/productsInventorySlice';
 import { setStores } from '../redux/slices/storesSlice';
 
 // Components
-import Card from '../components/Card';
+import RouteSelectionCard from '../components/RouteSelectionComponents/RouteSelectionCard';
 import MainMenuHeader from '../components/MainMenuHeader';
 import ActionDialog from '../components/ActionDialog';
 
@@ -36,7 +36,7 @@ import {
 
 // Utils
 import DAYS from '../lib/days';
-import { current_day_name } from '../utils/momentFormat';
+import { current_day_name, determineCurrentDayByDayName } from '../utils/momentFormat';
 import DAYS_OPERATIONS from '../lib/day_operations';
 import { getDataFromApiResponse } from '../utils/apiResponse';
 
@@ -143,7 +143,7 @@ const routeSelectionLayout = () => {
   //Handlers
   const handlerOnSelectARoute = (route:IRoute, routeDay:ICompleteRouteDay) => {
     // Verifying that the selected route actually corresponds to make today.
-    if (current_day_name().toLocaleLowerCase() === DAYS[routeDay.id_day].day_name.toLocaleLowerCase()){
+    if (determineCurrentDayByDayName(DAYS[routeDay.id_day].day_name)){
       // The route selected is the route that corresponds to make today.
       storeRouteSelected(route, routeDay);
       setShowDialog(false);
@@ -200,7 +200,7 @@ const routeSelectionLayout = () => {
               { route.routeDays.map((routeDay:ICompleteRouteDay) => {
                 if (routeDay.id_route === route.id_route) {
                   return (
-                    <Card
+                    <RouteSelectionCard
                       key={routeDay.id_route_day}
                       routeName={route.route_name}
                       day={routeDay.day.day_name!}

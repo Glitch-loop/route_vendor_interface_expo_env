@@ -19,3 +19,7 @@ export function current_day_name() {
 export function time_posix_format() {
   return dayjs().unix(); // Returns the POSIX timestamp
 }
+
+export function determineCurrentDayByDayName(dayToDetermine:string) {
+  return current_day_name().toLocaleLowerCase() === dayToDetermine.toLocaleLowerCase()
+}
