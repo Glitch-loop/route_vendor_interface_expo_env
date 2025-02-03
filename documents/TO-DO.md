@@ -38,7 +38,7 @@ application to the application gets closed for one reason.
 
 
 ### In the inventory visualization, those cells different of 0 color them for a better identification.
-
+- SOLVED
 
 
 ### Fixing inventory visualization bug.

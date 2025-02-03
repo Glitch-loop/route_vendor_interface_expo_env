@@ -349,7 +349,7 @@ const inventoryOperationLayout = () => {
               await getTotalInventoryOfAllTransactionByIdOperationType(DAYS_OPERATIONS.product_reposition)
                 .then((response:IProductInventory[]) => { setProductRepositionTransactions(response); });
   
-              await getTotalInventoryOfAllTransactionByIdOperationType(DAYS_OPERATIONS.product_reposition)
+              await getTotalInventoryOfAllTransactionByIdOperationType(DAYS_OPERATIONS.sales)
                 .then((response:IProductInventory[]) => { setProductSoldTransactions(response); });
   
                 console.log("Getting inventory operation per STORE")
