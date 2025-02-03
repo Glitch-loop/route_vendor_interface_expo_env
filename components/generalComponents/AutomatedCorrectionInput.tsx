@@ -56,19 +56,16 @@ const AutomatedCorrectionNumberInput = ({
         console.log("verifying if user type something")
         /* User didn't type anything */
         if (lastInput === '') {
-          console.log("nothing")
           input = '0';
         } else {
-          console.log("something")
           /* There is instructions */
         }
 
 
         handleTextChange(input);
       } else {
+        /* Since there is not a new input, then it will let the current value of the input */
         handleTextChange(inputValue)
-        console.log("user didn't type anything")
-        /* There is no instructions */
       }
     }, 300);
   };

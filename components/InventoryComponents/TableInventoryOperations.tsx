@@ -136,8 +136,8 @@ const TableInventoryOperations = (
                 return (
                   <DataTable.Row key={product.id_product}>
                     {/* This field is never empty since it is necessary anytime */}
-                    <DataTable.Cell style={tw`w-32  flex flex-row justify-center`}>
-                      <Text style={tw`text-black text-center`}>{product.product_name}</Text>
+                    <DataTable.Cell style={tw`${cellTableStyle}`}>
+                      <Text style={tw`text-black ${textRowTableStyle}`}>{product.product_name}</Text>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -215,24 +215,24 @@ const TableInventoryOperations = (
                   return (
                     <DataTable.Row key={product.id_product}>
                       { suggestedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`w-20 flex flex-row justify-center`}>
-                          <Text style={tw`text-black`}>{suggestedAmount}</Text>
+                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                          <Text style={tw`text-black ${textRowTableStyle}`}>{suggestedAmount}</Text>
                         </DataTable.Cell>
                       }
                       { currentInventory.length > 0 &&
-                        <DataTable.Cell style={tw`w-24 flex flex-row justify-center`}>
-                          <Text style={tw`text-black`}>{currentInventoryAmount}</Text>
+                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                          <Text style={tw`text-black ${textRowTableStyle}`}>{currentInventoryAmount}</Text>
                         </DataTable.Cell>
                       }
-                      <DataTable.Cell style={tw`w-32 flex flex-row justify-center`}>
+                      <DataTable.Cell style={tw`${cellTableStyle}`}>
                         <View style={tw`w-8/12`}>
                           <AutomatedCorrectionNumberInput
                             amount={amount}
                             onChangeAmount={handlerChangeInventory}/>
                         </View>
                       </DataTable.Cell>
-                      <DataTable.Cell style={tw`w-36 flex flex-row justify-center`}>
-                        <Text style={tw`text-black`}>{ amount + currentInventoryAmount }</Text>
+                      <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <Text style={tw`text-black ${textRowTableStyle}`}>{ amount + currentInventoryAmount }</Text>
                       </DataTable.Cell>
                     </DataTable.Row>
                   );
