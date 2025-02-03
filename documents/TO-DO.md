@@ -23,6 +23,19 @@ the app accidentally gets connected to another printer.
 ### Implementing a better workflow for the product devolution
 It might be clearer for the vendor a guided process
 
+### Context for the current sale.
+The more lasts a sale, it is more probably that the sale gets lost. This might be by several factors from the user moves to another 
+application to the application gets closed for one reason.
+
+
+### Add the action to refresh the screen.
+
+### In route selection, mark the day that is is turn.
+
+### Add logic to the exit buttom.
+
+### 
+
 ### Implementing a sequential addition for the new products
 - SOLVED
 
@@ -31,11 +44,6 @@ It might be clearer for the vendor a guided process
 
 ### At the moment of scrolldown, this action erase the information of an input.
 - SOLVED
-
-### Context for the current sale.
-The more lasts a sale, it is more probably that the sale gets lost. This might be by several factors from the user moves to another 
-application to the application gets closed for one reason.
-
 
 ### In the inventory visualization, those cells different of 0 color them for a better identification.
 - SOLVED
@@ -46,3 +54,7 @@ application to the application gets closed for one reason.
 
 
 ### Implementing a more clear header for the inventory operation visualization.
+- SOLVED
+
+### Inventory operation modifiable is not correctly determined.
+- SOLVED
