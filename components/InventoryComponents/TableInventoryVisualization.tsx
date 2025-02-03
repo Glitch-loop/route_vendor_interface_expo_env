@@ -19,6 +19,7 @@ import {
   cellTableStyle,
   viewTagRowTableStyle,
   textRowTableStyle,
+  cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 
 
@@ -279,7 +280,7 @@ const TableInventoryVisualization = (
                       {/* Product (product identification) */}
                       {/* Suggested inventory */}
                       { suggestedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${suggestedAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {suggestedAmount}
@@ -289,7 +290,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Initial inventory */}
                       { initialInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${initialInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {initialInventoryOperationAmount}
@@ -301,8 +302,9 @@ const TableInventoryVisualization = (
                       {/* Restock of product */}
                       { restockInventoryOperationAmount.length > 0 &&
                         restockInventoryOperationAmount.map((productAmount, index) => {
+                          console.log(productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle)
                           return (
-                            <DataTable.Cell key={index} style={tw`${cellTableStyle}`}>
+                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                               <View style={tw`${viewTagRowTableStyle}`}>
                                 <Text style={tw`${textRowTableStyle}`}>
                                   {productAmount}
@@ -314,7 +316,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Inflow product */}
                       { inventoryWithdrawal === true &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${withdrawalAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {withdrawalAmount}
@@ -324,7 +326,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Product sold */}
                       { soldOperations.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${soldInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {soldInventoryOperationAmount}
@@ -334,7 +336,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Product reposition */}
                       { repositionsOperations.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${repositionInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {repositionInventoryOperationAmount}
@@ -344,7 +346,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Outflow product */}
                       { inventoryOutflow === true &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${inventoryOutflowAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {inventoryOutflowAmount}
@@ -354,7 +356,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Final inventory */}
                       { finalOperation === true &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${finalOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {finalOperationAmount}
@@ -364,7 +366,7 @@ const TableInventoryVisualization = (
                       }
                       {/* Returned inventory */}
                       { returnedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${returnedInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {returnedInventoryOperationAmount}

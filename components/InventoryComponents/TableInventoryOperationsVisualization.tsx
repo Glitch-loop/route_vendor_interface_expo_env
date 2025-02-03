@@ -19,6 +19,7 @@ import {
   cellTableStyle,
   viewTagRowTableStyle,
   textRowTableStyle,
+  cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 
 /*
@@ -150,7 +151,7 @@ const TableInventoryOperationsVisualization = (
                       { restockInventoryOperationAmount.length > 0 &&
                         restockInventoryOperationAmount.map((productAmount, index) => {
                           return (
-                            <DataTable.Cell key={index} style={tw`${cellTableStyle}`}>
+                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                               <View style={tw`${viewTagRowTableStyle}`}>
                                 <Text style={tw`${textRowTableStyle}`}>
                                   {productAmount}
@@ -162,7 +163,7 @@ const TableInventoryOperationsVisualization = (
                       }
                       {/* Inflow product */}
                       { calculateTotal === true &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${totalOfTable > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {totalOfTable}
