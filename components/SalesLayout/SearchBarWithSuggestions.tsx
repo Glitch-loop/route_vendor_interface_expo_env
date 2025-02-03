@@ -78,7 +78,7 @@ const SearchBarWithSuggestions = ({
         <Searchbar
           clearIcon={() => {return '';}}
           icon={() => <MaterialIcons name="search" size={24} color="gray" />}
-          style={tw`border border-solid`}
+          style={tw`border border-solid text-xl`}
           placeholder="Search"
           onChangeText={onChangeSearch}
           value={searchQuery}
@@ -91,7 +91,7 @@ const SearchBarWithSuggestions = ({
             key={item[keyField]}
             style={tw`p-3 border border-0 border-b-2 border-solid`}
             onPress={() => onSelectItem(item)}>
-            <Text>
+            <Text style={tw`text-xl`}>
               {item[fieldToSearch]}
             </Text>
           </Pressable>

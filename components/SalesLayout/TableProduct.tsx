@@ -43,8 +43,8 @@ const TableProduct = ({
         newItem.amount = 1;
 
         setCommitedProduct([
-          ...commitedProducts,
           {...newItem},
+          ...commitedProducts,
         ]);
       }
     };
@@ -71,7 +71,11 @@ const TableProduct = ({
 
   return (
     <View style={tw`w-full flex-1 items-center`}>
-      <View style={tw`w-full mt-3 flex flex-row justify-center`}>
+      <SectionTitle
+        title={sectionTitle}
+        caption={sectionCaption}
+        titlePositionStyle={'justify-center items-center'}/>
+      <View style={tw`w-full mt-3 flex flex-row justify-center my-2`}>
         <SearchBarWithSuggestions
           selectedCatalog={commitedProducts}
           catalog={catalog}
@@ -80,10 +84,6 @@ const TableProduct = ({
           onSelectHandler={onSelectAnItem}
           />
       </View>
-      <SectionTitle
-        title={sectionTitle}
-        caption={sectionCaption}
-        titlePositionStyle={'justify-center items-center my-2'}/>
       <HeaderProduct />
       { commitedProducts.length > 0 &&
         commitedProducts.map(product =>

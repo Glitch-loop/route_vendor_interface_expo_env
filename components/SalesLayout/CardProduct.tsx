@@ -62,13 +62,13 @@ const CardProduct = ({
       bg-amber-200/75 border-solid border rounded-md
       flex flex-row justify-center items-center
       `}>
-      <View style={tw`flex flex-row basis-2/6 justify-center`}>
-        <Text style={tw`text-black`}>{productName}</Text>
+      <View style={tw`flex flex-row basis-3/12 justify-center`}>
+        <Text style={tw`text-black text-base`}>{productName}</Text>
       </View>
-      <View style={tw`flex flex-row basis-1/6 justify-center`}>
-        <Text style={tw`text-black`}>${price}</Text>
+      <View style={tw`flex flex-row basis-2/12 justify-center`}>
+        <Text style={tw`text-black text-lg`}>${price}</Text>
       </View>
-      <View style={tw`flex flex-row basis-2/6 justify-around items-center`}>
+      <View style={tw`flex flex-row basis-4/12 justify-around items-center`}>
         <ActionButton
           style={'bg-red-600'}
           onClick={handleOnMinusOne}>
@@ -86,8 +86,8 @@ const CardProduct = ({
           <Icon name="plus" style={tw`text-base text-center`} color="#000"/>
         </ActionButton>
       </View>
-      <View style={tw`flex flex-row basis-1/6 justify-center`}>
-        <Text style={tw`text-black`}>${subtotal}</Text>
+      <View style={tw`flex flex-row basis-3/12 justify-center`}>
+        <Text style={tw`text-black text-lg`}>${subtotal}</Text>
       </View>
       <View style={tw`w-full h-full absolute bottom-2 left-2 flex flex-row justify-end items-start`}>
         <View>

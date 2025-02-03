@@ -139,7 +139,7 @@ function productCommitedValidation(productInventory:IProductInventory[],
     const idCurrentProduct:string = product.id_product;
     let amountToCommit:number = 0;
     let amountShared:number = 0;
-    // Find the product in the inventory after adding product
+    // Find the product in the inventory before adding the product
     let productToCommitFound:IProductInventory|undefined =
     productsToCommit.find((productRepositionToCommit:IProductInventory) =>
         { return productRepositionToCommit.id_product === idCurrentProduct; });
@@ -165,7 +165,8 @@ function productCommitedValidation(productInventory:IProductInventory[],
         isNewAmountAllowed = false;
         errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
       } else if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
-        productCommited.push({
+        console.log("a")
+        productCommited.unshift({
           ...productToCommitFound,
           amount: amountToCommit,
         });
@@ -174,7 +175,8 @@ function productCommitedValidation(productInventory:IProductInventory[],
 
         if (amountInStockOfCurrentProduct - amountShared > 0) {
           errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
-          productCommited.push({
+          console.log("b")
+          productCommited.unshift({
             ...productToCommitFound,
             amount: amountInStockOfCurrentProduct - amountShared,
           });
@@ -190,14 +192,16 @@ function productCommitedValidation(productInventory:IProductInventory[],
       amountToCommit = productToCommitFound.amount;
       /* It means that only one concept (product reposition or sale) is outflowing product. */
       if (amountToCommit <= amountInStockOfCurrentProduct) {
-        productCommited.push({
+        console.log("c")
+        productCommited.unshift({
           ...productToCommitFound,
           amount: amountToCommit,
         });
       } else {
         isNewAmountAllowed = false;
         if(amountInStockOfCurrentProduct > 0) {
-          productCommited.push({
+          console.log("d")
+          productCommited.unshift({
             ...productToCommitFound,
             amount: amountInStockOfCurrentProduct,
           });

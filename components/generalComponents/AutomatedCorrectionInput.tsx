@@ -68,7 +68,7 @@ const AutomatedCorrectionNumberInput = ({
 
   return (
     <TextInput
-    style={tw`mx-1 border border-solid bg-white rounded-md h-10 text-center`}
+    style={tw`mx-1 text-lg border border-solid bg-white rounded-md h-12 text-center`}
     value={inputValue}
     onTouchStart={ () => {
       setIsTypping(true);
