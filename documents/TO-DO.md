@@ -5,8 +5,13 @@ Created at: 01/25/25
 Status: Done
 Finished at: 01/25/25
 
+### Search a store by geography proximity.
+- At the moment of selling to a client that is not in the current route, instead of searching by store's name, it is better to search a client by geography approximation.
+- At the moment of adding a new client. It is better to display a map showing the store to make aware to the user if that client has been added previously.
 
 ### Implementing tracking of vendor's position.
+
+### Detected bug: When you update an inventory operation, it is not being updated in the vendor's stock
 
 ### Implementing the IP or mac of the printer in case that the vendor far from the printer.
 - During a work day it was realized that the connection of the printer is a little bit delicate being prone the application of 
@@ -16,20 +21,18 @@ the app accidentally gets connected to another printer.
 
 ### What happens with the special case on which the vendor changes one product for another one or preventing product devolution in the future?
 
-### Search a store by geography proximity.
-- At the moment of selling to a client that is not in the current route, instead of searching by store's name, it is better to search a client by geography approximation.
-- At the moment of adding a new client. It is better to display a map showing the store to make aware to the user if that client has been added previously.
 
 ### Implementing a better workflow for the product devolution
 It might be clearer for the vendor a guided process
+- DONE 
 
 ### Context for the current sale.
 The more lasts a sale, it is more probably that the sale gets lost. This might be by several factors from the user moves to another 
 application to the application gets closed for one reason.
 
 
-### Add the action to refresh the screen.
-
+### Add the action to refresh the screen in the route selection layout.
+- DONE
 
 ### In route selection, mark the day that is is turn.
 - DONE
@@ -60,3 +63,16 @@ application to the application gets closed for one reason.
 
 ### Inventory operation modifiable is not correctly determined.
 - SOLVED
+
+
+
+
+1. User begins a sale
+2. User adds producs
+3. if a changes is detected only the changes will be upated,
+
+
+Schema:
+- Product inventory
++ Store of the selling
++ ID of the operation

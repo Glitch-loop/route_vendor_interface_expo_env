@@ -18,6 +18,7 @@ import {
   cellTableStyle,
   viewTagRowTableStyle,
   textRowTableStyle,
+  cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 
 /*
@@ -81,7 +82,7 @@ function determineHeaderOfInputColumn(context:number):string {
   if (context === 1) {
     result = 'Merma a reportar';
   } else if (context === 2) {
-    result = 'Producto a devolver';
+    result = 'Producto a regresar';
   } else {
     result = 'Producto a llevar';
   }
@@ -93,7 +94,7 @@ function detemrineHeaderOfTotalColumn(context:number):string {
   if (context === 1) {
     result = 'Merma a entregar';
   } else if (context === 2) {
-    result = 'Producto a devolver';
+    result = 'Producto a regresar';
   } else {
     result = 'Inventario a llevar';
   }
@@ -215,12 +216,12 @@ const TableInventoryOperations = (
                   return (
                     <DataTable.Row key={product.id_product}>
                       { suggestedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${suggestedAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <Text style={tw`text-black ${textRowTableStyle}`}>{suggestedAmount}</Text>
                         </DataTable.Cell>
                       }
                       { currentInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <Text style={tw`text-black ${textRowTableStyle}`}>{currentInventoryAmount}</Text>
                         </DataTable.Cell>
                       }
@@ -231,7 +232,7 @@ const TableInventoryOperations = (
                             onChangeAmount={handlerChangeInventory}/>
                         </View>
                       </DataTable.Cell>
-                      <DataTable.Cell style={tw`${cellTableStyle}`}>
+                      <DataTable.Cell style={tw`${amount + currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                         <Text style={tw`text-black ${textRowTableStyle}`}>{ amount + currentInventoryAmount }</Text>
                       </DataTable.Cell>
                     </DataTable.Row>

@@ -477,6 +477,72 @@ function substractingProductFromCurrentInventory(currentInventory: IProductInven
     return updatedInventory;
 }
 
+/*
+  Function that validates if it is a "valid reposition".
+  
+  In the context of the function, the reposition is defined as all the products that conforms the proposal 
+  of reposition to repose a product devolution.
+
+  For resolving a product devolution (repose those product considered as spoiled products), all the combinations will be
+  possible, having as limit the first substraction that gives a favorable balance for the vendor.
+*/
+function validatingIfRepositionIsValid(productToCommit: IProductInventory[], productDevolution: IProductInventory[], productReposition: IProductInventory[]):boolean {
+  let result:boolean = false;   
+  let lastModification:IProductInventory = {
+    id_product: '',
+    product_name: '',
+    barcode: null,
+    weight: null,
+    unit: null,
+    comission: 0,
+    price: 0,
+    product_status: 0,
+    order_to_show: 0,
+    amount: 0,
+  }
+
+  let totalValueOfProductsToCommit:number = productToCommit.reduce((acc, item) => { return acc + item.amount * item.price;}, 0);
+  let totalValueOfProductDevolution:number = productDevolution.reduce((acc, item) => { return acc + item.amount * item.price;}, 0);
+  let totalValueOfProductReposition:number = productReposition.reduce((acc, item) => { return acc + item.amount * item.price; }, 0);
+
+  productToCommit.forEach((currentProductToCommit:IProductInventory) => {
+    let productRepositionFound:IProductInventory|undefined = productReposition.find((currentProductReposition:IProductInventory) => {
+      return currentProductToCommit.id_product === currentProductReposition.id_product;
+    });
+
+    if (productRepositionFound !== undefined) {
+      if (productRepositionFound.amount !== currentProductToCommit.amount) {
+        /* The last movement will differ from what is stored in the states */
+        lastModification = currentProductToCommit;
+      } else {
+        /* It means, this product exists in the reposition but it isn't the last movement*/
+      }
+    } else {
+      /* That means that the current product isn't still in the state but it is intended to be in*/
+       lastModification = currentProductToCommit;
+    }
+  })
+
+
+  let balance:number = totalValueOfProductDevolution - totalValueOfProductsToCommit;
+
+  if (balance >= 0) {
+    result = true
+  } else {
+    if (balance + lastModification.price >= 0 && balance % lastModification!.price !== 0) {
+      result = true
+    } else {
+      result = false
+    }
+  }
+
+  if (totalValueOfProductsToCommit < totalValueOfProductReposition) {
+    result = true
+  }
+
+  return result;
+}
+
 async function insertionTransactionOperationsAndOperationDescriptions(
   routeTransactionOperation:IRouteTransactionOperation,
   routeTransactionOperationDescription:IRouteTransactionOperationDescription[]
@@ -516,7 +582,6 @@ async function insertionTransactionOperationsAndOperationDescriptions(
       text2: 'Ha habido un error al insertar una de las descripciones de la venta'});
     return false;
   }
-
 }
 
 async function insertionSyncRecordTransactionOperationAndOperationDescriptions(
@@ -621,7 +686,16 @@ const salesLayout = ({
   };
 
   const handleSalePaymentProcess = () => {
-    setStartPaymentProcess(true);
+    /* Validating if the product reposition is valid */
+    if(!validatingIfRepositionIsValid(productReposition, productDevolution, productReposition)) {
+      Toast.show({
+        type: 'error',
+        text1:'Reposición de producto invalida',
+        text2: 'No puedes continuar hasta presentar una propuesta valida para la reposición de producto'});
+      setStartPaymentProcess(false);
+    } else {
+      setStartPaymentProcess(true);
+    }
   };
 
   /*
@@ -990,13 +1064,39 @@ const salesLayout = ({
   };
 
   // Related to add product
+
+  // TODO provide validation for the product devolutuon, if there is not product devolution, then delete product reposition
+  const handlerSetProductDevolution = (declaredProductDevolution:IProductInventory[]) => {
+    if (declaredProductDevolution.length > 0) {
+      /* That means that there is product devolution */
+    } else {
+      /* That means that there is not product devolution, so it is not possible to have product reposition */
+      setProductReposition([]);
+    }
+
+    setProductDevolution(declaredProductDevolution)
+  }
+
   /*
     Handler that cares the outflow of product.
     It is not possible to sell product that you don't have
   */
   const handlerSetProductReposition = (productsToCommit:IProductInventory[]) => {
-    setProductReposition(
-      productCommitedValidation(productInventory, productsToCommit, productSale, true));
+    if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
+      setProductReposition(
+        productCommitedValidation(productInventory, productsToCommit, productSale, true));
+    } else {
+
+      if (productDevolution.length > 0) {
+        Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", text2: "La una propuesta de cambio valida"});
+        setProductReposition(productReposition)
+      } else {
+        Toast.show({
+          type: 'error', 
+          text1: "No se puede agregar una cambio de producto si no existe devolución", 
+          text2: "No puedes agregar una reposición de producto ya que no existe devolución"});
+      }
+    }
   };
 
   const handlerSetSaleProduct = (productsToCommit:IProductInventory[]) => {
@@ -1029,7 +1129,7 @@ const salesLayout = ({
             <TableProduct
               catalog={productInventory}
               commitedProducts={productDevolution}
-              setCommitedProduct={setProductDevolution}
+              setCommitedProduct={handlerSetProductDevolution}
               sectionTitle={'Devolución de producto'}
               sectionCaption={'(Precios consultados al día de la venta)'}
               totalMessage={'Total de valor de devolución:'}

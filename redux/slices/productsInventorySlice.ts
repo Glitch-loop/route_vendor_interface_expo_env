@@ -68,6 +68,8 @@ const productsInventorySlice = createSlice({
           }
         }
       }
+
+      return state;
     },
     cleanProductsInventory: (state, action: PayloadAction<void>) => {
       return [
