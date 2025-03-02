@@ -66,11 +66,13 @@ export function createWorkDayConcept(cashInventory:ICurrency[],
     // General information about the route.
     updatedRouteDay.id_work_day = generateUUIDv4();
     updatedRouteDay.start_date = timestamp_format();
-    updatedRouteDay.finish_date = timestamp_format();
+    updatedRouteDay.finish_date = null;
     updatedRouteDay.start_petty_cash = startPettyCash;
     updatedRouteDay.final_petty_cash =  0;
 
     // Concatenating all the information.
+
+    console.log("starting the concept of work day: ", updatedRouteDay)
     return updatedRouteDay;
   } catch (error) {
     Toast.show({
@@ -85,15 +87,17 @@ export function createWorkDayConcept(cashInventory:ICurrency[],
 export function finishWorkDayConcept(cashInventory:ICurrency[],
   routeDay:IRoute&IDayGeneralInformation&IDay&IRouteDay):IRoute&IDayGeneralInformation&IDay&IRouteDay {
   try {
+    
     const updatedRouteDay:IRoute&IDayGeneralInformation&IDay&IRouteDay = { ...routeDay };
-
+    
     let endPettyCash:number = getTotalAmountFromCashInventory(cashInventory);
-
+    
     // General information about the route.
     /* Since it is the end shift of the route, there are information that we already have from other operations */
     updatedRouteDay.finish_date = timestamp_format();
     updatedRouteDay.final_petty_cash = endPettyCash;
-
+    
+    console.log("finishing the concept of work day: ", updatedRouteDay)
     return updatedRouteDay;
   } catch (error) {
     Toast.show({
