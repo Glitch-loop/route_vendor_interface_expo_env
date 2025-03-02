@@ -1,3 +1,9 @@
+### Add in route transaction operation description the field "comission_at_moment", the commission is sealed at the moment of selling.
+
+### Fix the bug on which the work day are not properly closed (start date remains in the finish date and the end_pitty_cash is not being updated with the money that the vendo should have).
+
+### Implementing short-term storage for route transactions to avoid missing of data in case of the user closes the application
+
 ### Implement changes resulted of the database modification "workday"
 Creation day: 03/02/25
 Context: With the current architecture it is not possible to determine which "route day" belongs the current work day. (it is possible to know to which route it belongs, but not to which day the work day belongs)
@@ -7,13 +13,6 @@ Tasks:
 - Set as null the "finish_date", this status is used to determine that the work day is not finished - OK
 - Verify that  "finish_date = Null" doesn't affect to the flow of the application - OK
 - Set as a part of the information at moment of adding a new record, the "id_route_day" - OK
-
-### Implementing short-term storage for route transactions to avoid missing of data in case of the user closes the application
-
-### Add in route transaction operation description the field "comission_at_moment", the commission is sealed at the moment of selling.
-
-### Fix the bug on which the work day are not properly closed (start date remains in the finish date and the end_pitty_cash is not being updated with the money that the vendo should have).
-
 
 ### Implementing formatter for formatting the titles and text.
 Created at: 01/25/25

@@ -31,7 +31,7 @@ import { generateUUIDv4 } from '../utils/generalFunctions';
 
 export function getTotalAmountFromCashInventory(cashInventory:ICurrency[]):number {
   return cashInventory.reduce((acc, currentCurrency) =>
-    { if (currentCurrency.amount === undefined) {return acc;} else {return acc + currentCurrency.amount * currentCurrency.value;}}, 0);
+    { if (currentCurrency.amount === undefined || currentCurrency.amount === null) {return acc;} else {return acc + currentCurrency.amount * currentCurrency.value;}}, 0);
 }
 
 export function createWorkDayConcept(cashInventory:ICurrency[],
