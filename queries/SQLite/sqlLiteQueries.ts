@@ -187,7 +187,9 @@ export async function insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&I
     const sqlite = await createSQLiteConnection();
 
     await sqlite.withExclusiveTransactionAsync(async (tx) => {
-      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} 
+        (id_work_day, start_date, end_date, start_petty_cash, end_petty_cash, id_route, route_name, description, route_status, id_day, id_route_day) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
         [
         id_work_day,
         start_date,

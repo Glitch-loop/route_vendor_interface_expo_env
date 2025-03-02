@@ -358,7 +358,7 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
                 /* Other operation*/
               }
             } else if (isTypeWorkDayInstersection(currentRecord)) {
-              console.log("Type of record: general work day")
+              console.log("Type of record general work day: ", currentRecord)
               if (currentAction === 'INSERT') {
                 response = await repository.insertWorkDay(currentRecord);
               } else if (currentAction === 'UPDATE') {
