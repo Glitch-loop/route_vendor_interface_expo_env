@@ -29,7 +29,7 @@ export const routeDayEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_DAY} (
     id_work_day       TEXT NOT NULL UNIQUE, 
     start_date        TEXT UNIQUE NOT NULL,
-    end_date          TEXT UNIQUE,
+    end_date          TEXT,
     start_petty_cash  NUMERIC(6,3) NOT NULL UNIQUE,
     end_petty_cash    NUMERIC(6,3),
     id_route          TEXT NOT NULL UNIQUE,

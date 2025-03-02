@@ -301,7 +301,7 @@ export async function getWorkDay()
     /*Fields related to the general information.*/
     id_work_day: '',
     start_date: '',
-    finish_date: '',
+    finish_date: null,
     start_petty_cash: 0,
     final_petty_cash: 0,
     /*Fields related to IRoute interface*/
