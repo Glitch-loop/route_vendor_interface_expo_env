@@ -56,71 +56,71 @@ const TotalsSummarize = ({
   return (
     <View style={tw`w-full my-5 flex flex-col justify-center items-center`}>
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
           Valor total de devolución de producto:
         </Text>
-        <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle italic`}>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           -${subtotalProductDevolution}
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
           Valor total de reposición de producto:
         </Text>
-        <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle italic`}>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           ${subtotalProductReposition}
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right font-bold italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
           Balance de devolución de producto:
         </Text>
         <Text
-          style={tw`flex basis-2/6 italic text-base text-black text-center align-middle font-bold italic`}>
+          style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
           { productDevolutionBalance }
         </Text>
       </View>
       <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
           Balance de devolución de producto:
         </Text>
-        <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle italic`}>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           { productDevolutionBalance }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
           Total de venta:
         </Text>
-        <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle italic`}>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           ${ subtotalSaleProduct }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
-        <Text style={tw`flex basis-4/6 italic text-base text-black text-right font-bold italic`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
           Gran total:
         </Text>
-        <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle font-bold italic`}>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
           { greatTotal }
         </Text>
       </View>
       { routeTransaction !== undefined &&
         <View style={tw`w-full flex flex-row`}>
-          <Text style={tw`flex basis-4/6 italic text-base text-black text-right font-bold italic`}>
+          <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
             Metodo de pago {`(${getPaymentMethod(routeTransaction,PAYMENT_METHODS).payment_method_name})`}:
           </Text>
-          <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle font-bold italic`}>
+          <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
             { cashReceived }
           </Text>
         </View>
       }
       { routeTransaction !== undefined &&
         <View style={tw`w-full flex flex-row`}>
-          <Text style={tw`flex basis-4/6 italic text-base text-black text-right font-bold italic`}>
+          <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
             Cambio:
           </Text>
-          <Text style={tw`flex basis-2/6 italic text-base text-black text-center align-middle font-bold italic`}>
+          <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
             ${ calculateChange(greatTotalNumber, routeTransaction.cash_received) }
           </Text>
         </View>

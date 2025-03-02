@@ -183,9 +183,6 @@ const inventoryOperationLayout = () => {
 
     // Dertermining if the current process is an inventory visualization or and inventory operation
     if (currentOperation.id_item !== '') { // It is a visualization of inventory operation.
-      console.log("It is an inventory visualization++++++++++++++++++++++++++++++++++++++")
-
-      console.log("Getting product for inventory operation")
       /* Getting the available products for the inventory operation */
       getProductForInventoryOperation()
       .then((response:IResponse<IProductInventory[]>) => {
