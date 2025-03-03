@@ -71,8 +71,6 @@ export function createWorkDayConcept(cashInventory:ICurrency[],
     updatedRouteDay.final_petty_cash =  0;
 
     // Concatenating all the information.
-
-    console.log("starting the concept of work day: ", updatedRouteDay)
     return updatedRouteDay;
   } catch (error) {
     Toast.show({
@@ -96,8 +94,7 @@ export function finishWorkDayConcept(cashInventory:ICurrency[],
     /* Since it is the end shift of the route, there are information that we already have from other operations */
     updatedRouteDay.finish_date = timestamp_format();
     updatedRouteDay.final_petty_cash = endPettyCash;
-    
-    console.log("finishing the concept of work day: ", updatedRouteDay)
+  
     return updatedRouteDay;
   } catch (error) {
     Toast.show({
@@ -145,7 +142,6 @@ export async function finishWorkDay(
   const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay
     = finishWorkDayConcept(cashInventory, generalInformationOfRouteDay);
 
-  console.log(dayGeneralInformation)
   const resultFinishingWorkDay:IResponse<IRoute&IDayGeneralInformation&IDay&IRouteDay>
     = await updateWorkDay(dayGeneralInformation);
 

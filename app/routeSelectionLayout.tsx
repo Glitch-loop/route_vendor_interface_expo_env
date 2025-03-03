@@ -111,7 +111,6 @@ const routeSelectionLayout = () => {
         dispatch(setAllGeneralInformation(
           getDataFromApiResponse(await getWorkDayFromToday())));
 
-        console.log("dayOperations: ", dayOperations.length)
         dispatch(setArrayDayOperations(dayOperations));
 
         dispatch(setProductInventory(await getCurrentVendorInventory()));

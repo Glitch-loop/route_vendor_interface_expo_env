@@ -134,7 +134,6 @@ export async function maintainUserTable(currentUser:IUser):Promise<IResponse<nul
           const responseInsertUser:IResponse<IUser> = await insertUser(currentUser);
 
           if (apiResponseStatus(responseInsertUser, 201)) {
-            console
             finalResponseCode = 200;
             finalMessage = 'Process finalized successfully';
           } else {
