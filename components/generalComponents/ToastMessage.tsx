@@ -14,7 +14,7 @@ const toastConfig = {
       text1Style={{ fontSize: 14 }} // Adjust style
       text1NumberOfLines={2}
       text2Style={{ fontSize: 12, lineHeight: 20 }} // Adjust style
-      text2NumberOfLines={2}
+      text2NumberOfLines={3}
     />
   ),
   info: (props:any) => (
@@ -24,7 +24,7 @@ const toastConfig = {
       text1Style={{ fontSize: 14 }} // Adjust style
       text1NumberOfLines={2}
       text2Style={{ fontSize: 12, lineHeight: 20 }} // Adjust style
-      text2NumberOfLines={2}
+      text2NumberOfLines={3}
     />
   ),
   error: (props:any) => (
@@ -34,7 +34,7 @@ const toastConfig = {
       text1Style={{ fontSize: 14 }} // Adjust style
       text1NumberOfLines={2}
       text2Style={{ fontSize: 12, lineHeight: 20 }} // Adjust style
-      text2NumberOfLines={2}
+      text2NumberOfLines={3}
     />
   ),
 };

@@ -80,6 +80,7 @@ import {
   getInitialInventoryParametersFromRoute, 
   insertionSyncRecordTransactionOperationAndOperationDescriptions, 
   insertionTransactionOperationsAndOperationDescriptions, 
+  productCommitedValidation, 
   substractingProductFromCurrentInventory, 
   validatingIfRepositionIsValid 
 } from '@/controllers/SaleController';
@@ -90,125 +91,25 @@ import {
   updateDayOperations 
 } from '@/controllers/DayOperationController';
 
-
-function productCommitedValidation(productInventory:IProductInventory[],
+function processProductCommitedValidation(
+  productInventory:IProductInventory[],
   productsToCommit:IProductInventory[],
   productSharingInventory:IProductInventory[],
-  isProductReposition:boolean) {
+  isProductReposition:boolean
+):IProductInventory[] {
+  const responseProductCommitedValidation:IResponse<IProductInventory[]> = productCommitedValidation(
+    productInventory, productsToCommit, productSharingInventory, isProductReposition);
 
-  let isNewAmountAllowed:boolean = true;
-  let errorTitle:string = 'Cantidad a vender excede el inventario.';
-  let errorCaption:string = '';
-  const productCommited:IProductInventory[] = [];
-  const orderedProductCommited:IProductInventory[] = [];
+  const {data, responseCode, error} = responseProductCommitedValidation;
 
-  // Verify the amount between selling and repositioning don't be grater than the current inventory
-  productInventory.forEach((product:IProductInventory) => {
-    const amountInStockOfCurrentProduct:number = product.amount;
-    const idCurrentProduct:string = product.id_product;
-    let amountToCommit:number = 0;
-    let amountShared:number = 0;
-    // Find the product in the inventory before adding the product
-    let productToCommitFound:IProductInventory|undefined =
-    productsToCommit.find((productRepositionToCommit:IProductInventory) =>
-        { return productRepositionToCommit.id_product === idCurrentProduct; });
-
-    // Find the 'product' in the type of operation that shares the movement.
-    let productSharingFound:IProductInventory|undefined = productSharingInventory.find(
-      (currentProductSale:IProductInventory) => {
-        return currentProductSale.id_product === idCurrentProduct;
-      });
-
-    // Validating the distribution of the amount for the product between type of movements
-    if (productSharingFound !== undefined && productToCommitFound !== undefined) {
-      /*
-        It means, both concepts are outflowing the same product, so it is needed to verify that
-        both amounts (product reposition and sale) don't be grater than the current
-        stock.
-      */
-
-      amountToCommit = productToCommitFound.amount;
-      amountShared = productSharingFound.amount;
-
-      if(amountInStockOfCurrentProduct === 0) { /* There is not product in stock */
-        isNewAmountAllowed = false;
-        errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
-      } else if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
-        productCommited.unshift({
-          ...productToCommitFound,
-          amount: amountToCommit,
-        });
-      } else { /* There is not product enough to fullfill both movements */
-        isNewAmountAllowed = false; // Not possible amount.
-
-        if (amountInStockOfCurrentProduct - amountShared > 0) {
-          errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
-          productCommited.unshift({
-            ...productToCommitFound,
-            amount: amountInStockOfCurrentProduct - amountShared,
-          });
-        } else { /* All the stock is already being used by shared inventory*/
-          if(isProductReposition) {
-            errorCaption = `Actualmente la totalidad del stock esta siendo usado para la venta. Stock: ${amountInStockOfCurrentProduct}`;
-          } else {
-            errorCaption = `Actualmente la totalidad del stock esta siendo usado para la reposición de producto. Stock: ${amountInStockOfCurrentProduct}`;
-          }
-        }
-      }
-    } else if (productToCommitFound !== undefined) {
-      amountToCommit = productToCommitFound.amount;
-      /* It means that only one concept (product reposition or sale) is outflowing product. */
-      if (amountToCommit <= amountInStockOfCurrentProduct) {
-        productCommited.unshift({
-          ...productToCommitFound,
-          amount: amountToCommit,
-        });
-      } else {
-        isNewAmountAllowed = false;
-        if(amountInStockOfCurrentProduct > 0) {
-          productCommited.unshift({
-            ...productToCommitFound,
-            amount: amountInStockOfCurrentProduct,
-          });
-          errorCaption = `Estas excediendo el stock actual del producto, stock: ${amountInStockOfCurrentProduct}`;
-        } else {
-          errorCaption = 'Actualmente no tienes stock para el producto, stock: 0';
-        }
-
-        // isNewAmountAllowed = false; // There is not product enough to fullfill the requeriment.
-        // if (isProductReposition) {
-        //   errorCaption = 'Estas intentando reponer mas producto del que tienes en el inventario.';
-        // } else {
-        //   errorCaption = 'Estas intentando vender mas producto del que tienes en el inventario.';
-        // }
-      }
-    } else {
-      /* Not instructions for this if-else block in this particular function */
-    }
-  });
-
-  if (isNewAmountAllowed) {
-    /* No instrucctions */
-  } else {
-    Toast.show({type: 'error', text1:errorTitle, text2: errorCaption});
+  if (responseCode === 400) {
+    Toast.show({type: 'error', 
+      text1:'Cantidad a vender excede el inventario.', 
+      text2: error
+    });
   }
 
-  // Ordering the product by how they were added during the route
-  productsToCommit.forEach((productToCommit:IProductInventory) => {
-    const { id_product } = productToCommit;
-
-    const productCommitedFound:IProductInventory|undefined = productCommited.find((currentProductCommited:IProductInventory) => {
-      return id_product === currentProductCommited.id_product;
-    });
-    if(productCommitedFound !== undefined) {
-      orderedProductCommited.push(productCommitedFound)
-    }
-  });
-
-  //orderedProductCommited.reverse();
-
-  return orderedProductCommited;//productCommited;
-
+  return data;
 }
 
 const salesLayout = () => {
@@ -245,14 +146,14 @@ const salesLayout = () => {
     = useState<IProductInventory[]>(initialProductDevolution);
 
   const [productReposition, setProductReposition]
-    = useState<IProductInventory[]>(productCommitedValidation(
+    = useState<IProductInventory[]>(processProductCommitedValidation(
       productInventory,
       initialProductResposition,
       initialSaleProduct,
       true));
 
   const [productSale, setProductSale]
-    = useState<IProductInventory[]>(productCommitedValidation(
+    = useState<IProductInventory[]>(processProductCommitedValidation(
       productInventory,
       initialSaleProduct,
       initialProductResposition,
@@ -672,11 +573,12 @@ const salesLayout = () => {
   const handlerSetProductReposition = (productsToCommit:IProductInventory[]) => {
     if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
       setProductReposition(
-        productCommitedValidation(productInventory, productsToCommit, productSale, true));
+        processProductCommitedValidation(productInventory, productsToCommit, productSale, true));
     } else {
 
       if (productDevolution.length > 0) {
-        Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", text2: "La una propuesta de cambio valida"});
+        Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", 
+          text2: "No es posible excederte mas del valor de la reposición (solo se excedera si el valor unitario del producto es mayor)."});
         setProductReposition(productReposition)
       } else {
         Toast.show({
@@ -689,7 +591,7 @@ const salesLayout = () => {
 
   const handlerSetSaleProduct = (productsToCommit:IProductInventory[]) => {
     setProductSale(
-      productCommitedValidation(productInventory, productsToCommit, productReposition, false));
+      processProductCommitedValidation(productInventory, productsToCommit, productReposition, false));
   };
 
   return (

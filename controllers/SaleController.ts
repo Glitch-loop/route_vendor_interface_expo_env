@@ -46,7 +46,7 @@ import {
   IStore,
   ISyncRecord
 } from '@/interfaces/interfaces';
-import { apiResponseStatus } from '@/utils/apiResponse';
+import { apiResponseStatus, createApiResponse } from '@/utils/apiResponse';
 
 // Utils
 import { avoidingUndefinedItem, generateUUIDv4 } from '@/utils/generalFunctions';
@@ -200,6 +200,8 @@ export function validatingIfRepositionIsValid(productToCommit: IProductInventory
   return result;
 }
 
+
+// Database insertions
 export async function insertionSyncRecordTransactionOperationAndOperationDescriptions(
   routeTransactionOperation:IRouteTransactionOperation,
   routeTransactionOperationDescription:IRouteTransactionOperationDescription[]
@@ -235,6 +237,35 @@ export async function insertionSyncRecordTransactionOperationAndOperationDescrip
   }
 }
 
+export async function insertionTransactionOperationsAndOperationDescriptions(
+  routeTransactionOperation:IRouteTransactionOperation,
+  routeTransactionOperationDescription:IRouteTransactionOperationDescription[]
+):Promise<boolean> {
+  let resultInsertion:boolean = true;
+  if (routeTransactionOperationDescription[0] !== undefined) {
+    /* There was a movement in concept of devolution. */
+    let resultInsertionOperation:IResponse<IRouteTransactionOperation>
+      = await insertRouteTransactionOperation(routeTransactionOperation);
+    let resultInsertionOperationDescription
+    :IResponse<IRouteTransactionOperationDescription[]>
+      = await insertRouteTransactionOperationDescription(routeTransactionOperationDescription);
+
+      if (apiResponseStatus(resultInsertionOperation, 201)
+      && apiResponseStatus(resultInsertionOperationDescription, 201)) {
+        resultInsertion = true;
+      } else {
+        resultInsertion = false;
+      }
+
+  } else {
+    /* It means, that there is not movements for the current operation,
+       so, it won't be registered  */
+    resultInsertion = true;
+  }
+  return resultInsertion;
+}
+
+// Auxiliars
 export function substractingProductFromCurrentInventory(currentInventory: IProductInventory[],
   inventoryToSubstract:IProductInventory[]):IProductInventory[] {
     // Creating a copy of the current inventory
@@ -263,30 +294,127 @@ export function substractingProductFromCurrentInventory(currentInventory: IProdu
     return updatedInventory;
 }
 
-export async function insertionTransactionOperationsAndOperationDescriptions(
-  routeTransactionOperation:IRouteTransactionOperation,
-  routeTransactionOperationDescription:IRouteTransactionOperationDescription[]
-):Promise<boolean> {
-  let resultInsertion:boolean = true;
-  if (routeTransactionOperationDescription[0] !== undefined) {
-    /* There was a movement in concept of devolution. */
-    let resultInsertionOperation:IResponse<IRouteTransactionOperation>
-      = await insertRouteTransactionOperation(routeTransactionOperation);
-    let resultInsertionOperationDescription
-    :IResponse<IRouteTransactionOperationDescription[]>
-      = await insertRouteTransactionOperationDescription(routeTransactionOperationDescription);
 
-      if (apiResponseStatus(resultInsertionOperation, 201)
-      && apiResponseStatus(resultInsertionOperationDescription, 201)) {
-        resultInsertion = true;
-      } else {
-        resultInsertion = false;
+export function productCommitedValidation(productInventory:IProductInventory[],
+  productsToCommit:IProductInventory[],
+  productSharingInventory:IProductInventory[],
+  isProductReposition:boolean):IResponse<IProductInventory[]> {
+
+  const responseProcess = createApiResponse<IProductInventory[]>(400, [], '', '');    
+
+  let isNewAmountAllowed:boolean = true;
+  let errorCaption:string = '';
+  const productCommited:IProductInventory[] = [];
+  const orderedProductCommited:IProductInventory[] = [];
+
+  // Verify the amount between selling and repositioning don't be grater than the current inventory
+  productInventory.forEach((product:IProductInventory) => {
+    const amountInStockOfCurrentProduct:number = product.amount;
+    const idCurrentProduct:string = product.id_product;
+    let amountToCommit:number = 0;
+    let amountShared:number = 0;
+    // Find the product in the inventory before adding the product
+    let productToCommitFound:IProductInventory|undefined =
+    productsToCommit.find((productRepositionToCommit:IProductInventory) =>
+        { return productRepositionToCommit.id_product === idCurrentProduct; });
+
+    // Find the 'product' in the type of operation that shares the movement.
+    let productSharingFound:IProductInventory|undefined = productSharingInventory.find(
+      (currentProductSale:IProductInventory) => {
+        return currentProductSale.id_product === idCurrentProduct;
+      });
+
+    // Validating the distribution of the amount for the product between type of movements
+    if (productSharingFound !== undefined && productToCommitFound !== undefined) {
+      /*
+        It means, both concepts are outflowing the same product, so it is needed to verify that
+        both amounts (product reposition and sale) don't be grater than the current
+        stock.
+      */
+
+      amountToCommit = productToCommitFound.amount;
+      amountShared = productSharingFound.amount;
+
+      if(amountInStockOfCurrentProduct === 0) { /* There is not product in stock */
+        isNewAmountAllowed = false;
+        errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
+      } else if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
+        productCommited.unshift({
+          ...productToCommitFound,
+          amount: amountToCommit,
+        });
+      } else { /* There is not product enough to fullfill both movements */
+        isNewAmountAllowed = false; // Not possible amount.
+
+        if (amountInStockOfCurrentProduct - amountShared > 0) {
+          errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
+          productCommited.unshift({
+            ...productToCommitFound,
+            amount: amountInStockOfCurrentProduct - amountShared,
+          });
+        } else { /* All the stock is already being used by shared inventory*/
+          if(isProductReposition) {
+            errorCaption = `Actualmente la totalidad del stock esta siendo usado para la venta. Stock: ${amountInStockOfCurrentProduct}`;
+          } else {
+            errorCaption = `Actualmente la totalidad del stock esta siendo usado para la reposición de producto. Stock: ${amountInStockOfCurrentProduct}`;
+          }
+        }
       }
+    } else if (productToCommitFound !== undefined) {
+      amountToCommit = productToCommitFound.amount;
+      /* It means that only one concept (product reposition or sale) is outflowing product. */
+      if (amountToCommit <= amountInStockOfCurrentProduct) {
+        productCommited.unshift({
+          ...productToCommitFound,
+          amount: amountToCommit,
+        });
+      } else {
+        isNewAmountAllowed = false;
+        if(amountInStockOfCurrentProduct > 0) {
+          productCommited.unshift({
+            ...productToCommitFound,
+            amount: amountInStockOfCurrentProduct,
+          });
+          errorCaption = `Estas excediendo el stock actual del producto, stock: ${amountInStockOfCurrentProduct}`;
+        } else {
+          errorCaption = 'Actualmente no tienes stock para el producto, stock: 0';
+        }
 
+        // isNewAmountAllowed = false; // There is not product enough to fullfill the requeriment.
+        // if (isProductReposition) {
+        //   errorCaption = 'Estas intentando reponer mas producto del que tienes en el inventario.';
+        // } else {
+        //   errorCaption = 'Estas intentando vender mas producto del que tienes en el inventario.';
+        // }
+      }
+    } else {
+      /* Not instructions for this if-else block in this particular function */
+    }
+  });
+
+
+  // Ordering the product by how they were added during the route
+  productsToCommit.forEach((productToCommit:IProductInventory) => {
+    const { id_product } = productToCommit;
+
+    const productCommitedFound:IProductInventory|undefined = productCommited.find((currentProductCommited:IProductInventory) => {
+      return id_product === currentProductCommited.id_product;
+    });
+    if(productCommitedFound !== undefined) {
+      orderedProductCommited.push(productCommitedFound)
+    }
+  });
+
+  //orderedProductCommited.reverse();
+  if (isNewAmountAllowed) {
+    /* No instrucctions */
+    responseProcess.responseCode = 200;
   } else {
-    /* It means, that there is not movements for the current operation,
-       so, it won't be registered  */
-    resultInsertion = true;
+    responseProcess.responseCode = 400;
+    responseProcess.error = errorCaption;
   }
-  return resultInsertion;
+
+  responseProcess.data = orderedProductCommited;
+  
+  return responseProcess;//productCommited;
 }
