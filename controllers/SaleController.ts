@@ -241,6 +241,9 @@ export async function insertionTransactionOperationsAndOperationDescriptions(
   routeTransactionOperation:IRouteTransactionOperation,
   routeTransactionOperationDescription:IRouteTransactionOperationDescription[]
 ):Promise<boolean> {
+
+  console.log("Operation to insert: ", routeTransactionOperation)
+  console.log("Operation description to insert: ", routeTransactionOperationDescription)
   let resultInsertion:boolean = true;
   if (routeTransactionOperationDescription[0] !== undefined) {
     /* There was a movement in concept of devolution. */

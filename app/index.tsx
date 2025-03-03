@@ -40,7 +40,7 @@ async function appInitialization() {
 
     //await dropUsersEmbeddedTable()
     // Creating database
-    console.log("creating database")
+    //console.log("creating database")
     await createEmbeddedDatabase();
 
     //await createBackgroundSyncProcess();

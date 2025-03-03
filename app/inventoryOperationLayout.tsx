@@ -203,7 +203,6 @@ const inventoryOperationLayout = () => {
       setInventory([]);
       setIsOperation(false);
 
-      console.log("Getting status of the inventory operation")
       // Determining if the inventory operation is active
       getStatusOfInventoryOperation(currentOperation.id_item)
       .then(async (response:IResponse<IInventoryOperation[]>) => {
@@ -224,7 +223,6 @@ const inventoryOperationLayout = () => {
           setIsActiveOperation(false);
         }
 
-        console.log("Retrieving information of the inventory operation itself")
         // Retrieving the inventory operation.
         await getInventoryOperationForInventoryVisualization(currentOperation.id_item)
         .then(async (responseInventoryOperationProducts) => {
@@ -287,7 +285,6 @@ const inventoryOperationLayout = () => {
               */
   
               // Get all the inventory operations
-              console.log("Get all inventory operations")
               inventoryOperations = apiResponseProcess(
                 await getAllInventoryOperationsForInventoryVisualization(),
                 settingAllInventoryOperations
@@ -341,7 +338,6 @@ const inventoryOperationLayout = () => {
                 - Summarize of all the day.
                 - Summarize by store of the day.
               */
-                console.log("Getting inventory operation per CONCEPT")
               // Getting total of product for each conept
               await getTotalInventoryOfAllTransactionByIdOperationType(DAYS_OPERATIONS.product_reposition)
                 .then((response:IProductInventory[]) => { setProductRepositionTransactions(response); });
@@ -349,7 +345,6 @@ const inventoryOperationLayout = () => {
               await getTotalInventoryOfAllTransactionByIdOperationType(DAYS_OPERATIONS.sales)
                 .then((response:IProductInventory[]) => { setProductSoldTransactions(response); });
   
-                console.log("Getting inventory operation per STORE")
               // Getting total of product for each concept by store.
               await getTotalInventoriesOfAllStoresByIdOperationType(DAYS_OPERATIONS.product_reposition, stores)
               .then((response: (IStore & IStoreStatusDay & { productInventory: IProductInventory[] })[]) => {
@@ -556,7 +551,6 @@ const inventoryOperationLayout = () => {
             For "start shift inventory operation" it is only allowed to modify the product not the
             "petty cash".
         */
-       console.log("Operation to update")
         let movementOfInventoryOperationToModify:IProductInventory[] = [];
         let resultDayOperation:IResponse<IDayOperation>;
         let newDayOperation:IDayOperation;
@@ -593,11 +587,9 @@ const inventoryOperationLayout = () => {
           day operation list.
         */
         if(currentOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
-          console.log("appending at the end");
           resultDayOperation = await appendDayOperation(inventoryOperation);
           newDayOperation = getDataFromApiResponse(resultDayOperation);
         } else {
-          console.log("annother one");
           resultDayOperation = await createDayOperationBeforeTheCurrentOperation(
             inventoryOperation
           );

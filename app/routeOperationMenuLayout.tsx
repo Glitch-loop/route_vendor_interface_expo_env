@@ -10,6 +10,7 @@ import { Router, useRouter } from 'expo-router';
 import {
   cleanEmbeddedDatbase,
   createEmbeddedDatabase,
+  dropEmbeddedDatabase,
 } from '../queries/SQLite/sqlLiteQueries';
 
 // Redux context
@@ -170,11 +171,12 @@ const routeOperationMenuLayout = () => {
           text1:'Se ha guardado toda la inforamción correctamente',
           text2: 'Se ha sincronizado toda la información correctamente con la base de datos.'});
 
-        // Deleting all data from database.
+        // Clean data of database.
         const resultCleanDatabase:IResponse<null> = await cleanEmbeddedDatbase();
 
-        // Creating database with new information.
-        //const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
+        // Creating database with new information (not necessary).
+        // await dropEmbeddedDatabase();
+        // const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
 
         // console.log(resultCreateDatabase)
         // Maintaining user's table

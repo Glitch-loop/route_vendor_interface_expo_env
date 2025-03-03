@@ -62,6 +62,7 @@ export async function createEmbeddedDatabase():Promise<IResponse<null>> {
 
     const createTablePromises:any[] = tablesToCreate
     .map((queryToCreateTable:string) => {
+      console.log(queryToCreateTable)
       return sqlite.runAsync(queryToCreateTable);
     });
 
@@ -1360,6 +1361,7 @@ export async function insertRouteTransactionOperationDescription(transactionOper
       'Route transaction operation description inserted successfully.'
     );
   } catch(error) {
+    console.log(error)
     return createApiResponse<IRouteTransactionOperationDescription[]>(
       500,
       insertedTransactionOperationDescription,
