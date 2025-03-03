@@ -5,7 +5,17 @@ import * as Network from 'expo-network';
 import { NetworkState } from 'expo-network';
 
 // Interfaces
-import { IDay, IDayGeneralInformation, IInventoryOperation, IInventoryOperationDescription, IResponse, IRoute, IRouteDay, IRouteTransaction, IRouteTransactionOperation, IRouteTransactionOperationDescription, ISyncRecord } from '../interfaces/interfaces';
+import { 
+  IDay, 
+  IDayGeneralInformation, 
+  IInventoryOperation, 
+  IInventoryOperationDescription, 
+  IResponse, 
+  IRoute, IRouteDay, 
+  IRouteTransaction, 
+  IRouteTransactionOperation, 
+  IRouteTransactionOperationDescription,
+  ISyncRecord } from '../interfaces/interfaces';
 
 // SQL queries
 import {

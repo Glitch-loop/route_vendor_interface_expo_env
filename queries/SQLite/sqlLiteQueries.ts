@@ -1325,15 +1325,23 @@ export async function insertRouteTransactionOperationDescription(transactionOper
         const {
           id_route_transaction_operation_description,
           price_at_moment,
+          comission_at_moment,
           amount,
           id_route_transaction_operation,
           id_product,
         } = transactionOperationDescription;
 
-        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (id_route_transaction_operation_description, price_at_moment, amount, id_route_transaction_operation, id_product) VALUES (?, ?, ?, ?, ?);
+        await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} 
+            (id_route_transaction_operation_description, 
+            price_at_moment, 
+            comission_at_moment,
+            amount, 
+            id_route_transaction_operation, 
+            id_product) VALUES (?, ?, ?, ?, ?, ?);
           `, [
             id_route_transaction_operation_description,
             price_at_moment,
+            comission_at_moment,
             amount,
             id_route_transaction_operation,
             id_product,

@@ -680,15 +680,7 @@ export async function getInventoryOperationForInventoryVisualization(id_inventor
         });
       }
     });
-  } else {
-    /* There is not extra instructions */
-    const a:IResponse<IProductInventory[]>
-  =  await getProducts()
-  let b:IInventoryOperationDescription[] = getDataFromApiResponse(
-    resultGetInventoryOperationDescription)
-    console.log(b.length)
-
-  }
+  } else { /* There is not extra instructions */ }
 
   return createApiResponse(
     resultGetInventoryOperationDescription.responseCode,

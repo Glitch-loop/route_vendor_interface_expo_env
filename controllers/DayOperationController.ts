@@ -7,6 +7,7 @@ import {
   insertDayOperation,
   deleteAllDayOperations,
   getDayOperations,
+  updateDayOperation,
 } from '../queries/SQLite/sqlLiteQueries';
 
 // Interfaces
@@ -15,7 +16,10 @@ import {
   IDayOperation,
   IInventoryOperation,
   IResponse,
+  IStore,
+  IStoreStatusDay,
  } from '../interfaces/interfaces';
+ import { enumStoreStates } from '@/interfaces/enumStoreStates';
 
 // Utils
 import { planningRouteDayOperations } from '../utils/routesFunctions';
@@ -26,7 +30,29 @@ import {
 } from '../utils/apiResponse';
 import { isTypeIInventoryOperation } from '../utils/guards';
 import { generateUUIDv4 } from '../utils/generalFunctions';
+import { determineRouteDayState } from '@/utils/routeDayStoreStatesAutomata';
 import DAYS_OPERATIONS from '@/lib/day_operations';
+
+
+
+const initialStateStore:IStore&IStoreStatusDay = {
+  id_store: '',
+  street: '',
+  ext_number: '',
+  colony: '',
+  postal_code: '',
+  address_reference: '',
+  store_name: '',
+  owner_name: '',
+  cellphone: '',
+  latitude: '',
+  longuitude: '',
+  id_creator: 0,
+  creation_date: '',
+  creation_context: '',
+  status_store: '',
+  route_day_state: 0,
+};
 
 
 /*
@@ -289,4 +315,165 @@ export async function cleanAllDayOperationsFromDatabase() {
 
 export async function getDayOperationsOfTheWorkDay():Promise<IResponse<IDayOperation[]>> {
   return await getDayOperations();
+}
+
+/* Function to update the day operations */
+export async function updateDayOperations(currentOperation: IDayOperation, nextDayOperation: IDayOperation):Promise<boolean> {
+  try {
+    let resultProcess:boolean = true;
+    let resultUpdateCurrentDay:IResponse<IDayOperation>;
+    let resultUpdateNextDay:IResponse<IDayOperation>;
+
+    if (currentOperation.id_day_operation !== nextDayOperation.id_day_operation) {
+      // Update embedded database.
+      resultUpdateCurrentDay = await updateDayOperation({
+        ...currentOperation,
+        current_operation: 0,
+      });
+
+      resultUpdateNextDay = await updateDayOperation({
+        ...nextDayOperation,
+        current_operation: 1,
+      });
+
+      if (apiResponseStatus(resultUpdateCurrentDay, 200)
+      && apiResponseStatus(resultUpdateNextDay, 200)) {
+        resultProcess = true;
+      } else {
+        resultProcess = false;
+      }
+    } else {
+      /* It means, there is not a new current day. The current day remains */
+    }
+
+    return resultProcess;
+
+  } catch (error) {
+    return false;
+  }
+}
+
+/*
+  This function helps to determine if there is necessary to update the current day operation.
+
+  If it is necessary to update, the fucntion will return the next day operation, otherwise, it will 
+  return the current day operation.
+*/
+export function determinigNextOperation(currentOperation: IDayOperation,
+  dayOperations: IDayOperation[],
+  stores:(IStore&IStoreStatusDay)[]
+):IDayOperation {
+  let nextDayOperation:IDayOperation = { ...currentOperation };
+
+  /* Determining if moving to the next operation. */
+  if (currentOperation.current_operation) {
+    /* Moving to the next operation */
+    // Updating embedded database
+    const index = dayOperations
+      .findIndex(operation => { return operation.id_item === currentOperation.id_item; });
+
+    if (index > -1) { // The operation is in the list of day operations to do.
+      if (index + 1 < dayOperations.length) { // Verifying it is not the last day operation.
+        let candidateNextDayOperation:IDayOperation = dayOperations[index + 1];
+        /*
+          The vendor can follow the order of the route but also, he can
+          sell to any store, it doesn't matter if the store is the next one or
+          not, so it is needed to "find" the next day operation, not necessarily
+          the next operation in the list.
+        */
+        // Searching the day operation (next store in status of pending)
+        // For always going to start in the next day operation.
+        for (let i = index + 1; i < dayOperations.length; i++) {
+            // Finding in the array of stores that one that corresponds to the day operation
+            const currentStore = stores.find((store:IStore&IStoreStatusDay) => {
+              return dayOperations[i].id_item === store.id_store;
+            });
+
+            if(currentStore !== undefined) {
+              if(currentStore.route_day_state === enumStoreStates.PENDING_TO_VISIT
+              || currentStore.route_day_state === enumStoreStates.REQUEST_FOR_SELLING) {
+                /*
+                  Store gathers the criteria to be the next current operation.
+
+                  Remember that:
+                  - PENDING TO VISIT: It is the state on which the store belogns to the current
+                  workday but it hasn't been visited.
+                  - REQUEST FOR VISTING: It is the state on which the store doesn't belongs
+                  to the current workday but they asked to be visited today.
+                */
+                candidateNextDayOperation = dayOperations[i];
+                break;
+              } else {
+                /* There is not instructions; Store doesn't accomplish the criteria. */
+              }
+            } else {
+              /* There is not instructions; Store doesn't exists in the "stores" state */
+            }
+        }
+
+      nextDayOperation = { ...candidateNextDayOperation };
+
+      } else {
+        /*
+          If it is the last operation, then it is not needed to move to the next one because
+          the vendor is already in the last one.
+        */
+      }
+    } else { /* There is not instructions. */ }
+  } else {
+    /*
+      If the current store is not the current operation, then, it is not needed to make
+      anything.
+
+      The pointer that points to the current operation is only going to move when the store
+      that is being selling is current operation.
+
+      In this context, the vendor is selling a store that has already visited or
+      that is pending to visit.
+    */
+  }
+
+  return nextDayOperation;
+}
+
+export function determiningNextStatusOfStore(foundStore: IStore&IStoreStatusDay|undefined):IStore&IStoreStatusDay {
+  let updatedStore:IStore&IStoreStatusDay;
+  // Creating variable to store the new status
+  if (foundStore === undefined) {
+    updatedStore = { ...initialStateStore };
+  } else {
+    updatedStore = { ...foundStore };
+  }
+
+  if (foundStore !== undefined) {
+    /*
+      It means, the store is already plannified for this day, but we don't know if the client
+      asked to be visited or if it is a client that belongs to today.
+    */
+   // Determining new status based on this context.
+    if(foundStore.route_day_state === enumStoreStates.REQUEST_FOR_SELLING) {
+      updatedStore = {
+        ...foundStore,
+        route_day_state: determineRouteDayState(foundStore.route_day_state, 4),
+      };
+    } else {
+      /* This store belongs to the route of the today*/
+      // Update redux context.
+      updatedStore = {
+        ...foundStore,
+        route_day_state: determineRouteDayState(foundStore.route_day_state, 2),
+      };
+
+    }
+  } else {
+    /*
+      If the user was not in the redux state "stores" that means that it is an special sale
+      without a "petition to visit"; Vendor visited a store that didn't belong to the route
+      and it didn't have a "petition to visit" status.
+    */
+    /*TO DO*/
+  }
+
+  return updatedStore;
+
 }

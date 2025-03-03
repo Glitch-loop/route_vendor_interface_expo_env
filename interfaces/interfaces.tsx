@@ -152,6 +152,7 @@ export interface IRouteTransactionOperation {
 export interface IRouteTransactionOperationDescription {
   id_route_transaction_operation_description: string;
   price_at_moment:                            number;
+  comission_at_moment:                        number;
   amount:                                     number;
   id_route_transaction_operation:             string;
   id_product:                                 string;

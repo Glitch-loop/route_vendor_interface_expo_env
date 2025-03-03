@@ -710,6 +710,7 @@ export class SupabaseRepository implements IRepository {
           const {
             id_route_transaction_operation_description,
             price_at_moment,
+            comission_at_moment,
             amount,
             id_route_transaction_operation,
             id_product,
@@ -720,6 +721,7 @@ export class SupabaseRepository implements IRepository {
           .insert({
             id_route_transaction_operation_description:  id_route_transaction_operation_description,
             price_at_moment: price_at_moment,
+            comission_at_moment: comission_at_moment,
             amount: amount,
             id_route_transaction_operation: id_route_transaction_operation,
             id_product: id_product,

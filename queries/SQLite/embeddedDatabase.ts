@@ -111,6 +111,7 @@ export const routeTransactionOperationDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS} (
     id_route_transaction_operation_description  TEXT NOT NULL UNIQUE,
     price_at_moment                             NUMERIC(6,3) NOT NULL,
+    comission_at_moment                         NUMERIC(6,3) NOT NULL,
     amount                                      INT NOT NULL,
     id_route_transaction_operation              TEXT NOT NULL,
     id_product                                  TEXT NOT NULL
