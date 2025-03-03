@@ -1,6 +1,10 @@
 ### Add in route transaction operation description the field "comission_at_moment", the commission is sealed at the moment of selling.
+Creation day: 03/02/25
+STATUS: DONE
 
 ### Fix the bug on which the work day are not properly closed (start date remains in the finish date and the end_pitty_cash is not being updated with the money that the vendo should have).
+Creation day: 03/02/25
+STATUS: DONE
 
 ### Implementing short-term storage for route transactions to avoid missing of data in case of the user closes the application
 

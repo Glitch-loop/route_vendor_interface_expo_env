@@ -725,7 +725,7 @@ const inventoryOperationLayout = () => {
             text1: 'Creando dia de trabajo.',
             text2: 'Registrando el dia.',
           });
-          console.log("Creating work day")
+
           const resultCreateWorkDay = await createWorkDay(cashInventory, routeDay);
           const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay
             = getDataFromApiResponse(resultCreateWorkDay);
@@ -736,7 +736,6 @@ const inventoryOperationLayout = () => {
             text2: 'Registrando inventario inicial y consultando información para la ruta.',
           });
 
-          console.log("Creating stores list")
           // Stores operations
           const resultCreateListStoreOfRouteDay = await createListOfStoresOfTheRouteDay(
             dayGeneralInformation
@@ -746,13 +745,9 @@ const inventoryOperationLayout = () => {
           const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[]
             = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
 
-          console.log("List of stores: ", arrListStoreOfRouteDay.length)
           const arrStoresOfRouteDay:IRouteDayStores[]
-            = getDataFromApiResponse(resulGetStoresOfRouteOfRouteDay);
+          = getDataFromApiResponse(resulGetStoresOfRouteOfRouteDay);
 
-          console.log("Array of all stores with information: ", arrStoresOfRouteDay.length)
-          
-          console.log("Creating inventory operation")
           // Inventory operations.
           const resultCreateInventoryOperation = await createInventoryOperation(
             dayGeneralInformation,
@@ -762,18 +757,15 @@ const inventoryOperationLayout = () => {
 
           const inventoryOperation = getDataFromApiResponse(resultCreateInventoryOperation);
 
-          console.log("Creating vendor inventory")
           /* This inventory is what will be used to perform calculation */
           const resultCreateVendorInventoryOperation = await createVendorInventory(inventory);
 
-          console.log("Creating list")
           // Related to day operations
           /*
             For this operation it is needed to create:
               - A day operation for the start shift inventory operation.
               - A day for each store in the route day.
           */
-         console.log("stores: ", arrStoresOfRouteDay.length)
           const resultCreateListOfDayOperations = await createListOfDayOperations(
             inventoryOperation, arrStoresOfRouteDay
           );
@@ -782,20 +774,18 @@ const inventoryOperationLayout = () => {
             resultCreateListOfDayOperations
           );
 
-          console.log("List of day operaions: ", arrDayOperations.length)
-        /*
-          At this point the records needed to start a database have been created.
-          In the workflow of the application, the first operation has been completed (starting
-          shift inventory), so it is needed to advance to the next operation (first store of
-          the route).
-        */
-          console.log("Verifying all is ok")
-        if (apiResponseStatus(resultCreateWorkDay, 201)
-        && apiResponseStatus(resultCreateListStoreOfRouteDay, 201)
-        && apiResponseStatus(resultCreateInventoryOperation, 201)
-        && apiResponseStatus(resultCreateVendorInventoryOperation, 201)
-        && apiResponseStatus(resultCreateListOfDayOperations, 201)) {
-            console.log("All is ok")
+
+          /*
+            At this point the records needed to start a database have been created.
+            In the workflow of the application, the first operation has been completed (starting
+            shift inventory), so it is needed to advance to the next operation (first store of
+            the route).
+          */
+          if (apiResponseStatus(resultCreateWorkDay, 201)
+          && apiResponseStatus(resultCreateListStoreOfRouteDay, 201)
+          && apiResponseStatus(resultCreateInventoryOperation, 201)
+          && apiResponseStatus(resultCreateVendorInventoryOperation, 201)
+          && apiResponseStatus(resultCreateListOfDayOperations, 201)) {
             /* The process has been finished successfully */
             /* Updating redux states */
     
@@ -1005,9 +995,7 @@ const inventoryOperationLayout = () => {
   
           const resultUpdateVendorInventory:IResponse<IProductInventory[]>
             = await updateVendorInventory(currentInventory, inventory, false);
-  
 
-          console.log("resultUpdateVendorInventory: ", resultUpdateVendorInventory)
           /* Closing work day operation */
           Toast.show({
             type: 'info',
@@ -1120,14 +1108,11 @@ const inventoryOperationLayout = () => {
     let newInventoryOperation:IProductInventory[] = [];
 
     if (id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
-      console.log("initial inventory: ", initialShiftInventory)
       newInventoryOperation = mergeInventories(inventory, initialShiftInventory);
     } else if (id_type_operation === DAYS_OPERATIONS.restock_inventory
       || id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-      console.log("medium inventory: ", restockInventories)
       newInventoryOperation = mergeInventories(inventory, restockInventories[0]);
     } else if (id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
-      console.log("final inventory: ", finalShiftInventory)
       newInventoryOperation = mergeInventories(inventory, finalShiftInventory);
     } else {
       /* Other invalid day operation */
@@ -1154,8 +1139,6 @@ const inventoryOperationLayout = () => {
       setCurrentInventory([]);
     }
 
-
-    console.log("Preparing inventory to modify: ", newInventoryOperation)
     setInventory(newInventoryOperation); // Set information that has the inventory operation
     setIsOperation(true);
     setIsOperationToUpdate(true);
