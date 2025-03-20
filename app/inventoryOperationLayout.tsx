@@ -740,13 +740,13 @@ const inventoryOperationLayout = () => {
           const resultCreateListStoreOfRouteDay = await createListOfStoresOfTheRouteDay(
             dayGeneralInformation
           );
-          const resulGetStoresOfRouteOfRouteDay = await getStoresOfRouteDay(dayGeneralInformation);
+          const resultGetStoresOfRouteOfRouteDay = await getStoresOfRouteDay(dayGeneralInformation);
 
           const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[]
             = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
 
           const arrStoresOfRouteDay:IRouteDayStores[]
-          = getDataFromApiResponse(resulGetStoresOfRouteOfRouteDay);
+          = getDataFromApiResponse(resultGetStoresOfRouteOfRouteDay);
 
           // Inventory operations.
           const resultCreateInventoryOperation = await createInventoryOperation(

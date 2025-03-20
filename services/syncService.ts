@@ -247,18 +247,16 @@ async function determingRecordsToBeSyncronized() {
 }
 
 /* Function to sync records with the main database. */
-async function syncingRecordsWithCentralDatabase():Promise<boolean> {
+async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean = false):Promise<boolean> {
   const recordsCorrectlyProcessed:ISyncRecord[] = [];
   const recordsWronglyProcessed:ISyncRecord[] = [];
   let resultOfSyncProcess:boolean = false;
   let isDeviceConnectedToInternet:boolean = false;
   const netWorkState:NetworkState = await Network.getNetworkStateAsync();
 
-
   try {
-
     if (netWorkState.isConnected !== undefined) {
-      if (netWorkState.isConnected === true){
+      if (netWorkState.isConnected === true) {
         isDeviceConnectedToInternet = true;
       } else {
         isDeviceConnectedToInternet = false;
@@ -321,6 +319,7 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
           } else {
             const currentRecord:any = currentRecordToSync.payload;
             const currentAction:any = currentRecordToSync.action;
+
             if (isTypeIInventoryOperation(currentRecord)) {
               console.log("Type of record: inventory operation - ", currentRecord.id_inventory_operation)
               if (currentAction === 'INSERT') {
@@ -421,38 +420,43 @@ async function syncingRecordsWithCentralDatabase():Promise<boolean> {
               /*
                 It cannot be determinated why the record cannot be synced.
   
-                If status is "PENDING" it is going to be changed to failed for one more 
+                If status is "PENDING" it is going to be changed to "FAILED" for one more 
                 opportunity.
   
                 Otherwise, it is going to change to failed to delete it from the queue.
+                If status is "FAILED", it is going to be deleted from the queue. 
               */
-              if(currentRecordToSync.status === 'FAILED') {
-                /*
-                  The records was already processed and twice.
-                  It is appended to "recordsCorrectlyProcessed" for being deleted and
-                  moved to the historic sync table.
-                */
-                recordsCorrectlyProcessed.push({
+              if (deleteFailedSyncRecords) {
+                if(currentRecordToSync.status === 'FAILED') {
+                  /*
+                    The records was already processed and twice.
+                    It is appended to "recordsCorrectlyProcessed" for being deleted and
+                    moved to the historic sync table.
+                  */
+                  recordsCorrectlyProcessed.push({
+                    id_record: currentRecordToSync.id_record,
+                    status: 'FAILED',
+                    payload: JSON.stringify(currentRecordToSync.payload),
+                    table_name: currentRecordToSync.table_name,
+                    action: currentRecordToSync.action,
+                    timestamp: currentRecordToSync.timestamp,
+                  });
+                } else {
+                  /*
+                    Record couldn't be processed and is updated to "failed" for one more opportunity
+                  */
+                 console.log("second opportunity")
+                 recordsWronglyProcessed.push({
                   id_record: currentRecordToSync.id_record,
                   status: 'FAILED',
                   payload: JSON.stringify(currentRecordToSync.payload),
                   table_name: currentRecordToSync.table_name,
                   action: currentRecordToSync.action,
                   timestamp: currentRecordToSync.timestamp,
-                });
+                 });
+                }
               } else {
-                /*
-                  Record couldn't be processed and is updated to "failed" for one more opportunity
-                */
-               console.log("second opportunity")
-               recordsWronglyProcessed.push({
-                id_record: currentRecordToSync.id_record,
-                status: 'FAILED',
-                payload: JSON.stringify(currentRecordToSync.payload),
-                table_name: currentRecordToSync.table_name,
-                action: currentRecordToSync.action,
-                timestamp: currentRecordToSync.timestamp,
-               });
+                /* Records are kept for next sync operations */
               }
             }
           }

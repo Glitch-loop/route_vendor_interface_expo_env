@@ -43,7 +43,7 @@ async function getStoresInformation(
     responseCode: 500,
     data: [],
   };
-  const stores:(IStore&IStoreStatusDay)[] = [];
+  // const stores:(IStore&IStoreStatusDay)[] = [];
   let storesInformation:IStore[] = [];
   const idStoresArr:string[] = [];
 
@@ -58,19 +58,34 @@ async function getStoresInformation(
     idStoresArr.push(id_store);
   }
 
-  resultGetStores = await repository.getStoresByArrID(idStoresArr);
+  /* 
+    Instead of retrieve just thes store that are in the route, it is retrieved all the stores in the database.
+  */
+  //resultGetStores = await repository.getStoresByArrID(idStoresArr);
+  resultGetStores = await repository.getAllStores();
 
   storesInformation = getDataFromApiResponse(resultGetStores);
 
   // Assign the status for each store in the route.
-  storesInformation.map((storeInformation) => {
-    stores.push({
-      ...storeInformation,
-      route_day_state: determineRouteDayState(enumStoreStates.NUETRAL_STATE, 1),
-    });
-  });
+  resultGetStores.data = storesInformation.map((storeInformation) => {
+    // Determining the status of the store in the route.
+    const { id_store } = storeInformation;
+    let initialRouteDayStatus:enumStoreStates = enumStoreStates.NUETRAL_STATE;
 
-  resultGetStores.data = stores;
+    const index:number = storesInRoute.findIndex((storeInRoute) => storeInRoute.id_store === id_store);
+    
+    if (index === -1) {
+      initialRouteDayStatus = enumStoreStates.NUETRAL_STATE;
+    } else {
+      initialRouteDayStatus = determineRouteDayState(enumStoreStates.NUETRAL_STATE, 1);
+    }
+    
+    return {
+      ...storeInformation,
+      route_day_state: initialRouteDayStatus,
+    }
+
+  });
 
   return resultGetStores;
 }
@@ -87,21 +102,16 @@ export async function getStoresOfRouteDay(routeDay:IRouteDay):Promise<IResponse<
     responseCode: 500,
     data: [],
   };
-  const storesInTheRoute:IRouteDayStores[] = [];
 
   resultAllStoresInRoute = await repository.getAllStoresInARouteDay(routeDay.id_route_day);
 
-  let allStoreInRoute:IRouteDayStores[] = getDataFromApiResponse(resultAllStoresInRoute);
+  const allStoreInRoute:IRouteDayStores[] = getDataFromApiResponse(resultAllStoresInRoute);
 
-  allStoreInRoute.forEach((storeInRouteDay) => { storesInTheRoute.push(storeInRouteDay); });
-
-  resultAllStoresInRoute.data = storesInTheRoute;
+  resultAllStoresInRoute.data = allStoreInRoute.map((store) => {return store});
 
 
   return resultAllStoresInRoute;
 }
-
-
 
 /*
   Get stores of the current work day.
@@ -117,18 +127,15 @@ export async function getStoresOfTheCurrentWorkDay():Promise<IResponse<(IStore&I
 export async function createListOfStoresOfTheRouteDay(
   routeDay:IRoute&IDayGeneralInformation&IDay&IRouteDay
 ):Promise<IResponse<(IStore&IStoreStatusDay)[]>> {
-  const resultGetStoresOfRouteDay:IResponse<IRouteDayStores[]>
-  = await getStoresOfRouteDay(routeDay);
+  const resultGetStoresOfRouteDay:IResponse<IRouteDayStores[]> = await getStoresOfRouteDay(routeDay);
 
   const storesInTheRoute:IRouteDayStores[] = getDataFromApiResponse(resultGetStoresOfRouteDay);
 
-  const resultGetStoresOfRoute:IResponse<(IStore&IStoreStatusDay)[]>
-    = await getStoresInformation(storesInTheRoute);
+  const resultGetStoresOfRoute:IResponse<(IStore&IStoreStatusDay)[]> = await getStoresInformation(storesInTheRoute);
 
   const storesOfRoute:(IStore&IStoreStatusDay)[] = getDataFromApiResponse(resultGetStoresOfRoute);
 
-  const resultInsertionStores:IResponse<(IStore&IStoreStatusDay)[]>
-    = await insertStores(storesOfRoute);
+  const resultInsertionStores:IResponse<(IStore&IStoreStatusDay)[]> = await insertStores(storesOfRoute);
 
   if(apiResponseStatus(resultGetStoresOfRouteDay, 200)
   && apiResponseStatus(resultGetStoresOfRoute, 200)

@@ -140,6 +140,20 @@ export class SupabaseRepository implements IRepository {
     }
   }
 
+  async getAllStores():Promise<IResponse<IStore[]>>{
+    try {
+      const { data, error } = await supabase.from(TABLES.STORES).select();
+
+      if (error) {
+        return createApiResponse<IStore[]>(500, [], null,'Failed getting stores information.');
+      } else {
+        return createApiResponse<IStore[]>(200, data, null);
+      }
+    } catch(error) {
+      return createApiResponse<IStore[]>(500, [], null, 'Failed getting stores information.');
+    }
+  }
+
   // Related to the work day information
   async insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&IRouteDay):Promise<IResponse<null>> {
     try {

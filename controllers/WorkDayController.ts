@@ -117,7 +117,7 @@ export async function createWorkDay(
     = await insertWorkDay(dayGeneralInformation);
 
 
-  const resultCreateRecordToSync:IResponse<any> =
+  const resultCreateRecordToSync:IResponse<any> = 
     await createRecordForSyncingWithCentralDatabse(dayGeneralInformation, 'PENDING', 'INSERT');
 
   if (apiResponseStatus(resultInsertionWorkDay, 201)

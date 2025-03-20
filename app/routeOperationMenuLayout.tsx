@@ -161,7 +161,7 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       // Storing the information in the main database.
-      const resultSyncingProcess:boolean = await syncingRecordsWithCentralDatabase();
+      const resultSyncingProcess:boolean = await syncingRecordsWithCentralDatabase(true);
 
       /* The user only will be capable to finish the day if all the records were correctly
       synchronized with the database. */
@@ -251,6 +251,17 @@ const routeOperationMenuLayout = () => {
           </Text>
         </View>
       </ActionDialog>
+      <Pressable
+        onPress={() => {
+          if (isDayWorkClosed) {
+            Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+          } else {
+            // createNewClient();
+          }
+        }}
+        style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
+        <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
+      </Pressable>
       <ScrollView
         style={tw`w-full h-full flex flex-col`}
         scrollEventThrottle={16}>
@@ -322,46 +333,46 @@ const routeOperationMenuLayout = () => {
         </View>
         <View style={tw`h-32`}/>
       </ScrollView>
-        <View style={tw`w-full
-          absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
-          flex flex-row justify-around
-          `}>
-            <Pressable
-              onPress={() => {
-                if (isDayWorkClosed) {
-                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-                } else {
-                  // createNewClient();
-                }
-              }}
-              style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}>Crear nuevo cliente</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                if (isDayWorkClosed) {
-                  Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-                } else {
-                  onRestockInventory();
-                }
-              }}
-              style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}>Restock de producto</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                if (isDayWorkClosed) {
-                  onShowDialog();
-                } else {
-                  onFinishInventory();
-                }
-              }}
-              style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}>
-                { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
-              </Text>
-            </Pressable>
-        </View>
+      <View style={tw`w-full
+        absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
+        flex flex-row justify-around
+        `}>
+          <Pressable
+            onPress={() => {
+              if (isDayWorkClosed) {
+                Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+              } else {
+                // createNewClient();
+              }
+            }}
+            style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
+            <Text style={tw`text-sm text-center`}>Crear nuevo cliente</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (isDayWorkClosed) {
+                Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+              } else {
+                onRestockInventory();
+              }
+            }}
+            style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}>
+            <Text style={tw`text-sm text-center`}>Restock de producto</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (isDayWorkClosed) {
+                onShowDialog();
+              } else {
+                onFinishInventory();
+              }
+            }}
+            style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
+            <Text style={tw`text-sm text-center`}>
+              { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
+            </Text>
+          </Pressable>
+      </View>
     </View>
   );
 };
