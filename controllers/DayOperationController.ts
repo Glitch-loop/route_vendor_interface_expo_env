@@ -136,11 +136,11 @@ export async function createDayOperationBeforeTheCurrentOperation(operation:any)
   let idItem:string = '';
 
   if(isTypeIInventoryOperation(operation)) {
-    idTypeOperation = operation.id_inventory_operation;
-    idItem = operation.id_inventory_operation_type;
+    idItem = operation.id_inventory_operation;
+    idTypeOperation = operation.id_inventory_operation_type;
   }
 
-  const newDayOperation:IDayOperation = createDayOperationConcept(idTypeOperation, idItem, 0, 0);
+  const newDayOperation:IDayOperation = createDayOperationConcept(idItem, idTypeOperation, 0, 0);
   const newListDayOperations:IDayOperation[] = [];
 
   /* Getting the index of the current operation*/

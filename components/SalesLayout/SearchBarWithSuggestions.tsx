@@ -75,7 +75,7 @@ const SearchBarWithSuggestions = ({
 
   return (
     <View style={tw`w-11/12 h-full flex flex-col`}>
-      <View style={tw`w-full  h-fit`}>
+      <View style={tw`w-full`}>
         <Provider>
           <Searchbar
             clearIcon={() => {return '';}}
@@ -88,7 +88,7 @@ const SearchBarWithSuggestions = ({
         </Provider>
       </View>
       {filteredData.length > 0 &&
-        <View style={tw`absolute top-13 z-20 w-full h-fit bg-gray-100 flex flex-1 flex-row justify-center items-center max-h-56`}>
+        <View style={tw`absolute top-13 z-20 w-full bg-gray-100 flex flex-1 flex-row justify-center items-center max-h-56`}>
           {/* Display suggestions */}
           <ScrollView nestedScrollEnabled={true} className='flex flex-1 w-full justify-center items-center'>
             {filteredData.length > 0 && (

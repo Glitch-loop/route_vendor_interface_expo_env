@@ -122,7 +122,8 @@ const RouteMap = ({
 
         { stores.map((store) => {
           return (
-            <Marker 
+            <Marker
+            key={store.id_store}
               title={capitalizeFirstLetterOfEachWord(store.store_name)}
               onPress={() => { if (onClick) onClick(store) }}
               coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longuitude) }}/>

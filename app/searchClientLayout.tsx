@@ -1,19 +1,35 @@
+// Libraries
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import tw from 'twrnc';
-import { router, Router, useRouter } from 'expo-router';
-import RouteMap from '@/components/RouteMap';
+import { router } from 'expo-router';
+import { LocationObject } from 'expo-location';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import ConfirmationBand from '@/components/ConfirmationBand';
+import { setCurrentOperation } from '@/redux/slices/currentOperationSlice';
+
+// Hooks
 import useCurrentLocation from '@/hooks/useCurrentLocation';
-import RouteHeader from '@/components/RouteHeader';
-import { IStore } from '@/interfaces/interfaces';
-import { LocationObject } from 'expo-location';
+
+// Interfaces
+import { IDayOperation, IStore } from '@/interfaces/interfaces';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+
+// Utils
 import { distanceBetweenTwoPoints } from '@/utils/routesFunctions';
+import DAYS_OPERATIONS from '@/lib/day_operations';
+
+// Controllers
+import { createDayOperationConcept } from '@/controllers/DayOperationController';
+
+// Components
+import RouteMap from '@/components/RouteMap';
 import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
+import ConfirmationBand from '@/components/ConfirmationBand';
+import RouteHeader from '@/components/RouteHeader';
+import Toast from 'react-native-toast-message';
 
 
 function findStoresAroung(userLocation:LocationObject|null, stores:IStore[], kmAround:number):IStore[] {
@@ -24,8 +40,10 @@ function findStoresAroung(userLocation:LocationObject|null, stores:IStore[], kmA
             const distance:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
                 parseFloat(store.longuitude),
-                20.641125309922, 
-                -105.22117756486865
+                20.66020491403627,
+                -105.23041097690118
+                // 20.641125309922, 
+                // -105.22117756486865
                 // userLocation.coords.latitude,
                 // userLocation.coords.longitude
             );
@@ -50,10 +68,13 @@ function findStoresAroung(userLocation:LocationObject|null, stores:IStore[], kmA
 const searchClientLayout = () => {
     const { getCurrentUserLocation } = useCurrentLocation();
     
+    // Redux
     const stores = useSelector((state: RootState) => state.stores);
+    const dispatch:AppDispatch = useDispatch();
 
     const [storesToShow, setStoresToShow] = useState<IStore[]>([]);
     const [mAround, setmAround] = useState<number>(100);
+    const [selectedClient, setSelectedClient] = useState<IStore|undefined>() ;
 
     const [selectedItems, setSelectedItems] = useState<IStore[]>([]);
 
@@ -79,12 +100,34 @@ const searchClientLayout = () => {
                 { ...selectedItem }
             ]
         )
+
+        setSelectedClient(selectedItem);
     } 
+
+    const handlerAcceptClient = ():void => {
+        if (selectedClient) {
+            const dayOperation:IDayOperation = createDayOperationConcept(
+                selectedClient.id_store, 
+                DAYS_OPERATIONS.sales,
+                0,
+                0
+            )
+            dispatch(setCurrentOperation(dayOperation));
+            router.push('/salesLayout');
+        } else {
+            Toast.show({
+                type:  'info',
+                text1: 'Debes seleccionar un cliente.',
+                text2: 'No puedes continuar hasta que selecciones un cliente.'
+            });
+        }
+    }
 
     return (
         <KeyboardAvoidingView
         enabled={false}
         style={{ flex: 1 }}>
+            {/* style={tw`w-full flex flex-col`} */}
             <ScrollView contentContainerStyle={{ flex: 1 }}>
                 <View style={tw`w-full flex-1 items-center`}>
                     <View style={tw`flex basis-1/12`}>
@@ -101,18 +144,28 @@ const searchClientLayout = () => {
                             />
                         </View>
                     </View>
-                    <View style={tw`w-11/12 flex basis-8/12 border-solid border-2 rounded-sm`}>
+                    <View style={tw`w-11/12 flex basis-7/12 border-solid border-2 rounded-sm`}>
                         <RouteMap 
-                            latitude={20.641125309922}
-                            longitude={-105.22117756486865}
-                            stores={storesToShow} /> 
+                            latitude={20.66020491403627}
+                            longitude={-105.23041097690118}
+                            stores={storesToShow} 
+                            onClick={setSelectedClient}/> 
+                    </View>
+                    <View style={tw`w-11/12 flex basis-1/12 justify-center items-center`}>
+                        <Text style={tw`text-lg`}>Cliente seleccionado</Text>
+                        <Text style={tw`text-lg font-bold`}>
+                            {
+                                selectedClient ? capitalizeFirstLetterOfEachWord(selectedClient.store_name) : 
+                                    'No se ha seleccionado ningún cliente.'
+                            }
+                        </Text>
                     </View>
                     <View style={tw`mt-3 w-full basis-2/12 flex flex-row justify-between`}>
                         <ConfirmationBand 
                             textOnAccept='Iniciar venta'
                             textOnCancel='Volver a menu'
-                            handleOnAccept={() => {}}
-                            handleOnCancel={() => {handlerGoBack()}}
+                            handleOnAccept={() => {handlerAcceptClient();}}
+                            handleOnCancel={() => {handlerGoBack();}}
                         />
                     </View>
                 </View>

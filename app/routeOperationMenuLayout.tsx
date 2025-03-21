@@ -95,7 +95,6 @@ const routeOperationMenuLayout = () => {
   // Handlers
   const onSelectStore = (dayOperation: IDayOperation):void => {
     dispatch(setCurrentOperation(dayOperation));
-    
     router.push('/storeMenuLayout');
   };
 
@@ -256,7 +255,7 @@ const routeOperationMenuLayout = () => {
         </View>
       </ActionDialog>
       <View style={tw`flex flex-row justify-center items-center`}>
-        <Pressable
+      <Pressable
         onPress={() => {
           if (isDayWorkClosed) {
             Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
@@ -264,9 +263,9 @@ const routeOperationMenuLayout = () => {
             handlerSearchClient();
           }
         }}
-          style={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}>
-          <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
-        </Pressable>
+        style={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}>
+        <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
+      </Pressable>
       </View>
       <ScrollView
         style={tw`w-full h-full flex flex-col`}
