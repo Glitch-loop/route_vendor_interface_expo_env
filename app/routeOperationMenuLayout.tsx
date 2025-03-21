@@ -290,6 +290,9 @@ const routeOperationMenuLayout = () => {
             let totalValue = '';
             let style = '';
             let typeOperation = true; /*true = client, false = inventory operation*/
+
+            const { operation_order } = dayOperation;
+
             const index = stores.findIndex(store => store.id_store === dayOperation.id_item);
             if (index === -1) {
               /* If an index was not found, it means that the operation is not related to a client. */
@@ -314,7 +317,7 @@ const routeOperationMenuLayout = () => {
               typeOperation = false;
             } else {
               // It means that the operation is related with a client
-              itemOrder = dayOperation.operation_order.toString();
+              itemOrder = operation_order > 0 ? operation_order.toString() : ''; 
               itemName = stores[index].store_name!;
               description = stores[index].street + ' #' + stores[index].ext_number + ', ' + stores[index].colony;
               totalValue = '';
@@ -324,7 +327,7 @@ const routeOperationMenuLayout = () => {
 
             return (
               <RouteCard
-                key={dayOperation.id_item}
+                key={dayOperation.id_day_operation}
                 itemOrder={itemOrder}
                 itemName={itemName}
                 description={description}

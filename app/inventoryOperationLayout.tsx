@@ -610,7 +610,7 @@ const inventoryOperationLayout = () => {
            true
          );
 
-         const substractedInventory:IProductInventory[] =  getDataFromApiResponse(
+         const substractedInventory:IProductInventory[] = getDataFromApiResponse(
            resultSubstractVendorPastInventoryOperation
          );
 
@@ -727,8 +727,7 @@ const inventoryOperationLayout = () => {
           });
 
           const resultCreateWorkDay = await createWorkDay(cashInventory, routeDay);
-          const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay
-            = getDataFromApiResponse(resultCreateWorkDay);
+          const dayGeneralInformation:IRoute&IDayGeneralInformation&IDay&IRouteDay= getDataFromApiResponse(resultCreateWorkDay);
 
           Toast.show({
             type: 'info',
@@ -737,16 +736,12 @@ const inventoryOperationLayout = () => {
           });
 
           // Stores operations
-          const resultCreateListStoreOfRouteDay = await createListOfStoresOfTheRouteDay(
-            dayGeneralInformation
-          );
-          const resultGetStoresOfRouteOfRouteDay = await getStoresOfRouteDay(dayGeneralInformation);
+          const resultCreateListStoreOfRouteDay:IResponse<(IStore&IStoreStatusDay)[]> = await createListOfStoresOfTheRouteDay(dayGeneralInformation);
+          const resultGetStoresOfRouteOfRouteDay:IResponse<IRouteDayStores[]> = await getStoresOfRouteDay(dayGeneralInformation);
 
-          const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[]
-            = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
+          const arrListStoreOfRouteDay:(IStore&IStoreStatusDay)[] = getDataFromApiResponse(resultCreateListStoreOfRouteDay);
 
-          const arrStoresOfRouteDay:IRouteDayStores[]
-          = getDataFromApiResponse(resultGetStoresOfRouteOfRouteDay);
+          const arrStoresOfRouteDay:IRouteDayStores[] = getDataFromApiResponse(resultGetStoresOfRouteOfRouteDay);
 
           // Inventory operations.
           const resultCreateInventoryOperation = await createInventoryOperation(
@@ -758,7 +753,7 @@ const inventoryOperationLayout = () => {
           const inventoryOperation = getDataFromApiResponse(resultCreateInventoryOperation);
 
           /* This inventory is what will be used to perform calculation */
-          const resultCreateVendorInventoryOperation = await createVendorInventory(inventory);
+          const resultCreateVendorInventoryOperation:IResponse<IProductInventory[]> = await createVendorInventory(inventory);
 
           // Related to day operations
           /*
@@ -766,13 +761,9 @@ const inventoryOperationLayout = () => {
               - A day operation for the start shift inventory operation.
               - A day for each store in the route day.
           */
-          const resultCreateListOfDayOperations = await createListOfDayOperations(
-            inventoryOperation, arrStoresOfRouteDay
-          );
+          const resultCreateListOfDayOperations:IResponse<IDayOperation[]> = await createListOfDayOperations(inventoryOperation, arrStoresOfRouteDay);
 
-          const arrDayOperations:IDayOperation[] = getDataFromApiResponse(
-            resultCreateListOfDayOperations
-          );
+          const arrDayOperations:IDayOperation[] = getDataFromApiResponse(resultCreateListOfDayOperations);
 
 
           /*

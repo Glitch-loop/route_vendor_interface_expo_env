@@ -14,7 +14,7 @@ import { setCurrentOperation } from '@/redux/slices/currentOperationSlice';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 // Interfaces
-import { IDayOperation, IStore } from '@/interfaces/interfaces';
+import { IDayOperation, IStore, IStoreStatusDay } from '@/interfaces/interfaces';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 // Utils
@@ -32,10 +32,11 @@ import RouteHeader from '@/components/RouteHeader';
 import Toast from 'react-native-toast-message';
 
 
-function findStoresAroung(userLocation:LocationObject|null, stores:IStore[], kmAround:number):IStore[] {
+function findStoresAround(userLocation:LocationObject|null, stores:(IStore&IStoreStatusDay)[], kmAround:number):IStore[] {
     let storesToShow:IStore[] = [];
     if (userLocation) {
         storesToShow = stores.filter((store) => {
+            console.log("store name: ", store.store_name, " - stores status: ", store.route_day_state)
             let isAround:boolean = false;
             const distance:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
@@ -50,8 +51,6 @@ function findStoresAroung(userLocation:LocationObject|null, stores:IStore[], kmA
 
             if (distance <= kmAround / 10000) {
                 isAround= true;
-                console.log("distance: ", distance);
-                console.log("distance: ", kmAround / 10000);
             } else {
                 isAround = false;
             }
@@ -81,8 +80,8 @@ const searchClientLayout = () => {
     useEffect(() => {
         getCurrentUserLocation()
         .then((userLocation:LocationObject|null) => {
-            console.log(findStoresAroung(userLocation, stores, mAround))
-            setStoresToShow(findStoresAroung(userLocation, stores, mAround));
+            // console.log(findStoresAroung(userLocation, stores, mAround))
+            setStoresToShow(findStoresAround(userLocation, stores, mAround));
         })
         .catch(() => setStoresToShow([]));
     }, []);

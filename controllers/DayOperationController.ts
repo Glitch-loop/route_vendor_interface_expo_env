@@ -437,41 +437,36 @@ export function determinigNextOperation(currentOperation: IDayOperation,
 }
 
 export function determiningNextStatusOfStore(foundStore: IStore&IStoreStatusDay|undefined):IStore&IStoreStatusDay {
-  let updatedStore:IStore&IStoreStatusDay;
   // Creating variable to store the new status
-  if (foundStore === undefined) {
-    updatedStore = { ...initialStateStore };
-  } else {
-    updatedStore = { ...foundStore };
-  }
-
+  let updatedStore:IStore&IStoreStatusDay = { ...initialStateStore };
+  console.log("Store to update: ", foundStore, " - route day state: ", foundStore?.route_day_state)
   if (foundStore !== undefined) {
-    /*
-      It means, the store is already plannified for this day, but we don't know if the client
-      asked to be visited or if it is a client that belongs to today.
-    */
-   // Determining new status based on this context.
-    if(foundStore.route_day_state === enumStoreStates.REQUEST_FOR_SELLING) {
-      updatedStore = {
-        ...foundStore,
-        route_day_state: determineRouteDayState(foundStore.route_day_state, 4),
-      };
-    } else {
-      /* This store belongs to the route of the today*/
-      // Update redux context.
+    const { route_day_state } = foundStore;
+    if(route_day_state === enumStoreStates.PENDING_TO_VISIT) { // The store is part of the route day
       updatedStore = {
         ...foundStore,
         route_day_state: determineRouteDayState(foundStore.route_day_state, 2),
       };
-
+    } else if (route_day_state === enumStoreStates.REQUEST_FOR_SELLING) { // Store that doesn't belong to the route day, but he requested to be visited.
+      updatedStore = {
+        ...foundStore,
+        route_day_state: determineRouteDayState(foundStore.route_day_state, 4),
+      };
+    } else if (route_day_state === enumStoreStates.NUETRAL_STATE) { // Store that had an spontaneous sale. The store doesn't belong to the route day and the store didn't request to be visited.
+      updatedStore = {
+        ...foundStore,
+        route_day_state: determineRouteDayState(foundStore.route_day_state, 5),
+      };
+      console.log('SPECIAL SALE: ', updatedStore)
+    } else {
+      updatedStore = { ...foundStore };
     }
   } else {
-    /*
-      If the user was not in the redux state "stores" that means that it is an special sale
-      without a "petition to visit"; Vendor visited a store that didn't belong to the route
-      and it didn't have a "petition to visit" status.
-    */
-    /*TO DO*/
+    /* If the store is not in the set of day status, then, it means that it is a new client. */
+    updatedStore = {
+      ...initialStateStore,
+      route_day_state: determineRouteDayState(enumStoreStates.NUETRAL_STATE, 6)
+    }
   }
 
   return updatedStore;

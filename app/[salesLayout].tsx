@@ -9,7 +9,7 @@ import { generateUUIDv4 } from '../utils/generalFunctions';
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { setCurrentOperation, setNextOperation } from '../redux/slices/dayOperationsSlice';
+import { setCurrentOperation, setDayOperationBeforeCurrentOperation, setNextOperation } from '../redux/slices/dayOperationsSlice';
 
 // Interfaces and enums
 import {
@@ -61,6 +61,7 @@ import {
   deleteRouteTransactionOperationDescriptionsById,
   deleteSyncQueueRecord,
   deleteSyncQueueRecords,
+  insertDayOperation,
   insertRouteTransaction,
   insertSyncQueueRecord,
   updateProducts,
@@ -90,6 +91,7 @@ import {
   determiningNextStatusOfStore, 
   updateDayOperations 
 } from '@/controllers/DayOperationController';
+import { enumStoreStates } from '@/interfaces/enumStoreStates';
 
 function processProductCommitedValidation(
   productInventory:IProductInventory[],
@@ -215,10 +217,10 @@ const salesLayout = () => {
       counts with at least one transaction operation movement (this one is actual movement inventory and
       cash {inflow/outflow} operations that were made in the visit to the store).
     */
-      Toast.show({
-        type: 'info',
-        text1:'Comenzando proceso para registrar la venta',
-        text2: 'Iniciando proceso para registrar la venta'});
+    Toast.show({
+      type: 'info',
+      text1:'Comenzando proceso para registrar la venta',
+      text2: 'Iniciando proceso para registrar la venta'});
 
     // Variables to perform operations.
     // Variable get the inventory after route transaction.
@@ -323,8 +325,7 @@ const salesLayout = () => {
 
     try {
     // Inserting the transaction
-    const resultInsertionRouteTransaction:IResponse<IRouteTransaction>
-    = await insertRouteTransaction(routeTransaction);
+    const resultInsertionRouteTransaction:IResponse<IRouteTransaction> = await insertRouteTransaction(routeTransaction);
     
     // Inserting route transaction operations
     // Inserting movements of the route transaction
@@ -367,9 +368,18 @@ const salesLayout = () => {
     let resultUpdatingStore = await updateStore(updatedStore);
 
     // Updating day operations
-    let resultUpdateDayOperations:boolean
-      = await updateDayOperations(currentOperation, nextDayOperation);
-
+    console.log("Updated store's status day: ", updatedStore.route_day_state)
+    if (updatedStore.route_day_state === enumStoreStates.SPECIAL_SALE) {
+      console.log("SPECIAL SALE")
+      let dayOperation:number = dayOperations.findIndex((dayOperation:IDayOperation) => dayOperation.id_item === updatedStore.id_store);
+      
+      if (dayOperation === -1) {
+        await insertDayOperation(currentOperation);
+        dispatch(setDayOperationBeforeCurrentOperation({ ...currentOperation }));
+      }
+    }
+    
+    let resultUpdateDayOperations:boolean = await updateDayOperations(currentOperation, nextDayOperation);
     /* Adding records to sync */
     /*
       From all the information created in the process, only the records regarded to the transaction
