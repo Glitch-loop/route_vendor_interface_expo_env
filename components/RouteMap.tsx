@@ -75,7 +75,6 @@ const RouteMap = ({
 }) => {
   const mapRef = useRef<MapView|null>(null);
 
-  console.log(latitude)
   const [location, setLocation] = useState(
     {
       latitude: 20.641640381312676,
