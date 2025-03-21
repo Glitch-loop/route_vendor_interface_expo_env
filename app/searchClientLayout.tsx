@@ -36,19 +36,12 @@ function findStoresAround(userLocation:LocationObject|null, stores:(IStore&IStor
     let storesToShow:IStore[] = [];
     if (userLocation) {
         storesToShow = stores.filter((store) => {
-            console.log("store name: ", store.store_name, " - stores status: ", store.route_day_state)
             let isAround:boolean = false;
             const distance:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
                 parseFloat(store.longuitude),
-                20.72773187784606, 
-                -105.1772550441429
-                // 20.66020491403627,
-                // -105.23041097690118
-                // 20.641125309922, 
-                // -105.22117756486865
-                // userLocation.coords.latitude,
-                // userLocation.coords.longitude
+                userLocation.coords.latitude,
+                userLocation.coords.longitude
             );
 
             if (distance <= kmAround / 10000) {
@@ -82,7 +75,6 @@ const searchClientLayout = () => {
     useEffect(() => {
         getCurrentUserLocation()
         .then((userLocation:LocationObject|null) => {
-            // console.log(findStoresAroung(userLocation, stores, mAround))
             setStoresToShow(findStoresAround(userLocation, stores, mAround));
         })
         .catch(() => setStoresToShow([]));

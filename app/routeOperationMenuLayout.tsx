@@ -177,7 +177,6 @@ const routeOperationMenuLayout = () => {
         // await dropEmbeddedDatabase();
         // const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
 
-        // console.log(resultCreateDatabase)
         // Maintaining user's table
         const resultMaintainUsersTable:IResponse<null> = await maintainUserTable(user);
 

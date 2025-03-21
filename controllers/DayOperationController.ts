@@ -439,7 +439,6 @@ export function determinigNextOperation(currentOperation: IDayOperation,
 export function determiningNextStatusOfStore(foundStore: IStore&IStoreStatusDay|undefined):IStore&IStoreStatusDay {
   // Creating variable to store the new status
   let updatedStore:IStore&IStoreStatusDay = { ...initialStateStore };
-  console.log("Store to update: ", foundStore, " - route day state: ", foundStore?.route_day_state)
   if (foundStore !== undefined) {
     const { route_day_state } = foundStore;
     if(route_day_state === enumStoreStates.PENDING_TO_VISIT) { // The store is part of the route day
@@ -457,7 +456,6 @@ export function determiningNextStatusOfStore(foundStore: IStore&IStoreStatusDay|
         ...foundStore,
         route_day_state: determineRouteDayState(foundStore.route_day_state, 5),
       };
-      console.log('SPECIAL SALE: ', updatedStore)
     } else {
       updatedStore = { ...foundStore };
     }

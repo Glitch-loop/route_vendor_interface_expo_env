@@ -368,9 +368,7 @@ const salesLayout = () => {
     let resultUpdatingStore = await updateStore(updatedStore);
 
     // Updating day operations
-    console.log("Updated store's status day: ", updatedStore.route_day_state)
     if (updatedStore.route_day_state === enumStoreStates.SPECIAL_SALE) {
-      console.log("SPECIAL SALE")
       let dayOperation:number = dayOperations.findIndex((dayOperation:IDayOperation) => dayOperation.id_item === updatedStore.id_store);
       
       if (dayOperation === -1) {
