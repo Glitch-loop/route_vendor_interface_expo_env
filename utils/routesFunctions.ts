@@ -39,7 +39,7 @@ export function getColorContextOfStore(store:IStore&IStoreStatusDay, currentOper
   } else {
     if (store.route_day_state === enumStoreStates.NEW_CLIENT) {
       style = 'bg-green-400'; // New client
-    } else if (store.route_day_state === enumStoreStates.SPECIAL_SALE) {
+    } else if (store.route_day_state === enumStoreStates.NUETRAL_STATE) {
       style = 'bg-orange-600'; // Selling for a client that is outside of the route.
     } else if (store.route_day_state === enumStoreStates.REQUEST_FOR_SELLING) {
       // Client that asked to be visited (he doesn't belong to the current route)
