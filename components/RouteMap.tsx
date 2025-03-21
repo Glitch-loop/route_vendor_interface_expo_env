@@ -9,10 +9,11 @@ import tw from 'twrnc';
 //   getCurrentLocation,
 // } from '../services/geolocationService';
 
-import { ICoordinates } from '../interfaces/interfaces';
+import { ICoordinates, IStore } from '../interfaces/interfaces';
 import { Button } from 'react-native';
 import { View } from 'react-native';
 import { LocaleDirContext } from '@react-navigation/native';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 const styles = StyleSheet.create({
   container: {
@@ -38,6 +39,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
   },
+  marker: {
+    backgroundColor: '#18181a'
+  }
 });
 
 const INITIAL_REGION = {
@@ -58,7 +62,17 @@ const markers:any[] = [
   }
 ]
  
-const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => {
+const RouteMap = ({
+  latitude, 
+  longitude,
+  stores,
+  onClick
+}:{
+  latitude:number, 
+  longitude:number,
+  stores:IStore[],
+  onClick?:(store:IStore) => void
+}) => {
   const mapRef = useRef<MapView|null>(null);
 
   console.log(latitude)
@@ -100,7 +114,21 @@ const RouteMap = ({latitude, longitude}:{latitude:number, longitude:number}) => 
         ref={mapRef}
         >
         {/* Add a marker at the user's current position */}
-        <Marker coordinate={{ latitude: latitude, longitude: longitude }}/>
+        {/* <Marker 
+          style={styles.marker}
+          pinColor='#18181a'
+          title='hola mundo'
+        coordinate={{ latitude: latitude, longitude: longitude }}/> */}
+
+        { stores.map((store) => {
+          return (
+            <Marker 
+              title={capitalizeFirstLetterOfEachWord(store.store_name)}
+              onPress={() => { if (onClick) onClick(store) }}
+              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longuitude) }}/>
+          )
+        })
+        }
       </MapView>
     </View>
   );

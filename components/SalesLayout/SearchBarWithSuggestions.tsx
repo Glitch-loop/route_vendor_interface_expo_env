@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Pressable, Text } from 'react-native';
+import { View, Pressable, Text, ScrollView } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 import tw from 'twrnc';
 import { Provider } from 'react-native-paper';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 /*
   To make this module reusable, it was decided to pass as props an array of "any"
@@ -73,30 +74,38 @@ const SearchBarWithSuggestions = ({
   };
 
   return (
-    <View style={tw`w-11/12`}>
-      <Provider>
-        <Searchbar
-          clearIcon={() => {return '';}}
-          icon={() => <MaterialIcons name="search" size={24} color="gray" />}
-          style={tw`border border-solid text-xl`}
-          placeholder="Search"
-          onChangeText={onChangeSearch}
-          value={searchQuery}
-        />
-      </Provider>
-      {/* Display suggestions */}
-      {filteredData.length > 0 && (
-        filteredData.map(item => (
-          <Pressable
-            key={item[keyField]}
-            style={tw`p-3 border border-0 border-b-2 border-solid`}
-            onPress={() => onSelectItem(item)}>
-            <Text style={tw`text-xl`}>
-              {item[fieldToSearch]}
-            </Text>
-          </Pressable>
-        ))
-      )}
+    <View style={tw`w-11/12 h-full flex flex-col`}>
+      <View style={tw`w-full  h-fit`}>
+        <Provider>
+          <Searchbar
+            clearIcon={() => {return '';}}
+            icon={() => <MaterialIcons name="search" size={24} color="gray" />}
+            style={tw`border border-solid text-xl`}
+            placeholder="Search"
+            onChangeText={onChangeSearch}
+            value={searchQuery}
+          />
+        </Provider>
+      </View>
+      {filteredData.length > 0 &&
+        <View style={tw`absolute top-13 z-20 w-full h-fit bg-gray-100 flex flex-1 flex-row justify-center items-center max-h-56`}>
+          {/* Display suggestions */}
+          <ScrollView nestedScrollEnabled={true} className='flex flex-1 w-full justify-center items-center'>
+            {filteredData.length > 0 && (
+              filteredData.map(item => (
+                <Pressable
+                  key={item[keyField]}
+                  style={tw`p-3 border border-0 border-b-2 border-solid`}
+                  onPress={() => onSelectItem(item)}>
+                  <Text style={tw`text-xl text-center`}>
+                    {capitalizeFirstLetterOfEachWord(item[fieldToSearch])}
+                  </Text>
+                </Pressable>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      }
     </View>
   );
 };

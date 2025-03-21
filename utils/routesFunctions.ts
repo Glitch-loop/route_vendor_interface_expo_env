@@ -83,3 +83,8 @@ export function getStoreFromContext(currentOperation:IDayOperation, stores:(ISto
     return foundStore;
   }
 }
+
+export function distanceBetweenTwoPoints(x1:number, y1:number, x2:number, y2:number) {
+  const { sqrt, pow } = Math;
+  return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
+}

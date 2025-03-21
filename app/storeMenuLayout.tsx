@@ -157,12 +157,14 @@ const storeMenuLayout = () => {
       };
 
       /* Getting all the transaciton of the store of today. */
-      apiResponseProcess((
-        await getRouteTransactionByStore(store.id_store)),
-        settingRouteTransactionByStore)
-      .forEach((transaction:IRouteTransaction) => {
-        arrTransactions.push(transaction);
-      });
+      if (store) {
+        apiResponseProcess((
+          await getRouteTransactionByStore(store.id_store)),
+          settingRouteTransactionByStore)
+        .forEach((transaction:IRouteTransaction) => {
+          arrTransactions.push(transaction);
+        });
+      }
 
       /* Getting all the transaction operations from the transaction of today. */
       for (const transaction of arrTransactions) {
@@ -207,9 +209,10 @@ const storeMenuLayout = () => {
       </View>
       { store != null &&
         <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
-          <RouteMap 
+          <RouteMap
             latitude={parseFloat(store.latitude)}
             longitude={parseFloat(store.longuitude)}
+            stores={[ store ]}
           /> 
         </View>
         // :
