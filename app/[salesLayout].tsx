@@ -438,7 +438,7 @@ const salesLayout = () => {
       // Note: In case of failure, the background process will eventually synchronize the records.
       syncingRecordsWithCentralDatabase();
 
-      setResultSaleState(true); // The sale failed.
+      setResultSaleState(true);
     } else {
       Toast.show({
         type: 'error',
@@ -484,7 +484,7 @@ const salesLayout = () => {
       await deleteSyncQueueRecords(
         createSyncItems(saleRouteTransactionOperationDescription, 'PENDING', 'INSERT'));
 
-      setResultSaleState(false); // The sale falied.
+      setResultSaleState(false);
     }
 
     } catch (error) {

@@ -41,8 +41,10 @@ function findStoresAround(userLocation:LocationObject|null, stores:(IStore&IStor
             const distance:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
                 parseFloat(store.longuitude),
-                20.66020491403627,
-                -105.23041097690118
+                20.72773187784606, 
+                -105.1772550441429
+                // 20.66020491403627,
+                // -105.23041097690118
                 // 20.641125309922, 
                 // -105.22117756486865
                 // userLocation.coords.latitude,
@@ -72,7 +74,7 @@ const searchClientLayout = () => {
     const dispatch:AppDispatch = useDispatch();
 
     const [storesToShow, setStoresToShow] = useState<IStore[]>([]);
-    const [mAround, setmAround] = useState<number>(100);
+    const [mAround, setmAround] = useState<number>(300);
     const [selectedClient, setSelectedClient] = useState<IStore|undefined>() ;
 
     const [selectedItems, setSelectedItems] = useState<IStore[]>([]);
@@ -101,6 +103,7 @@ const searchClientLayout = () => {
         )
 
         setSelectedClient(selectedItem);
+        setStoresToShow((prev) => { return [...prev, selectedItem]})
     } 
 
     const handlerAcceptClient = ():void => {
