@@ -35,7 +35,7 @@ function determinigSQLSupabaseError(error:any):number {
       httpStatusCode = 500;
     }
   }
-  console.log("error: ", httpStatusCode);
+
   return httpStatusCode;
 }
 
@@ -238,9 +238,7 @@ export class SupabaseRepository implements IRepository {
       })
       .eq('id_work_day', id_work_day);
 
-      console.log("Update work day: ", data)
       if (error) {
-        console.log("Update work day: ", error)
         return createApiResponse<null>(
           determinigSQLSupabaseError(error),
           null,
@@ -256,9 +254,7 @@ export class SupabaseRepository implements IRepository {
     }
   }
 
-  // TODO: Related to users
   async getUserDataByCellphone(user: IUser):Promise<IResponse<IUser>> {
-    console.log("main database")
     const emptyUser:IUser = {
       id_vendor:  '',
       cellphone:  '',
@@ -321,7 +317,6 @@ export class SupabaseRepository implements IRepository {
         state,
       } = inventoryOperation;
 
-      console.log("SUPABASE: ", id_inventory_operation)
       const { data, error } = await supabase.from(TABLES.INVENTORY_OPERATIONS)
       .insert({
         id_inventory_operation: id_inventory_operation,
@@ -332,8 +327,7 @@ export class SupabaseRepository implements IRepository {
         id_work_day: id_work_day,
         state: state,
       });
-      console.log("id_work_day: ", id_work_day)
-      console.log("Insert inventory operation (data): ", data)
+
       if (error) {
         console.log("Insert inventory operation (error): ", error)
         return createApiResponse<null>(

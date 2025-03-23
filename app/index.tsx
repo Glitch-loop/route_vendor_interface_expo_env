@@ -36,7 +36,7 @@ async function appInitialization() {
 
     // Dropping database
     //console.log("deleting database")
-    await dropEmbeddedDatabase()
+    //await dropEmbeddedDatabase()
 
     //await dropUsersEmbeddedTable()
     // Creating database
@@ -46,7 +46,6 @@ async function appInitialization() {
     //await createBackgroundSyncProcess();
     // Verifying permissions
     // Connecting to the printer
-
     //await getPrinterBluetoothConnection();
 
     // Geolocalization permissions

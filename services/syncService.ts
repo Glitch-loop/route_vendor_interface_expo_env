@@ -59,6 +59,7 @@ import {
   createSyncItem,
   createSyncItems,
 } from '../utils/syncFunctions';
+import Toast from 'react-native-toast-message';
 
 
 const repository:IRepository = RepositoryFactory.createRepository('supabase');
@@ -323,8 +324,10 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
             if (isTypeIInventoryOperation(currentRecord)) {
               console.log("Type of record: inventory operation - ", currentRecord.id_inventory_operation)
               if (currentAction === 'INSERT') {
+                console.log("INSERT")
                 response = await repository.insertInventoryOperation(currentRecord);
               } else if (currentAction === 'UPDATE') {
+                console.log("UPDATE")
                 response = await repository.updateInventoryOperation(currentRecord);
                 // TODO
               } else {
@@ -333,17 +336,25 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
             } else if (isTypeIInventoryOperationDescription(currentRecord)) {
               console.log("Type of record: inventory operation description")
               if (currentAction === 'INSERT') {
+                console.log("INSERT")
                 response = await repository.insertInventoryOperationDescription([ currentRecord ]);
               } else if (currentAction === 'UPDATE') {
-                // TODO
+                /*
+                  This operation is not possible because when an inventory operation is updated, the original is kept, 
+                  having to create a new inventory operation that reflects the changes of the original one.
+                */ 
               } else {
                 /* Other operation*/
               }
             } else if (isTypeIRouteTransaction(currentRecord)) {
               console.log("Type of record: route transaction")
               if (currentAction === 'INSERT') {
+                console.log("INSERT")
                 response = await repository.insertRouteTransaction(currentRecord);
               } else if (currentAction === 'UPDATE') {
+                console.log("UPDATE")
+                /* Business rules constraints modifications over the records, but there is an exception and it is
+                when a route transaction is cancelled. */
                 response = await repository.updateRouteTransaction(currentRecord);
               } else {
                 /* Other operation*/
@@ -351,24 +362,29 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
             } else if (isTypeIRouteTransactionOperation(currentRecord)) {
               console.log("Type of record: route transaction operation")
               if (currentAction === 'INSERT') {
+                console.log("INSERT")
                 response = await repository.insertRouteTransactionOperation(currentRecord);
               } else if (currentAction === 'UPDATE') {
-                // TODO
+                /* This operation is not possible because when the user wants to modify a route transaction, 
+                the original is kept and a new one is created. */
               } else {
                 /* Other operation*/
               }
             } else if (isTypeIRouteTransactionOperationDescription(currentRecord)) {
               console.log("Type of record: route transaction operation description")
               if (currentAction === 'INSERT') {
+                console.log("INSERT")
                 response = await repository.insertRouteTransactionOperationDescription([ currentRecord ]);
               } else if (currentAction === 'UPDATE') {
-                // TODO
+                /* This operation is not possible because when the user wants to modify a route transaction, 
+                the original is kept and a new one is created. */
               } else {
                 /* Other operation*/
               }
             } else if (isTypeWorkDayInstersection(currentRecord)) {
               console.log("Type of record general work day: ", currentRecord)
               if (currentAction === 'INSERT') {
+                console.log("INSERT WORK DAY")
                 response = await repository.insertWorkDay(currentRecord);
               } else if (currentAction === 'UPDATE') {
                 console.log("UPDATE WORK DAY")
@@ -429,7 +445,7 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
               if (deleteFailedSyncRecords) {
                 if(currentRecordToSync.status === 'FAILED') {
                   /*
-                    The records was already processed and twice.
+                    The records has been previously processed.
                     It is appended to "recordsCorrectlyProcessed" for being deleted and
                     moved to the historic sync table.
                   */
@@ -500,6 +516,40 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
   }
 }
 
+export async function deviceHasInternet():Promise<boolean> {
+  let isConnected:boolean = false;
+  const controller = new AbortController(); 
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const netWorkState:NetworkState = await Network.getNetworkStateAsync();
+    
+    if(netWorkState.isConnected === false) {
+      isConnected = false;
+    } else {
+      
+      Toast.show({ type: 'info', text1: 'testing network' })
+      const response:Response = await fetch('https://www.google.com', 
+      { 
+        method: 'HEAD',
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+  
+      if (response.status === 200) {
+        isConnected = true;
+      } else {
+        isConnected = false;
+      }
+    }
+  } catch (error) {
+    isConnected = false
+  }
+
+  return isConnected;
+}
+
 // async function createBackgroundSyncProcess() {
 //   BackgroundFetch.configure({
 //     minimumFetchInterval: 15, // Execute every 15 minutes (minimum for iOS)
@@ -518,6 +568,16 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
 
 //   BackgroundFetch.start();
 // }
+
+export async function verifyingFailedSyncedRecords() {
+  console.log("Synced records")
+  const resultGetAllSyncHistoricRecords:IResponse<ISyncRecord[]> = await getAllSyncHistoricRecords();
+
+  const syncHistoricRecords:ISyncRecord[] = getDataFromApiResponse(resultGetAllSyncHistoricRecords);
+  console.log(syncHistoricRecords.length)
+  syncHistoricRecords.map((records) => { console.log(records.status)})
+}
+
 
 export async function createRecordForSyncingWithCentralDatabse(
   data:any,

@@ -47,8 +47,8 @@ const productsInventorySlice = createSlice({
           })
         }
       }
-      console.log("Updating state++++++++++++++++++++++++++++++++++++++++")
-      newInventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
+      // console.log("Updating state++++++++++++++++++++++++++++++++++++++++")
+      // newInventory.forEach((item) => console.log("Product name: ", item.product_name, " - amount to add: ", item.amount))
       return newInventory;
     },
     updateProductsInventory: (state, action: PayloadAction<IProductInventory[]>) => {

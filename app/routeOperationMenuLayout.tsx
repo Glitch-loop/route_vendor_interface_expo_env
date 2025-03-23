@@ -4,6 +4,8 @@ import { BackHandler, ScrollView, View, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
+import * as Network from 'expo-network';
+import { NetworkState } from 'expo-network';
 
 // Databases
 // Embedded
@@ -26,7 +28,7 @@ import { cleanAllGeneralInformation } from '../redux/slices/routeDaySlice';
 import { cleanStores } from '../redux/slices/storesSlice';
 
 // Services
-import { syncingRecordsWithCentralDatabase } from '../services/syncService';
+import { deviceHasInternet, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
 // Components
 import RouteCard from '../components/RouteCard';
@@ -154,6 +156,24 @@ const routeOperationMenuLayout = () => {
   // Related with to the end of  the day.
   const finishWorkDay = async ():Promise<void> => {
     try {
+      console.log("Finishing day")
+      
+      const isConnected = await deviceHasInternet();
+      console.log("Connected? ", isConnected)
+      // Toast.show({type: 'info', text1: 'is connected: ' + isConnected})
+      
+      if (isConnected) {
+        // Toast.show({
+        //   type: 'error', 
+        //   text1: 'Sin conexión a internet',
+        //   text2: 'Para finalizar el dia debes tener conexción a internet.'
+        // })
+        return;
+      }
+      return;
+
+      console.log("finishing the days")
+
       Toast.show({
         type: 'info',
         text1:'Sincronizando con base de datos, por favor espere',
