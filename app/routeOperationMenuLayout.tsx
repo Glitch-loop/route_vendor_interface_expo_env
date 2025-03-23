@@ -28,7 +28,7 @@ import { cleanAllGeneralInformation } from '../redux/slices/routeDaySlice';
 import { cleanStores } from '../redux/slices/storesSlice';
 
 // Services
-import { deviceHasInternet, syncingRecordsWithCentralDatabase } from '../services/syncService';
+import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
 // Components
 import RouteCard from '../components/RouteCard';
@@ -158,21 +158,15 @@ const routeOperationMenuLayout = () => {
     try {
       console.log("Finishing day")
       
-      const isConnected = await deviceHasInternet();
-      console.log("Connected? ", isConnected)
-      // Toast.show({type: 'info', text1: 'is connected: ' + isConnected})
-      
+      const isConnected = await deviceHasInternetConnection();      
       if (isConnected) {
-        // Toast.show({
-        //   type: 'error', 
-        //   text1: 'Sin conexión a internet',
-        //   text2: 'Para finalizar el dia debes tener conexción a internet.'
-        // })
+        Toast.show({
+          type: 'error', 
+          text1: 'Sin conexión a internet',
+          text2: 'Para finalizar el dia debes tener conexción a internet.'
+        });
         return;
       }
-      return;
-
-      console.log("finishing the days")
 
       Toast.show({
         type: 'info',

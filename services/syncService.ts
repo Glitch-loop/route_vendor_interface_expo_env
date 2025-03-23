@@ -15,7 +15,8 @@ import {
   IRouteTransaction, 
   IRouteTransactionOperation, 
   IRouteTransactionOperationDescription,
-  ISyncRecord } from '../interfaces/interfaces';
+  ISyncRecord 
+} from '../interfaces/interfaces';
 
 // SQL queries
 import {
@@ -44,6 +45,12 @@ import { IRepository } from '../queries/repositories/interfaces/IRepository';
 // Utils
 import { apiResponseStatus, createApiResponse, getDataFromApiResponse } from '../utils/apiResponse';
 import { convertingArrayInDictionary } from '../utils/generalFunctions';
+import {
+  calculateSyncPriority,
+  createSyncItem,
+  createSyncItems,
+} from '../utils/syncFunctions';
+import Toast from 'react-native-toast-message';
 
 // Import guards
 import {
@@ -54,12 +61,6 @@ import {
   isTypeIRouteTransactionOperationDescription,
   isTypeWorkDayInstersection,
 } from '../utils/guards';
-import {
-  calculateSyncPriority,
-  createSyncItem,
-  createSyncItems,
-} from '../utils/syncFunctions';
-import Toast from 'react-native-toast-message';
 
 
 const repository:IRepository = RepositoryFactory.createRepository('supabase');
@@ -252,21 +253,10 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
   const recordsCorrectlyProcessed:ISyncRecord[] = [];
   const recordsWronglyProcessed:ISyncRecord[] = [];
   let resultOfSyncProcess:boolean = false;
-  let isDeviceConnectedToInternet:boolean = false;
-  const netWorkState:NetworkState = await Network.getNetworkStateAsync();
 
   try {
-    if (netWorkState.isConnected !== undefined) {
-      if (netWorkState.isConnected === true) {
-        isDeviceConnectedToInternet = true;
-      } else {
-        isDeviceConnectedToInternet = false;
-      }
-    } else {
-      isDeviceConnectedToInternet = false;
-    }
-
-    if(isDeviceConnectedToInternet === true) {
+    const isDeviceConnectedToInternet:boolean = await deviceHasInternetConnection();
+    if(isDeviceConnectedToInternet) {
       const responseSynRecords:IResponse<ISyncRecord[]> = await getAllSyncQueueRecords();
       
       if (apiResponseStatus(responseSynRecords, 200)) {
@@ -516,7 +506,7 @@ async function syncingRecordsWithCentralDatabase(deleteFailedSyncRecords:boolean
   }
 }
 
-export async function deviceHasInternet():Promise<boolean> {
+export async function deviceHasInternetConnection():Promise<boolean> {
   let isConnected:boolean = false;
   const controller = new AbortController(); 
   const timeout = setTimeout(() => controller.abort(), 5000);
