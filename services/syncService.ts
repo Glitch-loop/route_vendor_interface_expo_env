@@ -50,7 +50,6 @@ import {
   createSyncItem,
   createSyncItems,
 } from '../utils/syncFunctions';
-import Toast from 'react-native-toast-message';
 
 // Import guards
 import {
@@ -517,8 +516,6 @@ export async function deviceHasInternetConnection():Promise<boolean> {
     if(netWorkState.isConnected === false) {
       isConnected = false;
     } else {
-      
-      Toast.show({ type: 'info', text1: 'testing network' })
       const response:Response = await fetch('https://www.google.com', 
       { 
         method: 'HEAD',

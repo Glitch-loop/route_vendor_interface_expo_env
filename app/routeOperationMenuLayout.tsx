@@ -159,11 +159,11 @@ const routeOperationMenuLayout = () => {
       console.log("Finishing day")
       
       const isConnected = await deviceHasInternetConnection();      
-      if (isConnected) {
+      if (!isConnected) {
         Toast.show({
           type: 'error', 
           text1: 'Sin conexión a internet',
-          text2: 'Para finalizar el dia debes tener conexción a internet.'
+          text2: 'Para finalizar el dia debes tener conexción a internet, o asegurate de tener datos en el celular.'
         });
         return;
       }
