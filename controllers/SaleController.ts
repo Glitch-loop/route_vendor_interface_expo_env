@@ -158,6 +158,26 @@ export function validatingIfRepositionIsValid(productToCommit: IProductInventory
     amount: 0,
   }
 
+  // let totalItemsOfProductsToCommit:number = productToCommit.reduce((acc, item) => { return acc + item.amount;}, 0);
+  // let totalItemsOfProductDevolution:number = productDevolution.reduce((acc, item) => { return acc + item.amount;}, 0);
+  // let totalItemsOfProductReposition:number = productReposition.reduce((acc, item) => { return acc + item.amount; }, 0);
+    
+  // const totalItemsForReposition:number = totalItemsOfProductReposition + totalItemsOfProductsToCommit;
+
+
+  // if (totalItemsForReposition > totalItemsOfProductDevolution) {
+  //   result = false
+  // } else {
+  //   result = true
+  // }
+
+  return true;
+  
+  /* 
+   Date: 03-23-25
+    Becuase of business rules, this validation was desactivated.
+    Although the validation is not valid right now, it is possible that in the future this validation will be re-activated.
+  */
   let totalValueOfProductsToCommit:number = productToCommit.reduce((acc, item) => { return acc + item.amount * item.price;}, 0);
   let totalValueOfProductDevolution:number = productDevolution.reduce((acc, item) => { return acc + item.amount * item.price;}, 0);
   let totalValueOfProductReposition:number = productReposition.reduce((acc, item) => { return acc + item.amount * item.price; }, 0);

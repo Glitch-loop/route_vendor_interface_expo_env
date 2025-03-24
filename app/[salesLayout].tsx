@@ -585,8 +585,10 @@ const salesLayout = () => {
     } else {
 
       if (productDevolution.length > 0) {
+        // Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", 
+        //   text2: "No es posible excederte mas del valor de la reposición (solo se excedera si el valor unitario del producto es mayor)."});
         Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", 
-          text2: "No es posible excederte mas del valor de la reposición (solo se excedera si el valor unitario del producto es mayor)."});
+          text2: "El numero de 'bolsitas a reponer' tiene que ser igual o menor a las 'bolsitas de la merma'."});
         setProductReposition(productReposition)
       } else {
         Toast.show({
