@@ -1,0 +1,5 @@
+export enum RouteTransactionOperation {
+  PRODUCT_DEVOLUTION = "PRODUCT_DEVOLUTION",
+  PRODUCT_REPOSITION = "PRODUCT_REPOSITION",
+  SALES = "SALES"
+}
