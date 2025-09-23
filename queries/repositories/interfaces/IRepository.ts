@@ -24,7 +24,7 @@ export interface IRepository {
   getAllStoresInARouteDay(id_route_day:string): Promise<IResponse<IRouteDayStores[]>>;
   getStoresByArrID(arr_id_stores: string[]): Promise<IResponse<IStore[]>>;
   getAllStores(): Promise<IResponse<IStore[]>>;
-  
+
   // Related to the work day information
   insertWorkDay(workday:IRoute&IDayGeneralInformation&IDay&IRouteDay):Promise<IResponse<null>>;
   updateWorkDay(workday:IRoute&IDayGeneralInformation&IDay&IRouteDay):Promise<IResponse<null>>;
