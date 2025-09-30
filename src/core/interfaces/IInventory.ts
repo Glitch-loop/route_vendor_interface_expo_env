@@ -1,8 +1,8 @@
-import { ProductInventory } from '../entities/ProductInventory';
+import { IProductInventory } from '../../../interfaces/interfaces';
 
 export abstract class IInventory {
-  abstract createInventory(inventory: ProductInventory[]): void;
-  abstract updateInventory(inventory: ProductInventory[]): void;
-  abstract retrieveInventory(): ProductInventory[];
-  abstract deleteInventory(inventory: ProductInventory[]): void;
+  abstract createInventory(inventory: IProductInventory[]): Promise<void>;
+  abstract updateInventory(inventory: IProductInventory[]): Promise<void>;
+  abstract retrieveInventory(): Promise<IProductInventory[]>;
+  abstract deleteInventory(inventory: IProductInventory[]): Promise<void>;
 }
