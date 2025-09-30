@@ -157,7 +157,7 @@ export class sqlLite_inventory_operation_repository implements IInventoryOperati
     //     return inventoryOperationsWithDescriptions;
     // }
 
-    async getInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
+    async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
         try {
             const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
 

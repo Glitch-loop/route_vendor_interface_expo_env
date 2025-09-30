@@ -9,6 +9,6 @@ export abstract class IInventoryOperation {
   abstract updateInventoryOperation(inventory_operation: InventoryOperation): void;
   abstract listInventoryOperations(): Promise<InventoryOperation[]>; 
   abstract retrieveInventoryOperations(id_inventory_operation: string[]): Promise<InventoryOperation[]>;
-  abstract getInventoryOperationDescription(inventoryOperations:InventoryOperation[]): Promise<InventoryOperationDescription[]>;
+  abstract retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]): Promise<InventoryOperationDescription[]>;
   abstract deleteInventoryOperations(inventory_operations: InventoryOperation[]): void;
 }
