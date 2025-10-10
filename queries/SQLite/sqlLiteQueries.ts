@@ -1282,7 +1282,6 @@ export async function insertRouteTransaction(transactionOperation: IRouteTransac
   } catch(error) {
     console.log("Error in transaction: ", error)
     return createApiResponse<IRouteTransaction>(500, transactionOperation, null, 'Failed inserting route transaction (transaction creation level).');
-  }
 }
 
 export async function insertRouteTransactionOperation(transactionOperation: IRouteTransactionOperation):Promise<IResponse<IRouteTransactionOperation>> {

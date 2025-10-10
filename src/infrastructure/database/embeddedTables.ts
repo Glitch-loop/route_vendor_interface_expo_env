@@ -1,3 +1,5 @@
+import PAYMENT_METHODS from "@/utils/paymentMethod";
+
 const EMBEDDED_TABLES = {
   USER: 'user',
   ROUTE_DAY: 'route_day',
@@ -5,6 +7,7 @@ const EMBEDDED_TABLES = {
   PRODUCTS: 'products',
   DAY_OPERATIONS: 'day_operations',
   ROUTE_TRANSACTIONS: 'route_transactions',
+  PAYMENT_METHODS: 'payment_methods',
   ROUTE_TRANSACTION_DESCRIPTIONS: 'route_transaction_descriptions',
   INVENTORY_OPERATIONS: 'inventory_operations',
   PRODUCT_OPERATION_DESCRIPTIONS: 'product_operation_descriptions',

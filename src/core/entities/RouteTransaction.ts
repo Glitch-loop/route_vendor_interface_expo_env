@@ -11,17 +11,17 @@ export class RouteTransaction {
     public readonly id_work_day: string,
     public readonly id_store: string,
     public readonly payment_method: PaymentMethod,
-    public readonly transactionDescription: RouteTransactionDescription[]
+    public readonly transaction_description: RouteTransactionDescription[]
   ) {}
 
   get_transaction_grand_total(): number {
-    return this.transactionDescription.reduce((total, description) => {
+    return this.transaction_description.reduce((total, description) => {
       return total + description.price_at_moment * description.amount;
     }, 0);
   }
 
   get_subtotal_of_operation_type(id_type_operation: string): number {
-    return this.transactionDescription
+    return this.transaction_description
       .filter((description) => description.id_transaction_operation_type === id_type_operation)
       .reduce((subtotal, description) => {
         return subtotal + description.price_at_moment * description.amount;
@@ -29,7 +29,7 @@ export class RouteTransaction {
   }
 
   list_transaction_description_by_operation_type(id_type_operation: string): RouteTransactionDescription[] {
-    return this.transactionDescription.filter(
+    return this.transaction_description.filter(
       (description) => description.id_transaction_operation_type === id_type_operation
     );
   }
