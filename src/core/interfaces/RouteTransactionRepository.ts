@@ -6,7 +6,7 @@ import { Store } from '../entities/Store';
 import { PaymentMethod } from '../object_values/PaymentMethod';
 import { RouteTransactionDescription } from '../object_values/RouteTransactionDescription';
 
-export abstract class IRouteTransaction {
+export abstract class RouteTransactionRepository {
   abstract insertRouteTransaction(route_transaction: RouteTransaction): Promise<void>;
   abstract updateRouteTransaction(route_transaction: RouteTransaction): Promise<void>;
   abstract deleteRouteTransactions(route_transactions: RouteTransaction[]): Promise<void>;

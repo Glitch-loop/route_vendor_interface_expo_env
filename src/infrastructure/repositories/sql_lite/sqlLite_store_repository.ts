@@ -1,5 +1,5 @@
 // Interfaces
-import { IStore } from "@/src/core/interfaces/IStore";
+import { IStore } from "@/src/core/interfaces/StoreRepository";
 
 // Entities
 import { Store } from "@/src/core/entities/Store";

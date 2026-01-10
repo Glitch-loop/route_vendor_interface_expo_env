@@ -3,7 +3,7 @@ import { createSQLiteConnection } from './SQLite';
 import EMBEDDED_TABLES from '@/utils/embeddedTables';
 
 // Interfaces
-import { IInventoryOperation } from '@/src/core/interfaces/IInventoryOperation';
+import { IInventoryOperation } from '@/src/core/interfaces/InventoryOperationRepository';
 
 // Entities
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';

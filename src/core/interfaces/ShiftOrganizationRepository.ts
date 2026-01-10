@@ -1,7 +1,7 @@
 import { WorkDayInformation } from '../entities/WorkDayInformation';
 import { DayOperation } from '../entities/DayOperation';
 
-export abstract class IShiftOrganization {
+export abstract class ShiftOrganizationRepository {
   abstract insertWorkDay(workDay: WorkDayInformation): void;
   abstract deleteWorkDay(workDay: WorkDayInformation): void;
   abstract updateWorkDay(workDay: WorkDayInformation): void;
