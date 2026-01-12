@@ -9,7 +9,7 @@ import { IInventoryOperation } from '@/src/core/interfaces/InventoryOperationRep
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 
 // Object values
-import { InventoryOperationDescription } from '@/src/core/object_values/InventoryOperationDescription';
+import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 
 export class sqlLite_inventory_operation_repository implements IInventoryOperation {
     async createInventoryOperation(inventory_operation: InventoryOperation): Promise<void> {

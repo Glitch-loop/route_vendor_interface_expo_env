@@ -6,8 +6,8 @@ import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 import { Store } from "@/src/core/entities/Store";
 
 // Value Objects
-import { RouteTransactionDescription } from "@/src/core/object_values/RouteTransactionDescription";
-import { PaymentMethod } from "@/src/core/object_values/PaymentMethod";
+import { RouteTransactionDescription } from "@/src/core/object-values/RouteTransactionDescription";
+import { PaymentMethod } from "@/src/core/object-values/PaymentMethod";
 
 // Database
 import { createSQLiteConnection } from "./SQLite";

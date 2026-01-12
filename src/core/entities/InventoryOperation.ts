@@ -1,4 +1,4 @@
-import { InventoryOperationDescription } from '../object_values/InventoryOperationDescription';
+import { InventoryOperationDescription } from '../object-values/InventoryOperationDescription';
 
 export class InventoryOperation {
   constructor(

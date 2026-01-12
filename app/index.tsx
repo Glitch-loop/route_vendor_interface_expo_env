@@ -1,3 +1,6 @@
+// Enable dependency injection with reflection
+import 'reflect-metadata';
+
 // // Libraries
 import React, {useEffect} from 'react';
 import { AppRegistry } from 'react-native';

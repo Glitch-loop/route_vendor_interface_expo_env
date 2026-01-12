@@ -1,4 +1,4 @@
-import { Product } from '../object_values/Product';
+import { Product } from '../object-values/Product';
 
 export class ProductInventory {
   constructor(

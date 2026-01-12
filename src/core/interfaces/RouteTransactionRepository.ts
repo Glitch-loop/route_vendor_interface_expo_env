@@ -3,8 +3,8 @@ import { RouteTransaction } from '../entities/RouteTransaction';
 import { Store } from '../entities/Store';
 
 // Object values
-import { PaymentMethod } from '../object_values/PaymentMethod';
-import { RouteTransactionDescription } from '../object_values/RouteTransactionDescription';
+import { PaymentMethod } from '../object-values/PaymentMethod';
+import { RouteTransactionDescription } from '../object-values/RouteTransactionDescription';
 
 export abstract class RouteTransactionRepository {
   abstract insertRouteTransaction(route_transaction: RouteTransaction): Promise<void>;

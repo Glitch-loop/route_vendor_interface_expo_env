@@ -1,6 +1,6 @@
 import { RouteTransactionState } from '../enums/RouteTransactionState';
-import { PaymentMethod } from '../object_values/PaymentMethod';
-import { RouteTransactionDescription } from '../object_values/RouteTransactionDescription';
+import { PaymentMethod } from '../object-values/PaymentMethod';
+import { RouteTransactionDescription } from '../object-values/RouteTransactionDescription';
 
 export class RouteTransaction {
   constructor(

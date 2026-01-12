@@ -2,7 +2,7 @@
 import { InventoryOperation } from '../entities/InventoryOperation';
 
 // Object values
-import { InventoryOperationDescription } from '../object_values/InventoryOperationDescription';
+import { InventoryOperationDescription } from '../object-values/InventoryOperationDescription';
 
 export abstract class InventoryOperationRepository {
   abstract createInventoryOperation(inventory_operation: InventoryOperation): void;

@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test:di": "tsx ./src/test-di.ts"
   },
   "jest": {
     "preset": "jest-expo",
@@ -29,6 +30,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "@types/jest": "29.5.14",
     "dayjs": "^1.11.13",
+    "dotenv": "^17.2.3",
     "expo": "^54.0.10",
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.9",
@@ -66,8 +68,10 @@
     "react-native-web": "^0.21.0",
     "react-native-webview": "13.15.0",
     "react-redux": "^9.2.0",
+    "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
     "tailwindcss": "^3.4.17",
+    "tsyringe": "^4.10.0",
     "twrnc": "^4.6.0"
   },
   "devDependencies": {
@@ -79,6 +83,7 @@
     "@types/react-native-sqlite-storage": "^6.0.5",
     "@types/react-native-vector-icons": "^6.4.18",
     "@types/uuid": "^10.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3"
   },
   "private": true

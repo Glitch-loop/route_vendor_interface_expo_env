@@ -1,7 +1,7 @@
 import { Route } from '../entities/Route';
-import { Day } from '../object_values/Day';
+import { Day } from '../object-values/Day';
 
 export abstract class RouteRepository {
-  abstract listRoutes(user: string): Promise<Route[]>;
+  abstract listRoutesByUser(user: string): Promise<Route[]>;
   abstract listDays(): Promise<Day[]>;
 }
