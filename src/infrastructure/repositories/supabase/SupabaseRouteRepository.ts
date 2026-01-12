@@ -1,8 +1,19 @@
+// Libraries
 import { injectable, inject } from 'tsyringe';
+
+// Object values
 import { Day } from '@/src/core/object-values/Day';
-import { Route } from '../../../core/entities/Route';
-import { RouteRepository } from '../../../core/interfaces/RouteRepository';
-import { SupabaseDataSource } from '../../datasources/SupabaseDataSource';
+
+// Entities
+import { Route } from '@/src/core/entities/Route';
+
+// Interfaces
+import { RouteRepository } from '@/src/core/interfaces/RouteRepository';
+
+// Infrastructure
+import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'; 
+
+// Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()

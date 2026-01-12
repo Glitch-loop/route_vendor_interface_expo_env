@@ -1,0 +1,32 @@
+-- Delete tables in reverse dependency order (most dependent first)
+-- This ensures foreign key constraints don't prevent deletion
+
+-- Level 5: Depend on inventory_operations and route_transactions
+DROP TABLE IF EXISTS public.route_transaction_descriptions CASCADE;
+DROP TABLE IF EXISTS public.route_transaction_operations CASCADE;
+
+-- Level 4: Depend on work_days
+DROP TABLE IF EXISTS public.followed_paths CASCADE;
+DROP TABLE IF EXISTS public.inventory_opertions CASCADE;
+DROP TABLE IF EXISTS public.route_transactions CASCADE;
+
+-- Level 3: Depend on route_days, routes, vendors, and commissions
+DROP TABLE IF EXISTS public.route_day_stores CASCADE;
+DROP TABLE IF EXISTS public.route_paths CASCADE;
+DROP TABLE IF EXISTS public.work_days CASCADE;
+
+-- Level 2: Depend on routes and days
+DROP TABLE IF EXISTS public.route_days CASCADE;
+
+-- Level 1: Depend on vendors only
+DROP TABLE IF EXISTS public.commissions CASCADE;
+DROP TABLE IF EXISTS public.routes CASCADE;
+DROP TABLE IF EXISTS public.stores CASCADE;
+
+-- Level 0: No dependencies
+DROP TABLE IF EXISTS public.days CASCADE;
+DROP TABLE IF EXISTS public.vendors CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
+DROP TABLE IF EXISTS public.payment_method CASCADE;
+DROP TABLE IF EXISTS public.inventory_operation_types CASCADE;
+DROP TABLE IF EXISTS public.route_transaction_operation_types CASCADE;

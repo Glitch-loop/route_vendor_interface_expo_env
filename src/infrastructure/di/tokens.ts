@@ -8,6 +8,7 @@ export const TOKENS = {
 
     // Repositories
     RouteRepository: Symbol('RouteRepository'),
+    StoreRepository: Symbol('StoreRepository'),
 
     // Services
 }
