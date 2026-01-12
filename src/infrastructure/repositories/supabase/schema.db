@@ -79,7 +79,7 @@ CREATE TABLE public.stores (
   owner_name character varying,
   cellphone character varying,
   latitude character varying NOT NULL,
-  longuitude character varying NOT NULL,
+  longitude character varying NOT NULL,
   creation_date timestamp without time zone NOT NULL,
   creation_context text NOT NULL,
   status_store smallint NOT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE public.route_day_stores (
 
 CREATE TABLE public.route_paths (
   latitude character varying NOT NULL,
-  longuitude character varying NOT NULL,
+  longitude character varying NOT NULL,
   id_route_path uuid NOT NULL DEFAULT gen_random_uuid(),
   id_route_day uuid NOT NULL,
   CONSTRAINT route_paths_pkey PRIMARY KEY (id_route_path)
@@ -137,7 +137,7 @@ CREATE TABLE public.route_paths (
 -- Level 4: Depend on work_days
 CREATE TABLE public.followed_paths (
   latitude character varying NOT NULL,
-  longuitude character varying NOT NULL,
+  longitude character varying NOT NULL,
   id_followed_path uuid NOT NULL DEFAULT gen_random_uuid(),
   id_work_day uuid NOT NULL,
   CONSTRAINT followed_paths_pkey PRIMARY KEY (id_followed_path),

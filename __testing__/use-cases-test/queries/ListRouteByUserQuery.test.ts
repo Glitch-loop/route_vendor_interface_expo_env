@@ -3,8 +3,8 @@ import 'dotenv/config';
 
 // Test file for DI container
 import 'reflect-metadata';
-import { container } from '../../src/infrastructure/di/container';
-import { ListRouteByUserQuery } from '../../src/application/queries/ListRouteByUserQuery';
+import { container } from '../../../src/infrastructure/di/container';
+import { ListRouteByUserQuery } from '../../../src/application/queries/ListRouteByUserQuery';
 
 async function testDI() {
   console.log('🧪 Testing ListRouteByUserQuery...\n');
