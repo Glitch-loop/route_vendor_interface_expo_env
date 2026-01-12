@@ -14,12 +14,7 @@ import { SupbaseRouteRepository } from '@/src/infrastructure/repositories/supaba
 import { TOKENS } from './tokens'
 
 // Register DataSource as SINGLETON (one instance for entire app)
-// container.registerSingleton(SupabaseDataSource)
 container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource)
-
-// container.register(TOKENS.SupabaseDataSource, {
-//     useClass: SupabaseDataSource
-// }, { lifecycle: "Singleton" });
 
 // Register Repositories
 container.register<RouteRepository>(TOKENS.RouteRepository, {
