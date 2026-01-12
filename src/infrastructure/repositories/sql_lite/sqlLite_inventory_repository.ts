@@ -1,4 +1,4 @@
-import { IInventory } from '../../../core/interfaces/IInventory';
+import { IInventory } from '../../../core/interfaces/InventoryRepository';
 import { createSQLiteConnection } from './SQLite';
 import { IProductInventory } from '../../../../interfaces/interfaces';
 import EMBEDDED_TABLES from '@/utils/embeddedTables';

@@ -1,5 +1,5 @@
 // Interfaces
-import { IRouteTransaction } from "@/src/core/interfaces/IRouteTransaction";
+import { IRouteTransaction } from "@/src/core/interfaces/RouteTransactionRepository";
 
 // Entities
 import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
