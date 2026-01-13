@@ -17,7 +17,7 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
-export class SupbaseRouteRepository implements RouteRepository {
+export class SupabaseRouteRepository implements RouteRepository {
   constructor(@inject(TOKENS.SupabaseDataSource) private readonly dataSource: SupabaseDataSource) {}
 
   private get supabase() {
