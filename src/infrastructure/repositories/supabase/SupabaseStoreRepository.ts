@@ -24,11 +24,29 @@ export class SupabaseStoreRepository implements StoreRepository {
 
     async insertStores(stores: Store[]): Promise<void> {
         try {
+            // Map Store entities to database schema (excluding route_day_state)
+            const storeRecords = stores.map(store => ({
+                street: store.street,
+                ext_number: store.ext_number,
+                colony: store.colony,
+                postal_code: store.postal_code,
+                address_reference: store.address_reference,
+                store_name: store.store_name,
+                owner_name: store.owner_name,
+                cellphone: store.cellphone,
+                latitude: store.latitude,
+                longitude: store.longitude,
+                creation_date: store.creation_date,
+                creation_context: store.creation_context,
+                status_store: store.status_store,
+                id_creator: store.id_creator
+            }));
+
             const { error } = await this.supabase
                 .from('stores')
-                .insert(stores);
+                .insert(storeRecords);
 
-            if (error) throw new Error(`Error inserting stores: ${error.message}`);
+            if (error) throw new Error(`Error inserting stores: ${ error.message }`);
         } catch (error: any) {
             throw new Error(`Failed to insert stores: ${error.message}`);
         }
@@ -36,9 +54,27 @@ export class SupabaseStoreRepository implements StoreRepository {
 
     async updateStore(store: Store): Promise<void> {
         try {
+            // Map Store entity to database schema (excluding route_day_state and id_store)
+            const storeRecord = {
+                street: store.street,
+                ext_number: store.ext_number,
+                colony: store.colony,
+                postal_code: store.postal_code,
+                address_reference: store.address_reference,
+                store_name: store.store_name,
+                owner_name: store.owner_name,
+                cellphone: store.cellphone,
+                latitude: store.latitude,
+                longitude: store.longitude,
+                creation_date: store.creation_date,
+                creation_context: store.creation_context,
+                status_store: store.status_store,
+                id_creator: store.id_creator
+            };
+
             const { error } = await this.supabase
                 .from('stores')
-                .update(store)
+                .update(storeRecord)
                 .eq('id_store', store.id_store);
 
             if (error) throw new Error(`Error updating store: ${error.message}`);

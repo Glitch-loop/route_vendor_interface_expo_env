@@ -1,5 +1,8 @@
+// Libraries
+import { injectable } from 'tsyringe';
+
 // Interfaces
-import { IStore } from "@/src/core/interfaces/StoreRepository";
+import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 
 // Entities
 import { Store } from "@/src/core/entities/Store";
@@ -8,7 +11,8 @@ import { Store } from "@/src/core/entities/Store";
 import { createSQLiteConnection } from "./SQLite";
 import EMBEDDED_TABLES from "../../database/embeddedTables";
 
-export class sqlLite_store_repository implements IStore {
+@injectable()
+export class SQLiteStoreRepository implements StoreRepository {
     async insertStores(stores: Store[]): Promise<void> {
         try {
             const sqlite = await createSQLiteConnection();

@@ -19,7 +19,7 @@ async function testRegisterNewClient() {
     const now = new Date().toISOString();
     const sampleStores: Store[] = [
       new Store(
-        '00000000-0000-0000-0000-000000000001',
+        '',
         'Main St',
         '123',
         'Downtown',
@@ -30,7 +30,7 @@ async function testRegisterNewClient() {
         '+521234567890',
         '19.432608',
         '−99.133209',
-        '11111111-1111-1111-1111-111111111111',
+        'b6665f54-37de-4991-a7c4-283599bb0658',
         now,
         'jest-test',
         '1',
