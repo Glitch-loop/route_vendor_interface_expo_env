@@ -53,6 +53,7 @@ export default function SQLiteTestScreen() {
       log('Test 3: Querying data...');
       const result = await db.getAllAsync('SELECT * FROM test_table');
       log(`Query successful - Found ${result.length} records`, 'success');
+      log(`Query successful - Records ${JSON.stringify(result)} records`, 'success');
 
       // Test 4: Test Store Repository
       log('Test 4: Testing Store Repository...');
