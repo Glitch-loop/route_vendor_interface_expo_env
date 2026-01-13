@@ -10,11 +10,11 @@ import { RouteRepository } from '@/src/core/interfaces/RouteRepository'
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository'
 
 // Implementations - Supabase
-import { SupbaseRouteRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteRepository'
+import { SupabaseRouteRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteRepository'
 import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supabase/SupabaseStoreRepository'
 
 // Implementations - SQLite
-import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/sql_lite/sqlLite_store_repository'
+import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/sql_lite/SQLiteStoreRepository'
 
 // Utils
 import { TOKENS } from './tokens'
@@ -25,7 +25,7 @@ container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDat
 
 // Register Repositories - Generic (default: Supabase for remote operations)
 container.register<RouteRepository>(TOKENS.RouteRepository, {
-    useClass: SupbaseRouteRepository
+    useClass: SupabaseRouteRepository
 })
 
 container.register<StoreRepository>(TOKENS.StoreRepository, {
