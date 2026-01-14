@@ -31,4 +31,6 @@ export const TOKENS = {
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
     
     // Services
+    IDService: Symbol('IDService'),
+    DateService: Symbol('DateService'),
 }

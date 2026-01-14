@@ -7,6 +7,9 @@ import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
 import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
 import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
 
+import { IDService } from "@/src/core/interfaces/IDService";
+import { DateService } from "@/src/core/interfaces/DateService";
+
 // Entities
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
@@ -27,6 +30,10 @@ export class StartWorkDayUseCase {
         @inject(TOKENS.SupabaseStoreRepository) private readonly remoteStoreRepo: StoreRepository,
         @inject(TOKENS.SupabaseInventoryRepository) private readonly remoteInventoryRepo: InventoryOperationRepository,
         @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
+
+        // Services
+        @inject(TOKENS.IDService) private readonly idService: IDService,
+        @inject(TOKENS.DateService) private readonly dateService: DateService,
         // @inject(TOKENS.SupabaseInventoryOperationRepository) private readonly remoteInventoryOperationRepo: InventoryOperationRepository,
 
 
@@ -35,6 +42,7 @@ export class StartWorkDayUseCase {
     async execute(workDayInformation: WorkDayInformation, initialInventory: InventoryOperation[], routeDaySelected: any): Promise<void> {
         const routeDayClients = [];
         
+        this.idService.generateID();
         
 
         // Create new work day.
@@ -44,8 +52,6 @@ export class StartWorkDayUseCase {
 
         // Save locally clients of the route day.
         
-        
-        console.log(`Found ${stores.length} stores in local SQLite database`);
 
     }
 }
