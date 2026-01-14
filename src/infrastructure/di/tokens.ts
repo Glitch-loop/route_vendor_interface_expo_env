@@ -12,8 +12,23 @@ export const TOKENS = {
     StoreRepository: Symbol('StoreRepository'),
 
     // Repositories - Specific implementations
+    // Supabase
+    SupabaseDayOperationRepository: Symbol('SupabaseDayOperationRepository'),
+    SupabaseInventoryOperationRepository: Symbol('SupabaseInventoryOperationRepository'),
+    SupabaseInventoryRepository: Symbol('SupabaseInventoryRepository'),
+    SupabaseRouteRepository: Symbol('SupabaseRouteRepository'),
+    SupabaseRouteTransactionRepository: Symbol('SupabaseRouteTransactionRepository'),
+    SupabaseShiftOrganizationRepository: Symbol('SupabaseShiftOrganizationRepository'),
     SupabaseStoreRepository: Symbol('SupabaseStoreRepository'),
+    
+    // SQLite
+    SQLiteDayOperationRepository: Symbol('SQLiteDayOperationRepository'),
+    SQLiteInventoryOperationRepository: Symbol('SQLiteInventoryOperationRepository'),
+    SQLiteInventoryRepository: Symbol('SQLiteInventoryRepository'),
+    SQLiteRouteRepository: Symbol('SQLiteRouteRepository'),
+    SQLiteRouteTransactionRepository: Symbol('SQLiteRouteTransactionRepository'),
+    SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
-
+    
     // Services
 }
