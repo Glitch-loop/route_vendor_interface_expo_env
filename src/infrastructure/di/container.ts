@@ -18,7 +18,7 @@ import { SupabaseRouteRepository } from '@/src/infrastructure/repositories/supab
 import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supabase/SupabaseStoreRepository'
 
 // Implementations - SQLite
-import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/sql_lite/SQLiteStoreRepository'
+import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository'
 
 
 

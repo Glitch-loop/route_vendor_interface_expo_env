@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { container } from '@/src/infrastructure/di/container';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
-import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/sql_lite/SQLiteStoreRepository';
+import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository';
 import { Store } from '@/src/core/entities/Store';
 
 export default function SQLiteTestScreen() {
