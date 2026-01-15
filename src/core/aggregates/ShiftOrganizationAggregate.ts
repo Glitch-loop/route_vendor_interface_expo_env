@@ -4,12 +4,22 @@ export class ShiftOrganizationAggregate {
     private _workDayInformation: WorkDayInformation;
 
     constructor(
-        public readonly workDayInformation: WorkDayInformation
+         workDayInformation: WorkDayInformation
     ) {
         this._workDayInformation = workDayInformation;
     }
 
-    startWorkDay(idWorkDay: string, startPettyCash: number, initialDate: Date): void {
+    startWorkDay(
+        idWorkDay: string, 
+        startPettyCash: number, 
+        initialDate: Date,
+        id_route: string,
+        route_name: string,
+        description: string,
+        route_status: string,
+        id_day: string,
+        id_route_day: string,
+    ): void {
 
         if (startPettyCash < 0) throw new Error("Petty cash cannot be negative.");
 
@@ -18,7 +28,13 @@ export class ShiftOrganizationAggregate {
             initialDate,
             null,
             startPettyCash,
-            null
+            null,
+            id_route,
+            route_name,
+            description,
+            route_status,
+            id_day,
+            id_route_day,
         );
 
         this._workDayInformation = newWorkDay;
@@ -39,7 +55,13 @@ export class ShiftOrganizationAggregate {
             this._workDayInformation.start_date,
             finalDate,
             this._workDayInformation.start_petty_cash,
-            finalPettyCash
+            finalPettyCash,
+            this._workDayInformation.id_route,
+            this._workDayInformation.route_name,
+            this._workDayInformation.description,
+            this._workDayInformation.route_status,
+            this._workDayInformation.id_day,
+            this._workDayInformation.id_route_day,
         );
 
         this._workDayInformation = finishedWorkDay;
