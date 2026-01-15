@@ -2,23 +2,21 @@ import { Product } from '../object-values/Product';
 
 export class ProductInventory {
   constructor(
-    private amount: number,
-    private product: Product
+    private readonly id_product_inventory: string,
+    private readonly price_at_moment: number,
+    private readonly stock: number,
+    private readonly id_product: string,
   ) {}
 
   get_value_of_product(): number {
-    return this.amount * this.product.price;
+    return this.stock * this.price_at_moment;
   }
 
-  get_amount_of_product(): number {
-    return this.amount;
+  get_stock_of_product(): number {
+    return this.stock;
   }
 
   get_price_of_product(): number {
-    return this.product.price;
-  }
-
-  set_amount_of_product(amount: number): void {
-    this.amount = amount;
+    return this.price_at_moment;
   }
 }
