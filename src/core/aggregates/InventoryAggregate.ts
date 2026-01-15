@@ -1,9 +1,8 @@
 // Object Values
-import { InventoryOperationDescription } from "../object-values/InventoryOperationDescription";
+import { InventoryOperationDescription } from "@/src/core/object-values/InventoryOperationDescription";
 
 // Entities
-import { InventoryOperation } from "../entities/InventoryOperation";
-
+import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
 
 export class InventoryOperationAggregate {
     private _inventoryOperation: InventoryOperation | null;
