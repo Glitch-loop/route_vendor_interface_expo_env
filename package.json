@@ -9,10 +9,14 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
+    "test:ci": "jest --watchAll=false",
     "lint": "expo lint"
   },
   "jest": {
     "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
     "testMatch": [
       "**/__testing__/**/*.test.[jt]s?(x)",
       "**/__testing__/**/*.spec.[jt]s?(x)"
