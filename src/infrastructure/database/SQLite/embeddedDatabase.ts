@@ -53,12 +53,11 @@ export const storesEmbeddedTable = `
     owner_name        TEXT,
     cellphone         TEXT,
     latitude          TEXT,
-    longuitude        TEXT,
+    longitude         TEXT,
     id_creator        TEXT,
     creation_date     TEXT,
     creation_context  TEXT,
     status_store      INT,
-    route_day_state   INT
   );
 `;
 
@@ -72,18 +71,25 @@ export const productsEmbeddedTable = `
     comission       NUMERIC(6,3),
     price           NUMERIC(6,3) NOT NULL,
     product_status  INT NOT NULL,
-    order_to_show   INT NOT NULL UNIQUE,
-    amount          INT NOT NULL
+    order_to_show   INT NOT NULL UNIQUE
   );
 `;
 
+export const productsInventoryEmbeddedTable = `
+  CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
+    id_product_inventory   TEXT NOT NULL UNIQUE,
+    price_at_moment       NUMERIC(6,3) NOT NULL,
+    stock                 INT NOT NULL,
+    id_product            TEXT NOT NULL
+  );
+`
+
 export const dayOperationsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.DAY_OPERATIONS} (
-    id_day_operation  TEXT NOT NULL UNIQUE,
-    id_item           TEXT NOT NULL,
-    id_type_operation TEXT NOT NULL,
-    operation_order   INT NOT NULL,
-    current_operation INT NOT NULL
+    id_day_operation    TEXT NOT NULL UNIQUE,
+    id_item             TEXT NOT NULL UNIQUE,
+    operation_type      TEXT NOT NULL,
+    created_at          DATETIME NOT NULL
   );
 `;
 
@@ -103,8 +109,8 @@ export const routeTransactionOperationDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} (
     id_route_transaction_operation_description  TEXT NOT NULL UNIQUE,
     price_at_moment                             NUMERIC(6,3) NOT NULL,
-    comission_at_moment                         NUMERIC(6,3) NOT NULL,
     amount                                      INT NOT NULL,
+    created_at                                  DATETIME NOT NULL,
     id_route_transaction_operation              TEXT NOT NULL,
     id_product                                  TEXT NOT NULL,
     id_route_transaction                        TEXT NOT NULL,
@@ -125,9 +131,10 @@ export const inventoryOperationsEmbeddedTable = `
 
 export const productOperationDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} (
-    id_product_operation_description  TEXT NOT NULL UNIQUE,
+    id_product_description  TEXT NOT NULL UNIQUE,
     price_at_moment                   NUMERIC(6,3) NOT NULL,
     amount                            INT NOT NULL,
+    created_at                        DATETIME NOT NULL,
     id_inventory_operation            TEXT NOT NULL,
     id_product                        TEXT NOT NULL
   );   

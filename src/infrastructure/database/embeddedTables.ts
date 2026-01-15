@@ -5,6 +5,7 @@ export enum EMBEDDED_TABLES {
   ROUTE_DAY = 'route_day',
   STORES = 'stores',
   PRODUCTS = 'products',
+  PRODUCTS_INVENTORY = 'products_inventory',
   DAY_OPERATIONS = 'day_operations',
   ROUTE_TRANSACTIONS = 'route_transactions',
   PAYMENT_METHODS = 'payment_methods',
