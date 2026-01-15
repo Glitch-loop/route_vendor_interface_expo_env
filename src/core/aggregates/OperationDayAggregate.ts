@@ -97,7 +97,7 @@ export class OperationDayAggregate {
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
     }
     
-    registerCancelInventoryOperation(): void { }
+    registerCancelInventoryOperation(): void { /* Decide if implement */ }
 
     getDayOperations(): DayOperation[] | null {
         return this.dayOperations;

@@ -3,8 +3,8 @@ import 'dotenv/config';
 
 // Test file for DI container
 import 'reflect-metadata';
-import { container } from '../../../src/infrastructure/di/container';
-import { GetAllDaysQuery } from '../../../src/application/queries/GetAllDaysQuery';
+import { container } from '../../../../../src/infrastructure/di/container';
+import { GetAllDaysQuery } from '../../../../../src/application/queries/GetAllDaysQuery';
 
 async function testDI() {
   console.log('🧪 Testing DI Container...\n');
