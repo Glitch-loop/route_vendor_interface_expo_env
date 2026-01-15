@@ -48,10 +48,16 @@ export class StartWorkDayUseCase {
         // Create new work day.
         this.localShiftDayRepo.insertWorkDay(workDayInformation);
 
-        // Register initial inventory.
+        // Create route inventory.
+        // Register initial inventory operation.
+        // Register route inventory.
 
         // Save locally clients of the route day.
-        
+
+        // Register operations of the day
+        // Start shift inventory.
+
+        // Register routes to attend.
 
     }
 }

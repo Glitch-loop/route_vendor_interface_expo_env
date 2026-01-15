@@ -48,5 +48,4 @@ export class ShiftOrganizationAggregate {
     getWorkDayInformation(): WorkDayInformation {
         return this._workDayInformation;
     }
-
 }

@@ -14,8 +14,7 @@ export class Store {
     public readonly id_creator: string,
     public readonly creation_date: string,
     public readonly creation_context: string,
-    public readonly status_store: number,
-    public readonly route_day_state: number
+    public readonly status_store: number
   ) {}
 
   // TODO: Implement update_route_day_state(type: string): void
