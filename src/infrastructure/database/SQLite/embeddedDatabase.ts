@@ -1,4 +1,4 @@
-import EMBEDDED_TABLES from './embeddedTables';
+import EMBEDDED_TABLES from '../embeddedTables';
 
 /*
   This document contains the database that the system uses to
