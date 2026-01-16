@@ -1,5 +1,6 @@
 // Libraries
-import { injectable } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
+import { SQLiteDatabase } from "expo-sqlite";
 
 // Interfaces
 import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
@@ -8,15 +9,22 @@ import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 import { Store } from "@/src/core/entities/Store";
 
 // Database
-import { createSQLiteConnection } from "./SQLite";
 import EMBEDDED_TABLES from "../../database/embeddedTables";
+
+// DataSources
+import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
+
+// Utils
+import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 @injectable()
 export class SQLiteStoreRepository implements StoreRepository {
+    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+
     async insertStores(stores: Store[]): Promise<void> {
         try {
-            const sqlite = await createSQLiteConnection();
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const store of stores) {
                     const {
                         id_store,
@@ -34,7 +42,6 @@ export class SQLiteStoreRepository implements StoreRepository {
                         creation_date,
                         creation_context,
                         status_store,
-                        route_day_state,
                         } = store;
                     await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (
                         id_store, 
@@ -50,9 +57,8 @@ export class SQLiteStoreRepository implements StoreRepository {
                         longitude, 
                         id_creator, 
                         creation_date, 
-                        creation_context, 
-                        status_store, 
-                        route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                        creation_context,
+                        route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                     [
                         id_store,
                         street,
@@ -69,11 +75,9 @@ export class SQLiteStoreRepository implements StoreRepository {
                         creation_date,
                         creation_context,
                         status_store,
-                        route_day_state,
                     ]); 
                 }
             });
-            sqlite.closeSync();
         } catch (error) {
             throw new Error("Failed to insert stores.");
         }
@@ -81,8 +85,8 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async updateStore(store: Store): Promise<void> {
       try {
-        const sqlite = await createSQLiteConnection();
-        await sqlite.withExclusiveTransactionAsync(async (tx) => {
+        const db:SQLiteDatabase = this.dataSource.getClient();
+        await db.withExclusiveTransactionAsync(async (tx) => {
         const {
             id_store,
             street,
@@ -99,7 +103,6 @@ export class SQLiteStoreRepository implements StoreRepository {
             creation_date,
             creation_context,
             status_store,
-            route_day_state,
         } = store;
 
         await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.STORES} SET 
@@ -112,13 +115,12 @@ export class SQLiteStoreRepository implements StoreRepository {
             owner_name = ?, 
             cellphone = ?, 
             latitude = ?, 
-            longuitude = ?, 
+            longitude = ?, 
             id_creator = ?, 
             creation_date = ?, 
             creation_context = ?, 
-            status_store = ?, 
-            route_day_state = ? 
-            WHERE id_store = '${id_store}';`, 
+            status_store = ? 
+            WHERE id_store = ?;`, 
             [
                 street,
                 ext_number,
@@ -134,11 +136,9 @@ export class SQLiteStoreRepository implements StoreRepository {
                 creation_date,
                 creation_context,
                 status_store,
-                route_day_state,
+                id_store,
             ]);
         });
-
-        sqlite.closeSync();
         } catch(error) {
             throw new Error('Failed to update store.');
         }
@@ -148,11 +148,9 @@ export class SQLiteStoreRepository implements StoreRepository {
       try {
         const stores: Store[] = [];
 
-        const sqlite = await createSQLiteConnection();
-        const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
+        const db:SQLiteDatabase = this.dataSource.getClient();
+        const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
         const result = statement.executeSync<Store>();
-
-        sqlite.closeSync();
         
         for(let row of result) {
             stores.push(row);
@@ -169,11 +167,9 @@ export class SQLiteStoreRepository implements StoreRepository {
       try {
         const stores: Store[] = [];
 
-        const sqlite = await createSQLiteConnection();
-        const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
+        const db:SQLiteDatabase = this.dataSource.getClient();
+        const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
         const result = statement.executeSync<Store>();
-
-        sqlite.closeSync();
         
         for(let row of result) {
             stores.push(row);
@@ -188,13 +184,12 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async deleteStores(stores: Store[]): Promise<void> {
       try {
-        const sqlite = await createSQLiteConnection();
-        await sqlite.withExclusiveTransactionAsync(async (tx) => {
+        const db:SQLiteDatabase = this.dataSource.getClient();
+        await db.withExclusiveTransactionAsync(async (tx) => {
           for (const store of stores) {
             await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.STORES} WHERE id_store = ?;`, [store.id_store]);
           }
         });
-        sqlite.closeSync();
       } catch (error) {
         throw new Error('Failed to delete stores.');
       }

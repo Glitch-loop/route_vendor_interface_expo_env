@@ -1,4 +1,4 @@
-import { RouteDayStores } from '../object-values/RouteDayStores';
+import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
 
 export class Route {
   constructor(

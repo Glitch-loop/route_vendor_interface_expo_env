@@ -1,9 +1,9 @@
-// Database
-import { createSQLiteConnection } from './SQLite';
-import EMBEDDED_TABLES from '@/utils/embeddedTables';
+// Libraries
+import { injectable, inject } from 'tsyringe';
+import { SQLiteDatabase } from 'expo-sqlite';
 
 // Interfaces
-import { IInventoryOperation } from '@/src/core/interfaces/InventoryOperationRepository';
+import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
 
 // Entities
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
@@ -11,99 +11,143 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 // Object values
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 
-export class sqlLite_inventory_operation_repository implements IInventoryOperation {
+// DataSources
+import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
+
+// Utils
+import EMBEDDED_TABLES from '@/utils/embeddedTables';
+
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+@injectable()
+export class SQLiteInventoryOperationRepository implements InventoryOperationRepository {
+    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) { }
+
     async createInventoryOperation(inventory_operation: InventoryOperation): Promise<void> {
-          try {
-            const {
-                id_inventory_operation,
-                sign_confirmation,
-                date,
-                state,
-                audit,
-                id_inventory_operation_type,
-                id_work_day,
-            } = inventory_operation;
+        const {
+            id_inventory_operation,
+            sign_confirmation,
+            date,
+            state,
+            audit,
+            id_inventory_operation_type,
+            id_work_day,
+        } = inventory_operation;
 
-            const sqlite = await createSQLiteConnection();
-
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
-            await tx.runAsync(`
-                INSERT INTO ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} 
-                    (id_inventory_operation, 
-                    sign_confirmation, 
-                    date, 
-                    state, 
-                    audit, 
-                    id_inventory_operation_type, 
-                    id_work_day) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?);
-            `, [
-                id_inventory_operation,
-                sign_confirmation,
-                date,
-                state,
-                audit,
-                id_inventory_operation_type,
-                id_work_day,
+        try {
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                // Insert InventoryOperation
+                await tx.runAsync(`
+                    INSERT INTO ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} 
+                        (id_inventory_operation, 
+                        sign_confirmation, 
+                        date, 
+                        state, 
+                        audit, 
+                        id_inventory_operation_type, 
+                        id_work_day) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?);
+                `, [
+                    id_inventory_operation,
+                    sign_confirmation,
+                    date.toISOString(),
+                    state,
+                    audit,
+                    id_inventory_operation_type,
+                    id_work_day,
                 ]);
-            });
 
-            sqlite.closeSync();
+                // Insert InventoryOperationDescriptions
+                for (const desc of inventory_operation.inventoryOperationDescriptions) {
+                    await tx.runAsync(`
+                        INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
+                            (id_product_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
+                            VALUES (?, ?, ?, ?, ?, ?);
+                    `, [
+                        desc.id_product_operation_description,
+                        desc.price_at_moment,
+                        desc.amount,
+                        desc.created_at.toISOString(),
+                        desc.id_inventory_operation,
+                        desc.id_product
+                    ]);
+                }
+            });
+            
         } catch(error) {
             throw new Error('Failed to create inventory operation.');
         }
     }
     
     async updateInventoryOperation(inventoryOperation: InventoryOperation): Promise<void> {
+        const {
+            id_inventory_operation,
+            sign_confirmation,
+            date,
+            audit,
+            state,
+            id_inventory_operation_type,
+            id_work_day,
+        } = inventoryOperation;
+            
         try {
-            const {
-                id_inventory_operation,
-                sign_confirmation,
-                date,
-                audit,
-                state,
-                id_inventory_operation_type,
-                id_work_day,
-                } = inventoryOperation;
-
-            const sqlite = await createSQLiteConnection();
-
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
-            await tx.runAsync(`
-                UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
-                sign_confirmation = ?, 
-                date = ?, 
-                audit = ?,
-                state = ?, 
-                id_inventory_operation_type = ?, 
-                id_work_day = ?
-                WHERE id_inventory_operation = ?;`, 
-            [
-                sign_confirmation,
-                date,
-                audit,
-                state,
-                id_inventory_operation_type,
-                id_work_day,
-                id_inventory_operation,
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                await tx.runAsync(`
+                    UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
+                    sign_confirmation = ?, 
+                    date = ?, 
+                    audit = ?,
+                    state = ?, 
+                    id_inventory_operation_type = ?, 
+                    id_work_day = ?
+                    WHERE id_inventory_operation = ?;`, 
+                [
+                    sign_confirmation,
+                    date.toISOString(),
+                    audit,
+                    state,
+                    id_inventory_operation_type,
+                    id_work_day,
+                    id_inventory_operation,
                 ]);
+
+                // Update InventoryOperationDescriptions
+                // For simplicity, delete all and re-insert
+                await tx.runAsync(`
+                    DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;
+                `, [id_inventory_operation]);
+
+                for (const desc of inventoryOperation.inventoryOperationDescriptions) {
+                    await tx.runAsync(`
+                        INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
+                            (id_product_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
+                            VALUES (?, ?, ?, ?, ?, ?);
+                    `, [
+                        desc.id_product_operation_description,
+                        desc.price_at_moment,
+                        desc.amount,
+                        desc.created_at.toISOString(),
+                        desc.id_inventory_operation,
+                        desc.id_product
+                    ]);
+                }
             });
-            sqlite.closeSync();
         } catch(error) {
             throw new Error('Failed to update inventory operation.');
         }
     }
 
     async listInventoryOperations(): Promise<InventoryOperation[]> {
-        try {
-            const inventoryOperations:InventoryOperation[] = [];
+        const inventoryOperations:InventoryOperation[] = [];
 
-            const sqlite = await createSQLiteConnection();
-            const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
+        try {
+            const db:SQLiteDatabase = this.dataSource.getClient();
+
+            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
             const result = statement.executeSync<InventoryOperation>();
             
-            sqlite.closeSync();
-
             for(let row of result) {
                 inventoryOperations.push(row);
             }
@@ -118,19 +162,17 @@ export class sqlLite_inventory_operation_repository implements IInventoryOperati
     }
 
     async retrieveInventoryOperations(id_inventory_operation: string[]): Promise<InventoryOperation[]> {
+        const inventoryOperations: InventoryOperation[] = [];
+        
         try {
-            const inventoryOperations: InventoryOperation[] = [];
-
-            const sqlite = await createSQLiteConnection();
-            const statement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
             const result = statement.executeSync<InventoryOperation>();
 
             for (let row of result) {
                 inventoryOperations.push(row);
             }
 
-            sqlite.closeSync();
-            
             // const inventoryOperationDescriptions:InventoryOperationDescription[] = await this.getInventoryOperationDescription(inventoryOperations);    
 
             return inventoryOperations;
@@ -139,30 +181,12 @@ export class sqlLite_inventory_operation_repository implements IInventoryOperati
         }
     }
 
-    // private mergeInventoryOperationWithDescriptions(inventoryOperations: InventoryOperation[], inventoryOperationDescriptions: InventoryOperationDescription[]): InventoryOperation[] {
-    //     const inventoryOperationsWithDescriptions:InventoryOperation[] = inventoryOperations.map(inventoryOperation => {
-    //         const descriptions = inventoryOperationDescriptions.filter(description => description.id_inventory_operation === inventoryOperation.id_inventory_operation);
-    //         const mapDescriptions = new Map<string, InventoryOperationDescription>();
-
-    //         descriptions.forEach(description => {
-    //             mapDescriptions.set(description.id_product, description);
-    //         });
-
-    //         return {
-    //             ...inventoryOperation,
-    //             descriptions: mapDescriptions
-    //         };
-    //     });
-
-    //     return inventoryOperationsWithDescriptions;
-    // }
-
     async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
         try {
             const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
-
-            const sqlite = await createSQLiteConnection();
-            const statement = await sqlite.prepareAsync(`SELECT * 
+            
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            const statement = await db.prepareAsync(`SELECT * 
                 FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} 
                 WHERE id_inventory_operation IN(${inventoryOperations.map(op => `'${op.id_inventory_operation}'`).join(', ')});`);
             
@@ -171,8 +195,6 @@ export class sqlLite_inventory_operation_repository implements IInventoryOperati
             for(let row of result) {
                 inventoryOperationsDescriptions.push(row);
             }
-
-            sqlite.closeSync();
 
             return inventoryOperationsDescriptions;
 
@@ -183,16 +205,13 @@ export class sqlLite_inventory_operation_repository implements IInventoryOperati
  
     async deleteInventoryOperations(inventory_operations: InventoryOperation[]): Promise<void> {
         try {
-            const sqlite = await createSQLiteConnection();
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
+            const db:SQLiteDatabase = this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const operation of inventory_operations) {
                     await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
                     await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
                 }
             });
-
-            sqlite.closeSync();
-
         } catch(error) {
             throw new Error('Failed to delete inventory operations.');
         }

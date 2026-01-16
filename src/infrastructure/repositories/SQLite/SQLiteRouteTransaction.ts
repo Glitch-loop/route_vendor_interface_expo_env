@@ -1,5 +1,9 @@
+// Libraries
+import { injectable, inject } from 'tsyringe';
+import { SQLiteDatabase } from "expo-sqlite";
+
 // Interfaces
-import { IRouteTransaction } from "@/src/core/interfaces/RouteTransactionRepository";
+import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
 
 // Entities
 import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
@@ -10,12 +14,19 @@ import { RouteTransactionDescription } from "@/src/core/object-values/RouteTrans
 import { PaymentMethod } from "@/src/core/object-values/PaymentMethod";
 
 // Database
-import { createSQLiteConnection } from "./SQLite";
 import EMBEDDED_TABLES from "../../database/embeddedTables";
 
 
+// DataSources
+import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
 
-export class sqlLite_route_transaction implements IRouteTransaction {
+// Utils
+import { TOKENS } from "@/src/infrastructure/di/tokens";
+
+@injectable()
+export class SQLiteRouteTransactionRepository implements RouteTransactionRepository {
+    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+
     async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
         try {
             const {
@@ -30,10 +41,9 @@ export class sqlLite_route_transaction implements IRouteTransaction {
             } = route_transaction;
             const { id_payment_method } = payment_method
 
+            const db: SQLiteDatabase = this.dataSource.getClient();
 
-            const sqlite = await createSQLiteConnection();
-
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
+            await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (id_route_transaction, date, state, cash_received, id_work_day, id_payment_method, id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
                 `,
                 [
@@ -77,8 +87,6 @@ export class sqlLite_route_transaction implements IRouteTransaction {
                     ]);
                 }
             });
-
-            sqlite.closeSync();
         } catch(error) {
             throw new Error("Failed to insert route transaction.");
         }        
@@ -96,10 +104,9 @@ export class sqlLite_route_transaction implements IRouteTransaction {
             } = route_transaction;
             const { id_payment_method } = payment_method
 
-            const sqlite = await createSQLiteConnection();
+            const db: SQLiteDatabase = this.dataSource.getClient();
 
-
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
+            await db.withExclusiveTransactionAsync(async (tx) => {
             await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
             date = ?, 
             state = ?, 
@@ -117,8 +124,6 @@ export class sqlLite_route_transaction implements IRouteTransaction {
                 id_route_transaction,
             ]);
         });
-
-        sqlite.closeSync();
         } catch (error) {
             throw new Error("Failed to update route transaction.");
         }
@@ -126,9 +131,9 @@ export class sqlLite_route_transaction implements IRouteTransaction {
 
     async deleteRouteTransactions(route_transactions: RouteTransaction[]): Promise<void> {
       try {
-            const sqlite = await createSQLiteConnection();
+            const db: SQLiteDatabase = this.dataSource.getClient();
 
-            await sqlite.withExclusiveTransactionAsync(async (tx) => {
+            await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (?);`, 
                     [route_transactions.map(rt => rt.id_route_transaction).join(",")]);
 
@@ -136,8 +141,6 @@ export class sqlLite_route_transaction implements IRouteTransaction {
                     [route_transactions.map(rt => rt.id_route_transaction).join(",")]
                 );
             });
-
-            sqlite.closeSync();
         } catch(error) {
             throw new Error('Failed to delete route transactions.');
         }
@@ -155,13 +158,11 @@ export class sqlLite_route_transaction implements IRouteTransaction {
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
 
-            const sqlite = await createSQLiteConnection();
+            const db: SQLiteDatabase = this.dataSource.getClient();
             
             // Retrieve all route transactions
-            const transactionsStatement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
+            const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
             const resultTransactions = transactionsStatement.executeSync<any>();
-            
-            sqlite.closeSync();
 
             // Map payment methods by their ID
             for (const paymentMethod of resultPaymentMethods) {
@@ -216,13 +217,11 @@ export class sqlLite_route_transaction implements IRouteTransaction {
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
 
-            const sqlite = await createSQLiteConnection();
+            const db: SQLiteDatabase = this.dataSource.getClient();
             
             // Retrieve all route transactions
-            const transactionsStatement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = '${id_store}';`);
-            const resultTransactions = transactionsStatement.executeSync<any>();
-            
-            sqlite.closeSync();
+            const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
+            const resultTransactions = transactionsStatement.executeSync<any>([id_store]);
 
             // Map payment methods by their ID
             for (const paymentMethod of resultPaymentMethods) {
@@ -278,13 +277,11 @@ export class sqlLite_route_transaction implements IRouteTransaction {
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
 
-            const sqlite = await createSQLiteConnection();
+            const db: SQLiteDatabase = this.dataSource.getClient();
             
             // Retrieve all route transactions
-            const transactionsStatement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);            
+            const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);
             const resultTransactions = transactionsStatement.executeSync<any>();
-            
-            sqlite.closeSync();
             
             // Map payment methods by their ID
             for (const paymentMethod of resultPaymentMethods) {
@@ -330,15 +327,13 @@ export class sqlLite_route_transaction implements IRouteTransaction {
     async listPaymentMethods(): Promise<PaymentMethod[]> {
         try {
             const paymentMethods: PaymentMethod[] = [];
-            const sqlite = await createSQLiteConnection();
-            const paymentMethodsStatement = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PAYMENT_METHODS}`);
+            const db: SQLiteDatabase = this.dataSource.getClient();
+            const paymentMethodsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PAYMENT_METHODS}`);
             const resultPaymentMethods = paymentMethodsStatement.executeSync<PaymentMethod>();
 
             for (const paymentMethod of resultPaymentMethods) {
                 paymentMethods.push(paymentMethod);
             }
-
-            sqlite.closeSync();
 
             return paymentMethods;
         } catch (error) {
@@ -349,15 +344,13 @@ export class sqlLite_route_transaction implements IRouteTransaction {
     async listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]> {
         try {
             const routeTransactionDescriptions: RouteTransactionDescription[] = [];
-            const sqlite = await createSQLiteConnection();
-            const statementTransactionDescriptions = await sqlite.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
+            const db: SQLiteDatabase = this.dataSource.getClient();
+            const statementTransactionDescriptions = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
             const resultTransactionDescriptions = statementTransactionDescriptions.executeSync<RouteTransactionDescription>();
 
             for (const description of resultTransactionDescriptions) {
                 routeTransactionDescriptions.push(description);
             }
-
-            sqlite.closeSync();
 
             return routeTransactionDescriptions;
         } catch (error) {

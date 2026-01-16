@@ -1,5 +1,3 @@
-import { Product } from '../object-values/Product';
-
 export class ProductInventory {
   constructor(
     private readonly id_product_inventory: string,
