@@ -19,6 +19,7 @@ import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supab
 
 // Implementations - SQLite
 import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository'
+import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteShiftOrganizationRepository'
 
 
 
@@ -42,6 +43,10 @@ container.register<StoreRepository>(TOKENS.StoreRepository, {
 // SQLite
 container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
     useClass: SQLiteStoreRepository
+})
+
+container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
+    useClass: SQLiteShiftOrganizationRepository
 })
 
 
