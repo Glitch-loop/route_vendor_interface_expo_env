@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 // Libraries
-import { container, DependencyContainer, instanceCachingFactory } from 'tsyringe'
+import { container, DependencyContainer, instanceCachingFactory, Lifecycle } from 'tsyringe'
 
 // DataSources
 import { SupabaseDataSource } from '../datasources/SupabaseDataSource'
@@ -44,10 +44,20 @@ import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService
 
 // Register DataSources as SINGLETON (one instance for entire app)
 container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource);
-container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDataSource);
+
+// container.registerSingleton<SQLiteDataSource>(SQLiteDataSource, SQLiteDataSource);
+// container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDataSource);
+container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource, 
+    { useClass: SQLiteDataSource },
+    { lifecycle: Lifecycle.Singleton }
+)
 
 // Services
-container.registerSingleton<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, SQLiteDatabaseService)
+
+// container.registerSingleton<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, SQLiteDatabaseService)
+container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
+    useClass: SQLiteDatabaseService
+})
 // container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
 // container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
@@ -62,13 +72,13 @@ container.registerSingleton<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, 
 // })
 
 // // Register Repositories - Generic (default: Supabase for remote operations)
-container.register<RouteRepository>(TOKENS.RouteRepository, {
-    useClass: SupabaseRouteRepository
-})
+// container.register<RouteRepository>(TOKENS.RouteRepository, {
+//     useClass: SupabaseRouteRepository
+// })
 
-container.register<StoreRepository>(TOKENS.StoreRepository, {
-    useClass: SupabaseStoreRepository
-})
+// container.register<StoreRepository>(TOKENS.StoreRepository, {
+//     useClass: SupabaseStoreRepository
+// })
 
 // // Register Repositories - Specific implementations
 // // SQLite
@@ -94,9 +104,9 @@ container.register<StoreRepository>(TOKENS.StoreRepository, {
 
 
 // Supabase
-container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
-    useClass: SupabaseStoreRepository
-})
+// container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
+//     useClass: SupabaseStoreRepository
+// })
 
 
 export { container }

@@ -36,20 +36,22 @@ import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSou
 import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
 
 async function appInitialization() {
-  console.log("App Initialization started");
-  const sqliteDataSource: SQLiteDataSource = container.resolve(SQLiteDataSource);
-  const sqliteDatabaseService: LocalDatabaseService = container.resolve(SQLiteDatabaseService);
-  const use_case = container.resolve(RegisterNewClientUseCase)
-
+  // Initializing datasource
+  const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
   await sqliteDataSource.initialize();
 
-  console.log("Get client: ", sqliteDataSource.getClient())
+  // Initializing local database
+  const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.SQLiteDatabaseService);
+  await sqliteDatabaseService.createDatabase();
+
+
+  // console.log("Get client: ", sqliteDataSource.getClient())
 
   // Initializing SQLite database
   // const dataSource = new SQLiteDataSource()
   // await dataSource.initialize();
   // const localDatabaseService = new SQLiteDatabaseService(dataSource);
-  // await localDatabaseService.createDatabase();
+  
 
   // Check all registered tokens
   // console.log("\n📦 Checking DI Container Registrations:");
