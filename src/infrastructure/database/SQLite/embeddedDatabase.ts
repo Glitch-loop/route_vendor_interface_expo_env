@@ -57,7 +57,7 @@ export const storesEmbeddedTable = `
     id_creator        TEXT,
     creation_date     TEXT,
     creation_context  TEXT,
-    status_store      INT,
+    status_store      INT
   );
 `;
 
@@ -113,7 +113,7 @@ export const routeTransactionOperationDescriptionsEmbeddedTable = `
     created_at                                  DATETIME NOT NULL,
     id_route_transaction_operation              TEXT NOT NULL,
     id_product                                  TEXT NOT NULL,
-    id_route_transaction                        TEXT NOT NULL,
+    id_route_transaction                        TEXT NOT NULL
   );
 `;
 

@@ -27,7 +27,10 @@ import {
 
 @injectable()
 export class SQLiteDatabaseService implements LocalDatabaseService {
-    constructor (@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+    // @inject(TOKENS.SQLiteDataSource)
+    constructor (private readonly dataSource: SQLiteDataSource) {
+        console.log('SQLiteDatabaseService initialized');
+    }
     
     async createDatabase(): Promise<void> { 
         const tablesToCreate:string[] = [
@@ -45,12 +48,14 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
         ];
 
         try {
-            const db = this.dataSource.getClient();
+            console.log("Getting connection to local database")
+            const db = await this.dataSource.getClient();
             
+            console.log("Creating embedded database tables...")
             const createTablePromises:any[] = tablesToCreate
             .map((queryToCreateTable:string) => {
-            console.log(queryToCreateTable)
-            return db.runAsync(queryToCreateTable);
+                console.log(queryToCreateTable)
+                return db.runAsync(queryToCreateTable);
             });
 
             await Promise.all(createTablePromises);
@@ -58,6 +63,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             db.closeSync();
 
         } catch (error) {
+            console.log(error);
             throw new Error('Failed to create embedded database tables.');
         }
     }
@@ -78,7 +84,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             EMBEDDED_TABLES.SYNC_HISTORIC,
         ];
         try {
-            const db = this.dataSource.getClient();
+            const db = await this.dataSource.getClient();
             
             const dropTablePromises:any[] = tablesToDelete
             .map((tableName:string) => {
@@ -109,7 +115,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
         ];
 
         try {
-            const db = this.dataSource.getClient();
+            const db = await this.dataSource.getClient();
 
             const cleanTablePromises:any[] = tablesToDelete.map((tableName:string) => {
                 return db.runAsync(`DELETE FROM ${tableName};`);

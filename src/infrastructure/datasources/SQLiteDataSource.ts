@@ -10,13 +10,17 @@ import { SQLiteDatabase } from 'expo-sqlite';
 export class SQLiteDataSource {
     private client: SQLiteDatabase | null = null;
 
-    constructor() {
-        this.initialize()
-    }
+    constructor() { }
     
-    async initialize(): Promise<void> {
+    async initialize(): Promise<SQLiteDatabase> {
         if (!this.client) {
-            this.client = await SQLite.openDatabaseAsync('mydb.db');
+            try {
+                return await SQLite.openDatabaseAsync('mydb.db');
+            } catch(error) {
+                throw new Error('Failed to make connection to SQLite database.');
+            }
+        } else {
+            return this.client;
         }
     }
 
@@ -24,7 +28,7 @@ export class SQLiteDataSource {
      * Get the SQLite database client
      * Throws error if not initialized
      */
-    getClient(): SQLiteDatabase {
+    async getClient(): Promise<SQLiteDatabase> {
         if (!this.client) {
             throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
         }

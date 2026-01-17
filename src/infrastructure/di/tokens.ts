@@ -1,3 +1,4 @@
+
 /**
  * DI Tokens for dependency injection
  * Use these when injecting interfaces in constructors
@@ -33,4 +34,6 @@ export const TOKENS = {
     // Services
     IDService: Symbol('IDService'),
     DateService: Symbol('DateService'),
+    SQLiteDatabaseService: Symbol('SQLiteDatabaseService'),
+    LocalDatabaseService: Symbol('LocalDatabaseService'),
 }
