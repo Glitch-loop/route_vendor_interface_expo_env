@@ -31,14 +31,22 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { PaperProvider } from 'react-native-paper';
 import ToastMessage from '@/components/generalComponents/ToastMessage';
 import Toast from 'react-native-toast-message';
+import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
 // hooks
 import useCurrentLocation from '@/hooks/useCurrentLocation';
-import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
 
 async function appInitialization() {
   console.log("App Initialization started");
+  const sqliteDataSource: SQLiteDataSource = container.resolve(SQLiteDataSource);
+  // const sqliteDatabaseService: LocalDatabaseService = container.resolve(SQLiteDatabaseService);
+  const use_case = container.resolve(RegisterNewClientUseCase)
+
+  await sqliteDataSource.initialize();
+
+  console.log("Get client: ", sqliteDataSource.getClient())
 
   // Initializing SQLite database
   // const dataSource = new SQLiteDataSource()
@@ -61,7 +69,7 @@ async function appInitialization() {
 
 
   // About container
-  const sqliteDatabaseService = container.resolve(SQLiteDatabaseService);
+  // const sqliteDatabaseService = container.resolve(SQLiteDatabaseService);
 
   console.log("Database created successfully");
 

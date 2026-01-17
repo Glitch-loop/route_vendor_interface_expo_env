@@ -43,55 +43,24 @@ import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatab
 import { TOKENS } from './tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
-const SQLiteDataSourceFactory =  (c: DependencyContainer) => {
-    console.log('Creating SQLiteDataSource instance with factory*****************************')
-    const client = new SQLiteDataSource()
-    // await client.initialize()
-    return client
-}
 
 // Register DataSources as SINGLETON (one instance for entire app)
-// container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, {
-//     useFactory: SQLiteDataSourceFactory,
-// })
-
-
-container.register(SQLiteDataSource, {
-  useFactory: instanceCachingFactory(async () => {
-    const client = new SQLiteDataSource()
-    await client.initialize()
-    // const client = await SQLite.openDatabaseAsync('mydb.db');
-    return client;
-  })
-});
-
-container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource)
-
-
+container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource);
+container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDataSource);
 
 // Services
-container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service)
-container.registerSingleton<IDateService>(TOKENS.DateService, DateService)
-
-console.log('Registering Services...');
-
-// Register LocalDatabaseService using factory to manually inject dependencies
-// container.registerSingleton<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
-//     useFactory: (c) => new SQLiteDatabaseService(c.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource))
-// })
+container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
+container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
 // Also register under its concrete type
-
 const SQLiteFactory = (c: DependencyContainer) => {
     console.log('Creating an instance with factory*****************************')
     return new SQLiteDatabaseService(c.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource))
 }
 
-container.register<SQLiteDatabaseService>(TOKENS.SQLiteDatabaseService, {
+container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
     useFactory: SQLiteFactory
 })
-
-
 
 // Register Repositories - Generic (default: Supabase for remote operations)
 container.register<RouteRepository>(TOKENS.RouteRepository, {

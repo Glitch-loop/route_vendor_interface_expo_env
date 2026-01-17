@@ -27,8 +27,8 @@ import {
 
 @injectable()
 export class SQLiteDatabaseService implements LocalDatabaseService {
-    // @inject(TOKENS.SQLiteDataSource)
-    constructor (private readonly dataSource: SQLiteDataSource) {
+    // 
+    constructor (@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {
         console.log('SQLiteDatabaseService initialized');
     }
     

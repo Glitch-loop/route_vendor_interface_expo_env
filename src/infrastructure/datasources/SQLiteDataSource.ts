@@ -12,15 +12,13 @@ export class SQLiteDataSource {
 
     constructor() { }
     
-    async initialize(): Promise<SQLiteDatabase> {
+    async initialize(): Promise<void> {
         if (!this.client) {
             try {
-                return await SQLite.openDatabaseAsync('mydb.db');
+                this.client = await SQLite.openDatabaseAsync('mydb.db');
             } catch(error) {
                 throw new Error('Failed to make connection to SQLite database.');
             }
-        } else {
-            return this.client;
         }
     }
 
@@ -28,7 +26,7 @@ export class SQLiteDataSource {
      * Get the SQLite database client
      * Throws error if not initialized
      */
-    async getClient(): Promise<SQLiteDatabase> {
+    getClient(): SQLiteDatabase {
         if (!this.client) {
             throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
         }
