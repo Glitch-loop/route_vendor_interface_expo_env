@@ -3,8 +3,6 @@ import 'reflect-metadata';
 // Libraries
 import { container, DependencyContainer, instanceCachingFactory } from 'tsyringe'
 
-
-
 // DataSources
 import { SupabaseDataSource } from '../datasources/SupabaseDataSource'
 import { SQLiteDataSource } from '../datasources/SQLiteDataSource'
@@ -49,20 +47,21 @@ container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, Supab
 container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDataSource);
 
 // Services
-container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
-container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
+container.registerSingleton<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, SQLiteDatabaseService)
+// container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
+// container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
 // Also register under its concrete type
-const SQLiteFactory = (c: DependencyContainer) => {
-    console.log('Creating an instance with factory*****************************')
-    return new SQLiteDatabaseService(c.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource))
-}
+// const SQLiteFactory = (c: DependencyContainer) => {
+//     console.log('Creating an instance with factory*****************************')
+//     return new SQLiteDatabaseService(c.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource))
+// }
 
-container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
-    useFactory: SQLiteFactory
-})
+// container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
+//     useFactory: SQLiteFactory
+// })
 
-// Register Repositories - Generic (default: Supabase for remote operations)
+// // Register Repositories - Generic (default: Supabase for remote operations)
 container.register<RouteRepository>(TOKENS.RouteRepository, {
     useClass: SupabaseRouteRepository
 })
@@ -71,27 +70,27 @@ container.register<StoreRepository>(TOKENS.StoreRepository, {
     useClass: SupabaseStoreRepository
 })
 
-// Register Repositories - Specific implementations
-// SQLite
-container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
-    useClass: SQLiteStoreRepository
-})
+// // Register Repositories - Specific implementations
+// // SQLite
+// container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
+//     useClass: SQLiteStoreRepository
+// })
 
-container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
-    useClass: SQLiteShiftOrganizationRepository
-})
+// container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
+//     useClass: SQLiteShiftOrganizationRepository
+// })
 
-container.register<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository, {
-    useClass: SQLiteInventoryOperationRepository
-})
+// container.register<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository, {
+//     useClass: SQLiteInventoryOperationRepository
+// })
 
-container.register<ProductInventoryRepository>(TOKENS.SQLiteInventoryRepository, {
-    useClass: SQLiteInventoryRepository
-})
+// container.register<ProductInventoryRepository>(TOKENS.SQLiteInventoryRepository, {
+//     useClass: SQLiteInventoryRepository
+// })
 
-container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
-    useClass: SQLiteRouteTransactionRepository
-})
+// container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
+//     useClass: SQLiteRouteTransactionRepository
+// })
 
 
 // Supabase

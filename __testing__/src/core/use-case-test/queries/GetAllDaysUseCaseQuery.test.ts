@@ -1,15 +1,15 @@
 // Load environment variables first
 import 'dotenv/config';
+import 'reflect-metadata';
 
 // Test file for DI container
-import 'reflect-metadata';
 import { container } from '../../../../../src/infrastructure/di/container';
 import { GetAllDaysQuery } from '../../../../../src/application/queries/GetAllDaysQuery';
 
-async function testDI() {
-  console.log('🧪 Testing DI Container...\n');
+describe('GetAllDaysQuery', () => {
+  it('should resolve from DI container and execute successfully', async () => {
+    console.log('🧪 Testing DI Container...\n');
 
-  try {
     // Resolve use case from container
     const getAllDaysUseCase = container.resolve(GetAllDaysQuery);
     
@@ -22,11 +22,10 @@ async function testDI() {
     
     console.log('📊 Use case result:', data);
 
+    // Assert
+    expect(data).toBeDefined();
+    expect(Array.isArray(data)).toBe(true);
+    
     console.log('✅ Use case executed successfully');
-  } catch (error: any) {
-    console.error('❌ Error:', error.message);
-    console.error(error);
-  }
-}
-
-testDI();
+  });
+});

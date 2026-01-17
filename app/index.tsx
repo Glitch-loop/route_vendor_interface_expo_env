@@ -1,7 +1,4 @@
-// Enable dependency injection with reflection
-import 'reflect-metadata';
-
-// // Libraries
+// Libraries
 import React, {useEffect} from 'react';
 import { Redirect } from "expo-router";
 import "./global.css"
@@ -41,7 +38,7 @@ import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNew
 async function appInitialization() {
   console.log("App Initialization started");
   const sqliteDataSource: SQLiteDataSource = container.resolve(SQLiteDataSource);
-  // const sqliteDatabaseService: LocalDatabaseService = container.resolve(SQLiteDatabaseService);
+  const sqliteDatabaseService: LocalDatabaseService = container.resolve(SQLiteDatabaseService);
   const use_case = container.resolve(RegisterNewClientUseCase)
 
   await sqliteDataSource.initialize();

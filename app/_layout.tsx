@@ -1,3 +1,6 @@
+// Enable dependency injection with reflection metadata
+import 'reflect-metadata';
+
 // Libraries
 import { Slot, Stack } from "expo-router";
 import "./global.css"
