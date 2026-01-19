@@ -1,5 +1,3 @@
-import PAYMENT_METHODS from "@/utils/paymentMethod";
-
 export enum EMBEDDED_TABLES {
   USER = 'user',
   ROUTE_DAY = 'route_day',

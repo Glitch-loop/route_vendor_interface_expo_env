@@ -12,10 +12,10 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 
 // DataSources
-import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
-import EMBEDDED_TABLES from '@/utils/embeddedTables';
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
@@ -82,6 +82,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             });
             
         } catch(error) {
+            console.error('Error in createInventoryOperation:', error);
             throw new Error('Failed to create inventory operation: ' + error);
         }
     }

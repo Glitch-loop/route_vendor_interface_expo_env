@@ -4,26 +4,12 @@ import { inject, injectable } from "tsyringe";
 // Interfaces
 import { LocalDatabaseService } from "@/src/core/interfaces/LocalDatabaseService";
 
+// DataSources
+import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
+
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
-import EMBEDDED_TABLES from "@/utils/embeddedTables";
-
-import { SQLiteDataSource } from "../datasources/SQLiteDataSource";
-
-import {
-  userEmbeddedTable,
-  routeDayEmbeddedTable,
-  storesEmbeddedTable,
-  productsEmbeddedTable,
-  dayOperationsEmbeddedTable,
-  routeTransactionsEmbeddedTable,
-  routeTransactionOperationDescriptionsEmbeddedTable,
-  inventoryOperationsEmbeddedTable,
-  productOperationDescriptionsEmbeddedTable,
-  syncQueueEmbeddedTable,
-  syncHistoricEmbeddedTable,
-} from '@/src/infrastructure/database/SQLite/embeddedDatabase';
-
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 @injectable()
 export class SQLiteDatabaseService implements LocalDatabaseService {
@@ -34,17 +20,19 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
     
     async createDatabase(): Promise<void> { 
         const tablesToCreate:string[] = [
-            userEmbeddedTable,
-            routeDayEmbeddedTable,
-            storesEmbeddedTable,
-            productsEmbeddedTable,
-            dayOperationsEmbeddedTable,
-            routeTransactionsEmbeddedTable,
-            routeTransactionOperationDescriptionsEmbeddedTable,
-            inventoryOperationsEmbeddedTable,
-            productOperationDescriptionsEmbeddedTable,
-            syncQueueEmbeddedTable,
-            syncHistoricEmbeddedTable,
+            EMBEDDED_TABLES.USER,
+            EMBEDDED_TABLES.ROUTE_DAY,
+            EMBEDDED_TABLES.STORES,
+            EMBEDDED_TABLES.PRODUCTS,
+            EMBEDDED_TABLES.PRODUCTS_INVENTORY,
+            EMBEDDED_TABLES.DAY_OPERATIONS,
+            EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
+            EMBEDDED_TABLES.PAYMENT_METHODS,
+            EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
+            EMBEDDED_TABLES.INVENTORY_OPERATIONS,
+            EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,
+            EMBEDDED_TABLES.SYNC_QUEUE,
+            EMBEDDED_TABLES.SYNC_HISTORIC,
         ];
 
         try {
@@ -60,8 +48,6 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
             await Promise.all(createTablePromises);
 
-            db.closeSync();
-
         } catch (error) {
             console.log(error);
             throw new Error('Failed to create embedded database tables.');
@@ -74,10 +60,11 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             EMBEDDED_TABLES.ROUTE_DAY,
             EMBEDDED_TABLES.STORES,
             EMBEDDED_TABLES.PRODUCTS,
+            EMBEDDED_TABLES.PRODUCTS_INVENTORY,
             EMBEDDED_TABLES.DAY_OPERATIONS,
             EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS,
+            EMBEDDED_TABLES.PAYMENT_METHODS,
+            EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
             EMBEDDED_TABLES.INVENTORY_OPERATIONS,
             EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,
             EMBEDDED_TABLES.SYNC_QUEUE,
@@ -92,7 +79,6 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             });
 
             await Promise.all(dropTablePromises);
-            db.closeSync();
 
          } catch(error) {
             throw new Error('Failed to drop embedded database tables.');
@@ -101,13 +87,15 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
     async cleanDatabase(): Promise<void> { 
         const tablesToDelete:string[] = [
+            EMBEDDED_TABLES.USER,
             EMBEDDED_TABLES.ROUTE_DAY,
             EMBEDDED_TABLES.STORES,
             EMBEDDED_TABLES.PRODUCTS,
+            EMBEDDED_TABLES.PRODUCTS_INVENTORY,
             EMBEDDED_TABLES.DAY_OPERATIONS,
             EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATIONS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTION_OPERATION_DESCRIPTIONS,
+            EMBEDDED_TABLES.PAYMENT_METHODS,
+            EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
             EMBEDDED_TABLES.INVENTORY_OPERATIONS,
             EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,
             EMBEDDED_TABLES.SYNC_QUEUE,
@@ -123,7 +111,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
             await Promise.all(cleanTablePromises);
         } catch (error) {
-            throw new Error('Failed to clean embedded database tables.');
+            throw new Error('Failed to clean embedded database tables: ' + error);
         }
     }
 }
