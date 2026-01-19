@@ -9,8 +9,9 @@ import SQLiteInventoryOperationRepositoryTest from './SQLiteInventoryOperationRe
 import SQLiteProductInventoryRepositoryTest from './SQLiteProductInventoryRepositoryTest';
 import SQLiteRouteTransactionRepositoryTest from './SQLiteRouteTransactionRepositoryTest';
 import SQLiteShiftOrganizationRepositoryTest from './SQLiteShiftOrganizationRepositoryTest';
+import SQLiteProductRepositoryTest from './SQLiteProductRepositoryTest';
 
-type TestType = 'menu' | 'store' | 'dayOperation' | 'inventoryOperation' | 'productInventory' | 'routeTransaction' | 'shiftOrganization';
+type TestType = 'menu' | 'store' | 'dayOperation' | 'inventoryOperation' | 'productInventory' | 'routeTransaction' | 'shiftOrganization' | 'product';
 
 interface TestOption {
   id: TestType;
@@ -25,6 +26,7 @@ const testOptions: TestOption[] = [
   { id: 'productInventory', label: '🛍️ Product Inventory Repository', description: 'Test Product Inventory operations' },
   { id: 'routeTransaction', label: '💳 Route Transaction Repository', description: 'Test Route Transaction operations' },
   { id: 'shiftOrganization', label: '⏰ Shift Organization Repository', description: 'Test Work Day and Day Operation operations' },
+  { id: 'product', label: '🏷️ Product Repository', description: 'Test Product CRUD operations' },
 ];
 
 export default function SQLiteTestSwitch() {
@@ -44,6 +46,8 @@ export default function SQLiteTestSwitch() {
         return <SQLiteRouteTransactionRepositoryTest />;
       case 'shiftOrganization':
         return <SQLiteShiftOrganizationRepositoryTest />;
+      case 'product':
+        return <SQLiteProductRepositoryTest />;
       case 'menu':
       default:
         return renderMenu();

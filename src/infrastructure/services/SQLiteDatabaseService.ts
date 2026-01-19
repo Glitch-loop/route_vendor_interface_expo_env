@@ -11,6 +11,22 @@ import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSou
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
+
+import {
+  userEmbeddedTable,
+  routeDayEmbeddedTable,
+  storesEmbeddedTable,
+  productsEmbeddedTable,
+  dayOperationsEmbeddedTable,
+  routeTransactionsEmbeddedTable,
+  routeTransactionOperationDescriptionsEmbeddedTable,
+  inventoryOperationsEmbeddedTable,
+  productOperationDescriptionsEmbeddedTable,
+  syncQueueEmbeddedTable,
+  syncHistoricEmbeddedTable,
+} from '@/src/infrastructure/database/SQLite/embeddedDatabase';
+
+
 @injectable()
 export class SQLiteDatabaseService implements LocalDatabaseService {
     // 
@@ -20,19 +36,17 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
     
     async createDatabase(): Promise<void> { 
         const tablesToCreate:string[] = [
-            EMBEDDED_TABLES.USER,
-            EMBEDDED_TABLES.ROUTE_DAY,
-            EMBEDDED_TABLES.STORES,
-            EMBEDDED_TABLES.PRODUCTS,
-            EMBEDDED_TABLES.PRODUCTS_INVENTORY,
-            EMBEDDED_TABLES.DAY_OPERATIONS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
-            EMBEDDED_TABLES.PAYMENT_METHODS,
-            EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
-            EMBEDDED_TABLES.INVENTORY_OPERATIONS,
-            EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,
-            EMBEDDED_TABLES.SYNC_QUEUE,
-            EMBEDDED_TABLES.SYNC_HISTORIC,
+            userEmbeddedTable,
+            routeDayEmbeddedTable,
+            storesEmbeddedTable,
+            productsEmbeddedTable,
+            dayOperationsEmbeddedTable,
+            routeTransactionsEmbeddedTable,
+            routeTransactionOperationDescriptionsEmbeddedTable,
+            inventoryOperationsEmbeddedTable,
+            productOperationDescriptionsEmbeddedTable,
+            syncQueueEmbeddedTable,
+            syncHistoricEmbeddedTable,
         ];
 
         try {
