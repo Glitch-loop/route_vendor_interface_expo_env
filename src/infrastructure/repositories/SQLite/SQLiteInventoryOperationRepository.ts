@@ -63,10 +63,15 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 for (const desc of inventory_operation.inventoryOperationDescriptions) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
-                            (id_product_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
+                            (id_inventory_operation_description,
+                            price_at_moment, 
+                            amount, 
+                            created_at, 
+                            id_inventory_operation, 
+                            id_product)
                             VALUES (?, ?, ?, ?, ?, ?);
                     `, [
-                        desc.id_product_operation_description,
+                        desc.id_inventory_operation_description,
                         desc.price_at_moment,
                         desc.amount,
                         desc.created_at.toISOString(),
@@ -77,7 +82,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             });
             
         } catch(error) {
-            throw new Error('Failed to create inventory operation.');
+            throw new Error('Failed to create inventory operation: ' + error);
         }
     }
     
@@ -124,10 +129,10 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 for (const desc of inventoryOperation.inventoryOperationDescriptions) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
-                            (id_product_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
+                            (id_inventory_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
                             VALUES (?, ?, ?, ?, ?, ?);
                     `, [
-                        desc.id_product_operation_description,
+                        desc.id_inventory_operation_description,
                         desc.price_at_moment,
                         desc.amount,
                         desc.created_at.toISOString(),
@@ -137,7 +142,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 }
             });
         } catch(error) {
-            throw new Error('Failed to update inventory operation.');
+            throw new Error('Failed to update inventory operation: ' + error);
         }
     }
 
@@ -160,7 +165,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
             return inventoryOperations;
         } catch (error) {
-            return []
+            throw new Error('Failed to list inventory operations: ' + error);
         }
     }
 
@@ -182,7 +187,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
             return inventoryOperations;
         } catch (error) {
-            return [];
+            throw new Error('Failed to retrieve inventory operations: ' + error);
         }
     }
 
@@ -205,7 +210,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             return inventoryOperationsDescriptions;
 
         } catch(error) {
-            return []
+            throw new Error('Failed to retrieve inventory operation descriptions: ' + error);
         }
     }
  
@@ -222,7 +227,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             });
 
         } catch(error) {
-            throw new Error('Failed to delete inventory operations.');
+            throw new Error('Failed to delete inventory operations: ' + error);
         }
     }
 }

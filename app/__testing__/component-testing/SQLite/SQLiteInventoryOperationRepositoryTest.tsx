@@ -12,6 +12,12 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 // Interfaces
 import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
 
+// Entities
+import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
+
+// Object values
+import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
+
 export default function SQLiteInventoryOperationRepositoryTest() {
   const [results, setResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,11 +97,136 @@ export default function SQLiteInventoryOperationRepositoryTest() {
     }
   };
 
+  const testCreateInventoryOperation = async () => {
+    clearResults();
+    setLoading(true);
+    
+    try {
+      addResult('Starting Create Inventory Operation Test...');
+      const invOpRepo = container.resolve<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository);
+      
+      // Create test inventory operation with descriptions
+      const testDescriptions: InventoryOperationDescription[] = [
+        new InventoryOperationDescription(
+          'desc-test-001',
+          25.50,
+          10,
+          new Date(),
+          'invop-test-001',
+          'product-001'
+        ),
+        new InventoryOperationDescription(
+          'desc-test-002',
+          15.75,
+          5,
+          new Date(),
+          'invop-test-001',
+          'product-002'
+        )
+      ];
+
+      const testOperation = new InventoryOperation(
+        'invop-test-001',
+        'signature-test',
+        new Date(),
+        1,
+        0,
+        'type-001',
+        'workday-001',
+        testDescriptions
+      );
+
+      await invOpRepo.createInventoryOperation(testOperation);
+      addResult(`Created inventory operation: ${testOperation.id_inventory_operation}`);
+      addResult(`With ${testDescriptions.length} product descriptions`);
+
+      // Verify by listing
+      const allOps = await invOpRepo.listInventoryOperations();
+      addResult(`Total inventory operations in DB: ${allOps.length}`);
+      
+    } catch (error: any) {
+      addResult(`Error: ${error.message}`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testUpdateInventoryOperation = async () => {
+    clearResults();
+    setLoading(true);
+    
+    try {
+      addResult('Starting Update Inventory Operation Test...');
+      const invOpRepo = container.resolve<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository);
+      const operations = await invOpRepo.listInventoryOperations();
+      
+      if (operations.length === 0) {
+        addResult('No inventory operations found to update. Create some first.', true);
+        setLoading(false);
+        return;
+      }
+
+      const opToUpdate = operations[0];
+      
+      // Create updated descriptions
+      const updatedDescriptions: InventoryOperationDescription[] = [
+        new InventoryOperationDescription(
+          'desc-updated-001',
+          30.00,
+          15,
+          new Date(),
+          opToUpdate.id_inventory_operation,
+          'product-updated-001'
+        )
+      ];
+
+      const updatedOp = new InventoryOperation(
+        opToUpdate.id_inventory_operation,
+        'updated-signature',
+        new Date(),
+        2,
+        1,
+        opToUpdate.id_inventory_operation_type,
+        opToUpdate.id_work_day,
+        updatedDescriptions
+      );
+
+      await invOpRepo.updateInventoryOperation(updatedOp);
+      addResult(`Updated inventory operation: ${updatedOp.id_inventory_operation}`);
+      addResult(`State changed to: ${updatedOp.state}`);
+
+      // Verify
+      const descriptions = await invOpRepo.retrieveInventoryOperationDescription([updatedOp]);
+      addResult(`Verified: Operation now has ${descriptions.length} description(s)`);
+      
+    } catch (error: any) {
+      addResult(`Error: ${error.message}`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>SQLite Inventory Operation Repository Test</Text>
       
       <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={testCreateInventoryOperation}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Create Operation</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={testUpdateInventoryOperation}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Update Operation</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]} 
           onPress={testListInventoryOperations}

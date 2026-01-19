@@ -131,12 +131,12 @@ export const inventoryOperationsEmbeddedTable = `
 
 export const productOperationDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} (
-    id_product_description  TEXT NOT NULL UNIQUE,
-    price_at_moment                   NUMERIC(6,3) NOT NULL,
-    amount                            INT NOT NULL,
-    created_at                        DATETIME NOT NULL,
-    id_inventory_operation            TEXT NOT NULL,
-    id_product                        TEXT NOT NULL
+    id_inventory_operation_description  TEXT NOT NULL UNIQUE,
+    price_at_moment                     NUMERIC(6,3) NOT NULL,
+    amount                              INT NOT NULL,
+    created_at                          DATETIME NOT NULL,
+    id_inventory_operation              TEXT NOT NULL,
+    id_product                          TEXT NOT NULL
   );   
 `;
 
