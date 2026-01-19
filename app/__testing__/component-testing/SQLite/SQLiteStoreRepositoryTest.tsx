@@ -1,8 +1,17 @@
+// Libraries
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+
+// DI container
 import { container } from '@/src/infrastructure/di/container';
+
+// Tokens
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+// Interfaces
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
+
+// Entities
 import { Store } from '@/src/core/entities/Store';
 
 export default function SQLiteStoreRepositoryTest() {

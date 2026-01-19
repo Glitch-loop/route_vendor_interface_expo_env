@@ -1,7 +1,14 @@
+// Libraries
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+
+// DI container
 import { container } from '@/src/infrastructure/di/container';
+
+// Tokens
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+// Interfaces
 import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
 
 export default function SQLiteRouteTransactionRepositoryTest() {

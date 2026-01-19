@@ -1,7 +1,14 @@
+// Libraries
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+
+// DI container
 import { container } from '@/src/infrastructure/di/container';
+
+// Tokens
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+// Interfaces
 import { ShiftOrganizationRepository } from '@/src/core/interfaces/ShiftOrganizationRepository';
 
 export default function SQLiteShiftOrganizationRepositoryTest() {
