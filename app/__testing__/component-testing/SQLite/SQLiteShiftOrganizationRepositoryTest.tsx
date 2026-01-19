@@ -11,6 +11,9 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 // Interfaces
 import { ShiftOrganizationRepository } from '@/src/core/interfaces/ShiftOrganizationRepository';
 
+// Entities
+import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
+
 export default function SQLiteShiftOrganizationRepositoryTest() {
   const [results, setResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -21,6 +24,41 @@ export default function SQLiteShiftOrganizationRepositoryTest() {
   };
 
   const clearResults = () => setResults([]);
+
+  const buildDummyWorkDay = (suffix: string): WorkDayInformation => {
+    const now = new Date();
+    return new WorkDayInformation(
+      `workday-${suffix}`,
+      now,
+      null,
+      100,
+      null,
+      `route-${suffix}`,
+      `Route ${suffix}`,
+      `Dummy description ${suffix}`,
+      'ACTIVE',
+      `day-${suffix}`,
+      `route-day-${suffix}`,
+    );
+  };
+
+  const testInsertWorkDay = async () => {
+    clearResults();
+    setLoading(true);
+    try {
+      addResult('Starting Insert Work Day Test...');
+      const repo = container.resolve<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository);
+      const workDay = buildDummyWorkDay(Date.now().toString());
+      await repo.insertWorkDay(workDay);
+      addResult(`Inserted work day ${workDay.id_work_day}`);
+      const all = await repo.listWorkDays();
+      addResult(`Work days in DB: ${all.length}`);
+    } catch (error: any) {
+      addResult(`Error: ${error.message}`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const testListWorkDays = async () => {
     clearResults();
@@ -39,16 +77,60 @@ export default function SQLiteShiftOrganizationRepositoryTest() {
     }
   };
 
-  const testListDayOperations = async () => {
+  const testUpdateWorkDay = async () => {
     clearResults();
     setLoading(true);
-    
     try {
-      addResult('Starting List Day Operations Test...');
-      const shiftOrgRepo = container.resolve<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository);
-      const dayOps = await shiftOrgRepo.listDayOperations();
-      addResult(`Found ${dayOps.length} day operations`);
-      
+      addResult('Starting Update Work Day Test...');
+      const repo = container.resolve<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository);
+      const all = await repo.listWorkDays();
+      if (all.length === 0) {
+        addResult('No work days found. Insert one first.', true);
+        setLoading(false);
+        return;
+      }
+      const target = all[0];
+      const updated = new WorkDayInformation(
+        target.id_work_day,
+        target.start_date,
+        new Date(),
+        target.start_petty_cash,
+        150,
+        target.id_route,
+        target.route_name + ' (updated)',
+        target.description + ' updated',
+        target.route_status,
+        target.id_day,
+        target.id_route_day,
+      );
+      await repo.updateWorkDay(updated);
+      addResult(`Updated work day ${updated.id_work_day}`);
+      const allAfter = await repo.listWorkDays();
+      addResult(`Work days after update: ${allAfter.length}`);
+    } catch (error: any) {
+      addResult(`Error: ${error.message}`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testDeleteWorkDay = async () => {
+    clearResults();
+    setLoading(true);
+    try {
+      addResult('Starting Delete Work Day Test...');
+      const repo = container.resolve<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository);
+      const all = await repo.listWorkDays();
+      if (all.length === 0) {
+        addResult('No work days to delete.', true);
+        setLoading(false);
+        return;
+      }
+      const toDelete = all[0];
+      await repo.deleteWorkDay(toDelete);
+      addResult(`Deleted work day ${toDelete.id_work_day}`);
+      const remaining = await repo.listWorkDays();
+      addResult(`Remaining work days: ${remaining.length}`);
     } catch (error: any) {
       addResult(`Error: ${error.message}`, true);
     } finally {
@@ -63,6 +145,14 @@ export default function SQLiteShiftOrganizationRepositoryTest() {
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={testInsertWorkDay}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Insert Work Day</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
           onPress={testListWorkDays}
           disabled={loading}
         >
@@ -71,10 +161,18 @@ export default function SQLiteShiftOrganizationRepositoryTest() {
 
         <TouchableOpacity 
           style={[styles.button, loading && styles.buttonDisabled]} 
-          onPress={testListDayOperations}
+          onPress={testUpdateWorkDay}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>List Day Operations</Text>
+          <Text style={styles.buttonText}>Update Work Day</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={testDeleteWorkDay}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Delete Work Day</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
