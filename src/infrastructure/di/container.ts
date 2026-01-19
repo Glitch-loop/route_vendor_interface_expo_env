@@ -8,9 +8,11 @@ import { SupabaseDataSource } from '../datasources/SupabaseDataSource'
 import { SQLiteDataSource } from '../datasources/SQLiteDataSource'
 
 // Interfaces
-import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
+import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
 import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
 import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository'
+import { ProductRepository } from '@/src/core/interfaces/ProductRepository';
+import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
 import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository'
 import { IDService } from '@/src/core/interfaces/IDService'
 import { DateService as IDateService } from '@/src/core/interfaces/DateService'
@@ -25,10 +27,12 @@ import { SupabaseRouteRepository } from '@/src/infrastructure/repositories/supab
 import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supabase/SupabaseStoreRepository'
 
 // Implementations - SQLite
+import { SQLiteDayOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteDayOperationRepository';
+import { SQLiteInventoryOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteInventoryOperationRepository'
+import { SQLiteProductInventoryRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteProductInventoryRepository';
+import { SQLiteProductRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteProductRepository';
 import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository'
 import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteShiftOrganizationRepository'
-import { SQLiteInventoryOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteInventoryOperationRepository'
-import { SQLiteInventoryRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteInventoryRepository'
 import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransaction'
 
 // Services
@@ -45,21 +49,50 @@ import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService
 // Register DataSources as SINGLETON (one instance for entire app)
 container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource);
 
-// container.registerSingleton<SQLiteDataSource>(SQLiteDataSource, SQLiteDataSource);
-// container.registerSingleton<SQLiteDataSource>(TOKENS.SQLiteDataSource, SQLiteDataSource);
 container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource, 
     { useClass: SQLiteDataSource },
     { lifecycle: Lifecycle.Singleton }
 )
 
 // Services
-
-// container.registerSingleton<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, SQLiteDatabaseService)
 container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
     useClass: SQLiteDatabaseService
 })
 // container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
 // container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
+
+
+// Implementation of repositories - SQLite
+container.register<DayOperationRepository>(TOKENS.SQLiteDayOperationRepository, {
+    useClass: SQLiteDayOperationRepository
+})
+
+container.register<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository, {
+    useClass: SQLiteInventoryOperationRepository
+});
+
+container.register<ProductInventoryRepository>(TOKENS.SQLiteProductInventoryRepository, {
+    useClass: SQLiteProductInventoryRepository
+});
+
+container.register<ProductRepository>(TOKENS.SQLiteProductRepository, {
+    useClass: SQLiteProductRepository
+});
+
+container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
+    useClass: SQLiteStoreRepository
+})
+
+container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
+    useClass: SQLiteRouteTransactionRepository
+})
+
+// TODO
+// container.register<RouteRepository>(TOKENS.SQLiteRouteRepository, {
+//     useClass: SQLiteRouteTransactionRepository
+// })
+
+
 
 // Also register under its concrete type
 // const SQLiteFactory = (c: DependencyContainer) => {
@@ -82,9 +115,7 @@ container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
 
 // // Register Repositories - Specific implementations
 // // SQLite
-// container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
-//     useClass: SQLiteStoreRepository
-// })
+
 
 // container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
 //     useClass: SQLiteShiftOrganizationRepository

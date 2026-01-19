@@ -33,7 +33,7 @@ export class SQLiteDataSource {
      * Get the SQLite database client
      * Automatically initializes if needed
      */
-    async getClient(): Promise<SQLiteDatabase> {
+    getClient(): SQLiteDatabase {
         if (!this.client) {
             throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
         }

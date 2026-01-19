@@ -17,7 +17,7 @@ import EMBEDDED_TABLES from '@/utils/embeddedTables';
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
-export class SQLiteInventoryRepository implements ProductInventoryRepository {
+export class SQLiteProductInventoryRepository implements ProductInventoryRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
     async createInventory(products: ProductInventory[]): Promise<void> {

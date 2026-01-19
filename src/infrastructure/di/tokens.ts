@@ -1,4 +1,3 @@
-
 /**
  * DI Tokens for dependency injection
  * Use these when injecting interfaces in constructors
@@ -25,7 +24,8 @@ export const TOKENS = {
     // SQLite
     SQLiteDayOperationRepository: Symbol('SQLiteDayOperationRepository'),
     SQLiteInventoryOperationRepository: Symbol('SQLiteInventoryOperationRepository'),
-    SQLiteInventoryRepository: Symbol('SQLiteInventoryRepository'),
+    SQLiteProductInventoryRepository: Symbol('SQLiteProductInventoryRepository'),
+    SQLiteProductRepository: Symbol('SQLiteProductRepository'),
     SQLiteRouteRepository: Symbol('SQLiteRouteRepository'),
     SQLiteRouteTransactionRepository: Symbol('SQLiteRouteTransactionRepository'),
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
