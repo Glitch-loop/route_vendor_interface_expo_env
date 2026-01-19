@@ -16,6 +16,8 @@ import { PaymentMethod } from "@/src/core/object-values/PaymentMethod";
 // Database
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
+// Enums
+import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
 
 // DataSources
 import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
@@ -26,6 +28,16 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 @injectable()
 export class SQLiteRouteTransactionRepository implements RouteTransactionRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+
+    private getPaymentMethodFromId(id_payment_method: string): PaymentMethod {
+        // Map enum values to PaymentMethod
+        const paymentMethodMap: { [key: string]: string } = {
+            [PAYMENT_METHODS.CASH]: 'Cash',
+            [PAYMENT_METHODS.TRANSFER]: 'Transfer',
+        };
+        const name = paymentMethodMap[id_payment_method] || 'Unknown';
+        return new PaymentMethod(id_payment_method, name);
+    }
 
     async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
         try {
@@ -165,10 +177,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
-            const paymentMethods: Map<string, PaymentMethod> = new Map();
-            
-            // Retrieve all payment methods
-            const resultPaymentMethods: PaymentMethod[] = await this.listPaymentMethods();
 
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
@@ -178,11 +186,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             // Retrieve all route transactions
             const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
             const resultTransactions = transactionsStatement.executeSync<any>();
-
-            // Map payment methods by their ID
-            for (const paymentMethod of resultPaymentMethods) {
-                paymentMethods.set(paymentMethod.id_payment_method, paymentMethod);
-            }
 
             // Group descriptions by their route transaction ID
             for (const transactionDescription of resultRouteTransactionDescriptions) {
@@ -197,7 +200,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = paymentMethods.get(transaction.id_payment_method) || new PaymentMethod("", "Unknown");
+                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
 
                 transactions.push(
                     new RouteTransaction(
@@ -224,11 +227,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
-            const paymentMethods: Map<string, PaymentMethod> = new Map();
             const { id_store } = store;
-
-            // Retrieve all payment methods
-            const resultPaymentMethods: PaymentMethod[] = await this.listPaymentMethods();
 
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
@@ -238,11 +237,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             // Retrieve all route transactions
             const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
             const resultTransactions = transactionsStatement.executeSync<any>([id_store]);
-
-            // Map payment methods by their ID
-            for (const paymentMethod of resultPaymentMethods) {
-                paymentMethods.set(paymentMethod.id_payment_method, paymentMethod);
-            }
 
             // Group descriptions by their route transaction ID
             for (const transactionDescription of resultRouteTransactionDescriptions) {
@@ -257,7 +251,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = paymentMethods.get(transaction.id_payment_method) || new PaymentMethod("", "Unknown");
+                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
 
                 transactions.push(
                     new RouteTransaction(
@@ -284,10 +278,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
-            const paymentMethods: Map<string, PaymentMethod> = new Map();
-
-            // Retrieve all payment methods
-            const resultPaymentMethods: PaymentMethod[] = await this.listPaymentMethods();
 
             // Retrieve all route transaction descriptions
             const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
@@ -298,11 +288,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);
             const resultTransactions = transactionsStatement.executeSync<any>();
             
-            // Map payment methods by their ID
-            for (const paymentMethod of resultPaymentMethods) {
-                paymentMethods.set(paymentMethod.id_payment_method, paymentMethod);
-            }
-
             // Group descriptions by their route transaction ID
             for (const transactionDescription of resultRouteTransactionDescriptions) {
                 const descriptions = routeTransactionDescriptions.get(transactionDescription.id_route_transaction) || [];
@@ -316,7 +301,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = paymentMethods.get(transaction.id_payment_method) || new PaymentMethod("", "Unknown");
+                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
 
                 transactions.push(
                     new RouteTransaction(
@@ -336,24 +321,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
         } catch (error) {
             throw new Error("Failed to retrieve route transactions by ID: " + error);
-        }
-    }
-
-    async listPaymentMethods(): Promise<PaymentMethod[]> {
-        try {
-            await this.dataSource.initialize();
-            const paymentMethods: PaymentMethod[] = [];
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const paymentMethodsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PAYMENT_METHODS}`);
-            const resultPaymentMethods = paymentMethodsStatement.executeSync<PaymentMethod>();
-
-            for (const paymentMethod of resultPaymentMethods) {
-                paymentMethods.push(paymentMethod);
-            }
-
-            return paymentMethods;
-        } catch (error) {
-            throw new Error("Failed to list payment methods: " + error); 
         }
     }
 

@@ -20,6 +20,7 @@ import { RouteTransactionDescription } from '@/src/core/object-values/RouteTrans
 // Enums
 import { RouteTransactionState } from '@/src/core/enums/RouteTransactionState';
 import { RouteTransactionOperation } from '@/src/core/enums/RouteTransactionOperation';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
 export default function SQLiteRouteTransactionRepositoryTest() {
   const [results, setResults] = useState<string[]>([]);
@@ -41,23 +42,6 @@ export default function SQLiteRouteTransactionRepositoryTest() {
       const routeTxRepo = container.resolve<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository);
       const transactions = await routeTxRepo.listRouteTransactions();
       addResult(`Found ${transactions.length} route transactions`);
-      
-    } catch (error: any) {
-      addResult(`Error: ${error.message}`, true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const testListPaymentMethods = async () => {
-    clearResults();
-    setLoading(true);
-    
-    try {
-      addResult('Starting List Payment Methods Test...');
-      const routeTxRepo = container.resolve<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository);
-      const methods = await routeTxRepo.listPaymentMethods();
-      addResult(`Found ${methods.length} payment methods`);
       
     } catch (error: any) {
       addResult(`Error: ${error.message}`, true);
@@ -110,7 +94,7 @@ export default function SQLiteRouteTransactionRepositoryTest() {
         1
       );
 
-      const paymentMethod: PaymentMethod = new PaymentMethod('dummy-payment-method', 'Dummy Method');
+      const paymentMethod: PaymentMethod = new PaymentMethod(PAYMENT_METHODS.CASH, 'Cash');
 
       const txId = `rtx-${Date.now()}`;
       const descriptions: RouteTransactionDescription[] = [
@@ -303,14 +287,6 @@ export default function SQLiteRouteTransactionRepositoryTest() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>List Transactions</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.button, loading && styles.buttonDisabled]} 
-          onPress={testListPaymentMethods}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>List Payment Methods</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 

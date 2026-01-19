@@ -13,6 +13,5 @@ export abstract class RouteTransactionRepository {
   abstract listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]>;
   abstract listRouteTransactions(): Promise<RouteTransaction[]>;
   abstract retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]>;
-  abstract listPaymentMethods(): Promise<PaymentMethod[]>;
   abstract listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]>;
 }
