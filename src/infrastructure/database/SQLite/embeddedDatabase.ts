@@ -105,7 +105,7 @@ export const routeTransactionsEmbeddedTable = `
   );
 `;
 
-export const routeTransactionOperationDescriptionsEmbeddedTable = `
+export const routeTransactionnDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} (
     id_route_transaction_operation_description  TEXT NOT NULL UNIQUE,
     price_at_moment                             NUMERIC(6,3) NOT NULL,
