@@ -46,7 +46,15 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const db: SQLiteDatabase = await this.dataSource.getClient();
 
             await db.withExclusiveTransactionAsync(async (tx) => {
-                await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (id_route_transaction, date, state, cash_received, id_work_day, id_payment_method, id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
+                console.log("Inserting route transaction:", route_transaction);
+                await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
+                    (id_route_transaction, 
+                    date, 
+                    state, 
+                    cash_received, 
+                    id_work_day, 
+                    id_payment_method, 
+                    id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
                 `,
                 [
                     id_route_transaction,
@@ -58,12 +66,13 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     id_store,
                 ]);
 
+                console.log("Insert route transaction descriptions");
                 for (const description of transaction_description) {
                     const {
                         id_route_transaction_description,
                         price_at_moment,
-                        comission_at_moment,
                         amount,
+                        created_at,
                         id_transaction_operation_type,
                         id_product,
                         id_route_transaction
@@ -72,8 +81,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} 
                         (id_route_transaction_description, 
                         price_at_moment, 
-                        comission_at_moment, 
                         amount, 
+                        created_at,
                         id_transaction_operation_type, 
                         id_product, 
                         id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -81,8 +90,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     [
                         id_route_transaction_description,
                         price_at_moment,
-                        comission_at_moment,
                         amount,
+                        created_at.toISOString(),
                         id_transaction_operation_type,
                         id_product,
                         id_route_transaction
@@ -90,7 +99,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 }
             });
         } catch(error) {
-            throw new Error("Failed to insert route transaction.");
+            throw new Error("Failed to insert route transaction: " + error);
         }        
     }
 
@@ -128,7 +137,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             ]);
         });
         } catch (error) {
-            throw new Error("Failed to update route transaction.");
+            throw new Error("Failed to update route transaction: " + error);
         }
     }
 
@@ -146,11 +155,11 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 );
             });
         } catch(error) {
-            throw new Error('Failed to delete route transactions.');
+            throw new Error('Failed to delete route transactions: ' + error);
         }
     }
 
-    async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> {
+    async listRouteTransactions(): Promise<RouteTransaction[]> {
         try {
             await this.dataSource.initialize();
             
@@ -206,11 +215,11 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
             return transactions;
         } catch (error) {
-            throw new Error("Failed to list route transactions.");
+            throw new Error("Failed to list route transactions: " + error);
         }
     }
 
-    async listRouteTransactions(): Promise<RouteTransaction[]> {
+    async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> {
         try {
             await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
@@ -266,7 +275,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
             return transactions;
         } catch (error) {
-            throw new Error("Failed to list route transactions.");
+            throw new Error("Failed to list route transactions: " + error);
         }
     }
 
@@ -326,7 +335,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             return transactions;
 
         } catch (error) {
-            throw new Error("Failed to retrieve route transactions by ID.");
+            throw new Error("Failed to retrieve route transactions by ID: " + error);
         }
     }
 
@@ -344,7 +353,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
             return paymentMethods;
         } catch (error) {
-            throw new Error("Failed to list payment methods."); 
+            throw new Error("Failed to list payment methods: " + error); 
         }
     }
 
@@ -362,7 +371,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
             return routeTransactionDescriptions;
         } catch (error) {
-            throw new Error("Failed to list route transaction descriptions.");
+            throw new Error("Failed to list route transaction descriptions: " + error);
         }
     }
 }
