@@ -113,7 +113,7 @@ export default function Index() {
   },[]);
 
   return (
-    <Redirect href="/__testing__/component-testing/SQLite/SQLiteTestSwitch" />
-    // <Redirect href="/repositoryTestLayout" />
+    <Redirect href="/routeSelection" />
+    // <Redirect href="/__testing__/component-testing/SQLite/SQLiteTestSwitch" />
   );
 }

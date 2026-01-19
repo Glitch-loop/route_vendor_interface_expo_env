@@ -47,6 +47,10 @@ import { getWorkDayFromToday } from '../controllers/WorkDayController';
 import { getCurrentVendorInventory } from '../controllers/InventoryController';
 import { getStoresOfTheCurrentWorkDay } from '../controllers/StoreController';
 
+// Use case - queries
+import { ListRouteByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
+
+
 const routeSelectionLayout = () => {
   // Redux (context definitions)
   const dispatch: AppDispatch = useDispatch();
@@ -74,7 +78,7 @@ const routeSelectionLayout = () => {
   }));
 
 
-  useEffect(() => { startApplication() },[]);
+  // useEffect(() => { startApplication() },[]);
 
   // Auxiliar functions
   const storeRouteSelected = (route:IRoute, routeDay:ICompleteRouteDay) => {

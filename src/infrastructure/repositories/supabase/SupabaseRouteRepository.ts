@@ -3,6 +3,7 @@ import { injectable, inject } from 'tsyringe';
 
 // Object values
 import { Day } from '@/src/core/object-values/Day';
+import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
 
 // Entities
 import { Route } from '@/src/core/entities/Route';
@@ -47,6 +48,19 @@ export class SupabaseRouteRepository implements RouteRepository {
       return data;
     } catch (error) {
       throw new Error('Error fetching days');
+    }
+  }
+
+  async listRoutesDayByRoute(id_route: string): Promise<RouteDayStores[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('route_day_stores')
+        .select('*')
+        .eq('id_route', id_route);
+      if (error) throw new Error('Error fetching route days by route');
+      return data;
+    } catch (error) {
+      throw new Error('Error fetching route days by route');
     }
   }
 }
