@@ -21,7 +21,8 @@ export class SQLiteProductRepository implements ProductRepository {
 
     async insertProduct(product: Product): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`
                     INSERT INTO ${EMBEDDED_TABLES.PRODUCTS} (
@@ -54,7 +55,8 @@ export class SQLiteProductRepository implements ProductRepository {
 
     async updateProduct(product: Product): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`
                     UPDATE ${EMBEDDED_TABLES.PRODUCTS} SET
@@ -86,7 +88,8 @@ export class SQLiteProductRepository implements ProductRepository {
 
     async retrieveAllProducts(): Promise<Product[]> {
         const products: Product[] = [];
-        try {
+        try { 
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = this.dataSource.getClient();
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
             const result = statement.executeSync<any>();
@@ -110,7 +113,8 @@ export class SQLiteProductRepository implements ProductRepository {
     }
 
     async deleteProduct(product: Product): Promise<void> {
-        try {
+        try { 
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`

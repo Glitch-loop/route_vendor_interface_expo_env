@@ -29,6 +29,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
     async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
         try {
+            await this.dataSource.initialize();
+
             const {
                 id_route_transaction,
                 date,
@@ -41,7 +43,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             } = route_transaction;
             const { id_payment_method } = payment_method
 
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
 
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (id_route_transaction, date, state, cash_received, id_work_day, id_payment_method, id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -94,6 +96,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
     async updateRouteTransaction(route_transaction: RouteTransaction): Promise<void> {   
         try {
+            await this.dataSource.initialize();
             const {
                 id_route_transaction,
                 date,
@@ -104,7 +107,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             } = route_transaction;
             const { id_payment_method } = payment_method
 
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
 
             await db.withExclusiveTransactionAsync(async (tx) => {
             await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
@@ -130,7 +133,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     }
 
     async deleteRouteTransactions(route_transactions: RouteTransaction[]): Promise<void> {
-      try {
+        try {
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = this.dataSource.getClient();
 
             await db.withExclusiveTransactionAsync(async (tx) => {
@@ -146,8 +150,10 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async listRouteTransactions(): Promise<RouteTransaction[]> {
+    async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> {
         try {
+            await this.dataSource.initialize();
+            
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
             const paymentMethods: Map<string, PaymentMethod> = new Map();
@@ -204,8 +210,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> {
+    async listRouteTransactions(): Promise<RouteTransaction[]> {
         try {
+            await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
             const paymentMethods: Map<string, PaymentMethod> = new Map();
@@ -263,10 +270,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-
-
     async retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]> {
         try {
+            await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
             const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
             const paymentMethods: Map<string, PaymentMethod> = new Map();
@@ -326,8 +332,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
     async listPaymentMethods(): Promise<PaymentMethod[]> {
         try {
+            await this.dataSource.initialize();
             const paymentMethods: PaymentMethod[] = [];
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             const paymentMethodsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PAYMENT_METHODS}`);
             const resultPaymentMethods = paymentMethodsStatement.executeSync<PaymentMethod>();
 
@@ -343,8 +350,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
     async listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]> {
         try {
+            await this.dataSource.initialize();
             const routeTransactionDescriptions: RouteTransactionDescription[] = [];
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             const statementTransactionDescriptions = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
             const resultTransactionDescriptions = statementTransactionDescriptions.executeSync<RouteTransactionDescription>();
 

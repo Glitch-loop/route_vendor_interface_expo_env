@@ -22,10 +22,11 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
-    insertWorkDay(workDay: WorkDayInformation): void {
+    async insertWorkDay(workDay: WorkDayInformation): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            db.runSync(`
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.runAsync(`
                 INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (
                     id_work_day,
                     start_date,
@@ -57,10 +58,11 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
         }
     }
 
-    deleteWorkDay(workDay: WorkDayInformation): void {
+    async deleteWorkDay(workDay: WorkDayInformation): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            db.runSync(
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.runAsync(
                 `DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE id_work_day = ?;`,
                 [workDay.id_work_day]
             );
@@ -68,10 +70,11 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             throw new Error('Failed to delete work day.');
         }
     }
-
-    updateWorkDay(workDay: WorkDayInformation): void {
+    
+    async updateWorkDay(workDay: WorkDayInformation): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             db.runSync(`
                 UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET
                     start_date = ?,
@@ -103,10 +106,11 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
         }
     }
 
-    listWorkDays(): WorkDayInformation[] {
+    async listWorkDays(): Promise<WorkDayInformation[]> {
         const workDays: WorkDayInformation[] = [];
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             const result = db.getAllSync<any>(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
             
             for (const row of result) {
@@ -130,82 +134,5 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             throw new Error('Failed to list work days.');
         }
     }
-
-    insertDayOperations(day_operations: DayOperation[]): void {
-        try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            for (const operation of day_operations) {
-                db.runSync(`
-                    INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS} (
-                        id_day_operation,
-                        id_item,
-                        operation_type,
-                        created_at
-                    ) VALUES (?, ?, ?, ?);
-                `, [
-                    operation.id_day_operation,
-                    operation.id_item,
-                    operation.operation_type,
-                    operation.created_at.toISOString()
-                ]);
-            }
-        } catch (error) {
-            throw new Error('Failed to insert day operations.');
-        }
-    }
-
-    updateDayOperation(day_operation: DayOperation): void {
-        try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            db.runSync(`
-                UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS} SET
-                    id_item = ?,
-                    operation_type = ?,
-                    created_at = ?
-                WHERE id_day_operation = ?;
-            `, [
-                day_operation.id_item,
-                day_operation.operation_type,
-                day_operation.created_at.toISOString(),
-                day_operation.id_day_operation
-            ]);
-        } catch (error) {
-            throw new Error('Failed to update day operation.');
-        }
-    }
-
-    listDayOperations(): DayOperation[] {
-        const dayOperations: DayOperation[] = [];
-        try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            const result = db.getAllSync<any>(`SELECT * FROM ${EMBEDDED_TABLES.DAY_OPERATIONS};`);
-            
-            for (const row of result) {
-                dayOperations.push(new DayOperation(
-                    row.id_day_operation,
-                    row.id_item,
-                    row.operation_type,
-                    new Date(row.created_at)
-                ));
-            }
-            
-            return dayOperations;
-        } catch (error) {
-            throw new Error('Failed to list day operations.');
-        }
-    }
-
-    deleteAllDayOperations(day_operations: DayOperation[]): void {
-        try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
-            for (const operation of day_operations) {
-                db.runSync(
-                    `DELETE FROM ${EMBEDDED_TABLES.DAY_OPERATIONS} WHERE id_day_operation = ?;`,
-                    [operation.id_day_operation]
-                );
-            }
-        } catch (error) {
-            throw new Error('Failed to delete day operations.');
-        }
-    }
 }
+

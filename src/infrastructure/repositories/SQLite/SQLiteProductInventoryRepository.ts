@@ -22,7 +22,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
 
     async createInventory(products: ProductInventory[]): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
@@ -47,7 +48,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
 
     async updateInventory(products: ProductInventory[]): Promise<void> {
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
@@ -72,7 +74,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
     async retrieveInventory(): Promise<ProductInventory[]> {
         const inventory: ProductInventory[] = [];
         try {
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
             const result = statement.executeSync<any>();
             for (let row of result) {
@@ -90,7 +93,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
     }
 
     async deleteInventory(products: ProductInventory[]): Promise<void> {
-        try {
+        try { 
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {

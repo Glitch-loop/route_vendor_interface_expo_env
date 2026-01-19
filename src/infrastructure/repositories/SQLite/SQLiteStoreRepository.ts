@@ -23,7 +23,9 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async insertStores(stores: Store[]): Promise<void> {
         try {
+            await this.dataSource.initialize();
             const db:SQLiteDatabase = this.dataSource.getClient();
+            
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const store of stores) {
                     const {
@@ -85,7 +87,8 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async updateStore(store: Store): Promise<void> {
       try {
-        const db:SQLiteDatabase = this.dataSource.getClient();
+        await this.dataSource.initialize();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
         await db.withExclusiveTransactionAsync(async (tx) => {
         const {
             id_store,
@@ -146,9 +149,10 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async retrieveStore(id_stores: string[]): Promise<Store[]> {
       try {
+        await this.dataSource.initialize();
         const stores: Store[] = [];
 
-        const db:SQLiteDatabase = this.dataSource.getClient();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
         const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
         const result = statement.executeSync<Store>();
         
@@ -165,9 +169,10 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async listStores(): Promise<Store[]> {
       try {
+        await this.dataSource.initialize();
         const stores: Store[] = [];
 
-        const db:SQLiteDatabase = this.dataSource.getClient();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
         const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
         const result = statement.executeSync<Store>();
         
@@ -184,7 +189,8 @@ export class SQLiteStoreRepository implements StoreRepository {
 
     async deleteStores(stores: Store[]): Promise<void> {
       try {
-        const db:SQLiteDatabase = this.dataSource.getClient();
+        await this.dataSource.initialize();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
         await db.withExclusiveTransactionAsync(async (tx) => {
           for (const store of stores) {
             await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.STORES} WHERE id_store = ?;`, [store.id_store]);

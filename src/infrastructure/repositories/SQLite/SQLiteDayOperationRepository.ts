@@ -23,6 +23,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async insertDayOperations(day_operations: DayOperation[]): Promise<void> {
         try {
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
             await db.withExclusiveTransactionAsync(async (tx) => {
@@ -46,6 +47,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async updateDayOperation(day_operation: DayOperation): Promise<void> {
         try {
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
             await db.runAsync(`
@@ -65,6 +67,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async listDayOperations(): Promise<DayOperation[]> {
         try {
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
             const result = await db.getAllAsync<any>(`
@@ -86,6 +89,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async deleteDayOperatons(day_operations: DayOperation[]): Promise<void> {
         try {
+            await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
             await db.withExclusiveTransactionAsync(async (tx) => {

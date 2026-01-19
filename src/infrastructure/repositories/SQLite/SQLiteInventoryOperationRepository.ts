@@ -35,7 +35,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         } = inventory_operation;
 
         try {
-            const db:SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 // Insert InventoryOperation
                 await tx.runAsync(`
@@ -92,7 +93,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         } = inventoryOperation;
             
         try {
-            const db:SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(`
                     UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
@@ -143,7 +145,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         const inventoryOperations:InventoryOperation[] = [];
 
         try {
-            const db:SQLiteDatabase = this.dataSource.getClient();
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
 
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
             const result = statement.executeSync<InventoryOperation>();
@@ -165,7 +168,9 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         const inventoryOperations: InventoryOperation[] = [];
         
         try {
+            await this.dataSource.initialize();
             const db:SQLiteDatabase = this.dataSource.getClient();
+
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
             const result = statement.executeSync<InventoryOperation>();
 
@@ -183,6 +188,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
     async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
         try {
+            await this.dataSource.initialize();
             const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
             
             const db:SQLiteDatabase = this.dataSource.getClient();
@@ -205,13 +211,16 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
  
     async deleteInventoryOperations(inventory_operations: InventoryOperation[]): Promise<void> {
         try {
+            await this.dataSource.initialize();
             const db:SQLiteDatabase = this.dataSource.getClient();
+
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const operation of inventory_operations) {
                     await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
                     await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
                 }
             });
+
         } catch(error) {
             throw new Error('Failed to delete inventory operations.');
         }
