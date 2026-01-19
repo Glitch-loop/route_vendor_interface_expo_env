@@ -4,8 +4,8 @@ import 'reflect-metadata';
 import { container, DependencyContainer, instanceCachingFactory, Lifecycle } from 'tsyringe'
 
 // DataSources
-import { SupabaseDataSource } from '../datasources/SupabaseDataSource'
-import { SQLiteDataSource } from '../datasources/SQLiteDataSource'
+import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource'
 
 // Interfaces
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -42,7 +42,7 @@ import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatab
 
 
 // Utils
-import { TOKENS } from './tokens'
+import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
 

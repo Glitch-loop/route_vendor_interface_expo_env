@@ -1,6 +1,6 @@
 import { container } from '@/src/infrastructure/di/container';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
-import { SQLiteInventoryRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteInventoryRepository';
+import { SQLiteInventoryRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteProductInventoryRepository';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import EMBEDDED_TABLES from '@/src/infrastructure/database/embeddedTables';

@@ -10,7 +10,7 @@ import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInvento
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 
 // DataSources
-import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
 import EMBEDDED_TABLES from '@/utils/embeddedTables';
