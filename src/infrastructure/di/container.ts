@@ -79,13 +79,21 @@ container.register<ProductRepository>(TOKENS.SQLiteProductRepository, {
     useClass: SQLiteProductRepository
 });
 
-container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
-    useClass: SQLiteStoreRepository
-})
+// RouteRepository: There is not need to register it because there is not implementation needed.
 
 container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
     useClass: SQLiteRouteTransactionRepository
-})
+});
+
+container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
+    useClass: SQLiteShiftOrganizationRepository
+});
+
+container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
+    useClass: SQLiteStoreRepository
+});
+
+
 
 // TODO
 // container.register<RouteRepository>(TOKENS.SQLiteRouteRepository, {

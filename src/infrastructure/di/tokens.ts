@@ -26,7 +26,7 @@ export const TOKENS = {
     SQLiteInventoryOperationRepository: Symbol('SQLiteInventoryOperationRepository'),
     SQLiteProductInventoryRepository: Symbol('SQLiteProductInventoryRepository'),
     SQLiteProductRepository: Symbol('SQLiteProductRepository'),
-    SQLiteRouteRepository: Symbol('SQLiteRouteRepository'),
+    // SQLiteRouteRepository: Symbol('SQLiteRouteRepository'), // Not needed
     SQLiteRouteTransactionRepository: Symbol('SQLiteRouteTransactionRepository'),
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
