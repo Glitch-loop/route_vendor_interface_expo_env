@@ -43,7 +43,7 @@ export class SQLiteStoreRepository implements StoreRepository {
                         id_creator,
                         creation_date,
                         creation_context,
-                        status_store,
+                        status_store
                         } = store;
                     await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (
                         id_store, 
@@ -60,7 +60,7 @@ export class SQLiteStoreRepository implements StoreRepository {
                         id_creator, 
                         creation_date, 
                         creation_context,
-                        route_day_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                        status_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                     [
                         id_store,
                         street,
