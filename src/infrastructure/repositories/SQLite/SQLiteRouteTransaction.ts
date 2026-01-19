@@ -14,7 +14,7 @@ import { RouteTransactionDescription } from "@/src/core/object-values/RouteTrans
 import { PaymentMethod } from "@/src/core/object-values/PaymentMethod";
 
 // Database
-import EMBEDDED_TABLES from "../../database/embeddedTables";
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 
 // DataSources

@@ -12,7 +12,7 @@ import { Product } from '@/src/core/entities/Product';
 import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
 
 // Utils
-import EMBEDDED_TABLES from '@/utils/embeddedTables';
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()

@@ -13,7 +13,7 @@ import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
-import EMBEDDED_TABLES from '@/utils/embeddedTables';
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
@@ -27,7 +27,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
-                        INSERT INTO ${EMBEDDED_TABLES.PRODUCTS} (
+                        INSERT INTO ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
                             id_product_inventory,
                             price_at_moment,
                             stock,
@@ -42,7 +42,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                 }
             });
         } catch (error) {
-            throw new Error('Failed to create inventory.');
+            throw new Error('Failed to create inventory.' + error);
         }
     }
 
@@ -53,7 +53,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
-                        UPDATE ${EMBEDDED_TABLES.PRODUCTS} SET
+                        UPDATE ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} SET
                             price_at_moment = ?,
                             stock = ?,
                             id_product = ?
@@ -67,7 +67,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                 }
             });
         } catch (error) {
-            throw new Error('Failed to update inventory.');
+            throw new Error('Failed to update inventory.' + error);
         }
     }
 
@@ -76,7 +76,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
+            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
             const result = statement.executeSync<any>();
             for (let row of result) {
                 inventory.push(new ProductInventory(
@@ -88,7 +88,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
             }
             return inventory;
         } catch (error) {
-            throw new Error('Failed to retrieve inventory.');
+            throw new Error('Failed to retrieve inventory.' + error);
         }
     }
 
@@ -99,12 +99,12 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
-                        DELETE FROM ${EMBEDDED_TABLES.PRODUCTS} WHERE id_product_inventory = ?;
+                        DELETE FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} WHERE id_product_inventory = ?;
                     `, [product['id_product_inventory']]);
                 }
             });
         } catch (error) {
-            throw new Error('Failed to delete inventory.');
+            throw new Error('Failed to delete inventory.' + error);
         }
     }
 }

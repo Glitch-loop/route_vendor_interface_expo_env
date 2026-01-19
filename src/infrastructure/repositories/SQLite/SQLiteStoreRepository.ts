@@ -9,13 +9,13 @@ import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 import { Store } from "@/src/core/entities/Store";
 
 // Database
-import EMBEDDED_TABLES from "../../database/embeddedTables";
 
 // DataSources
 import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 @injectable()
 export class SQLiteStoreRepository implements StoreRepository {

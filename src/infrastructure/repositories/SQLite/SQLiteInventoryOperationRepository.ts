@@ -16,7 +16,6 @@ import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSou
 
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
-
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()

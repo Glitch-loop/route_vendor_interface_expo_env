@@ -10,13 +10,14 @@ import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // Database
-import EMBEDDED_TABLES from '../../database/embeddedTables';
+
 
 // DataSources
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 @injectable()
 export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepository {
