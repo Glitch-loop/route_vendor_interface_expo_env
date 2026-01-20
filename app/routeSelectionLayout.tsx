@@ -48,8 +48,8 @@ import { getCurrentVendorInventory } from '../controllers/InventoryController';
 import { getStoresOfTheCurrentWorkDay } from '../controllers/StoreController';
 
 // Use case - queries
-import { ListRouteByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
-
+import { ListRoutesByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
+import { container } from '@/src/infrastructure/di/container';
 
 const routeSelectionLayout = () => {
   // Redux (context definitions)
@@ -78,7 +78,11 @@ const routeSelectionLayout = () => {
   }));
 
 
-  // useEffect(() => { startApplication() },[]);
+  useEffect(() => { 
+    // startApplication()
+    console.log('Starting session test...');
+    startSession()
+   },[]);
 
   // Auxiliar functions
   const storeRouteSelected = (route:IRoute, routeDay:ICompleteRouteDay) => {
@@ -147,7 +151,13 @@ const routeSelectionLayout = () => {
     });
   }
 
-  
+  const startSession = async () => {
+    console.log('////////Using di container')
+    const use_case_query = container.resolve(ListRoutesByUserQuery);
+    console.log('////////Executing use case query')
+    const routes = await use_case_query.execute('b6665f54-37de-4991-a7c4-283599bb0658')
+    console.log(routes);
+  }
 
   //Handlers
   const handlerOnSelectARoute = (route:IRoute, routeDay:ICompleteRouteDay) => {

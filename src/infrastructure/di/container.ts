@@ -44,6 +44,7 @@ import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatab
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
+import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 
 
 // Register DataSources as SINGLETON (one instance for entire app)
@@ -54,18 +55,22 @@ container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource,
     { lifecycle: Lifecycle.Singleton }
 )
 
+// DTOs
+container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
+
 // Services
 container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
     useClass: SQLiteDatabaseService
 })
+
 // container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
 // container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
 
-// Implementation of repositories - SQLite
+// =================== Implementation of repositories - SQLite ====================
 container.register<DayOperationRepository>(TOKENS.SQLiteDayOperationRepository, {
     useClass: SQLiteDayOperationRepository
-})
+});
 
 container.register<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository, {
     useClass: SQLiteInventoryOperationRepository
@@ -94,11 +99,16 @@ container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
 });
 
 
+// =================== Implementation of repositories - Supabase ====================
+container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
+    useClass: SupabaseStoreRepository
+});
 
-// TODO
-// container.register<RouteRepository>(TOKENS.SQLiteRouteRepository, {
-//     useClass: SQLiteRouteTransactionRepository
-// })
+container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
+    useClass: SupabaseRouteRepository
+});
+
+
 
 
 
@@ -141,11 +151,6 @@ container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
 //     useClass: SQLiteRouteTransactionRepository
 // })
 
-
-// Supabase
-// container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
-//     useClass: SupabaseStoreRepository
-// })
 
 
 export { container }

@@ -1,4 +1,4 @@
-import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
+import { RouteDay } from '@/src/core/object-values/RouteDay';
 
 export class Route {
   constructor(
@@ -7,6 +7,6 @@ export class Route {
     public readonly description: string,
     public readonly route_status: boolean,
     public readonly id_vendor: string,
-    public readonly routeDay: Map<string, RouteDayStores[]>
+    public readonly route_day: RouteDay[]
   ) {}
 }

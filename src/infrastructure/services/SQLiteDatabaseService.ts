@@ -30,10 +30,7 @@ import {
 
 @injectable()
 export class SQLiteDatabaseService implements LocalDatabaseService {
-    // 
-    constructor (@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {
-        console.log('SQLiteDatabaseService initialized');
-    }
+    constructor (@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) { }
     
     async createDatabase(): Promise<void> { 
         const tablesToCreate:string[] = [
@@ -52,13 +49,11 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
         ];
 
         try {
-            console.log("Getting connection to local database")
             const db = await this.dataSource.getClient();
             
-            console.log("Creating embedded database tables...")
             const createTablePromises:any[] = tablesToCreate
             .map((queryToCreateTable:string) => {
-                console.log(queryToCreateTable)
+                // console.log(queryToCreateTable) // Database creation
                 return db.runAsync(queryToCreateTable);
             });
 
@@ -79,7 +74,6 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             EMBEDDED_TABLES.PRODUCTS_INVENTORY,
             EMBEDDED_TABLES.DAY_OPERATIONS,
             EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
-            EMBEDDED_TABLES.PAYMENT_METHODS,
             EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
             EMBEDDED_TABLES.INVENTORY_OPERATIONS,
             EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,
@@ -110,7 +104,6 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             EMBEDDED_TABLES.PRODUCTS_INVENTORY,
             EMBEDDED_TABLES.DAY_OPERATIONS,
             EMBEDDED_TABLES.ROUTE_TRANSACTIONS,
-            EMBEDDED_TABLES.PAYMENT_METHODS,
             EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS,
             EMBEDDED_TABLES.INVENTORY_OPERATIONS,
             EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS,

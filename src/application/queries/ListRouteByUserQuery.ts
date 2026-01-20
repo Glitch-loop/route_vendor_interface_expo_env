@@ -8,29 +8,40 @@ import { RouteRepository } from "@/src/core/interfaces/RouteRepository";
 import { Route } from "@/src/core/entities/Route";
 
 // Object values
-import { RouteDayStores } from "@/src/core/object-values/RouteDayStores";
+import { RouteDayStore } from "@/src/core/object-values/RouteDayStore";
+
+// Mapper DTO
+import RouteDTO from "@/src/application/dto/RouteDTO";
+import { MapperDTO } from "@/src/application/mappers/MapperDTO";
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { RouteDay } from "@/src/core/object-values/RouteDay";
 
 @injectable()
-export class ListRouteByUserQuery {
-    constructor(@inject(TOKENS.RouteRepository) private repo: RouteRepository) { }
+export class ListRoutesByUserQuery {
+    constructor(
+        @inject(TOKENS.SupabaseRouteRepository) private repo: RouteRepository,
+        @inject(MapperDTO) private mapper: MapperDTO
+    ) { }
 
-    async execute(userId: string): Promise<Route[]> {
+    async execute(userId: string): Promise<RouteDTO[]> {
         const vendorRoutes: Route[] = [];
         const routes: Route[] = await this.repo.listRoutesByUser(userId);
         
         // Get the routes of the vendor and group the clients to attend by route day.
         for (const route of routes) {
-            const routeDays = await this.repo.listRoutesDayByRoute(route.id_route);
-            const routeDayMap = new Map<string, RouteDayStores[]>();
-
+            const routeDayOfRoute:RouteDay[] = [];
+            const routeDays:RouteDay[] = await this.repo.listRouteDaysByRoute(route.id_route);
+            
             for (const routeDay of routeDays) {
-                const { id_route_day } = routeDay;
-                routeDayMap.get(id_route_day)
-                    ? routeDayMap.get(id_route_day)?.push(routeDay)
-                    : routeDayMap.set(id_route_day, [routeDay]);
+                const routeDayStores: RouteDayStore[] = await this.repo.listRouteDayStoresByRoute(routeDay.id_route_day);
+                routeDayOfRoute.push(new RouteDay(
+                    routeDay.id_route_day,
+                    routeDay.id_route,
+                    routeDay.id_day,
+                    routeDayStores
+                ))
             }
 
             vendorRoutes.push(new Route(
@@ -39,11 +50,13 @@ export class ListRouteByUserQuery {
                 route.description,
                 route.route_status,
                 route.id_vendor,
-                routeDayMap
+                routeDayOfRoute
             ));
             
         }
 
-        return vendorRoutes;
+        console.log('Mapped routes:', vendorRoutes);
+
+        return vendorRoutes.map(route => this.mapper.toDTO(route));
     }
 }

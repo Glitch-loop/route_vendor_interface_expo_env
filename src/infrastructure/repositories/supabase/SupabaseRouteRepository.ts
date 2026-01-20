@@ -3,7 +3,8 @@ import { injectable, inject } from 'tsyringe';
 
 // Object values
 import { Day } from '@/src/core/object-values/Day';
-import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
+import { RouteDay } from '@/src/core/object-values/RouteDay';
+import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
 
 // Entities
 import { Route } from '@/src/core/entities/Route';
@@ -16,6 +17,8 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { CENTRAL_TABLES } from '../../database/central-database/centralTables';
+
 
 @injectable()
 export class SupabaseRouteRepository implements RouteRepository {
@@ -26,18 +29,19 @@ export class SupabaseRouteRepository implements RouteRepository {
   }
 
   async listRoutesByUser(user: string): Promise<Route[]> {
+    console.log('*********************Fetching routes for user:', user);
     try {
       const { data, error } = await this.supabase
-        .from('routes')
+        .from(CENTRAL_TABLES.ROUTES)
         .select('*')
         .eq('id_vendor', user);
 
-      if (error) throw new Error('Error fetching routes');
+      if (error) throw new Error('Error fetching routes: ' + error.message);
 
       return data
         
     } catch (error) {
-      throw new Error('Error fetching routes');
+      throw new Error('Error fetching routes: ' + error);
     }
   }
 
@@ -51,16 +55,29 @@ export class SupabaseRouteRepository implements RouteRepository {
     }
   }
 
-  async listRoutesDayByRoute(id_route: string): Promise<RouteDayStores[]> {
+  async listRouteDaysByRoute(id_route: string): Promise<RouteDay[]> {
     try {
       const { data, error } = await this.supabase
-        .from('route_day_stores')
+        .from(CENTRAL_TABLES.ROUTE_DAY)
         .select('*')
         .eq('id_route', id_route);
-      if (error) throw new Error('Error fetching route days by route');
+      if (error) throw new Error('Error fetching route days by route' + error.message);
       return data;
     } catch (error) {
-      throw new Error('Error fetching route days by route');
+      throw new Error('Error fetching route days by route' + error);
+    }
+  }
+
+  async listRouteDayStoresByRoute(id_route_day: string): Promise<RouteDayStore[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from(CENTRAL_TABLES.ROUTE_DAY_STORES)
+        .select('*')
+        .eq('id_route_day', id_route_day);
+      if (error) throw new Error('Error fetching route day stores by route day' + error.message);
+      return data;
+    } catch (error) {
+      throw new Error('Error fetching route day stores by route day' + error);
     }
   }
 }
