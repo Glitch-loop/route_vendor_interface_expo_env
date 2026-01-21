@@ -5,9 +5,8 @@ import { Pressable, View, Text } from 'react-native';
 import tw from 'twrnc';
 
 // Components
-// import RouteHeader from '../components/RouteHeader';
 import RouteHeader from '@/components/RouteHeader';
-import { OperationTypeId } from '@/src/core/enums/OperationTypeId';
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 const selectionRouteOperationLayout = () => {
   //Router
@@ -19,7 +18,7 @@ const selectionRouteOperationLayout = () => {
   };
 
   const handlerGoToInventory = () => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${OperationTypeId.START_SHIFT_INVENTORY}`);
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}`);
   };
 
   return (

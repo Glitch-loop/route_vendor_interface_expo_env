@@ -108,7 +108,7 @@ import { cleanAllRouteTransactionsFromDatabase } from '../controllers/SaleContro
 import ActionDialog from '../components/ActionDialog';
 
 // Enums
-import { DayOperation } from '@/src/core/entities/DayOperation';
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 // Definitions
 const settingOperationDescriptions:any = {
@@ -193,6 +193,10 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = () => {
+
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
+      
+    }
 
     /*
       If the current operation contains an item, that means the user is consulting

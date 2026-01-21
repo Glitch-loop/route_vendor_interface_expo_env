@@ -4,7 +4,7 @@
     Each operation is an action that a route vendor can make during their work shift. 
 */
 
-export enum DayOperations {
+export enum DAY_OPERATIONS {
     // Related to inventory.
     start_shift_inventory = '5361d05b-e291-4fce-aa70-9452d7cfcadd',
     restock_inventory = '37bb2bb6-f8a1-4df9-8318-6fb9831aae49',
@@ -17,4 +17,4 @@ export enum DayOperations {
     product_reposition = 'ec313b8e-ba1d-4a77-bbfb-bb662663720c',
 }
 
-export default DayOperations;
+export default DAY_OPERATIONS;
