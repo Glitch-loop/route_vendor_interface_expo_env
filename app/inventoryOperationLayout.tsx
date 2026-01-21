@@ -517,11 +517,11 @@ const inventoryOperationLayout = () => {
       If the user is making the first inventory operation of the day, the navigation should return to 
       the screen of selecting route, otherwise, it should return to Operation menu.
     */
-
     if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-      router.push('/routeOperationMenuLayout');
-    } else {
+      console.log("Returning to route selection screen");
       router.back();
+    } else {
+      router.push('/routeOperationMenuLayout');
     }
   };
 

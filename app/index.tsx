@@ -35,6 +35,9 @@ import useCurrentLocation from '@/hooks/useCurrentLocation';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
 
+
+// TODO: Define if use  
+
 async function appInitialization() {
   // Initializing datasource
   const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);

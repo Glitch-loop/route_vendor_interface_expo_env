@@ -15,6 +15,16 @@ import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { RouteDay } from "@/src/core/object-values/RouteDay";
+import { Product } from "@/src/core/entities/Product";
+
+// DTOs and mapper
+import ProductDTO from "../dto/ProductDTO";
+import RouteDayDTO from "../dto/RouteDayDTO";
+import RouteDTO from "../dto/RouteDTO";
+import InventoryOperationDTO from "../dto/InventoryOperationDTO";
+import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
+
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
@@ -39,7 +49,12 @@ export class StartWorkDayUseCase {
 
     ) { }
 
-    async execute(workDayInformation: WorkDayInformation, initialInventory: InventoryOperation[], routeDaySelected: any): Promise<void> {
+    async execute(
+        petty_cash: number,
+        
+        productToRegister: Product[],
+        inventoryOperation: InventoryOperation[],
+        routeDaySelected: RouteDay): Promise<void> {
         const routeDayClients = [];
         
         this.idService.generateID();
@@ -59,5 +74,15 @@ export class StartWorkDayUseCase {
 
         // Register routes to attend.
 
+    }
+
+    async execute(
+        petty_cash: number,
+        routeSelected: RouteDTO,
+        productToRegister: ProductDTO[],
+        inventoryOperation: InventoryOperationDTO,
+        routeDaySelected: RouteDayDTO
+    ): Promise<void> {
+        
     }
 }

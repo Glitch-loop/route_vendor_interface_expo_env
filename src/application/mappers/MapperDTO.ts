@@ -19,6 +19,10 @@ import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
+import WorkDayInformationDTO from '@/src/application/dto/WorkDayInformationDTO';
 
 // Object values
 // import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
@@ -30,12 +34,13 @@ export class MapperDTO {
   // Method overloads for type safety
     toDTO(entity: Route): RouteDTO;
     toDTO(entity: Product): ProductDTO;
+    toDTO(entity: InventoryOperation): InventoryOperationDTO;
+    toDTO(entity: WorkDayInformation): WorkDayInformationDTO;
 //   toDTO(entity: RouteTransaction): RouteTransactionDTO;
 //   toDTO(entity: Store): StoreDTO;
 //   toDTO(entity: WorkDayInformation): WorkDayDTO;
-//   toDTO(entity: InventoryOperation): InventoryOperationDTO;
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
-    toDTO(entity: Route | Product): any {
+    toDTO(entity: Route | Product | InventoryOperation | WorkDayInformation): any {
         // Route
         if (this.isRoute(entity)) {
             return this.routeToDTO(entity);
@@ -46,6 +51,15 @@ export class MapperDTO {
           return this.productToDTO(entity);
         }
 
+        // InventoryOperation
+        if (this.isInventoryOperation(entity)) {
+          return this.inventoryOperationToDTO(entity);
+        }
+
+                // WorkDayInformation
+                if (this.isWorkDay(entity)) {
+                    return this.workDayToDTO(entity);
+                }
         // RouteTransaction
         // if (this.isTransaction(entity)) {
         //   return this.transactionToDTO(entity);
@@ -63,23 +77,24 @@ export class MapperDTO {
         //   return this.workDayToDTO(entity);
         // }
 
-        // // InventoryOperation
-        // if (this.isInventoryOperation(entity)) {
-        //   return this.inventoryOperationToDTO(entity);
-        // }
 
-        throw new Error(`Unknown entity type: ${entity?.constructor?.name || 'undefined'}`);
+
+          throw new Error('Unknown entity type');
   }
 
-  // Array mapping helper
-//   T extends Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation
-  toDTOArray<T extends Route>(
-    entities: T[]
-  ): any[] {
-    return entities.map(entity => this.toDTO(entity));
-  }
+    // Unified DTO -> Entity mapping
+    toEntity(dto: ProductDTO): Product;
+    toEntity(dto: InventoryOperationDTO): InventoryOperation;
+    toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
+    toEntity(dto: ProductDTO | InventoryOperationDTO | WorkDayInformationDTO): Product | InventoryOperation | WorkDayInformation {
+        if (this.isProductDTO(dto)) return this.productDTOToEntity(dto);
+        if (this.isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
+        if (this.isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
+        throw new Error('Unknown DTO type');
+    }
 
-  // ==================== TYPE GUARDS ====================
+
+  // ==================== ENTITY TYPE GUARDS ====================
   
     private isRoute(entity: any): entity is Route {
         return (
@@ -92,6 +107,13 @@ export class MapperDTO {
         return (
             entity instanceof Product || 
             ('id_product' in entity && 'product_name' in entity && 'price' in entity)
+        );
+    }
+
+    private isInventoryOperation(entity: any): entity is InventoryOperation {
+        return (
+            entity instanceof InventoryOperation || 
+            ('id_inventory_operation' in entity && 'inventoryOperationDescriptions' in entity)
         );
     }
 
@@ -116,14 +138,7 @@ export class MapperDTO {
     );
     }
 
-    private isInventoryOperation(entity: any): entity is InventoryOperation {
-    return (
-        entity instanceof InventoryOperation || 
-        ('id_inventory_operation' in entity && 'inventoryOperationDescriptions' in entity)
-    );
-    }
-
-    // ==================== MAPPER METHODS ====================
+    // ==================== MAPPER METHODS ENTITY to DTO ====================
 
     private routeToDTO(entity: Route): RouteDTO {
     const routeDayMap = new Map<string, RouteDayDTO>(); // <id_day, RouteDayDTO>
@@ -182,6 +197,121 @@ export class MapperDTO {
             order_to_show: entity.order_to_show,
         };
     }
+
+    private inventoryOperationToDTO(entity: InventoryOperation): InventoryOperationDTO {
+        return {
+            id_inventory_operation: entity.id_inventory_operation,
+            sign_confirmation: entity.sign_confirmation,
+            date: entity.date.toISOString(),
+            state: entity.state,
+            audit: entity.audit,
+            id_inventory_operation_type: entity.id_inventory_operation_type,
+            id_work_day: entity.id_work_day,
+            inventoryOperationDescriptions: entity.inventoryOperationDescriptions.map((desc) => this.inventoryProductDescriptionToDTO(desc)),
+        };
+    }
+
+    private workDayToDTO(entity: WorkDayInformation): WorkDayInformationDTO {
+        return {
+            id_work_day: entity.id_work_day,
+            start_date: entity.start_date,
+            finish_date: entity.finish_date,
+            start_petty_cash: entity.start_petty_cash,
+            final_petty_cash: entity.final_petty_cash,
+            id_route: entity.id_route,
+            route_name: entity.route_name,
+            description: entity.description,
+            route_status: entity.route_status,
+            id_day: entity.id_day,
+            id_route_day: entity.id_route_day,
+        };
+    }
+
+
+    // ==================== DTO TYPE GUARDS ====================
+    private isProductDTO(dto: any): dto is ProductDTO {
+        return (
+            dto && typeof dto === 'object' &&
+            'id_product' in dto && 'product_name' in dto && 'price' in dto
+        );
+    }
+
+    private isInventoryOperationDTO(dto: any): dto is InventoryOperationDTO {
+        return (
+            dto && typeof dto === 'object' &&
+            'id_inventory_operation' in dto && 'id_inventory_operation_type' in dto && 'inventoryOperationDescriptions' in dto
+        );
+    }
+ 
+    private isWorkDayDTO(dto: any): dto is WorkDayInformationDTO {
+        return (
+            dto && typeof dto === 'object' &&
+            'id_work_day' in dto && 'start_date' in dto && 'id_route_day' in dto
+        );
+    }
+ 
+    // ==================== MAPPER METHODS DTO to ENTITY ====================
+
+        // ProductDTO -> Product (domain)
+        productDTOToEntity(dto: ProductDTO): Product {
+            return new Product(
+                dto.id_product,
+                dto.product_name,
+                dto.barcode ?? null,
+                dto.weight ?? null,
+                dto.unit ?? null,
+                dto.comission,
+                dto.price,
+                dto.product_status,
+                dto.order_to_show
+            );
+        }
+
+        // InventoryOperationDescriptionDTO -> InventoryOperationDescription (domain)
+        private inventoryProductDescriptionDTOToEntity(dto: InventoryOperationDescriptionDTO): InventoryOperationDescription {
+            return new InventoryOperationDescription(
+                dto.id_product_operation_description,
+                dto.price_at_moment,
+                dto.amount,
+                new Date(),
+                dto.id_inventory_operation,
+                dto.id_product
+            );
+        }
+
+        // InventoryOperationDTO -> InventoryOperation (domain)
+        inventoryOperationDTOToEntity(dto: InventoryOperationDTO): InventoryOperation {
+            return new InventoryOperation(
+                dto.id_inventory_operation,
+                dto.sign_confirmation,
+                new Date(dto.date),
+                dto.state,
+                dto.audit,
+                dto.id_inventory_operation_type,
+                dto.id_work_day,
+                (dto.inventoryOperationDescriptions || []).map(d => this.inventoryProductDescriptionDTOToEntity(d))
+            );
+        }
+
+        // WorkDayInformationDTO -> WorkDayInformation (domain)
+        workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
+            const start = dto.start_date instanceof Date ? dto.start_date : new Date(dto.start_date);
+            const finish = dto.finish_date === null ? null : (dto.finish_date instanceof Date ? dto.finish_date : new Date(dto.finish_date));
+            return new WorkDayInformation(
+                dto.id_work_day,
+                start,
+                finish,
+                dto.start_petty_cash,
+                dto.final_petty_cash ?? null,
+                dto.id_route,
+                dto.route_name,
+                dto.description,
+                dto.route_status,
+                dto.id_day,
+                dto.id_route_day,
+            );
+        }
+
 
 //   private transactionToDTO(entity: RouteTransaction): RouteTransactionDTO {
 //     return {
@@ -273,5 +403,16 @@ export class MapperDTO {
   private formatAddress(store: Store): string {
     return `${store.street} ${store.ext_number}, ${store.colony}`;
   }
+
+    // InventoryOperationDescription (domain) -> InventoryOperationDescriptionDTO (UI)
+    private inventoryProductDescriptionToDTO(desc: InventoryOperationDescription): InventoryOperationDescriptionDTO {
+        return {
+            id_product_operation_description: desc.id_inventory_operation_description,
+            price_at_moment: desc.price_at_moment,
+            amount: desc.amount,
+            id_inventory_operation: desc.id_inventory_operation,
+            id_product: desc.id_product,
+        };
+    }
 
 }
