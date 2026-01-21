@@ -13,8 +13,8 @@ export class ShiftOrganizationAggregate {
 
     startWorkDay(
         idWorkDay: string, 
-        startPettyCash: number, 
         initialDate: Date,
+        startPettyCash: number, 
         id_route: string,
         route_name: string,
         description: string,
