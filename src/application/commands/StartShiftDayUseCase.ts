@@ -6,37 +6,38 @@ import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
 import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
 import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
-
+import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
 import { IDService } from "@/src/core/interfaces/IDService";
 import { DateService } from "@/src/core/interfaces/DateService";
 
+// Object values
+import { RouteDay } from "@/src/core/object-values/RouteDay";
+import { InventoryOperationDescription } from "@/src/core/object-values/InventoryOperationDescription";
+
 // Entities
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
-
-// Utils
-import { TOKENS } from "@/src/infrastructure/di/tokens";
-import { RouteDay } from "@/src/core/object-values/RouteDay";
 import { Product } from "@/src/core/entities/Product";
-
-// DTOs and mapper
-import ProductDTO from "../dto/ProductDTO";
-import RouteDayDTO from "../dto/RouteDayDTO";
-import RouteDTO from "../dto/RouteDTO";
-import InventoryOperationDTO from "../dto/InventoryOperationDTO";
-import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
 import { Route } from "@/src/core/entities/Route";
-import { INVENTORY_OPREATION_STATE } from "@/src/core/enums/InventoryOperationState";
-import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
-import { InventoryOperationDescription } from "@/src/core/object-values/InventoryOperationDescription";
+import { Store } from "@/src/core/entities/Store";
+
+// Aggregates
 import { ShiftOrganizationAggregate } from "@/src/core/aggregates/ShiftOrganizationAggregate";
 import { InventoryOperationAggregate } from "@/src/core/aggregates/InventoryOperationAggregate";
 import { ProductInventoryAggregate } from "@/src/core/aggregates/ProductInventoryAggregate";
 import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
-import { Store } from "@/src/core/entities/Store";
-import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
-import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
-import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
 
+// DTOs and mapper
+import ProductDTO from "@/src/application/dto/ProductDTO";
+import RouteDayDTO from "@/src/application/dto/RouteDayDTO";
+import RouteDTO from "@/src/application/dto/RouteDTO";
+import InventoryOperationDTO from "@/src/application/dto/InventoryOperationDTO";
+import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
+
+// Utils
+import { TOKENS } from "@/src/infrastructure/di/tokens";
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations

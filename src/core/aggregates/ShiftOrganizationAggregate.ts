@@ -1,5 +1,4 @@
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
-import { INVENTORY_OPREATION_STATE } from "../enums/InventoryOperationState";
 
 
 export class ShiftOrganizationAggregate {
