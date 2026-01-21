@@ -18,6 +18,7 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
 
 // Object values
 // import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
@@ -28,18 +29,23 @@ export class MapperDTO {
 
   // Method overloads for type safety
     toDTO(entity: Route): RouteDTO;
+    toDTO(entity: Product): ProductDTO;
 //   toDTO(entity: RouteTransaction): RouteTransactionDTO;
 //   toDTO(entity: Store): StoreDTO;
-//   toDTO(entity: Product): ProductDTO;
 //   toDTO(entity: WorkDayInformation): WorkDayDTO;
 //   toDTO(entity: InventoryOperation): InventoryOperationDTO;
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
-    toDTO(entity: Route): any {
+    toDTO(entity: Route | Product): any {
         // Route
         if (this.isRoute(entity)) {
             return this.routeToDTO(entity);
         }
         
+        // Product
+        if (this.isProduct(entity)) {
+          return this.productToDTO(entity);
+        }
+
         // RouteTransaction
         // if (this.isTransaction(entity)) {
         //   return this.transactionToDTO(entity);
@@ -50,10 +56,7 @@ export class MapperDTO {
         //   return this.storeToDTO(entity);
         // }
 
-        // // Product
-        // if (this.isProduct(entity)) {
-        //   return this.productToDTO(entity);
-        // }
+
 
         // // WorkDayInformation
         // if (this.isWorkDay(entity)) {
@@ -78,59 +81,55 @@ export class MapperDTO {
 
   // ==================== TYPE GUARDS ====================
   
-  private isRoute(entity: any): entity is Route {
-    console.log("Guard for entity")
-    console.log(entity['id_route'])
-    console.log(entity['route_name'])
-    console.log(entity['route_day'])
+    private isRoute(entity: any): entity is Route {
+        return (
+            entity instanceof Route || 
+            ('id_route' in entity && 'route_name' in entity && 'route_day' in entity)
+        );
+    }
+
+    private isProduct(entity: any): entity is Product {
+        return (
+            entity instanceof Product || 
+            ('id_product' in entity && 'product_name' in entity && 'price' in entity)
+        );
+    }
+
+    private isTransaction(entity: any): entity is RouteTransaction {
+        return (
+            entity instanceof RouteTransaction || 
+            ('id_route_transaction' in entity && 'transaction_description' in entity)
+        );
+    }
+
+    private isStore(entity: any): entity is Store {
     return (
-      entity instanceof Route || 
-      ('id_route' in entity && 'route_name' in entity && 'route_day' in entity)
+        entity instanceof Store || 
+        ('id_store' in entity && 'store_name' in entity)
     );
-  }
+    }
 
-  private isTransaction(entity: any): entity is RouteTransaction {
+    private isWorkDay(entity: any): entity is WorkDayInformation {
     return (
-      entity instanceof RouteTransaction || 
-      ('id_route_transaction' in entity && 'transaction_description' in entity)
+        entity instanceof WorkDayInformation || 
+        ('id_work_day' in entity && 'start_date' in entity && 'id_route' in entity)
     );
-  }
+    }
 
-  private isStore(entity: any): entity is Store {
+    private isInventoryOperation(entity: any): entity is InventoryOperation {
     return (
-      entity instanceof Store || 
-      ('id_store' in entity && 'store_name' in entity)
+        entity instanceof InventoryOperation || 
+        ('id_inventory_operation' in entity && 'inventoryOperationDescriptions' in entity)
     );
-  }
+    }
 
-  private isProduct(entity: any): entity is Product {
-    return (
-      entity instanceof Product || 
-      ('id_product' in entity && 'product_name' in entity && 'price' in entity)
-    );
-  }
+    // ==================== MAPPER METHODS ====================
 
-  private isWorkDay(entity: any): entity is WorkDayInformation {
-    return (
-      entity instanceof WorkDayInformation || 
-      ('id_work_day' in entity && 'start_date' in entity && 'id_route' in entity)
-    );
-  }
-
-  private isInventoryOperation(entity: any): entity is InventoryOperation {
-    return (
-      entity instanceof InventoryOperation || 
-      ('id_inventory_operation' in entity && 'inventoryOperationDescriptions' in entity)
-    );
-  }
-
-  // ==================== MAPPER METHODS ====================
-
-  private routeToDTO(entity: Route): RouteDTO {
+    private routeToDTO(entity: Route): RouteDTO {
     const routeDayMap = new Map<string, RouteDayDTO>(); // <id_day, RouteDayDTO>
-    
+
     const { route_day } = entity;
-    
+
     // Organizing route days and their stores by day id
     for (const routeDay of route_day) {
         const routeDayStoreDTOs: RouteDayStoreDTO[] = [];
@@ -168,7 +167,21 @@ export class MapperDTO {
 
 
     return routeDTO;
-  }
+    }
+
+    private productToDTO(entity: Product): ProductDTO {
+        return {
+            id_product: entity.id_product,
+            product_name: entity.product_name,
+            barcode: entity.barcode || '',
+            weight: entity.weight || '',
+            unit: entity.unit || '',
+            comission: entity.comission,
+            price: entity.price,
+            product_status: entity.product_status,
+            order_to_show: entity.order_to_show,
+        };
+    }
 
 //   private transactionToDTO(entity: RouteTransaction): RouteTransactionDTO {
 //     return {
@@ -215,20 +228,6 @@ export class MapperDTO {
 //     };
 //   }
 
-//   private productToDTO(entity: Product): ProductDTO {
-//     return {
-//       id: entity.id_product,
-//       name: entity.product_name,
-//       barcode: entity.barcode || '',
-//       weight: entity.weight || '',
-//       unit: entity.unit || '',
-//       commission: entity.comission,
-//       price: entity.price,
-//       priceFormatted: `$${entity.price.toFixed(2)}`,
-//       status: entity.product_status,
-//       order: entity.order_to_show,
-//     };
-//   }
 
 //   private workDayToDTO(entity: WorkDayInformation): WorkDayDTO {
 //     return {

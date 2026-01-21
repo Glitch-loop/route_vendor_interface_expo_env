@@ -122,6 +122,15 @@ const settingAllInventoryOperations:any = {
   toastMessageError: 'Ha habido un error durante la consulta de las operaciones de inventario del dia, por favor intente nuevamente',
 };
 
+
+// Use cases
+import ListAllProductOfCompany from '@/src/application/queries/ListAllProductOfCompany';
+
+// DI container
+import { container as di_container } from '@/src/infrastructure/di/container';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+
+// TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
 }
@@ -185,6 +194,9 @@ const inventoryOperationLayout = () => {
   const [isInventoryAccepted, setIsInventoryAccepted] = useState<boolean>(false);
   const [isOperationToUpdate, setIsOperationToUpdate] = useState<boolean>(false);
 
+  // =============== New products =====================
+  const [availableProducts, setAvailableProducts] = useState<ProductDTO[]>([]);
+
   // Use effect operations
   useEffect(() => {
     setEnvironmentForInventoryOperation();
@@ -192,10 +204,25 @@ const inventoryOperationLayout = () => {
   }, [currentOperation, dayOperations, stores]);
 
   // ======= Auxiliar functions ======
-  const setEnvironmentForInventoryOperation = () => {
+  const setEnvironmentForInventoryOperation = async () => {
 
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
       
+    } else if (
+      id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory ||
+      id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory ||
+      id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ||
+      id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory
+    ) {
+      /*
+        Dispose the list of product and let the user to introduce the inventory movement.
+      */
+     const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
+     const products: ProductDTO[] = await use_case_query.execute()
+     setAvailableProducts(products);
+
+    } else {
+      /* Do nothing */
     }
 
     /*
@@ -487,20 +514,14 @@ const inventoryOperationLayout = () => {
   // Handlers
   const handlerGoBack = ():void => {
     /*
-      According with the workflow of the system, the system identify if the user is making the first "inventory
-      operation" of the day (referring to "Start shift inventory operation") when the current operation is undefined.
-
-      In this case, the navigation should return to the select inventory reception.
-
-      Following the scenario below, once the user finishes the first operation, all of the following operations
-      should return to the route menu.
+      If the user is making the first inventory operation of the day, the navigation should return to 
+      the screen of selecting route, otherwise, it should return to Operation menu.
     */
 
-    if (workDay.id_work_day === '') {
-      router.back();
-      //router.push('/selectionRouteOperationLayout');
-    } else {
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
       router.push('/routeOperationMenuLayout');
+    } else {
+      router.back();
     }
   };
 

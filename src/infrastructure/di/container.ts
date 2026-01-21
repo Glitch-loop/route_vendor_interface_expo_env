@@ -25,6 +25,7 @@ import { StoreRepository } from '@/src/core/interfaces/StoreRepository'
 // Implementations - Supabase
 import { SupabaseRouteRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteRepository'
 import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supabase/SupabaseStoreRepository'
+import { SupabaseProductRepository } from '@/src/infrastructure/repositories/supabase/SupabaseProductRepository'
 
 // Implementations - SQLite
 import { SQLiteDayOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteDayOperationRepository';
@@ -106,6 +107,10 @@ container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
 
 container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
     useClass: SupabaseRouteRepository
+});
+
+container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
+    useClass: SupabaseProductRepository
 });
 
 

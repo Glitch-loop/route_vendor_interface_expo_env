@@ -20,6 +20,7 @@ export const TOKENS = {
     SupabaseRouteTransactionRepository: Symbol('SupabaseRouteTransactionRepository'),
     SupabaseShiftOrganizationRepository: Symbol('SupabaseShiftOrganizationRepository'),
     SupabaseStoreRepository: Symbol('SupabaseStoreRepository'),
+    SupabaseProductRepository: Symbol('SupabaseProductRepository'),
     
     // SQLite
     SQLiteDayOperationRepository: Symbol('SQLiteDayOperationRepository'),
