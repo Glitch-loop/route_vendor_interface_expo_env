@@ -8,7 +8,7 @@ export class WorkDayInformation {
     public readonly id_route: string,
     public readonly route_name: string,
     public readonly description: string,
-    public readonly route_status: string,
+    public readonly route_status: boolean,
     public readonly id_day: string,
     public readonly id_route_day: string,
   ) {}

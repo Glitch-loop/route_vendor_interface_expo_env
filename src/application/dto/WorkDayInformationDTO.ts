@@ -8,7 +8,7 @@ export interface WorkDayInformationDTO {
     id_route: string,
     route_name: string,
     description: string,
-    route_status: string,
+    route_status: boolean,
     id_day: string,
     id_route_day: string,
 }

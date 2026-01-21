@@ -1,10 +1,12 @@
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
+import { INVENTORY_OPREATION_STATE } from "../enums/InventoryOperationState";
+
 
 export class ShiftOrganizationAggregate {
-    private _workDayInformation: WorkDayInformation;
+    private _workDayInformation: WorkDayInformation|null = null;
 
     constructor(
-         workDayInformation: WorkDayInformation
+         workDayInformation: WorkDayInformation|null
     ) {
         this._workDayInformation = workDayInformation;
     }
@@ -16,12 +18,13 @@ export class ShiftOrganizationAggregate {
         id_route: string,
         route_name: string,
         description: string,
-        route_status: string,
+        route_status: boolean,
         id_day: string,
         id_route_day: string,
     ): void {
-
+        
         if (startPettyCash < 0) throw new Error("Petty cash cannot be negative.");
+        if (route_status === false) throw new Error("Route must be active to start a work day.");
 
         const newWorkDay: WorkDayInformation = new WorkDayInformation(
             idWorkDay,
@@ -41,6 +44,9 @@ export class ShiftOrganizationAggregate {
     }
 
     finishWorkDay(finalPettyCash:number, finalDate: Date): void {
+
+        if (!this._workDayInformation) throw new Error("Work day information is not set.");
+
         const { start_petty_cash, start_date } = this._workDayInformation;
 
 
@@ -68,6 +74,7 @@ export class ShiftOrganizationAggregate {
     }
 
     getWorkDayInformation(): WorkDayInformation {
+        if (!this._workDayInformation) throw new Error("Work day information is not set.");
         return this._workDayInformation;
     }
 }

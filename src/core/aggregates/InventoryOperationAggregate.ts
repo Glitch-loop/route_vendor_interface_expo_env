@@ -4,6 +4,9 @@ import { InventoryOperationDescription } from "@/src/core/object-values/Inventor
 // Entities
 import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
 
+// Utils
+import { INVENTORY_OPREATION_STATE } from "@/src/core/enums/InventoryOperationState";
+
 export class InventoryOperationAggregate {
     private _inventoryOperation: InventoryOperation | null;
     
@@ -19,17 +22,14 @@ export class InventoryOperationAggregate {
         creationDate: Date, 
         audit: number, 
         id_inventory_operation_type: string,
-        id_work_day: string,
-        inventoryOperationDescription?: Map<string, InventoryOperationDescription>
+        id_work_day: string
     ): void {
-
-        const state = 1; // Active
 
         this._inventoryOperation = new InventoryOperation(
             id_inventory_operation,
             signConfirmation,
             creationDate,
-            state,
+            INVENTORY_OPREATION_STATE.COMPLETED,
             audit,
             id_inventory_operation_type,
             id_work_day,
@@ -46,9 +46,9 @@ export class InventoryOperationAggregate {
     ): void {
         if (!this._inventoryOperation) throw new Error("First, you need to create an inventory operation before adding descriptions.");
 
-        const { id_inventory_operation, inventoryOperationDescriptions } = this._inventoryOperation;
+        const { id_inventory_operation, inventory_operation_descriptions } = this._inventoryOperation;
         
-        const index:number = inventoryOperationDescriptions.findIndex(desc => desc.id_product === id_product && desc.price_at_moment === price_at_moment);
+        const index:number = inventory_operation_descriptions.findIndex(desc => desc.id_product === id_product && desc.price_at_moment === price_at_moment);
 
         if (index !== -1) throw new Error("The product you are trying to add already exists in the inventory operation descriptions.");
 
@@ -61,7 +61,7 @@ export class InventoryOperationAggregate {
             id_product,   
         );
         
-        this._inventoryOperation.inventoryOperationDescriptions.push(inventory_operation_description);
+        this._inventoryOperation.inventory_operation_descriptions.push(inventory_operation_description);
 
     }
 
@@ -74,11 +74,11 @@ export class InventoryOperationAggregate {
             this._inventoryOperation.id_inventory_operation,
             this._inventoryOperation.sign_confirmation,
             this._inventoryOperation.date,
-            state, // State set to cancelled
+            INVENTORY_OPREATION_STATE.CANCELLED,
             this._inventoryOperation.audit,
             this._inventoryOperation.id_inventory_operation_type,
             this._inventoryOperation.id_work_day,
-            this._inventoryOperation.inventoryOperationDescriptions
+            this._inventoryOperation.inventory_operation_descriptions
         );
     }
 

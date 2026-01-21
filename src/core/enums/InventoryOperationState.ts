@@ -1,0 +1,4 @@
+export enum INVENTORY_OPREATION_STATE {
+    COMPLETED = 1,
+    CANCELLED = 0,
+}

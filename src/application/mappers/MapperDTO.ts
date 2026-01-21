@@ -22,7 +22,9 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
-import WorkDayInformationDTO from '@/src/application/dto/WorkDayInformationDTO';
+import { WorkDayInformationDTO } from '@/src/application/dto/WorkDayInformationDTO';
+import { RouteDay } from '@/src/core/object-values/RouteDay';
+import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
 
 // Object values
 // import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
@@ -56,10 +58,10 @@ export class MapperDTO {
           return this.inventoryOperationToDTO(entity);
         }
 
-                // WorkDayInformation
-                if (this.isWorkDay(entity)) {
-                    return this.workDayToDTO(entity);
-                }
+        // WorkDayInformation
+        if (this.isWorkDay(entity)) {
+            return this.workDayToDTO(entity);
+        }
         // RouteTransaction
         // if (this.isTransaction(entity)) {
         //   return this.transactionToDTO(entity);
@@ -83,13 +85,19 @@ export class MapperDTO {
   }
 
     // Unified DTO -> Entity mapping
+
     toEntity(dto: ProductDTO): Product;
     toEntity(dto: InventoryOperationDTO): InventoryOperation;
     toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
-    toEntity(dto: ProductDTO | InventoryOperationDTO | WorkDayInformationDTO): Product | InventoryOperation | WorkDayInformation {
+    toEntity(dto: RouteDTO): Route;
+    toEntity(dto: RouteDayDTO): RouteDay;
+    toEntity(dto: ProductDTO | InventoryOperationDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO): Product | InventoryOperation | WorkDayInformation | Route | RouteDay {
         if (this.isProductDTO(dto)) return this.productDTOToEntity(dto);
         if (this.isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
         if (this.isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
+        if (this.isRouteDTO(dto)) return this.routeDTOToEntity(dto);
+        if (this.isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
+        
         throw new Error('Unknown DTO type');
     }
 
@@ -249,70 +257,132 @@ export class MapperDTO {
             'id_work_day' in dto && 'start_date' in dto && 'id_route_day' in dto
         );
     }
+    
+    private isRouteDTO(dto: any): dto is RouteDTO {
+        return (
+            dto && typeof dto === 'object' &&
+            'id_route' in dto && 'route_day_by_day' in dto
+        );
+    }
+
+    private isRouteDayDTO(dto: any): dto is RouteDayDTO {
+        return (
+            dto && typeof dto === 'object' &&
+            'id_route_day' in dto && 'stores' in dto
+        )
+    }
  
     // ==================== MAPPER METHODS DTO to ENTITY ====================
 
-        // ProductDTO -> Product (domain)
-        productDTOToEntity(dto: ProductDTO): Product {
-            return new Product(
-                dto.id_product,
-                dto.product_name,
-                dto.barcode ?? null,
-                dto.weight ?? null,
-                dto.unit ?? null,
-                dto.comission,
-                dto.price,
-                dto.product_status,
-                dto.order_to_show
+    // ProductDTO -> Product (domain)
+    productDTOToEntity(dto: ProductDTO): Product {
+        return new Product(
+            dto.id_product,
+            dto.product_name,
+            dto.barcode ?? null,
+            dto.weight ?? null,
+            dto.unit ?? null,
+            dto.comission,
+            dto.price,
+            dto.product_status,
+            dto.order_to_show
+        );
+    }
+
+    // InventoryOperationDescriptionDTO -> InventoryOperationDescription (domain)
+    private inventoryProductDescriptionDTOToEntity(dto: InventoryOperationDescriptionDTO): InventoryOperationDescription {
+        return new InventoryOperationDescription(
+            dto.id_product_operation_description,
+            dto.price_at_moment,
+            dto.amount,
+            new Date(),
+            dto.id_inventory_operation,
+            dto.id_product
+        );
+    }
+
+    // InventoryOperationDTO -> InventoryOperation (domain)
+    inventoryOperationDTOToEntity(dto: InventoryOperationDTO): InventoryOperation {
+        return new InventoryOperation(
+            dto.id_inventory_operation,
+            dto.sign_confirmation,
+            new Date(dto.date),
+            dto.state,
+            dto.audit,
+            dto.id_inventory_operation_type,
+            dto.id_work_day,
+            (dto.inventoryOperationDescriptions || []).map(d => this.inventoryProductDescriptionDTOToEntity(d))
+        );
+    }
+
+    // WorkDayInformationDTO -> WorkDayInformation (domain)
+    workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
+        const start = dto.start_date instanceof Date ? dto.start_date : new Date(dto.start_date);
+        const finish = dto.finish_date === null ? null : (dto.finish_date instanceof Date ? dto.finish_date : new Date(dto.finish_date));
+        return new WorkDayInformation(
+            dto.id_work_day,
+            start,
+            finish,
+            dto.start_petty_cash,
+            dto.final_petty_cash ?? null,
+            dto.id_route,
+            dto.route_name,
+            dto.description,
+            dto.route_status,
+            dto.id_day,
+            dto.id_route_day,
+        );
+    }
+
+    // RouteDTO -> Route (domain)
+    routeDTOToEntity(dto: RouteDTO): Route {
+        const routeDays: RouteDay[] = [];
+        // dto.route_day_by_day is Map<string, RouteDayDTO>
+        dto.route_day_by_day.forEach((rd) => {
+            const stores: RouteDayStore[] = (rd.stores || []).map(s =>
+                new RouteDayStore(
+                    s.id_route_day_store,
+                    s.position_in_route,
+                    s.id_route_day,
+                    s.id_store
+                )
             );
-        }
-
-        // InventoryOperationDescriptionDTO -> InventoryOperationDescription (domain)
-        private inventoryProductDescriptionDTOToEntity(dto: InventoryOperationDescriptionDTO): InventoryOperationDescription {
-            return new InventoryOperationDescription(
-                dto.id_product_operation_description,
-                dto.price_at_moment,
-                dto.amount,
-                new Date(),
-                dto.id_inventory_operation,
-                dto.id_product
+            routeDays.push(
+                new RouteDay(
+                    rd.id_route_day,
+                    rd.id_route,
+                    rd.id_day,
+                    stores
+                )
             );
-        }
+        });
+        return new Route(
+            dto.id_route,
+            dto.route_name,
+            dto.description,
+            dto.route_status,
+            dto.id_vendor,
+            routeDays
+        );
+    }
 
-        // InventoryOperationDTO -> InventoryOperation (domain)
-        inventoryOperationDTOToEntity(dto: InventoryOperationDTO): InventoryOperation {
-            return new InventoryOperation(
-                dto.id_inventory_operation,
-                dto.sign_confirmation,
-                new Date(dto.date),
-                dto.state,
-                dto.audit,
-                dto.id_inventory_operation_type,
-                dto.id_work_day,
-                (dto.inventoryOperationDescriptions || []).map(d => this.inventoryProductDescriptionDTOToEntity(d))
-            );
-        }
-
-        // WorkDayInformationDTO -> WorkDayInformation (domain)
-        workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
-            const start = dto.start_date instanceof Date ? dto.start_date : new Date(dto.start_date);
-            const finish = dto.finish_date === null ? null : (dto.finish_date instanceof Date ? dto.finish_date : new Date(dto.finish_date));
-            return new WorkDayInformation(
-                dto.id_work_day,
-                start,
-                finish,
-                dto.start_petty_cash,
-                dto.final_petty_cash ?? null,
-                dto.id_route,
-                dto.route_name,
-                dto.description,
-                dto.route_status,
-                dto.id_day,
-                dto.id_route_day,
-            );
-        }
-
-
+    // RouteDayDTO -> RouteDay (domain)
+    routeDayDTOToEntity(dto: RouteDayDTO): RouteDay {
+        const stores: RouteDayStore[] = (dto.stores || []).map(s =>
+            new RouteDayStore(
+                s.id_route_day_store,
+                s.position_in_route,
+                s.id_route_day,
+                s.id_store
+            )
+        );
+        return new RouteDay(
+            dto.id_route_day,
+            dto.id_route,
+            dto.id_day,
+            stores
+        );
+    }
 //   private transactionToDTO(entity: RouteTransaction): RouteTransactionDTO {
 //     return {
 //       id: entity.id_route_transaction,

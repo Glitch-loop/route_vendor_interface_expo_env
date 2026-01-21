@@ -9,18 +9,18 @@ export class InventoryOperation {
     public readonly audit: number,
     public readonly id_inventory_operation_type: string,
     public readonly id_work_day: string,
-    public readonly inventoryOperationDescriptions: InventoryOperationDescription[]
+    public readonly inventory_operation_descriptions: InventoryOperationDescription[]
   ) {}
 
   get_monetary_value_of_inventory_operation(): number {
     let total = 0;
-    this.inventoryOperationDescriptions.forEach((description) => {
+    this.inventory_operation_descriptions.forEach((description) => {
       total += description.price_at_moment * description.amount;
     });
     return total;
   }
 
   get_inventory_operation_description(id_product: string): InventoryOperationDescription | undefined {
-    return this.inventoryOperationDescriptions.find(description => description.id_product === id_product);
+    return this.inventory_operation_descriptions.find(description => description.id_product === id_product);
   }
 }
