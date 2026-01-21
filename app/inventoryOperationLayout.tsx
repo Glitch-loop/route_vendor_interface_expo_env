@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, BackHandler, Pressable } from 'react-native';
 import tw from 'twrnc';
-import { Router, useRouter } from 'expo-router';
+import { Router, useRouter, useLocalSearchParams } from 'expo-router';
 
 // Redux context
 import { useSelector, useDispatch } from 'react-redux';
@@ -107,6 +107,9 @@ import {
 import { cleanAllRouteTransactionsFromDatabase } from '../controllers/SaleController';
 import ActionDialog from '../components/ActionDialog';
 
+// Enums
+import { DayOperation } from '@/src/core/entities/DayOperation';
+
 // Definitions
 const settingOperationDescriptions:any = {
   showErrorMessage: true,
@@ -119,7 +122,15 @@ const settingAllInventoryOperations:any = {
   toastMessageError: 'Ha habido un error durante la consulta de las operaciones de inventario del dia, por favor intente nuevamente',
 };
 
+type typeSearchParams = {
+  id_type_of_operation_search_param: string;
+}
+
 const inventoryOperationLayout = () => {
+  const { id_type_of_operation_search_param } = useLocalSearchParams<typeSearchParams>();
+
+    console.log("Route Day ID: ", id_type_of_operation_search_param);
+
   // Defining redux context
   const dispatch:AppDispatch = useDispatch();
   const productsInventory = useSelector((state: RootState) => state.productsInventory);
@@ -176,6 +187,13 @@ const inventoryOperationLayout = () => {
 
   // Use effect operations
   useEffect(() => {
+    setEnvironmentForInventoryOperation();
+    setRoutingOfInventoryOperationScreen();
+  }, [currentOperation, dayOperations, stores]);
+
+  // ======= Auxiliar functions ======
+  const setEnvironmentForInventoryOperation = () => {
+
     /*
       If the current operation contains an item, that means the user is consulting
       a previous inventory operation.
@@ -441,23 +459,26 @@ const inventoryOperationLayout = () => {
       setIsOperation(true);
     }
 
-    // Determining where to redirect in case of the user touch the handler "back handler" of the phone
-    const backAction = () => {
-      if (workDay.id_work_day === '') {
-        router.back();
-      } else {
-        router.push('/routeOperationMenuLayout');
-      }
-      return true;
-    };
+  }
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+  const setRoutingOfInventoryOperationScreen = () => {
+      // Determining where to redirect in case of the user touch the handler "back handler" of the phone
+      const backAction = () => {
+        if (workDay.id_work_day === '') {
+          router.back();
+        } else {
+          router.push('/routeOperationMenuLayout');
+        }
+        return true;
+      };
 
-    return () => backHandler.remove();
-  }, [currentOperation, dayOperations, stores]);
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
+      );
+
+      return () => backHandler.remove();
+  }
 
   // Handlers
   const handlerGoBack = ():void => {

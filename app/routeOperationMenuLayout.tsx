@@ -1,18 +1,14 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { BackHandler, ScrollView, View, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import tw from 'twrnc';
-import { Router, useRouter } from 'expo-router';
-import * as Network from 'expo-network';
-import { NetworkState } from 'expo-network';
+import { Router, useRouter, useLocalSearchParams } from 'expo-router';
 
 // Databases
 // Embedded
 import {
   cleanEmbeddedDatbase,
-  createEmbeddedDatabase,
-  dropEmbeddedDatabase,
 } from '../queries/SQLite/sqlLiteQueries';
 
 // Redux context

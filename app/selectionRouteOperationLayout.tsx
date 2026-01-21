@@ -7,6 +7,7 @@ import tw from 'twrnc';
 // Components
 // import RouteHeader from '../components/RouteHeader';
 import RouteHeader from '@/components/RouteHeader';
+import { OperationTypeId } from '@/src/core/enums/OperationTypeId';
 
 const selectionRouteOperationLayout = () => {
   //Router
@@ -18,7 +19,7 @@ const selectionRouteOperationLayout = () => {
   };
 
   const handlerGoToInventory = () => {
-    router.push('/inventoryOperationLayout');
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${OperationTypeId.START_SHIFT_INVENTORY}`);
   };
 
   return (
