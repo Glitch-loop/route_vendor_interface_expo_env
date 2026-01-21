@@ -94,7 +94,6 @@ const routeSelectionLayout = () => {
 
   useEffect(() => { 
     // startApplication()
-    console.log('Starting session test...');
     startSession()
    },[]);
 
@@ -115,7 +114,7 @@ const routeSelectionLayout = () => {
 
     //Storing information related to the relation between the route and the day.
     // dispatch(setRouteDay(routeDay));
-
+    console.log('Dispatching redux')
     dispatch(setRouteDay(routeDaySelected));
 
     router.push('/selectionRouteOperationLayout');
@@ -170,7 +169,6 @@ const routeSelectionLayout = () => {
   const startSession = async () => {
     const use_case_query = container.resolve(ListRoutesByUserQuery);
     const routes = await use_case_query.execute('b6665f54-37de-4991-a7c4-283599bb0658')
-    console.log(DAYS_ARRAY)
     setVendorRoutes(routes);
   }
 

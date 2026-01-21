@@ -1,10 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userSlice from './slices/userSlice';
-import routeDaySlice from './slices/shiftInformationSlice';
-import productsInventorySlice from './slices/productsInventorySlice';
-import dayOperationsSlice from './slices/dayOperationsSlice';
-import storesSlice from './slices/storesSlice';
-import currentOperationSlice from './slices/currentOperationSlice';
+import userSlice from '@/redux/slices/userSlice';
+import routeDaySlice from '@/redux/slices/routeDaySlice';
+import productsInventorySlice from '@/redux/slices/productsInventorySlice';
+import dayOperationsSlice from '@/redux/slices/dayOperationsSlice';
+import storesSlice from '@/redux/slices/storesSlice';
+import currentOperationSlice from '@/redux/slices/currentOperationSlice';
 
 const store = configureStore({
   reducer: {

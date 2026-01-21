@@ -55,8 +55,6 @@ export class ListRoutesByUserQuery {
             
         }
 
-        console.log('Mapped routes:', vendorRoutes);
-
         return vendorRoutes.map(route => this.mapper.toDTO(route));
     }
 }

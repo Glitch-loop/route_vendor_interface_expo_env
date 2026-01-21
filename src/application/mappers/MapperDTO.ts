@@ -35,9 +35,6 @@ export class MapperDTO {
 //   toDTO(entity: InventoryOperation): InventoryOperationDTO;
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
     toDTO(entity: Route): any {
-        
-        console.log("DTO Route*******************************")
-        console.log(entity)
         // Route
         if (this.isRoute(entity)) {
             return this.routeToDTO(entity);
