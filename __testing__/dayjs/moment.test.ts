@@ -1,4 +1,4 @@
-import { timestamp_format } from '../../utils/momentFormat'
+import { timestamp_format } from '../../utils/date/momentFormat'
 
 test('timestamp_format returns correct format', () => {
   const result = timestamp_format();

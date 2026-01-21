@@ -2,7 +2,7 @@
 import { IPaymentMethod, IProductInventory, IRouteTransaction, IStore, IUser } from '../interfaces/interfaces';
 
 // Utils
-import { time_posix_format } from './momentFormat';
+import { time_posix_format } from './date/momentFormat';
 import PAYMENT_METHODS from './paymentMethod';
 
 

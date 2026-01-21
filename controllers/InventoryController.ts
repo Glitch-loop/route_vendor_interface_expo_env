@@ -54,7 +54,7 @@ import {
 
 // Utils
 import DAYS_OPERATIONS from '../lib/day_operations';
-import { timestamp_format } from '../utils/momentFormat';
+import { timestamp_format } from '../utils/date/momentFormat';
 import { calculateNewInventoryAfterAnInventoryOperation } from '../utils/inventoryOperations';
 import {
   apiResponseStatus,

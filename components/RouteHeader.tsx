@@ -4,7 +4,7 @@ import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
 // Utils
-import { timesamp_standard_format } from '../utils/momentFormat';
+import { timesamp_standard_format } from '../utils/date/momentFormat';
 import DAYS from '../lib/days';
 import { capitalizeFirstLetter } from '../utils/generalFunctions';
 

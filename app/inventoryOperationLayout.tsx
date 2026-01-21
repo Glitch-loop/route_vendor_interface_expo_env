@@ -7,7 +7,7 @@ import { Router, useRouter } from 'expo-router';
 // Redux context
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
-import { setDayGeneralInformation } from '../redux/slices/routeDaySlice';
+import { setDayGeneralInformation } from '../redux/slices/shiftInformationSlice';
 import { addProductsInventory, setProductInventory, updateProductsInventory } from '../redux/slices/productsInventorySlice';
 import { setStores } from '../redux/slices/storesSlice';
 import {

@@ -4,6 +4,9 @@ import { View, Text, Pressable } from 'react-native';
 import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+// DTOs
+import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
+
 // Utils
 import { IRoute, ICompleteRouteDay } from '../../interfaces/interfaces';
 
@@ -11,18 +14,16 @@ const RouteSelectionCard = ({
     routeName,
     day,
     description,
-    onSelectCard,
-    route,
     routeDay,
-    todayTurn
+    todayTurn,
+    onSelectCard
   }:{
     routeName:string,
     day:string,
     description:string|undefined|null,
-    onSelectCard:any,
-    route:IRoute,
-    routeDay:ICompleteRouteDay,
+    routeDay:RouteDayDTO,
     todayTurn:boolean
+    onSelectCard: (routeDaySelected: RouteDayDTO) => void,
   }) => {
     return (
       <View style={
@@ -45,7 +46,8 @@ const RouteSelectionCard = ({
           <View style={tw`mr-2`}>
             <Pressable
             style={tw`bg-blue-700 px-4 py-3 rounded-full`}
-            onPress={() => { onSelectCard(route, routeDay); }}>
+            onPress={() => { onSelectCard(routeDay); }}
+            >
               <Icon name="chevron-right" style={tw`text-base text-center`} color="#fff" />
             </Pressable>
           </View>

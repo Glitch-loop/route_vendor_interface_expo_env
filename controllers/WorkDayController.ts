@@ -19,7 +19,7 @@ import {
  } from '../interfaces/interfaces';
 
 // Utils
-import { timestamp_format } from '../utils/momentFormat';
+import { timestamp_format } from '../utils/date/momentFormat';
 import {
   apiResponseStatus,
   getDataFromApiResponse,

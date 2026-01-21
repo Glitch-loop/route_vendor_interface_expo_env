@@ -45,7 +45,7 @@ import MenuHeader from '../components/generalComponents/MenuHeader';
 import ActionButton from '@/components/SalesLayout/ActionButton';
 
 // Utils
-import { timestamp_format } from '../utils/momentFormat';
+import { timestamp_format } from '../utils/date/momentFormat';
 
 // Services
 import { printTicketBluetooth } from '../services/printerService';

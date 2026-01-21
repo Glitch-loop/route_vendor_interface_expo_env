@@ -24,7 +24,7 @@ import {
 } from '../redux/slices/currentOperationSlice';
 import { cleanCurrentOperationsList } from '../redux/slices/dayOperationsSlice';
 import { cleanProductsInventory } from '../redux/slices/productsInventorySlice';
-import { cleanAllGeneralInformation } from '../redux/slices/routeDaySlice';
+import { cleanAllGeneralInformation } from '../redux/slices/shiftInformationSlice';
 import { cleanStores } from '../redux/slices/storesSlice';
 
 // Services

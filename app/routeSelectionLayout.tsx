@@ -15,7 +15,7 @@ import {
   setRouteInformation,
   setRouteDay,
   setAllGeneralInformation,
-} from '../redux/slices/routeDaySlice';
+} from '../redux/slices/shiftInformationSlice';
 import { setCurrentOperation } from '../redux/slices/currentOperationSlice';
 import { setProductInventory } from '../redux/slices/productsInventorySlice';
 import { setStores } from '../redux/slices/storesSlice';
@@ -35,8 +35,7 @@ import {
 } from '../interfaces/interfaces';
 
 // Utils
-import DAYS from '../lib/days';
-import { current_day_name, determineCurrentDayByDayName } from '../utils/momentFormat';
+// import DAYS from '../lib/days';
 import DAYS_OPERATIONS from '../lib/day_operations';
 import { getDataFromApiResponse } from '../utils/apiResponse';
 
@@ -47,9 +46,18 @@ import { getWorkDayFromToday } from '../controllers/WorkDayController';
 import { getCurrentVendorInventory } from '../controllers/InventoryController';
 import { getStoresOfTheCurrentWorkDay } from '../controllers/StoreController';
 
+
+// NEW ==============================
+
 // Use case - queries
 import { ListRoutesByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
 import { container } from '@/src/infrastructure/di/container';
+import RouteDTO from '@/src/application/dto/RouteDTO';
+import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
+
+// Utils
+import { DAYS_ARRAY } from '@/src/core/constants/Days';
+import { determineIfCurrentDay } from '../utils/date/momentFormat';
 
 const routeSelectionLayout = () => {
   // Redux (context definitions)
@@ -61,12 +69,15 @@ const routeSelectionLayout = () => {
 
   // Use states definition
   const [routes, setRoutes] = useState<ICompleteRoute[]|undefined>(undefined);
-  const [showDialog, setShowDialog] = useState<boolean>(false);
   const [pendingToAcceptRoute, setPendingToAcceptRoute] = useState<IRoute|undefined>(undefined);
   const [pendingToAcceptRouteDay, setPendingToAcceptRouteDay]
-    = useState<ICompleteRouteDay|undefined>(undefined);
+  = useState<ICompleteRouteDay|undefined>(undefined);
   const [refreshing, setRefreshing] = useState(false);
-
+  
+  // Use states
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [vendorRoutes, setVendorRoutes] = useState<RouteDTO[]|null>(null);
+  const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|null>(null);
 
   // Setting the current operation 'start shift inventory' (first operation of the day).
   dispatch(setCurrentOperation({
@@ -85,23 +96,22 @@ const routeSelectionLayout = () => {
    },[]);
 
   // Auxiliar functions
-  const storeRouteSelected = (route:IRoute, routeDay:ICompleteRouteDay) => {
+  const holdRouteSelected = (routeDaySelected: RouteDayDTO) => {
     /*
-      In this function, it is only stored information in the redux state and not in the
-      embedded database, because it is not know if the vendor is going to change from one route
-      to another route.
-      In this way, when the vendor finishes the initial inventory process is when the route information is
-      actually stored in the embedded database.
+      This screen is part of the start shift process of the vendor.
+
+      Since the vendor can change from this route to other one, we store the information in
+      the redux state temporarily.
     */
 
     // Storing information realted to the route.
-    dispatch(setRouteInformation(route));
+    // dispatch(setRouteInformation(route));
 
     // Storing information related to the day
-    dispatch(setDayInformation(routeDay.day));
+    // dispatch(setDayInformation(routeDay.day));
 
     //Storing information related to the relation between the route and the day.
-    dispatch(setRouteDay(routeDay));
+    // dispatch(setRouteDay(routeDay));
 
     router.push('/selectionRouteOperationLayout');
   };
@@ -152,34 +162,38 @@ const routeSelectionLayout = () => {
   }
 
   const startSession = async () => {
-    console.log('////////Using di container')
     const use_case_query = container.resolve(ListRoutesByUserQuery);
-    console.log('////////Executing use case query')
     const routes = await use_case_query.execute('b6665f54-37de-4991-a7c4-283599bb0658')
-    console.log(routes);
+    console.log(DAYS_ARRAY)
+    setVendorRoutes(routes);
   }
 
   //Handlers
-  const handlerOnSelectARoute = (route:IRoute, routeDay:ICompleteRouteDay) => {
-    // Verifying that the selected route actually corresponds to make today.
-    if (determineCurrentDayByDayName(DAYS[routeDay.id_day].day_name)){
-      // The route selected is the route that corresponds to make today.
-      storeRouteSelected(route, routeDay);
+  const handleSelectRoute = (routeDay: RouteDayDTO) => {
+    // If today is not the day that corresponds, ask to route vendor if he wants to continue.
+    const { id_day } = routeDay; 
+
+    setRouteDaySelected(routeDay);
+
+    if (determineIfCurrentDay(id_day)){
       setShowDialog(false);
-      setPendingToAcceptRoute(undefined);
-      setPendingToAcceptRouteDay(undefined);
+      holdRouteSelected(routeDay);
     } else {
-      // The route selectes doesn't correspond to make today.
       setShowDialog(true);
-      setPendingToAcceptRoute(route);
-      setPendingToAcceptRouteDay(routeDay);
     }
   };
 
-  const handlerOnCancelMakeRoute = () => {
+  const handleOnAcceptMakeRoute = () => {
+    if(routeDaySelected !== null) {
+      holdRouteSelected(routeDaySelected);
+    }
+      setShowDialog(false);
+      setRouteDaySelected(null);
+  };
+
+  const handleOnCancelMakeRoute = () => {
     setShowDialog(false);
-    setPendingToAcceptRoute(undefined);
-    setPendingToAcceptRouteDay(undefined);
+    setRouteDaySelected(null);
   };
 
   const onRefresh = () => {
@@ -192,21 +206,12 @@ const routeSelectionLayout = () => {
 
   }
 
-  const handlerOnAcceptMakeRoute = () => {
-    if(pendingToAcceptRoute !== undefined && pendingToAcceptRouteDay !== undefined) {
-      storeRouteSelected(pendingToAcceptRoute, pendingToAcceptRouteDay);
-    }
-      setShowDialog(false);
-      setPendingToAcceptRoute(undefined);
-      setPendingToAcceptRouteDay(undefined);
-  };
-
   return (
     <View style={tw`w-full h-full`}>
         <ActionDialog
           visible={showDialog}
-          onAcceptDialog={handlerOnAcceptMakeRoute}
-          onDeclinedialog={handlerOnCancelMakeRoute}>
+          onAcceptDialog={handleOnAcceptMakeRoute}
+          onDeclinedialog={handleOnCancelMakeRoute}>
             <View style={tw`w-11/12 flex flex-col`}>
               <Text style={tw`text-center text-black text-xl`}>
                 Este dia de la ruta no corresponde hacerla hoy. ¿Estas seguro seguir adelante?
@@ -223,32 +228,37 @@ const routeSelectionLayout = () => {
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-        { routes === undefined ?
+        {/* Show vendor's options by route in natural days order. */}
+        { vendorRoutes === null ?
           <View style={tw`h-64 flex flex-col justify-center items-center`}>
             <ActivityIndicator size={'large'} />
           </View>
         :        
-          routes.length > 0 ?
-          routes.map((route:ICompleteRoute) => {
+          vendorRoutes.length > 0 ?
+          vendorRoutes.map((route:RouteDTO) => {
             return <View
               style={tw`w-full flex flex-col items-center`}
               key={route.id_route}>
-              { route.routeDays.map((routeDay:ICompleteRouteDay) => {
-                if (routeDay.id_route === route.id_route) {
-                  return (
+                {
+                  DAYS_ARRAY.map((day) => {
+                    const { route_name, description } = route;
+                    const { day_name } = day;
+                    const routeDay = route.route_day_by_day.get(day.id_day);
+                    if (routeDay === undefined) return null;
+
+                    const {id_route_day, id_day} = routeDay;
+                    return (
                     <RouteSelectionCard
-                      key={routeDay.id_route_day}
-                      routeName={route.route_name}
-                      day={routeDay.day.day_name!}
-                      description={route.description}
-                      route={route}
+                      key={id_route_day}
+                      routeName={route_name}
+                      day={day_name}
+                      description={description}
                       routeDay={routeDay}
-                      onSelectCard={handlerOnSelectARoute}
-                      todayTurn={determineCurrentDayByDayName(routeDay.day.day_name!)}
-                      />
+                      todayTurn={determineIfCurrentDay(id_day)}
+                      onSelectCard={handleSelectRoute}/>
                   );
+                  })
                 }
-              })}
             </View>;
           })
           :

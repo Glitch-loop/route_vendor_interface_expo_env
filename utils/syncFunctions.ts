@@ -7,7 +7,7 @@ import {
   isTypeIRouteTransactionOperationDescription,
   isTypeWorkDayInstersection,
 } from './guards';
-import { time_posix_format } from './momentFormat';
+import { time_posix_format } from './date/momentFormat';
 import TABLES from './tables';
 
 function determiningInterfaceToCreateSyncItem(syncItem:ISyncRecord, data:any)

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userSlice from './slices/userSlice';
-import routeDaySlice from './slices/routeDaySlice';
+import routeDaySlice from './slices/shiftInformationSlice';
 import productsInventorySlice from './slices/productsInventorySlice';
 import dayOperationsSlice from './slices/dayOperationsSlice';
 import storesSlice from './slices/storesSlice';
