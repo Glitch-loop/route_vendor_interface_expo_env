@@ -13,9 +13,12 @@ import { setArrayDayOperations } from '../redux/slices/dayOperationsSlice';
 import {
   setDayInformation,
   setRouteInformation,
-  setRouteDay,
+  // setRouteDay,
   setAllGeneralInformation,
 } from '../redux/slices/shiftInformationSlice';
+
+import { setRouteDay } from '@/redux/slices/routeDaySlice';
+
 import { setCurrentOperation } from '../redux/slices/currentOperationSlice';
 import { setProductInventory } from '../redux/slices/productsInventorySlice';
 import { setStores } from '../redux/slices/storesSlice';
@@ -113,9 +116,12 @@ const routeSelectionLayout = () => {
     //Storing information related to the relation between the route and the day.
     // dispatch(setRouteDay(routeDay));
 
+    dispatch(setRouteDay(routeDaySelected));
+
     router.push('/selectionRouteOperationLayout');
   };
 
+  // TODO: Refactor this function.
   const startApplication = () => {
     getDayOperationsOfTheWorkDay()
     .then(async (dayOperationsResponse:IResponse<IDayOperation[]>) => {

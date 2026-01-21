@@ -24,7 +24,7 @@ const initialState: IRoute&IDayGeneralInformation&IDay&IRouteDay = {
 };
 
 const routeDaySlice = createSlice({
-  name: 'routeDay',
+  name: 'shiftInformation',
   initialState,
   reducers: {
     setAllGeneralInformation:(state,
