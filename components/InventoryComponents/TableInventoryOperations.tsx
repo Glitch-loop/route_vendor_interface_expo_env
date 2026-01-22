@@ -126,18 +126,16 @@ const TableInventoryOperation = (
     <View style={tw`w-full flex flex-row`}>
       { availableProducts.length ?
         <View style={tw`w-full flex flex-row`}>
-          <DataTable style={tw`w-1/3`}>
+          <DataTable
+          style={tw`w-1/3`}
+          >
             {/* Header section */}
             <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
               <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                {/* <View style={tw`${viewTagRowTableStyle}`}> */}
-                <DataTable.Cell>
-                  <Text 
-                  // style={tw`${textHeaderTableStyle}`}
-                  >Producto</Text>
-                </DataTable.Cell>
-                {/* </View> */}
+                <Text style={tw`${textHeaderTableStyle}`}> Producto </Text>
+                {/* <DataTable.Cell>
+                </DataTable.Cell> */}
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
@@ -161,11 +159,7 @@ const TableInventoryOperation = (
                 { suggestedInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <DataTable.Cell>
-                      {/* <View style={tw`${viewTagHeaderTableStyle}`}> */}
-                        <Text 
-                        // style={tw`${textHeaderTableStyle}`}
-                        >Sugerido</Text>
-                      {/* </View> */}
+                        <Text style={tw`${textHeaderTableStyle}`}>Sugerido</Text>
                     </DataTable.Cell>
                   </DataTable.Title>
                 }
@@ -178,18 +172,14 @@ const TableInventoryOperation = (
                 }
                 {/* This field is never empty since it is the reason of this component (inventory operation) */}
                 <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                  <View style={tw`${viewTagHeaderTableStyle}`}>
-                    <Text style={tw`${textHeaderTableStyle}`}>
-                      { determineHeaderOfInputColumn(id_type_of_operation) }
-                    </Text>
-                  </View>
+                  <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
+                  {/* <DataTable.Cell>
+                  </DataTable.Cell> */}
                 </DataTable.Title>
-                <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                  <View style={tw`${viewTagHeaderTableStyle}`}>
-                    <Text style={tw`${textHeaderTableStyle}`}>
-                      { detemrineHeaderOfTotalColumn(id_type_of_operation) }
-                    </Text>
-                  </View>
+                <DataTable.Title style={tw`${headerTitleTableStyle}`} >
+                  <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
+                  {/* <DataTable.Cell>
+                  </DataTable.Cell> */}
                 </DataTable.Title>
               </DataTable.Header>
               {/* Body section*/}

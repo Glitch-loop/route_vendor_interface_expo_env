@@ -1,6 +1,6 @@
-export const headerTitleTableStyle:string = 'w-28 h-10 flex flex-row justify-center items-center';
-export const viewTagHeaderTableStyle:string = 'w-full flex flex-row justify-center items-center';
-export const textHeaderTableStyle:string = 'h-16 align-middle text-center text-black flex flex-row justify-center items-center';
+export const headerTitleTableStyle:string = 'mx-2 flex flex-row justify-center items-center';
+export const viewTagHeaderTableStyle:string = 'flex flex-row justify-center items-center';
+export const textHeaderTableStyle:string = 'text-center text-black text-base';
 
 export const rowTableStyle:string = '';
 export const cellTableStyle:string = 'w-28 flex flex-row justify-center';

@@ -5,7 +5,7 @@ import productsInventorySlice from '@/redux/slices/productsInventorySlice';
 import dayOperationsSlice from '@/redux/slices/dayOperationsSlice';
 import storesSlice from '@/redux/slices/storesSlice';
 import currentOperationSlice from '@/redux/slices/currentOperationSlice';
-import workDayInformation from '@/redux/slices/workDayInformation';
+import workDayInformation from '@/redux/slices/workdayInformation';
 
 const store = configureStore({
   reducer: {

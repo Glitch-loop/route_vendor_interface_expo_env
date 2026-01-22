@@ -1265,13 +1265,13 @@ const inventoryOperationLayout = () => {
           }
         </View> :
         <View style={tw`flex basis-auto w-full mt-3`}>
-          {/* <TableInventoryOperations
+          <TableInventoryOperations
               availableProducts={availableProducts}
               suggestedInventory={suggestedInventory}
               currentInventory={currentShiftInventory}
               movementsOfOperation={inventoryOperationMovements}
               setInventoryOperation={setInventoryOperationMovements}
-              id_type_of_operation={id_type_of_operation_search_param} /> */}
+              id_type_of_operation={id_type_of_operation_search_param} />
         </View>
       }
       {/* Cash reception section. */}
