@@ -23,7 +23,7 @@ import RouteHeader from '../components/RouteHeader';
 import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperations';
 import VendorConfirmation from '../components/VendorConfirmation';
 import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryVisualization';
-import TableInventoryOperationsVisualization from '../components/InventoryComponents/TableInventoryOperationsVisualization';
+import TableRouteTransactionProductVisualization from '../components/InventoryComponents/TableRouteTransactionProductVisualization';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 // Interfaces
@@ -1267,7 +1267,16 @@ const inventoryOperationLayout = () => {
               <Text style={tw`w-full text-center text-black text-2xl`}>
                 Producto vendido por tienda
               </Text>
-              <TableInventoryOperationsVisualization
+              <TableRouteTransactionProductVisualization
+                  availableProducts={availableProducts}
+                  stores               = {stores}
+                  routeTransactions    = {routeTransactions}
+                  idInventoryOperationTypeToShow = {}
+                  calculateTotalOfProduct = {true}/>
+              <Text style={tw`w-full text-center text-black text-2xl`}>
+                Producto vendido por tienda
+              </Text>
+              <TableRouteTransactionProductVisualization
                 inventory             = {productsInventory}
                 titleColumns          = {nameOfStores}
                 productInventories    = {productSoldByStore}
@@ -1275,7 +1284,7 @@ const inventoryOperationLayout = () => {
               <Text style={tw`w-full text-center text-black text-2xl`}>
                 Reposición de producto por tienda
               </Text>
-                <TableInventoryOperationsVisualization
+                <TableRouteTransactionProductVisualization
                   inventory             = {productsInventory}
                   titleColumns          = {nameOfStores}
                   productInventories    = {productRepositionByStore}

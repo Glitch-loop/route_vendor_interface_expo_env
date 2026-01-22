@@ -4,16 +4,13 @@ import { ScrollView, Text, View } from 'react-native';
 import { DataTable, ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 
-// Interfaces
-import {
-  IProductInventory,
- } from '../../interfaces/interfaces';
-import { findProductAmountInArray } from '../../utils/inventoryOperations';
-
 // DTOs
-import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import ProductDTO  from '@/src/application/dto/ProductDTO'
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+
+// Enums
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 // Styles 
 import {
@@ -26,8 +23,6 @@ import {
   textRowTableStyle,
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
@@ -46,16 +41,18 @@ interface consolidatedInformation {
   amount: number;
 }
 
-const TableInventoryOperationsVisualization = (
+const TableRouteTransactionProductVisualization = (
   {
     availableProducts,
     stores,
     routeTransactions,
+    idInventoryOperationTypeToShow,
     calculateTotalOfProduct = false,
   }:{
     availableProducts: ProductDTO[],
     stores: StoreDTO[],
     routeTransactions: RouteTransactionDTO[],
+    idInventoryOperationTypeToShow: DAY_OPERATIONS,
     calculateTotalOfProduct:boolean
   }) => {
   
@@ -76,7 +73,10 @@ const TableInventoryOperationsVisualization = (
     const productMap = mapConsolidatedByConcept.get(id_store)!;
 
     for (const description of transaction_description) {
-      const { id_product, amount } = description;
+      const { id_product, amount, id_transaction_operation_type } = description;
+
+      if (id_transaction_operation_type !== idInventoryOperationTypeToShow) continue;
+
       if (!productMap.has(id_product)) productMap.set(id_product, { amount: 0 });
       
       const prevInformation:consolidatedInformation|undefined = productMap.get(id_product)
@@ -229,4 +229,4 @@ const TableInventoryOperationsVisualization = (
   );
 };
 
-export default TableInventoryOperationsVisualization;
+export default TableRouteTransactionProductVisualization;
