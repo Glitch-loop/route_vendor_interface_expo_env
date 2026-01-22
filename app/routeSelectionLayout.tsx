@@ -11,11 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { setArrayDayOperations } from '../redux/slices/dayOperationsSlice';
 import {
-  setDayInformation,
-  setRouteInformation,
-  // setRouteDay,
-  setAllGeneralInformation,
-} from '../redux/slices/workdayInformation';
+  setWorkDayInformation,
+} from '../redux/slices/workDayInformation';
 
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
 

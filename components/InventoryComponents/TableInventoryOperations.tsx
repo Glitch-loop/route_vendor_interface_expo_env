@@ -21,6 +21,19 @@ import {
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 
+// DTOs
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+
+// Guards
+import { 
+  isInventoryOperationDescriptionDTO,
+} from '@/src/application/guards/dtoGuards';
+
+// Utils
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+
 /*
   The intnetion of this component is to provide an interface to perform an inventory operation.
   At the moment of write this documentation there are 4 possible operations:
@@ -45,43 +58,32 @@ import {
   Note: The param on which the component build the table is "operationInventory" (the information of the other arrays
   display its information around "operationInventory").
 */
-function foundCurrentProductInArray(arrProduct: IProductInventory[], current_id_product: string):number {
+function getAmountOfProductInArray(arrProduct: (ProductInventoryDTO[]|InventoryOperationDescriptionDTO[]), id_product: string): number {
   let resultAmount = 0;
   if (arrProduct.length > 0) {
-    let foundSuggestedProduct = arrProduct.find(suggestedProduct =>
-      suggestedProduct.id_product === current_id_product);
+    let foundProductRecord = arrProduct.find(suggestedProduct => suggestedProduct.id_product === id_product);
 
-      if (foundSuggestedProduct !== undefined) {
-        resultAmount = foundSuggestedProduct.amount;
+    if (foundProductRecord === undefined) {
+      resultAmount = 0;
+    } else {
+      if (isInventoryOperationDescriptionDTO(foundProductRecord)) {
+          resultAmount = foundProductRecord.amount;
       } else {
-        resultAmount = 0;
+         resultAmount = foundProductRecord?.stock;
       }
+    }
   } else {
     resultAmount =  0;
   }
 
-  return resultAmount;
+  return resultAmount;  
 }
 
-function determineFlowOfProduct(operation:IDayOperation):number {
-  let result:number = 0;
-  // This operations are made from the factory perspective
-  if (operation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-    result = 1; // It is an inflow
-  } else if (operation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory){
-    result = 2; // It is an inflow
-  } else {
-    result = 0; // It is an outflow
-  }
-
-  return result;
-}
-
-function determineHeaderOfInputColumn(context:number):string {
+function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   let result:string = ""
-  if (context === 1) {
+  if (id_type_of_operation === DAYS_OPERATIONS.product_devolution) {
     result = 'Merma a reportar';
-  } else if (context === 2) {
+  } else if (id_type_of_operation === DAYS_OPERATIONS.end_shift_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Producto a llevar';
@@ -89,11 +91,11 @@ function determineHeaderOfInputColumn(context:number):string {
   return result;                       
 }
 
-function detemrineHeaderOfTotalColumn(context:number):string {
+function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
   let result:string = ""
-  if (context === 1) {
+  if (id_type_of_operation === DAYS_OPERATIONS.product_devolution) {
     result = 'Merma a entregar';
-  } else if (context === 2) {
+  } else if (id_type_of_operation === DAYS_OPERATIONS.end_shift_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Inventario a llevar';
@@ -102,24 +104,26 @@ function detemrineHeaderOfTotalColumn(context:number):string {
 }
 
 
-const TableInventoryOperations = (
+const TableInventoryOperation = (
   {
+    availableProducts,
     suggestedInventory,
     currentInventory,
-    operationInventory,
+    movementsOfOperation,
     setInventoryOperation,
-    currentOperation,
+    id_type_of_operation,
   }:{
-    suggestedInventory:IProductInventory[],
-    currentInventory:IProductInventory[],
-    operationInventory:IProductInventory[],
-    setInventoryOperation:any,
-    currentOperation:IDayOperation,
+    availableProducts: ProductDTO[]
+    suggestedInventory:ProductInventoryDTO[],
+    currentInventory:ProductInventoryDTO[],
+    movementsOfOperation: InventoryOperationDescriptionDTO[],
+    setInventoryOperation: (product: InventoryOperationDescriptionDTO[]) => void,
+    id_type_of_operation: DAY_OPERATIONS,
   }) => {
-    let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
+    // let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
   return (
     <View style={tw`w-full flex flex-row`}>
-      { operationInventory.length ?
+      { availableProducts.length ?
         <View style={tw`w-full flex flex-row`}>
           <DataTable style={tw`w-1/3`}>
             {/* Header section */}
@@ -132,13 +136,14 @@ const TableInventoryOperations = (
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
-            { operationInventory.length > 0 &&
-              operationInventory.map((product) => {
+            { availableProducts.length > 0 &&
+              availableProducts.map((product) => {
+                const { id_product, product_name } = product;
                 return (
-                  <DataTable.Row key={product.id_product}>
+                  <DataTable.Row key={id_product}>
                     {/* This field is never empty since it is necessary anytime */}
                     <DataTable.Cell style={tw`${cellTableStyle}`}>
-                      <Text style={tw`text-black ${textRowTableStyle}`}>{product.product_name}</Text>
+                      <Text style={tw`text-black ${textRowTableStyle}`}> {product_name} </Text>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -166,48 +171,50 @@ const TableInventoryOperations = (
                 <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                   <View style={tw`${viewTagHeaderTableStyle}`}>
                     <Text style={tw`${textHeaderTableStyle}`}>
-                      { determineHeaderOfInputColumn(contextForTheOperation) }
+                      { determineHeaderOfInputColumn(id_type_of_operation) }
                     </Text>
                   </View>
                 </DataTable.Title>
                 <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                   <View style={tw`${viewTagHeaderTableStyle}`}>
                     <Text style={tw`${textHeaderTableStyle}`}>
-                      { detemrineHeaderOfTotalColumn(contextForTheOperation) }
+                      { detemrineHeaderOfTotalColumn(id_type_of_operation) }
                     </Text>
                   </View>
                 </DataTable.Title>
               </DataTable.Header>
               {/* Body section*/}
-              { operationInventory.length > 0 &&
-                operationInventory.map((product) => {
-                  // Propierties that are always going to be present.
-                  let id_product = product.id_product;
-                  let amount = product.amount;
-
-                  // Properties that might not appear
-                  let suggestedAmount = 0;
-                  let currentInventoryAmount = 0;
-
-                  // Searching products for each array
-                  suggestedAmount = foundCurrentProductInArray(suggestedInventory, id_product);
-                  currentInventoryAmount = foundCurrentProductInArray(currentInventory, id_product);
+              { availableProducts.length > 0 &&
+                availableProducts.map((product) => {
+                  const { id_product } = product;
+                  let amount:number = 0;
+                  let suggestedAmount:number = 0;
+                  let currentInventoryAmount:number = 0;
+                  
+                  amount = getAmountOfProductInArray(movementsOfOperation, id_product);
+                  suggestedAmount = getAmountOfProductInArray(suggestedInventory, id_product);
+                  currentInventoryAmount = getAmountOfProductInArray(currentInventory, id_product);
 
                   // Handlers
                   const handlerChangeInventory = (input: number) => {
-                    // Creating a copy og the inventory operation.
-                    const updatedInventory: IProductInventory[] = [...operationInventory];
-
                     // Looking for the product to update.
-                    const index:number = operationInventory
-                      .findIndex((productOperationInventory:IProductInventory) => productOperationInventory.id_product === id_product);
+                    const index:number = movementsOfOperation
+                      .findIndex((productOperationInventory:InventoryOperationDescriptionDTO) => productOperationInventory.id_product === id_product);
 
                     if (index !== -1) { // The product exists in the inventory.
-                      const updatedProduct = { ...updatedInventory[index], amount: input };
+                      const updatedProduct = { ...movementsOfOperation[index], amount: input };
 
-                      updatedInventory[index] = updatedProduct;
+                      movementsOfOperation[index] = updatedProduct;
 
-                      setInventoryOperation(updatedInventory);
+                      setInventoryOperation(
+                        movementsOfOperation.map((productOperationInventory:InventoryOperationDescriptionDTO) => {
+                          if (productOperationInventory.id_product === id_product) {
+                            return { ...updatedProduct};
+                          } else {
+                            return { ...productOperationInventory };
+                          }
+                        }),
+                      );
                     } else {
                       /* The product is not in the inventory */
                     }
@@ -254,4 +261,4 @@ const TableInventoryOperations = (
   );
 };
 
-export default TableInventoryOperations;
+export default TableInventoryOperation;

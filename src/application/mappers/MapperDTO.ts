@@ -19,6 +19,7 @@ import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
@@ -55,13 +56,14 @@ export class MapperDTO {
   // Method overloads for type safety
     toDTO(entity: Route): RouteDTO;
     toDTO(entity: Product): ProductDTO;
+    toDTO(entity: Store): StoreDTO;
     toDTO(entity: InventoryOperation): InventoryOperationDTO;
     toDTO(entity: WorkDayInformation): WorkDayInformationDTO;
 //   toDTO(entity: RouteTransaction): RouteTransactionDTO;
 //   toDTO(entity: Store): StoreDTO;
 //   toDTO(entity: WorkDayInformation): WorkDayDTO;
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
-    toDTO(entity: Route | Product | InventoryOperation | WorkDayInformation): any {
+        toDTO(entity: Route | Product | Store | InventoryOperation | WorkDayInformation): any {
         // Route
         if (isRoute(entity)) {
             return this.routeToDTO(entity);
@@ -71,6 +73,11 @@ export class MapperDTO {
         if (isProduct(entity)) {
           return this.productToDTO(entity);
         }
+
+                // Store
+                if (isStore(entity)) {
+                    return this.storeToDTO(entity);
+                }
 
         // InventoryOperation
         if (isInventoryOperation(entity)) {
@@ -86,10 +93,7 @@ export class MapperDTO {
         //   return this.transactionToDTO(entity);
         // }
         
-        // // Store
-        // if (this.isStore(entity)) {
-        //   return this.storeToDTO(entity);
-        // }
+        
 
 
 
@@ -181,6 +185,22 @@ export class MapperDTO {
             price: entity.price,
             product_status: entity.product_status,
             order_to_show: entity.order_to_show,
+        };
+    }
+
+    private storeToDTO(entity: Store): StoreDTO {
+        return {
+            id_store: entity.id_store,
+            street: entity.street,
+            ext_number: entity.ext_number,
+            colony: entity.colony,
+            postal_code: entity.postal_code,
+            address_reference: entity.address_reference,
+            store_name: entity.store_name,
+            latitude: entity.latitude,
+            longitude: entity.longitude,
+            creation_date: entity.creation_date,
+            status_store: entity.status_store,
         };
     }
 

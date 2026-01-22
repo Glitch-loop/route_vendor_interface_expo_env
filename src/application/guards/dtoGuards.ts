@@ -7,6 +7,7 @@ import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOpe
 import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 
 export function isProductDTO(dto: any): dto is ProductDTO {
     return (
@@ -67,5 +68,26 @@ export function isRouteTransactionDTO(dto: any): dto is RouteTransactionDTO {
         'id_store' in dto &&
         'payment_method' in dto &&
         'transaction_description' in dto
+    );
+}
+
+export function isInventoryOperationDescriptionDTO(dto: any): dto is InventoryOperationDescriptionDTO {
+    return (
+        dto && typeof dto === 'object' &&
+        'id_product_operation_description' in dto &&
+        'price_at_moment' in dto &&
+        'amount' in dto &&
+        'id_inventory_operation' in dto &&
+        'id_product' in dto
+    );
+}
+
+export function isProductInventoryDTO(dto: any): dto is ProductInventoryDTO {
+    return (
+        dto && typeof dto === 'object' &&
+        'id_product_inventory' in dto &&
+        'price_at_moment' in dto &&
+        'stock' in dto &&
+        'id_product' in dto
     );
 }

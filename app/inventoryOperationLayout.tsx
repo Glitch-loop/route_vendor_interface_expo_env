@@ -213,18 +213,20 @@ const inventoryOperationLayout = () => {
 
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
       
-    } else if (
-      id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory ||
-      id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory ||
-      id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ||
-      id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory
-    ) {
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
       /*
         Dispose the list of product and let the user to introduce the inventory movement.
       */
-     const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
-     const products: ProductDTO[] = await use_case_query.execute()
-     setAvailableProducts(products);
+      const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
+      const products: ProductDTO[] = await use_case_query.execute()
+      setAvailableProducts(products);
+
+      // TODO: set suggested inventory for start shift inventory
+
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory ||
+      id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ||
+      id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory
+    ) {
 
     } else {
       /* Do nothing */
@@ -1212,11 +1214,11 @@ const inventoryOperationLayout = () => {
         <RouteHeader onGoBack={handlerGoBack}/>
       </View>
 
-      {/* Product inventory section. */}
+      {/* Inventory operation section. */}
       <View style={tw`w-full flex flex-row items-center justify-center`}>
         <View style={tw`flex flex-col items-center justify-center`}>
           <Text style={tw`text-center text-black text-2xl`}>
-            {getTitleDayOperation(id_type_of_operation_search_param)}
+            { getTitleDayOperation(id_type_of_operation_search_param) }
           </Text>
           { !isActiveOperation &&
           <Text style={tw`text-center text-black text-base`}>
@@ -1234,18 +1236,8 @@ const inventoryOperationLayout = () => {
           </Pressable>
         }
       </View>
-      {/* Inventory product section */}
       {/* Depending on the action, it will be decided the menu to be displayed. */}
-      { isOperation ?
-        <View style={tw`flex basis-auto w-full mt-3`}>
-          <TableInventoryOperations
-            suggestedInventory={suggestedProduct}
-            currentInventory={currentInventory}
-            operationInventory={inventory}
-            setInventoryOperation={setInventory}
-            currentOperation={currentOperation}/>
-        </View>
-        :
+      { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
         <View style={tw`flex basis-auto w-full mt-3`}>
           <TableInventoryVisualization
             inventory                       = {productsInventory}
@@ -1268,41 +1260,45 @@ const inventoryOperationLayout = () => {
                 Producto vendido por tienda
               </Text>
               <TableRouteTransactionProductVisualization
-                  availableProducts={availableProducts}
-                  stores               = {stores}
-                  routeTransactions    = {routeTransactions}
-                  idInventoryOperationTypeToShow = {}
-                  calculateTotalOfProduct = {true}/>
+                  availableProducts               = {availableProducts}
+                  stores                          = {[]}
+                  routeTransactions               = {[]}
+                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                  calculateTotalOfProduct         = {true}/>
               <Text style={tw`w-full text-center text-black text-2xl`}>
                 Producto vendido por tienda
               </Text>
               <TableRouteTransactionProductVisualization
-                inventory             = {productsInventory}
-                titleColumns          = {nameOfStores}
-                productInventories    = {productSoldByStore}
-                calculateTotal        = {true}/>
+                  availableProducts               = {availableProducts}
+                  stores                          = {[]}
+                  routeTransactions               = {[]}
+                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                  calculateTotalOfProduct         = {true}/>
               <Text style={tw`w-full text-center text-black text-2xl`}>
                 Reposición de producto por tienda
               </Text>
                 <TableRouteTransactionProductVisualization
-                  inventory             = {productsInventory}
-                  titleColumns          = {nameOfStores}
-                  productInventories    = {productRepositionByStore}
-                  calculateTotal        = {true}
-                  />
+                  availableProducts               = {availableProducts}
+                  stores                          = {[]}
+                  routeTransactions               = {[]}
+                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                  calculateTotalOfProduct         = {true}/>
             </View>
           }
+        </View> :
+        <View style={tw`flex basis-auto w-full mt-3`}>
+          <TableInventoryOperations
+            suggestedInventory={suggestedProduct}
+            currentInventory={currentInventory}
+            operationInventory={inventory}
+            setInventoryOperation={setInventory}
+            currentOperation={currentOperation}/>
         </View>
       }
       {/* Cash reception section. */}
       {((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
       || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)
       && isOperation && !isOperationToUpdate) &&
-        /*
-          The reception of money can only be possible in tow scenarios:
-            1. Start shift inventory operation.
-            2. End shift inventory operation.
-        */
         <View style={tw`flex basis-auto w-full mt-3`}>
           <Text style={tw`w-full text-center text-black text-2xl`}>
             {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'}
@@ -1319,6 +1315,7 @@ const inventoryOperationLayout = () => {
             </Text>
         </View>
       }
+      {/* Total amount of petty cash */}
       { ((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
       || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) 
       && !isOperation
@@ -1340,6 +1337,7 @@ const inventoryOperationLayout = () => {
           </Text>
         </View>
       }
+      {/* User actions */}
       <View style={tw`flex basis-1/6 mt-3`}>
         <VendorConfirmation
           onConfirm={isOperation ?
