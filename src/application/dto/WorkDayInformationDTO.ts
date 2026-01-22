@@ -1,5 +1,5 @@
 
-export interface WorkDayInformationDTO {
+export default interface WorkDayInformationDTO {
     id_work_day: string;
     start_date: Date,
     finish_date: Date | null,

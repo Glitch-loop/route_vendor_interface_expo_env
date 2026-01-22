@@ -29,7 +29,7 @@ import {
   setRouteInformation,
   setRouteDay,
   setAllGeneralInformation,
-} from '../redux/slices/shiftInformationSlice';
+} from '../redux/slices/workdayInformation';
 import { setCurrentOperation } from '../redux/slices/currentOperationSlice';
 import { capitalizeFirstLetter } from '../utils/generalFunctions';
 import { apiResponseProcess, getDataFromApiResponse } from '../utils/apiResponse';

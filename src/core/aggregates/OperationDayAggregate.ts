@@ -4,6 +4,7 @@ import { DayOperation } from "@/src/core/entities/DayOperation";
 import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 
 // Enums
+import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 import { ShiftDayOperations } from "@/src/core/enums/ShiftDayOperations";
 
 export class OperationDayAggregate {
@@ -27,7 +28,7 @@ export class OperationDayAggregate {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idClient,
-            ShiftDayOperations.ROUTE_CLIENT_ATTENTION,
+            DAY_OPERATIONS.route_client_attention,
             createdAt
         );
 
@@ -45,7 +46,7 @@ export class OperationDayAggregate {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idClient,
-            ShiftDayOperations.ATTENTION_OUT_OF_ROUTE,
+            DAY_OPERATIONS.attention_out_of_route,
             createdAt
         );
 
@@ -62,7 +63,7 @@ export class OperationDayAggregate {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idClient,
-            ShiftDayOperations.NEW_CLIENT_REGISTRATION,
+            DAY_OPERATIONS.new_client_registration,
             createdAt
         );
 
@@ -77,7 +78,7 @@ export class OperationDayAggregate {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idRouteTransaction,
-            ShiftDayOperations.ROUTE_TRANSACTION,
+            DAY_OPERATIONS.route_transaction,
             createdAt
         );
 
@@ -86,11 +87,55 @@ export class OperationDayAggregate {
     
     registerCancelRouteTransaction(): void { /* Decide if implement */ }
     
-    registerInventoryOperation(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void { 
+    registerStartShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idInventoryOperation,
-            ShiftDayOperations.INVENTORY_OPERATION,
+            DAY_OPERATIONS.start_shift_inventory,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+    }
+
+    registerRestockInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idInventoryOperation,
+            DAY_OPERATIONS.restock_inventory,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+    }
+
+    registerEndShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idInventoryOperation,
+            DAY_OPERATIONS.end_shift_inventory,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+    }
+
+    registerProductDevolutionInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idInventoryOperation,
+            DAY_OPERATIONS.product_devolution_inventory,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+    }
+
+    registerConsultInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idInventoryOperation,
+            DAY_OPERATIONS.consult_inventory,
             createdAt
         );
 
@@ -147,7 +192,7 @@ export class OperationDayAggregate {
             for (let i = 0; i < this.dayOperations.length; i++) {
                 const dayOperation: DayOperation = this.dayOperations[i];
     
-                if (dayOperation.operation_type === ShiftDayOperations.ROUTE_CLIENT_ATTENTION) {
+                if (dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
                     // Check if there is a route transaction associated to this client (store).
                     if (!routeTransactionsMap.has(dayOperation.id_item)) {
                         // No route transaction associated, so this is the current operation.

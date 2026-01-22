@@ -10,6 +10,11 @@ import {
  } from '../../interfaces/interfaces';
 import { findProductAmountInArray } from '../../utils/inventoryOperations';
 
+// DTOs
+import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import ProductDTO  from '@/src/application/dto/ProductDTO'
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+
 // Styles 
 import {
   headerTitleTableStyle,
@@ -21,6 +26,8 @@ import {
   textRowTableStyle,
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
@@ -37,20 +44,25 @@ import {
 
 const TableInventoryOperationsVisualization = (
   {
+    availableProducts,
     inventory,
-    titleColumns,
-    productInventories,
+    conceptToDisplay,
+    dataToDisplayOfConcept,
     calculateTotal = false,
   }:{
-    inventory:IProductInventory[],
-    titleColumns: string[],
-    productInventories:IProductInventory[][],
+    availableProducts: ProductDTO[],
+    inventory: ProductInventoryDTO[],
+    conceptToDisplay: StoreDTO[],
+    dataToDisplayOfConcept: ProductInventoryDTO|RouteTransactionDTO[][],
     calculateTotal:boolean
   }) => {
+  
+  // Organizing product in ascending order to display in the table
+  const sortedAvailableProducts = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
 
   return (
     <View style={tw`w-full flex flex-row`}>
-      {(productInventories.length > 0) ?
+      {(sortedAvailableProducts.length > 0) ?
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
@@ -64,20 +76,21 @@ const TableInventoryOperationsVisualization = (
                 </View>
               </DataTable.Title>
             </DataTable.Header>
-            {(productInventories.length > 0) &&
-                inventory.map((product) => {
-                  return (
-                    <DataTable.Row key={product.id_product} style={tw`${rowTableStyle}`}>
-                      <DataTable.Cell style={tw`${cellTableStyle}`}>
-                        <View style={tw`${viewTagRowTableStyle}`}>
-                          <Text style={tw`${textRowTableStyle}`}>
-                            {product.product_name}
-                          </Text>
-                        </View>
-                      </DataTable.Cell>
-                    </DataTable.Row>
-                  );
-                })
+            {
+              sortedAvailableProducts.map((product) => {
+                const { id_product, product_name } = product;
+                return (
+                  <DataTable.Row key={id_product} style={tw`${rowTableStyle}`}>
+                    <DataTable.Cell style={tw`${cellTableStyle}`}>
+                      <View style={tw`${viewTagRowTableStyle}`}>
+                        <Text style={tw`${textRowTableStyle}`}>
+                          {product_name}
+                        </Text>
+                      </View>
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                );
+              })
             }
           </DataTable>
           {/* Datatable for the information for each concept */}

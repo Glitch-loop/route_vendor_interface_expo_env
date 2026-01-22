@@ -56,15 +56,10 @@ export class StartWorkDayUseCase {
         
         // Remote repositories dependencies
         @inject(TOKENS.SupabaseStoreRepository) private readonly remoteStoreRepo: StoreRepository,
-        @inject(TOKENS.SupabaseInventoryRepository) private readonly remoteInventoryRepo: InventoryOperationRepository,
-        // @inject(TOKENS.SupabaseShiftOrganizationRepository) private readonly remoteShiftDayRepo: ShiftOrganizationRepository,
-        // @inject(TOKENS.SupabaseInventoryOperationRepository) private readonly remoteInventoryOperationRepo: InventoryOperationRepository,
         
         // Services depdendencies
         @inject(TOKENS.IDService) private readonly idService: IDService,
         @inject(TOKENS.DateService) private readonly dateService: DateService,
-
-
     ) { }
 
     private async executeUseCase(
@@ -149,7 +144,7 @@ export class StartWorkDayUseCase {
         const { stores } = routeDaySelected;
 
         // Insert start shift inventory operation.
-        dayOperationAggregate.registerInventoryOperation(
+        dayOperationAggregate.registerStartShiftInventory(
             this.idService.generateID(),
             id_inventory_operation,
             new Date(this.dateService.getCurrentTimestamp())

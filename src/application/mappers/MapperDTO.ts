@@ -21,10 +21,29 @@ import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
-import { WorkDayInformationDTO } from '@/src/application/dto/WorkDayInformationDTO';
 import { RouteDay } from '@/src/core/object-values/RouteDay';
 import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
+
+// dto guards
+import { 
+    isProductDTO,
+    isInventoryOperationDTO,
+    isWorkDayDTO,
+    isRouteDTO,
+    isRouteDayDTO
+ } from '@/src/application/guards/dtoGuards';
+
+// entity guard
+import {
+    isRoute,
+    isProduct,
+    isInventoryOperation,
+    isTransaction,
+    isStore,
+    isWorkDay
+} from '@/src/application/guards/entityGuards';
 
 // Object values
 // import { RouteDayStores } from '@/src/core/object-values/RouteDayStores';
@@ -44,22 +63,22 @@ export class MapperDTO {
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
     toDTO(entity: Route | Product | InventoryOperation | WorkDayInformation): any {
         // Route
-        if (this.isRoute(entity)) {
+        if (isRoute(entity)) {
             return this.routeToDTO(entity);
         }
         
         // Product
-        if (this.isProduct(entity)) {
+        if (isProduct(entity)) {
           return this.productToDTO(entity);
         }
 
         // InventoryOperation
-        if (this.isInventoryOperation(entity)) {
+        if (isInventoryOperation(entity)) {
           return this.inventoryOperationToDTO(entity);
         }
 
         // WorkDayInformation
-        if (this.isWorkDay(entity)) {
+        if (isWorkDay(entity)) {
             return this.workDayToDTO(entity);
         }
         // RouteTransaction
@@ -92,59 +111,18 @@ export class MapperDTO {
     toEntity(dto: RouteDTO): Route;
     toEntity(dto: RouteDayDTO): RouteDay;
     toEntity(dto: ProductDTO | InventoryOperationDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO): Product | InventoryOperation | WorkDayInformation | Route | RouteDay {
-        if (this.isProductDTO(dto)) return this.productDTOToEntity(dto);
-        if (this.isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
-        if (this.isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
-        if (this.isRouteDTO(dto)) return this.routeDTOToEntity(dto);
-        if (this.isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
+        if (isProductDTO(dto)) return this.productDTOToEntity(dto);
+        if (isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
+        if (isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
+        if (isRouteDTO(dto)) return this.routeDTOToEntity(dto);
+        if (isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
         
         throw new Error('Unknown DTO type');
     }
 
 
   // ==================== ENTITY TYPE GUARDS ====================
-  
-    private isRoute(entity: any): entity is Route {
-        return (
-            entity instanceof Route || 
-            ('id_route' in entity && 'route_name' in entity && 'route_day' in entity)
-        );
-    }
 
-    private isProduct(entity: any): entity is Product {
-        return (
-            entity instanceof Product || 
-            ('id_product' in entity && 'product_name' in entity && 'price' in entity)
-        );
-    }
-
-    private isInventoryOperation(entity: any): entity is InventoryOperation {
-        return (
-            entity instanceof InventoryOperation || 
-            ('id_inventory_operation' in entity && 'inventoryOperationDescriptions' in entity)
-        );
-    }
-
-    private isTransaction(entity: any): entity is RouteTransaction {
-        return (
-            entity instanceof RouteTransaction || 
-            ('id_route_transaction' in entity && 'transaction_description' in entity)
-        );
-    }
-
-    private isStore(entity: any): entity is Store {
-    return (
-        entity instanceof Store || 
-        ('id_store' in entity && 'store_name' in entity)
-    );
-    }
-
-    private isWorkDay(entity: any): entity is WorkDayInformation {
-    return (
-        entity instanceof WorkDayInformation || 
-        ('id_work_day' in entity && 'start_date' in entity && 'id_route' in entity)
-    );
-    }
 
     // ==================== MAPPER METHODS ENTITY to DTO ====================
 
@@ -215,7 +193,7 @@ export class MapperDTO {
             audit: entity.audit,
             id_inventory_operation_type: entity.id_inventory_operation_type,
             id_work_day: entity.id_work_day,
-            inventoryOperationDescriptions: entity.inventoryOperationDescriptions.map((desc) => this.inventoryProductDescriptionToDTO(desc)),
+            inventory_operation_descriptions: entity.inventory_operation_descriptions.map((desc) => this.inventoryProductDescriptionToDTO(desc)),
         };
     }
 
@@ -237,40 +215,7 @@ export class MapperDTO {
 
 
     // ==================== DTO TYPE GUARDS ====================
-    private isProductDTO(dto: any): dto is ProductDTO {
-        return (
-            dto && typeof dto === 'object' &&
-            'id_product' in dto && 'product_name' in dto && 'price' in dto
-        );
-    }
 
-    private isInventoryOperationDTO(dto: any): dto is InventoryOperationDTO {
-        return (
-            dto && typeof dto === 'object' &&
-            'id_inventory_operation' in dto && 'id_inventory_operation_type' in dto && 'inventoryOperationDescriptions' in dto
-        );
-    }
- 
-    private isWorkDayDTO(dto: any): dto is WorkDayInformationDTO {
-        return (
-            dto && typeof dto === 'object' &&
-            'id_work_day' in dto && 'start_date' in dto && 'id_route_day' in dto
-        );
-    }
-    
-    private isRouteDTO(dto: any): dto is RouteDTO {
-        return (
-            dto && typeof dto === 'object' &&
-            'id_route' in dto && 'route_day_by_day' in dto
-        );
-    }
-
-    private isRouteDayDTO(dto: any): dto is RouteDayDTO {
-        return (
-            dto && typeof dto === 'object' &&
-            'id_route_day' in dto && 'stores' in dto
-        )
-    }
  
     // ==================== MAPPER METHODS DTO to ENTITY ====================
 
@@ -311,7 +256,7 @@ export class MapperDTO {
             dto.audit,
             dto.id_inventory_operation_type,
             dto.id_work_day,
-            (dto.inventoryOperationDescriptions || []).map(d => this.inventoryProductDescriptionDTOToEntity(d))
+            (dto.inventory_operation_descriptions || []).map(d => this.inventoryProductDescriptionDTOToEntity(d))
         );
     }
 

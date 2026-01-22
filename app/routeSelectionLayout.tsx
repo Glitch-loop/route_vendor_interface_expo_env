@@ -15,7 +15,7 @@ import {
   setRouteInformation,
   // setRouteDay,
   setAllGeneralInformation,
-} from '../redux/slices/shiftInformationSlice';
+} from '../redux/slices/workdayInformation';
 
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
 

@@ -8,5 +8,5 @@ export default interface InventoryOperationDTO {
     audit: number;
     id_inventory_operation_type: string;
     id_work_day: string;
-    inventoryOperationDescriptions: InventoryOperationDescriptionDTO[];
+    inventory_operation_descriptions: InventoryOperationDescriptionDTO[];
 }
