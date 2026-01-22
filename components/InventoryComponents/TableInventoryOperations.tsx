@@ -88,7 +88,8 @@ function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   } else {
     result = 'Producto a llevar';
   }
-  return result;                       
+  console.log("Header input column: ", result);
+  return result;                        
 }
 
 function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
@@ -118,7 +119,7 @@ const TableInventoryOperation = (
     currentInventory:ProductInventoryDTO[],
     movementsOfOperation: InventoryOperationDescriptionDTO[],
     setInventoryOperation: (product: InventoryOperationDescriptionDTO[]) => void,
-    id_type_of_operation: DAY_OPERATIONS,
+    id_type_of_operation: string,
   }) => {
     // let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
   return (
@@ -130,9 +131,13 @@ const TableInventoryOperation = (
             <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
               <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                <View style={tw`${viewTagRowTableStyle}`}>
-                  <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
-                </View>
+                {/* <View style={tw`${viewTagRowTableStyle}`}> */}
+                <DataTable.Cell>
+                  <Text 
+                  // style={tw`${textHeaderTableStyle}`}
+                  >Producto</Text>
+                </DataTable.Cell>
+                {/* </View> */}
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
@@ -155,9 +160,13 @@ const TableInventoryOperation = (
               <DataTable.Header>
                 { suggestedInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>Sugerido</Text>
-                    </View>
+                    <DataTable.Cell>
+                      {/* <View style={tw`${viewTagHeaderTableStyle}`}> */}
+                        <Text 
+                        // style={tw`${textHeaderTableStyle}`}
+                        >Sugerido</Text>
+                      {/* </View> */}
+                    </DataTable.Cell>
                   </DataTable.Title>
                 }
                 { currentInventory.length > 0 &&
@@ -186,38 +195,29 @@ const TableInventoryOperation = (
               {/* Body section*/}
               { availableProducts.length > 0 &&
                 availableProducts.map((product) => {
-                  const { id_product } = product;
+                  const { id_product, price } = product;
                   let amount:number = 0;
                   let suggestedAmount:number = 0;
                   let currentInventoryAmount:number = 0;
-                  
+
                   amount = getAmountOfProductInArray(movementsOfOperation, id_product);
                   suggestedAmount = getAmountOfProductInArray(suggestedInventory, id_product);
                   currentInventoryAmount = getAmountOfProductInArray(currentInventory, id_product);
 
                   // Handlers
                   const handlerChangeInventory = (input: number) => {
-                    // Looking for the product to update.
-                    const index:number = movementsOfOperation
-                      .findIndex((productOperationInventory:InventoryOperationDescriptionDTO) => productOperationInventory.id_product === id_product);
-
-                    if (index !== -1) { // The product exists in the inventory.
-                      const updatedProduct = { ...movementsOfOperation[index], amount: input };
-
-                      movementsOfOperation[index] = updatedProduct;
-
-                      setInventoryOperation(
-                        movementsOfOperation.map((productOperationInventory:InventoryOperationDescriptionDTO) => {
-                          if (productOperationInventory.id_product === id_product) {
-                            return { ...updatedProduct};
-                          } else {
-                            return { ...productOperationInventory };
-                          }
-                        }),
-                      );
-                    } else {
-                      /* The product is not in the inventory */
-                    }
+                    setInventoryOperation(
+                      [
+                        ...movementsOfOperation.filter((productOperationInventory) => { return productOperationInventory.id_product !== id_product; }),
+                        { 
+                          id_product_operation_description: '',
+                          price_at_moment: price,
+                          amount: input,
+                          id_inventory_operation: '',
+                          id_product: id_product
+                        }
+                      ]
+                    );
                   };
 
                   return (
@@ -251,7 +251,7 @@ const TableInventoryOperation = (
         </View> 
         :
         <DataTable.Row>
-          <View style={tw`w-full h-full flex flex-col justify-center`}>
+          <View style={tw`w-full -full flex flex-col justify-center`}>
             <ActivityIndicator size={'large'} />
           </View>
         </DataTable.Row>

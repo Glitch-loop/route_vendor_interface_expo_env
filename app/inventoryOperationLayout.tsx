@@ -86,7 +86,7 @@ import {
   cleanWorkdayFromDatabase,
   createWorkDay,
   finishWorkDay,
-  getTotalAmountFromCashInventory,
+  // getTotalAmountFromCashInventory,
 } from '../controllers/WorkDayController';
 
 import {
@@ -113,6 +113,10 @@ import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 // Utils
 import { getTitleDayOperation } from '@/utils/day-operation/utils'; 
+import { 
+  getTotalAmountFromCashInventory,
+  determineIfExistsOperationDescriptionMovement
+} from '../controllers/WorkDayController';
 
 // Definitions
 const settingOperationDescriptions:any = {
@@ -133,6 +137,9 @@ import ListAllProductOfCompany from '@/src/application/queries/ListAllProductOfC
 // DI container
 import { container as di_container } from '@/src/infrastructure/di/container';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -199,8 +206,11 @@ const inventoryOperationLayout = () => {
   const [isInventoryAccepted, setIsInventoryAccepted] = useState<boolean>(false);
   const [isOperationToUpdate, setIsOperationToUpdate] = useState<boolean>(false);
 
-  // =============== New products =====================
+  // =============== New states =====================
+  const [currentShiftInventory, setCurrentShiftInventory] = useState<ProductInventoryDTO[]>([]);
   const [availableProducts, setAvailableProducts] = useState<ProductDTO[]>([]);
+  const [suggestedInventory, setSuggestedInventory] = useState<ProductInventoryDTO[]>([]);
+  const [inventoryOperationMovements, setInventoryOperationMovements] = useState<InventoryOperationDescriptionDTO[]>([]);
 
   // Use effect operations
   useEffect(() => {
@@ -519,57 +529,29 @@ const inventoryOperationLayout = () => {
   }
 
   // Handlers
-  const handlerGoBack = ():void => {
-    /*
-      If the user is making the first inventory operation of the day, the navigation should return to 
-      the screen of selecting route, otherwise, it should return to Operation menu.
-    */
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-      console.log("Returning to route selection screen");
-      router.back();
-    } else {
-      router.push('/routeOperationMenuLayout');
-    }
-  };
-
   const handlerReturnToRouteMenu = async ():Promise<void> => {
     router.replace('/routeOperationMenuLayout');
   };
 
-  const handlerOnContinueInventoryOperationProcess = ():void => {
-    const { id_type_operation } = currentOperation;
-    let askToUserInventoryIsFine:boolean = false;
+  const handleAcceptInventoryOperation = ():void => {
+    let askToUserIfAgreeWithInventory: boolean = false;
 
-
-
-    if (id_type_operation === DAYS_OPERATIONS.start_shift_inventory
-    || id_type_operation === DAYS_OPERATIONS.end_shift_inventory
-    ) {
-      if ((getTotalAmountFromCashInventory(cashInventory) === 0 && !isOperationToUpdate)
-      || !deterimenIfExistsMovement(inventory)
-      ) {
-        askToUserInventoryIsFine = true;
-      } else {
-        askToUserInventoryIsFine = false;
-      }
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
+     || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      if (getTotalAmountFromCashInventory(cashInventory) === 0 || !determineIfExistsOperationDescriptionMovement(inventoryOperationMovements)) askToUserIfAgreeWithInventory = true;
+      else askToUserIfAgreeWithInventory = false;
     } else {
-      if (!deterimenIfExistsMovement(inventory)) {
-        askToUserInventoryIsFine = true;
-      } else {
-        askToUserInventoryIsFine = false;
-      }
+      if (!determineIfExistsOperationDescriptionMovement(inventoryOperationMovements)) askToUserIfAgreeWithInventory = true
     }
 
-    if(askToUserInventoryIsFine) {
+    if(askToUserIfAgreeWithInventory) {
       setShowDialog(true);
     } else {
       handlerVendorConfirmation();
     }
-  };
+  }
 
-  const handlerOnCancelInventoryOperationProcess = ():void => {
-    setShowDialog(false);
-  };
+  const handlerOnCancelInventoryOperationProcess = ():void => { setShowDialog(false); };
 
   const handlerVendorConfirmation = async ():Promise<void> => {
     // By default it is considered that the process is going to fail.
@@ -1130,20 +1112,15 @@ const inventoryOperationLayout = () => {
   };
 
   const handlerOnVendorCancelation = () => {
-    if (currentOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
       /*
-        Vendor might change the day of route (it might be the reason of why he
-        didn't finish the first inventory).
-
-        In this case, the application must redirect to the route operation selection to
-        make able to the vendor to select a route.
+        According with the workflow, if the vendor is making the start shift inventory, if he decides to
+        cancel the operation, he has to return to the route selection screen and make the process again.
       */
-      router.push('/routeSelectionLayout');
+      router.replace('/routeSelectionLayout');
     } else {
-      /*
-        Since it is not the start shift inventory, it means the vendor is already making a route.
-      */
-      router.push('/routeOperationMenuLayout');
+      // That means the route vendor is canceling an inventory operation during the day.
+      router.replace('/routeOperationMenuLayout');
     }
   };
 
@@ -1211,7 +1188,8 @@ const inventoryOperationLayout = () => {
       </ActionDialog>
 
       <View style={tw`mt-3 w-full flex basis-1/6`}>
-        <RouteHeader onGoBack={handlerGoBack}/>
+        {/* Go back it's considered as canceling the inventory operation */}
+        <RouteHeader onGoBack={handlerOnVendorCancelation}/> 
       </View>
 
       {/* Inventory operation section. */}
@@ -1287,12 +1265,13 @@ const inventoryOperationLayout = () => {
           }
         </View> :
         <View style={tw`flex basis-auto w-full mt-3`}>
-          <TableInventoryOperations
-            suggestedInventory={suggestedProduct}
-            currentInventory={currentInventory}
-            operationInventory={inventory}
-            setInventoryOperation={setInventory}
-            currentOperation={currentOperation}/>
+          {/* <TableInventoryOperations
+              availableProducts={availableProducts}
+              suggestedInventory={suggestedInventory}
+              currentInventory={currentShiftInventory}
+              movementsOfOperation={inventoryOperationMovements}
+              setInventoryOperation={setInventoryOperationMovements}
+              id_type_of_operation={id_type_of_operation_search_param} /> */}
         </View>
       }
       {/* Cash reception section. */}
@@ -1341,7 +1320,7 @@ const inventoryOperationLayout = () => {
       <View style={tw`flex basis-1/6 mt-3`}>
         <VendorConfirmation
           onConfirm={isOperation ?
-            handlerOnContinueInventoryOperationProcess : handlerReturnToRouteMenu}
+            handleAcceptInventoryOperation : handlerReturnToRouteMenu}
           onCancel={isOperation ? handlerOnVendorCancelation : handlerReturnToRouteMenu}
           message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
           confirmMessageButton={isOperation ? 'Aceptar' : 'Volver al menú'}
