@@ -5,9 +5,7 @@ import { DataTable, ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 
 // Interfaces
-import { IDayOperation, IProductInventory } from '../../interfaces/interfaces';
-import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
-import DAYS_OPERATIONS from '../../lib/day_operations';
+import AutomatedCorrectionNumberInput from '@/components/generalComponents/AutomatedCorrectionInput';;
 
 // Styles
 import {
@@ -81,9 +79,9 @@ function getAmountOfProductInArray(arrProduct: (ProductInventoryDTO[]|InventoryO
 
 function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   let result:string = ""
-  if (id_type_of_operation === DAYS_OPERATIONS.product_devolution) {
+  if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
     result = 'Merma a reportar';
-  } else if (id_type_of_operation === DAYS_OPERATIONS.end_shift_inventory) {
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Producto a llevar';
@@ -94,9 +92,9 @@ function determineHeaderOfInputColumn(id_type_of_operation: string):string {
 
 function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
   let result:string = ""
-  if (id_type_of_operation === DAYS_OPERATIONS.product_devolution) {
+  if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
     result = 'Merma a entregar';
-  } else if (id_type_of_operation === DAYS_OPERATIONS.end_shift_inventory) {
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Inventario a llevar';
@@ -134,8 +132,6 @@ const TableInventoryOperation = (
               {/* This field is never empty since it is necessary anytime */}
               <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                 <Text style={tw`${textHeaderTableStyle}`}> Producto </Text>
-                {/* <DataTable.Cell>
-                </DataTable.Cell> */}
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
@@ -158,28 +154,20 @@ const TableInventoryOperation = (
               <DataTable.Header>
                 { suggestedInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <DataTable.Cell>
                         <Text style={tw`${textHeaderTableStyle}`}>Sugerido</Text>
-                    </DataTable.Cell>
                   </DataTable.Title>
                 }
                 { currentInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>Inventario Actual</Text>
-                    </View>
                   </DataTable.Title>
                 }
                 {/* This field is never empty since it is the reason of this component (inventory operation) */}
                 <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
-                  {/* <DataTable.Cell>
-                  </DataTable.Cell> */}
                 </DataTable.Title>
                 <DataTable.Title style={tw`${headerTitleTableStyle}`} >
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
-                  {/* <DataTable.Cell>
-                  </DataTable.Cell> */}
                 </DataTable.Title>
               </DataTable.Header>
               {/* Body section*/}
