@@ -42,23 +42,52 @@ import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
  Rather than displaying the information of the route as in the main workflow.
 */
 
+interface consolidatedInformation {
+  amount: number;
+}
+
 const TableInventoryOperationsVisualization = (
   {
     availableProducts,
-    inventory,
-    conceptToDisplay,
-    dataToDisplayOfConcept,
-    calculateTotal = false,
+    stores,
+    routeTransactions,
+    calculateTotalOfProduct = false,
   }:{
     availableProducts: ProductDTO[],
-    inventory: ProductInventoryDTO[],
-    conceptToDisplay: StoreDTO[],
-    dataToDisplayOfConcept: ProductInventoryDTO|RouteTransactionDTO[][],
-    calculateTotal:boolean
+    stores: StoreDTO[],
+    routeTransactions: RouteTransactionDTO[],
+    calculateTotalOfProduct:boolean
   }) => {
   
+    
   // Organizing product in ascending order to display in the table
   const sortedAvailableProducts = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
+
+  const mapConsolidatedByConcept = new Map<string, Map<string, consolidatedInformation>>(); //Map <id_store, Map<id_product, consolidatedInformation>>
+
+  // Consolidate amounts by store and product across all transaction descriptions
+  for (const routeTransaction of routeTransactions) {
+    const { id_store, transaction_description } = routeTransaction;
+
+    if (!mapConsolidatedByConcept.has(id_store)) {
+      mapConsolidatedByConcept.set(id_store, new Map<string, consolidatedInformation>());
+    }
+
+    const productMap = mapConsolidatedByConcept.get(id_store)!;
+
+    for (const description of transaction_description) {
+      const { id_product, amount } = description;
+      if (!productMap.has(id_product)) productMap.set(id_product, { amount: 0 });
+      
+      const prevInformation:consolidatedInformation|undefined = productMap.get(id_product)
+      if (prevInformation) {
+        prevInformation.amount += amount;
+        productMap.set(id_product, prevInformation);
+      }
+    }
+
+    mapConsolidatedByConcept.set(id_store, productMap);    
+  }
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -98,20 +127,21 @@ const TableInventoryOperationsVisualization = (
             <DataTable style={tw`w-full`}>
               {/* Header section */}
               <DataTable.Header>
-                {/* This field is never empty since it is necessary anytime */}
-                { titleColumns.map((titleColumn, index) => {
+                {/* Set title of columns */}
+                { stores.map((store) => {
+                    const { store_name, id_store } = store;
                     return (
-                      <DataTable.Title key={index} style={tw`${headerTitleTableStyle}`}>
+                      <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle}`}>
                         <View style={tw`${viewTagHeaderTableStyle}`}>
                           <Text style={tw`${textHeaderTableStyle}`}>
-                            {titleColumn}
+                            {store_name}
                           </Text>
                         </View>
                     </DataTable.Title>
                     );
                   })
                 }
-                { calculateTotal &&
+                { calculateTotalOfProduct &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>
@@ -122,47 +152,47 @@ const TableInventoryOperationsVisualization = (
                 }
               </DataTable.Header>
               {/* Body section */}
-              { (productInventories.length > 0) &&
-                inventory.map((product) => {
+              
+              { (stores.length > 0) &&
+                sortedAvailableProducts.map((product) => {
                   /*
-                    To keep an order of how to print the inventory operations, it is used the variable "inventory" which has
-                    all the products (and the current amount for each product).
-
-                    "Inventory" is used has the reference of what to print in the "current iteration", so it is going to depend
-                    on the current product that it is going to be searched that particular product in the other arrays that store
-                    the information of the "product inventory"
-
-                    Since the inventory operations only store if a product had a movement, if there is not find the product of the
-                    current operation, it is going to be diplayed with a value of "0" (indicating that it was not a
-                    movement of that particular product).
+                    This table display the information using the product as the main reference, and then traversing for all the stores.
+                    So for each product, we will get the amount for each store, and then display it in the table.
                   */
-
-                  // Propierties that are always going to be present.
-                  let id_product = product.id_product;
-                  let amount = product.amount;
-
-
-                  /* Declaring variables that will store the amount of product for each type of operation*/
-                  let restockInventoryOperationAmount:number[] = [];
-
-                  // Special calculations variables
-                  let totalOfTable = 0;
-
-                  // Searching the product in the inventory operations
-                  productInventories.forEach((restockInventory:IProductInventory[]) => {
-                    const currentProductInventoryAmount
-                      = findProductAmountInArray(restockInventory, id_product);
-
-                    totalOfTable += currentProductInventoryAmount;
-                    restockInventoryOperationAmount.push(currentProductInventoryAmount);
-                  });
+                  const { id_product } = product;
+                  let totalOfProduct:number = 0;
+                 
+                  if (calculateTotalOfProduct === true) {
+                    // Calculate total of product across all stores
+                    for (const store of stores) {
+                      const { id_store } = store;
+                      const storeInformation = mapConsolidatedByConcept.get(id_store);
+                      if (storeInformation !== undefined) {
+                        const consolidatedInformation = storeInformation.get(id_product);
+                        if (consolidatedInformation !== undefined) {
+                          totalOfProduct += consolidatedInformation.amount;
+                        }
+                      }
+                    }
+                  }
 
                   return (
                     <DataTable.Row key={product.id_product}>
                       {/* This field is never empty since it is necessary anytime */}
                       {/* Restock of product */}
-                      { restockInventoryOperationAmount.length > 0 &&
-                        restockInventoryOperationAmount.map((productAmount, index) => {
+                      { stores.map((store, index) => {
+                          const { id_store } = store;
+                          let productAmount:number = 0;
+                          const storeInformation = mapConsolidatedByConcept.get(id_store);
+
+                          if (storeInformation !== undefined) {
+                            const consolidatedInformation = storeInformation.get(id_product);
+
+                            if (consolidatedInformation !== undefined) {
+                              productAmount = consolidatedInformation.amount;
+                            }
+                          } 
+
                           return (
                             <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                               <View style={tw`${viewTagRowTableStyle}`}>
@@ -175,11 +205,11 @@ const TableInventoryOperationsVisualization = (
                         })
                       }
                       {/* Inflow product */}
-                      { calculateTotal === true &&
-                        <DataTable.Cell style={tw`${totalOfTable > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                      { calculateTotalOfProduct === true &&
+                        <DataTable.Cell style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
-                              {totalOfTable}
+                              {totalOfProduct}
                             </Text>
                           </View>
                         </DataTable.Cell>
