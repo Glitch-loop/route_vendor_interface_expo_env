@@ -10,21 +10,24 @@ import { DateService } from '@/src/core/interfaces/DateService';
 
 // Entities
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
-import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
+import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // Aggregates
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';
-import { ProductInventoryAggregate } from '@/src/core/aggregates/ProductInventoryAggregate';
 import { InventoryOperationAggregate } from '@/src/core/aggregates/InventoryOperationAggregate';
 
 // Object value
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 
+// DTOs and mapper
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
-import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
-import { DayOperation } from '@/src/core/entities/DayOperation';
 
 
 @injectable()
@@ -40,7 +43,8 @@ export default class RegisterProductDevolutionUseCase {
     @inject(TOKENS.DateService) private readonly dateService: DateService,
     ) { }
 
-    public async executeUseCase(
+    // TODO: Add synchronization with central database when online.
+    private async executeUseCase(
         inventoryOperationDescriptions: InventoryOperationDescription[],
         workdayInformation: WorkDayInformation
     ): Promise<void> {
@@ -88,5 +92,21 @@ export default class RegisterProductDevolutionUseCase {
         
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+    }
+
+    async execute(
+        inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
+        workdayInformationDTO: WorkDayInformationDTO
+    ): Promise<void> {
+        const mapper = new MapperDTO();
+
+        const inventoryOperationDescriptions: InventoryOperationDescription[] = inventoryOperationDescriptionDTO
+            .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
+        const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
+
+        return this.executeUseCase(
+            inventoryOperationDescriptions,
+            workdayInformation
+        );
     }
 }

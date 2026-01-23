@@ -141,6 +141,8 @@ import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import { StartWorkDayUseCase } from '@/src/application/commands/StartShiftDayUseCase';
+import RegisterRestockOfProductUseCase from '@/src/application/commands/RegisterRestockOfProductUseCase';
+import RegisterProductDevolutionUseCase from '@/src/application/commands/RegisterProductDevolutionUseCase';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -607,6 +609,8 @@ const inventoryOperationLayout = () => {
             text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
           });
 
+          // TODO: Update redux
+
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
           Toast.show({
@@ -617,12 +621,120 @@ const inventoryOperationLayout = () => {
 
           router.replace('/selectionRouteOperationLayout');
         }
-      
+      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+        Toast.show({
+          type: 'info',
+          text1: 'Registrando re-stock.',
+          text2: 'Tomará unos segundos.',
+        });
 
-      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory
-        || id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+        if (workDayInformation === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error.',
+            text2: 'Reinicia la aplicación e intenta nuevamente.',
+          })
+          return;
+        }
 
+        try {
+          const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
+          registerRestockOfProductCommand.execute(
+            inventoryOperationMovements,
+            workDayInformation
+          );
+          Toast.show({
+                type: 'success',
+                text1: 'Se ha registrado el restock exitosamente.',
+                text2: '',
+          });
+          // TODO: Update redux
+          router.replace('/routeOperationMenuLayout');
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error, intente nuevamente.',
+            text2: 'Intente la operación nuevamente.',
+          });
+          router.replace('/routeOperationMenuLayout');
+        }
+      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+        Toast.show({
+          type: 'info',
+          text1: 'Registrando merma de producto.',
+          text2: 'Tomará unos segundos.',
+        });
+
+        if (workDayInformation === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error.',
+            text2: 'Reinicia la aplicación e intenta nuevamente.',
+          })
+          return;
+        }
+
+        try {
+          const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
+          registerProductDevolutionCommand.execute(
+            inventoryOperationMovements,
+            workDayInformation
+          );
+          Toast.show({
+                type: 'success',
+                text1: 'Se ha registrado la merma de producto exitosamente.',
+                text2: '',
+          });
+          // TODO: Update redux
+          /*
+            According with business rules, after registering a product devolution, the user registers the final shift inventory
+          */
+          router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error, intente nuevamente.',
+            text2: 'Intente la operación nuevamente.',
+          });
+          router.replace('/routeOperationMenuLayout');
+        }          
       } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+        Toast.show({
+          type: 'info',
+          text1: 'Registrando inventario final.',
+          text2: 'Registrando información necesaria para cerrar el inventario final y terminar el dia correctamente.',
+        });
+
+        if (workDayInformation === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error.',
+            text2: 'Reinicia la aplicación e intenta nuevamente.',
+          })
+          return;
+        }
+
+        try {
+
+          Toast.show({
+                type: 'success',
+                text1: 'Se ha registrado el inventario final exitosamente.',
+                text2: '',
+          });
+          // TODO: Update redux
+          /*
+            According with business rules, after registering a product devolution, the user registers the final shift inventory
+          */
+          router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error, intente nuevamente.',
+            text2: 'Intente la operación nuevamente.',
+          });
+          router.replace('/routeOperationMenuLayout');
+        }
+         
       } else {
         /* Do nothing */
       }

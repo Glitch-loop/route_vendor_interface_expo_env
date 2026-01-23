@@ -61,7 +61,7 @@ export class StartWorkDayUseCase {
         @inject(TOKENS.IDService) private readonly idService: IDService,
         @inject(TOKENS.DateService) private readonly dateService: DateService,
     ) { }
-    // TODO: Create variables for synchronization.
+    // TODO: Add synchronization with central database when online.
     private async executeUseCase(
         petty_cash: number,
         routeSelected: Route,
