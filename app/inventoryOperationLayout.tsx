@@ -143,6 +143,7 @@ import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOpe
 import { StartWorkDayUseCase } from '@/src/application/commands/StartShiftDayUseCase';
 import RegisterRestockOfProductUseCase from '@/src/application/commands/RegisterRestockOfProductUseCase';
 import RegisterProductDevolutionUseCase from '@/src/application/commands/RegisterProductDevolutionUseCase';
+import { FinishShiftDayUseCase } from '@/src/application/commands/FinishShiftDayUseCase';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -715,6 +716,13 @@ const inventoryOperationLayout = () => {
         }
 
         try {
+          const registerEndShiftInventoryCommand = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
+          
+          registerEndShiftInventoryCommand.execute(
+            getTotalAmountFromCashInventory(cashInventory),
+            inventoryOperationMovements,
+            workDayInformation
+          );
 
           Toast.show({
                 type: 'success',
@@ -722,17 +730,14 @@ const inventoryOperationLayout = () => {
                 text2: '',
           });
           // TODO: Update redux
-          /*
-            According with business rules, after registering a product devolution, the user registers the final shift inventory
-          */
-          router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+
+          router.replace('/routeOperationMenuLayout');
         } catch (error) {
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',
             text2: 'Intente la operación nuevamente.',
           });
-          router.replace('/routeOperationMenuLayout');
         }
          
       } else {
