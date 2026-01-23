@@ -22,6 +22,9 @@ import {
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 
+// DTOs
+import ProductDTO from '@/src/application/dto/ProductDTO';
+
 
 /*
   To generalize as much as possible, this component was made to be capable of showing all the possible "inventory operations".
@@ -65,7 +68,7 @@ import {
 
 const TableInventoryVisualization = (
   {
-    inventory,
+    availableProduct,
     suggestedInventory,
     initialInventory,
     restockInventories,
@@ -77,7 +80,7 @@ const TableInventoryVisualization = (
     finalOperation = false,
     issueInventory = false,
   }:{
-    inventory:IProductInventory[],
+    availableProduct: ProductDTO[],
     suggestedInventory: IProductInventory[],
     initialInventory:IProductInventory[], // There is only "one" initial inventory operation
     restockInventories:IProductInventory[][], // It could be many "restock" inventories
@@ -108,7 +111,7 @@ const TableInventoryVisualization = (
                 </View>
               </DataTable.Title>
             </DataTable.Header>
-            { inventory.map((product) => {
+            { availableProduct.map((product) => {
               return (
                 <DataTable.Row key={product.id_product} style={tw`${rowTableStyle}`}>
                   <DataTable.Cell style={tw`${cellTableStyle}`}>
@@ -219,7 +222,7 @@ const TableInventoryVisualization = (
               </DataTable.Header>
               {/* Body section */}
               { (initialInventory.length > 0 || returnedInventory.length > 0 || restockInventories.length > 0) &&
-                inventory.map((product) => {
+                availableProduct.map((product) => {
                   /*
                     To keep an order of how to print the inventory operations, it is used the variable "inventory" which has
                     all the products (and the current amount for each product).

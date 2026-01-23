@@ -38,7 +38,7 @@ import { DayOperation } from "@/src/core/entities/DayOperation";
  * This use case demonstrates injecting a specific repository implementation
  */
 @injectable()
-export class FinishShiftDayUseCase {
+export default class FinishShiftDayUseCase {
     constructor(
         // Local repositories dependencies
         @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,

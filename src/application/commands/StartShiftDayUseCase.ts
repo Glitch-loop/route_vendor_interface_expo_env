@@ -44,7 +44,7 @@ import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
  * This use case demonstrates injecting a specific repository implementation
  */
 @injectable()
-export class StartWorkDayUseCase {
+export default class StartWorkDayUseCase {
     constructor(
         // Local repositories dependencies
         @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,
@@ -162,14 +162,15 @@ export class StartWorkDayUseCase {
         const newDayOperations = dayOperationAggregate.getDayOperations();
 
         // Store information in local database.
-        this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
         this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
-        this.localProductInventoryRepo.createInventory(newInventory);
         this.localStoreRepo.insertStores(allStores);
+        
         for (const product of productToRegister) {
             this.localProductRepo.insertProduct(product);
         }
         
+        await this.localProductInventoryRepo.createInventory(newInventory);
+        await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
         await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
 
     }
