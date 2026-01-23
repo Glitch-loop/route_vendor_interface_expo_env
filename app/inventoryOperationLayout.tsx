@@ -14,7 +14,7 @@ import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
 import RouteHeader from '../components/RouteHeader';
 import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperation';
 import VendorConfirmation from '../components/VendorConfirmation';
-import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryVisualization';
+import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryOperationVisualization';
 import TableRouteTransactionProductVisualization from '../components/InventoryComponents/TableRouteTransactionProductVisualization';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -92,7 +92,6 @@ const inventoryOperationLayout = () => {
     id_inventory_operation_search_param 
   } = params as typeSearchParams;
 
-  console.log("Route Day ID: ", id_type_of_operation_search_param);
 
   // Defining redux context
   const dispatch:AppDispatch = useDispatch();
@@ -272,9 +271,9 @@ const inventoryOperationLayout = () => {
         - End shift inventory: Unique in the day.
 
       */
-
+      console.log("Executing inventory operation of type: ", id_type_of_operation_search_param);
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-        const use_case_command = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
+        const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
 
         if (route === null || routeDay === null) {
           Toast.show({
@@ -293,7 +292,8 @@ const inventoryOperationLayout = () => {
         });
 
         try {
-          await use_case_command.execute(
+          console.log("Executing start shift day use case");
+          await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),
              route,
              availableProducts,
@@ -332,6 +332,7 @@ const inventoryOperationLayout = () => {
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.log("Error during start shift inventory operation execution:", error);
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -440,8 +441,7 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerEndShiftInventoryCommand = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
-          
-          registerEndShiftInventoryCommand.execute(
+          await registerEndShiftInventoryCommand.execute(
             getTotalAmountFromCashInventory(cashInventory),
             inventoryOperationMovements,
             workDayInformation
@@ -540,12 +540,12 @@ const inventoryOperationLayout = () => {
         <View style={tw`flex basis-auto w-full mt-3`}>
           <TableInventoryVisualization 
             availableProduct                = {availableProducts}
-            suggestedInventory              = {suggestedProduct}
-            initialInventory                = {initialShiftInventory}
+            suggestedInventory              = {suggestedInventory}
+            initialInventory                = {[]}
             restockInventories              = {restockInventories}
             soldOperations                  = {productSoldTransactions}
             repositionsOperations           = {productRepositionTransactions}
-            returnedInventory               = {finalShiftInventory}
+            returnedInventory               = {[]}
             inventoryWithdrawal             = {inventoryWithdrawal}
             inventoryOutflow                = {inventoryOutflow}
             finalOperation                  = {finalOperation}

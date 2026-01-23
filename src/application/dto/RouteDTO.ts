@@ -6,5 +6,5 @@ export default interface RouteDTO {
     description: string;
     route_status: boolean;
     id_vendor: string;
-    route_day_by_day: Map<string, RouteDayDTO>; // <id_day, RouteDayDTO>
+    route_day_by_day: Map<string, RouteDayDTO> |null; // <id_day, RouteDayDTO>
 }

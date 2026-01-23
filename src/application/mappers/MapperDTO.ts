@@ -323,25 +323,27 @@ export class MapperDTO {
     // RouteDTO -> Route (domain)
     routeDTOToEntity(dto: RouteDTO): Route {
         const routeDays: RouteDay[] = [];
-        // dto.route_day_by_day is Map<string, RouteDayDTO>
-        dto.route_day_by_day.forEach((rd) => {
-            const stores: RouteDayStore[] = (rd.stores || []).map(s =>
-                new RouteDayStore(
-                    s.id_route_day_store,
-                    s.position_in_route,
-                    s.id_route_day,
-                    s.id_store
-                )
-            );
-            routeDays.push(
-                new RouteDay(
-                    rd.id_route_day,
-                    rd.id_route,
-                    rd.id_day,
-                    stores
-                )
-            );
-        });
+        const { route_day_by_day } = dto;
+        if (route_day_by_day !== null) {
+            route_day_by_day.forEach((rd) => {
+                const stores: RouteDayStore[] = (rd.stores || []).map(s =>
+                    new RouteDayStore(
+                        s.id_route_day_store,
+                        s.position_in_route,
+                        s.id_route_day,
+                        s.id_store
+                    )
+                );
+                routeDays.push(
+                    new RouteDay(
+                        rd.id_route_day,
+                        rd.id_route,
+                        rd.id_day,
+                        stores
+                    )
+                );
+            });
+        }
         return new Route(
             dto.id_route,
             dto.route_name,

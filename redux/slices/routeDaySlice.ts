@@ -7,14 +7,12 @@ const routeDaySlice = createSlice({
     initialState: null as RouteDayDTO | null,
     reducers: {
         setRouteDay: (state, action: PayloadAction<RouteDayDTO>) => {
-            if (state !== null) {
-                state.id_day = action.payload.id_day;
-                state.id_route =  action.payload.id_route;
-                state.id_route_day = action.payload.id_route_day;
-                state.stores = action.payload.stores;
-            } else { 
-                return action.payload 
-            };
+            return {
+                id_day: action.payload.id_day,
+                id_route:  action.payload.id_route,
+                id_route_day: action.payload.id_route_day,
+                stores: action.payload.stores,
+            }
         },
         cleanRouteDay: (state) => {
             return null;

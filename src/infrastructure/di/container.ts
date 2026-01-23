@@ -64,8 +64,8 @@ container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
     useClass: SQLiteDatabaseService
 })
 
-// container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
-// container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
+container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
+container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
 
 // =================== Implementation of repositories - SQLite ====================

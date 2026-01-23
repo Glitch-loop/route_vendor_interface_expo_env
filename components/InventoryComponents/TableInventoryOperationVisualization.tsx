@@ -24,6 +24,8 @@ import {
 
 // DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 
 
 /*
@@ -66,7 +68,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
   may not be completed with all the products and it will work without problems.
 */
 
-const TableInventoryVisualization = (
+const TableInventoryOperationVisualization = (
   {
     availableProduct,
     suggestedInventory,
@@ -81,12 +83,12 @@ const TableInventoryVisualization = (
     issueInventory = false,
   }:{
     availableProduct: ProductDTO[],
-    suggestedInventory: IProductInventory[],
-    initialInventory:IProductInventory[], // There is only "one" initial inventory operation
+    suggestedInventory: ProductInventoryDTO[],
+    initialInventory: InventoryOperationDescriptionDTO[], // There is only "one" initial inventory operation
     restockInventories:IProductInventory[][], // It could be many "restock" inventories
     soldOperations: IProductInventory[], // Outflow in concept of selling
     repositionsOperations: IProductInventory[], // Outflow in concept of repositions
-    returnedInventory:IProductInventory[], // There is only "one" final inventory operations
+    returnedInventory: InventoryOperationDescriptionDTO[], // Refers to the final inventory
     inventoryWithdrawal:boolean,
     inventoryOutflow:boolean,
     finalOperation:boolean,
@@ -402,4 +404,4 @@ const TableInventoryVisualization = (
   );
 };
 
-export default TableInventoryVisualization;
+export default TableInventoryOperationVisualization;

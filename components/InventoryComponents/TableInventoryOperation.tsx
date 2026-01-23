@@ -86,7 +86,7 @@ function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   } else {
     result = 'Producto a llevar';
   }
-  console.log("Header input column: ", result);
+
   return result;                        
 }
 

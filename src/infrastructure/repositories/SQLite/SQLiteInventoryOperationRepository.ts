@@ -59,7 +59,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 ]);
 
                 // Insert InventoryOperationDescriptions
-                for (const desc of inventory_operation.inventoryOperationDescriptions) {
+                for (const desc of inventory_operation.inventory_operation_descriptions) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
                             (id_inventory_operation_description,
@@ -126,7 +126,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                     DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;
                 `, [id_inventory_operation]);
 
-                for (const desc of inventoryOperation.inventoryOperationDescriptions) {
+                for (const desc of inventoryOperation.inventory_operation_descriptions) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
                             (id_inventory_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)

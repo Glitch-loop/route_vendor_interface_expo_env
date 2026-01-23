@@ -10,9 +10,7 @@ import { Router, useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { setArrayDayOperations } from '../redux/slices/dayOperationsSlice';
-import {
-  setWorkDayInformation,
-} from '../redux/slices/workDayInformation';
+
 
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
 import { setRoute } from '@/redux/slices/routeSlice';
@@ -81,13 +79,13 @@ const routeSelectionLayout = () => {
   const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|null>(null);
 
   // Setting the current operation 'start shift inventory' (first operation of the day).
-  dispatch(setCurrentOperation({
-    id_day_operation: '', // Specifying that this operation belongs to this day.
-    id_item: '',          // It is still not an operation.
-    id_type_operation: DAYS_OPERATIONS.start_shift_inventory,
-    operation_order: 0,
-    current_operation: 0,
-  }));
+  // dispatch(setCurrentOperation({
+  //   id_day_operation: '', // Specifying that this operation belongs to this day.
+  //   id_item: '',          // It is still not an operation.
+  //   id_type_operation: DAYS_OPERATIONS.start_shift_inventory,
+  //   operation_order: 0,
+  //   current_operation: 0,
+  // }));
 
 
   useEffect(() => { 
@@ -131,8 +129,18 @@ const routeSelectionLayout = () => {
 
     //Storing information related to the relation between the route and the day.
     // dispatch(setRouteDay(routeDay));
+
+    // Store information in redux states.
     dispatch(setRouteDay(routeDaySelected));
-    dispatch(setRoute(route));
+    dispatch(setRoute({
+      id_route: route.id_route,
+      route_name: route.route_name,
+      description: route.description,
+      route_status: route.route_status,
+      id_vendor: route.id_vendor,
+      route_day_by_day: null,
+    }));
+
     router.push('/selectionRouteOperationLayout');
   };
 

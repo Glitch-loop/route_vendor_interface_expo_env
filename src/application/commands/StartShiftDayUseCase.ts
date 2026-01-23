@@ -69,6 +69,7 @@ export default class StartWorkDayUseCase {
         inventoryOperationDescriptions: InventoryOperationDescription[],
         routeDaySelected: RouteDay): Promise<void> {
 
+        console.log("Aggregates initialization")
         const shiftORganizationAggregate: ShiftOrganizationAggregate = new ShiftOrganizationAggregate(null);
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate([]);
@@ -77,6 +78,7 @@ export default class StartWorkDayUseCase {
         const { id_route, route_name, description, route_status } = routeSelected;
         const { id_day, id_route_day} = routeDaySelected;
         
+        console.log("Initialize concept")
         // Create new work day.
         shiftORganizationAggregate.startWorkDay(
             this.idService.generateID(),
@@ -162,13 +164,14 @@ export default class StartWorkDayUseCase {
         const newDayOperations = dayOperationAggregate.getDayOperations();
 
         // Store information in local database.
-        this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
-        this.localStoreRepo.insertStores(allStores);
+        await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+        await this.localStoreRepo.insertStores(allStores);
         
         for (const product of productToRegister) {
-            this.localProductRepo.insertProduct(product);
+            await this.localProductRepo.insertProduct(product);
         }
         
+        console.log("Persist information locally")
         await this.localProductInventoryRepo.createInventory(newInventory);
         await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
         await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
