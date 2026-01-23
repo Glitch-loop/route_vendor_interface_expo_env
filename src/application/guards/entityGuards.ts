@@ -4,6 +4,7 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 import { Store } from '@/src/core/entities/Store';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
+import { ProductInventory } from '@/src/core/entities/ProductInventory';
 
 export function isRoute(entity: any): entity is Route {
         return (
@@ -46,3 +47,10 @@ export function isWorkDay(entity: any): entity is WorkDayInformation {
         ('id_work_day' in entity && 'start_date' in entity && 'id_route' in entity)
     );
     }
+
+export function isProductInventory(entity: any): entity is ProductInventory {
+    return (
+        entity instanceof ProductInventory ||
+        (typeof entity?.get_stock_of_product === 'function' && typeof entity?.get_price_of_product === 'function')
+    );
+}

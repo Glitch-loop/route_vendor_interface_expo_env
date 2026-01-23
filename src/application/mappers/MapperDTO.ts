@@ -5,6 +5,7 @@ import { Store } from '@/src/core/entities/Store';
 import { Product } from '@/src/core/entities/Product';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
+import { ProductInventory } from '@/src/core/entities/ProductInventory';
 
 // DTOs
 // import { 
@@ -21,6 +22,7 @@ import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
@@ -44,6 +46,7 @@ import {
     isInventoryOperation,
     isTransaction,
     isStore,
+    isProductInventory,
     isWorkDay
 } from '@/src/application/guards/entityGuards';
 
@@ -59,12 +62,13 @@ export class MapperDTO {
     toDTO(entity: Product): ProductDTO;
     toDTO(entity: Store): StoreDTO;
     toDTO(entity: InventoryOperation): InventoryOperationDTO;
+    toDTO(entity: ProductInventory): ProductInventoryDTO;
     toDTO(entity: WorkDayInformation): WorkDayInformationDTO;
 //   toDTO(entity: RouteTransaction): RouteTransactionDTO;
 //   toDTO(entity: Store): StoreDTO;
 //   toDTO(entity: WorkDayInformation): WorkDayDTO;
 //   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
-        toDTO(entity: Route | Product | Store | InventoryOperation | WorkDayInformation): any {
+        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation): any {
         // Route
         if (isRoute(entity)) {
             return this.routeToDTO(entity);
@@ -83,6 +87,11 @@ export class MapperDTO {
         // InventoryOperation
         if (isInventoryOperation(entity)) {
           return this.inventoryOperationToDTO(entity);
+        }
+
+        // ProductInventory
+        if (isProductInventory(entity)) {
+            return this.productInventoryToDTO(entity as ProductInventory);
         }
 
         // WorkDayInformation
@@ -217,6 +226,15 @@ export class MapperDTO {
             id_inventory_operation_type: entity.id_inventory_operation_type,
             id_work_day: entity.id_work_day,
             inventory_operation_descriptions: entity.inventory_operation_descriptions.map((desc) => this.inventoryProductDescriptionToDTO(desc)),
+        };
+    }
+
+    private productInventoryToDTO(entity: ProductInventory): ProductInventoryDTO {
+        return {
+            id_product_inventory: (entity as any)['id_product_inventory'],
+            price_at_moment: entity.get_price_of_product(),
+            stock: entity.get_stock_of_product(),
+            id_product: (entity as any)['id_product'],
         };
     }
 
