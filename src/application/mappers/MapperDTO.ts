@@ -31,6 +31,7 @@ import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
 import { 
     isProductDTO,
     isInventoryOperationDTO,
+     isInventoryOperationDescriptionDTO,
     isWorkDayDTO,
     isRouteDTO,
     isRouteDayDTO
@@ -111,12 +112,14 @@ export class MapperDTO {
 
     toEntity(dto: ProductDTO): Product;
     toEntity(dto: InventoryOperationDTO): InventoryOperation;
+    toEntity(dto: InventoryOperationDescriptionDTO): InventoryOperationDescription;
     toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
     toEntity(dto: RouteDTO): Route;
     toEntity(dto: RouteDayDTO): RouteDay;
-    toEntity(dto: ProductDTO | InventoryOperationDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO): Product | InventoryOperation | WorkDayInformation | Route | RouteDay {
+    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay {
         if (isProductDTO(dto)) return this.productDTOToEntity(dto);
         if (isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
+        if (isInventoryOperationDescriptionDTO(dto)) return this.inventoryProductDescriptionDTOToEntity(dto);
         if (isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
         if (isRouteDTO(dto)) return this.routeDTOToEntity(dto);
         if (isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);

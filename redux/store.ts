@@ -6,6 +6,7 @@ import dayOperationsSlice from '@/redux/slices/dayOperationsSlice';
 import storesSlice from '@/redux/slices/storesSlice';
 import currentOperationSlice from '@/redux/slices/currentOperationSlice';
 import workDayInformation from '@/redux/slices/workdayInformation';
+import routeSlice from './slices/routeSlice';
 
 const store = configureStore({
   reducer: {
@@ -15,7 +16,8 @@ const store = configureStore({
     dayOperations: dayOperationsSlice,
     stores: storesSlice,
     currentOperation: currentOperationSlice,
-    workDayInformation: workDayInformation
+    workDayInformation: workDayInformation,
+    route: routeSlice,
   },
 });
 

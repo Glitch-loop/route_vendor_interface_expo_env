@@ -20,7 +20,7 @@ import { setWorkDayInformation } from '@/redux/slices/workDayInformation';
 
 // Components
 import RouteHeader from '../components/RouteHeader';
-import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperations';
+import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperation';
 import VendorConfirmation from '../components/VendorConfirmation';
 import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryVisualization';
 import TableRouteTransactionProductVisualization from '../components/InventoryComponents/TableRouteTransactionProductVisualization';
@@ -140,6 +140,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import { StartWorkDayUseCase } from '@/src/application/commands/StartShiftDayUseCase';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -156,6 +157,7 @@ const inventoryOperationLayout = () => {
   const productsInventory = useSelector((state: RootState) => state.productsInventory);
   const dayOperations = useSelector((state: RootState) => state.dayOperations);
   const routeDay = useSelector((state: RootState) => state.routeDay);
+  const route = useSelector((state: RootState) => state.route);
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
   const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
@@ -529,9 +531,7 @@ const inventoryOperationLayout = () => {
   }
 
   // Handlers
-  const handlerReturnToRouteMenu = async ():Promise<void> => {
-    router.replace('/routeOperationMenuLayout');
-  };
+  const handleGoBackOperationDayMenu = async ():Promise<void> => { router.replace('/routeOperationMenuLayout'); };
 
   const handleAcceptInventoryOperation = ():void => {
     let askToUserIfAgreeWithInventory: boolean = false;
@@ -547,34 +547,91 @@ const inventoryOperationLayout = () => {
     if(askToUserIfAgreeWithInventory) {
       setShowDialog(true);
     } else {
-      handlerVendorConfirmation();
+      handleConfirmInventoryOperation();
     }
   }
 
-  const handlerOnCancelInventoryOperationProcess = ():void => { setShowDialog(false); };
+  const handleCancelInventoryOperationProcess = ():void => { setShowDialog(false); };
 
-  const handlerVendorConfirmation = async ():Promise<void> => {
+  const handleConfirmInventoryOperation = async (): Promise<void> => {
+      /* Avoiding re-executions */
+      if (isInventoryAccepted === true) return;
+      
+      setIsInventoryAccepted(true);
+      setShowDialog(false);
+
+      /*
+        There are 4 types of inventory operations:
+        - Start shift inventory: Unique in the day.
+        - Re-stock inventory: It might be several ones.
+        - Product devolution inventory: It might be several ones.
+        - End shift inventory: Unique in the day.
+
+      */
+
+      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+        const use_case_command = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
+
+        if (route === null || routeDay === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error durante la creación de la operación de inventario.',
+            text2: 'No se ha podido recuperar la información de la ruta o del día de ruta, por favor intente nuevamente.',
+          });
+          setIsInventoryAccepted(false);
+          return;
+        }
+
+        Toast.show({
+          type: 'info',
+          text1: 'Registrando día de trabajo.',
+          text2: 'Tomará unos segundos.',
+        });
+
+        try {
+          await use_case_command.execute(
+             getTotalAmountFromCashInventory(cashInventory),
+             route,
+             availableProducts,
+             inventoryOperationMovements,
+             routeDay
+          )
+
+          // Executing a synchronization process to register the start shift inventory
+          // Note: In case of failure, the background process will eventually synchronize the records.
+          // TODO: syncingRecordsWithCentralDatabase();
+  
+          Toast.show({
+            type: 'success',
+            text1: 'Se ha registrado el inventario inicial con exito.',
+            text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
+          });
+
+          router.replace('/routeOperationMenuLayout');
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha habido un error durante el registro del inventario inicial.',
+            text2: 'Ha sucedido un error durante el registro del inventario inicial, por favor intente nuevamente.',
+          });
+
+          router.replace('/selectionRouteOperationLayout');
+        }
+      
+
+      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory
+        || id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+
+      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      } else {
+        /* Do nothing */
+      }
+  }
+
+  const handlerConfirmInventoryOperation = async ():Promise<void> => {
     // By default it is considered that the process is going to fail.
     let processResult:boolean = false;
     try {
-      /* Avoiding re-executions in case of inventory */
-      if (isInventoryAccepted === true) {
-        return;
-      }
-
-      setIsInventoryAccepted(true);
-
-      setShowDialog(false);
-      /*
-        There are 3 types of inventory operations:
-        - Start shift inventory: Unique in the day.
-        - Re-stock inventory: It might be several ones.
-        - End shift inventory: Unique in the day.
-          - This inventory operation is subdivided into 2 inventory type
-            - Devolutions
-            - Remainded products
-      */
-
       if (isOperationToUpdate) {
         /*
           When an inventory is "updated", the original inventory is kept stored and a new one is created.
@@ -739,6 +796,9 @@ const inventoryOperationLayout = () => {
           // navigation.navigate('routeOperationMenu');
         }
       } else {
+        
+        
+        
         // Determining the type of inventory operation.
         if (currentOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory) {
           /*
@@ -1170,8 +1230,8 @@ const inventoryOperationLayout = () => {
     <ScrollView style={tw`w-full flex flex-col`}>
       <ActionDialog
         visible={showDialog}
-        onAcceptDialog={handlerVendorConfirmation}
-        onDeclinedialog={handlerOnCancelInventoryOperationProcess}>
+        onAcceptDialog={handleConfirmInventoryOperation}
+        onDeclinedialog={handleCancelInventoryOperationProcess}>
           <View style={tw`w-11/12 flex flex-col`}>
             <Text style={tw`text-center text-black text-xl`}>
               ¿Estas seguró de continuar?
@@ -1320,8 +1380,8 @@ const inventoryOperationLayout = () => {
       <View style={tw`flex basis-1/6 mt-3`}>
         <VendorConfirmation
           onConfirm={isOperation ?
-            handleAcceptInventoryOperation : handlerReturnToRouteMenu}
-          onCancel={isOperation ? handlerOnVendorCancelation : handlerReturnToRouteMenu}
+            handleAcceptInventoryOperation : handleGoBackOperationDayMenu}
+          onCancel={isOperation ? handlerOnVendorCancelation : handleGoBackOperationDayMenu}
           message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
           confirmMessageButton={isOperation ? 'Aceptar' : 'Volver al menú'}
           cancelMessageButton={isOperation ? 'Cancelar' : 'Volver al menú'}

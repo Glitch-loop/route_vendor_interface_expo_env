@@ -15,6 +15,7 @@ import {
 } from '../redux/slices/workDayInformation';
 
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
+import { setRoute } from '@/redux/slices/routeSlice';
 
 import { setCurrentOperation } from '../redux/slices/currentOperationSlice';
 import { setProductInventory } from '../redux/slices/productsInventorySlice';
@@ -102,6 +103,25 @@ const routeSelectionLayout = () => {
       Since the vendor can change from this route to other one, we store the information in
       the redux state temporarily.
     */
+    const { id_route } = routeDaySelected;
+
+    if (vendorRoutes === null) {
+      Toast.show({type: 'error',
+            text1:'Error durante el proceso de selección de la ruta',
+            text2: 'Recarga la pagina para continuar con el proceso.',});
+      return
+    }
+
+
+    const route:RouteDTO|undefined = vendorRoutes.find((route:RouteDTO) => { return route.id_route === id_route });
+
+    if (route === undefined) {
+      Toast.show({type: 'error',
+      text1:'Error durante el proceso de selección de la ruta',
+      text2: 'Recarga la pagina para continuar con el proceso.',});
+      return
+    }
+    
 
     // Storing information realted to the route.
     // dispatch(setRouteInformation(route));
@@ -111,9 +131,8 @@ const routeSelectionLayout = () => {
 
     //Storing information related to the relation between the route and the day.
     // dispatch(setRouteDay(routeDay));
-    console.log('Dispatching redux')
     dispatch(setRouteDay(routeDaySelected));
-
+    dispatch(setRoute(route));
     router.push('/selectionRouteOperationLayout');
   };
 

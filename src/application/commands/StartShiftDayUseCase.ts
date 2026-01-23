@@ -32,7 +32,7 @@ import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggrega
 import ProductDTO from "@/src/application/dto/ProductDTO";
 import RouteDayDTO from "@/src/application/dto/RouteDayDTO";
 import RouteDTO from "@/src/application/dto/RouteDTO";
-import InventoryOperationDTO from "@/src/application/dto/InventoryOperationDTO";
+import InventoryOperationDescriptionDTO from "@/src/application/dto/InventoryOperationDescriptionDTO";
 import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
 
 // Utils
@@ -61,12 +61,12 @@ export class StartWorkDayUseCase {
         @inject(TOKENS.IDService) private readonly idService: IDService,
         @inject(TOKENS.DateService) private readonly dateService: DateService,
     ) { }
-
+    // TODO: Create variables for synchronization.
     private async executeUseCase(
         petty_cash: number,
         routeSelected: Route,
         productToRegister: Product[],
-        inventoryOperation: InventoryOperation,
+        inventoryOperationDescriptions: InventoryOperationDescription[],
         routeDaySelected: RouteDay): Promise<void> {
 
         const shiftORganizationAggregate: ShiftOrganizationAggregate = new ShiftOrganizationAggregate(null);
@@ -94,7 +94,6 @@ export class StartWorkDayUseCase {
 
         // Create inventory operation for starting work day.
         const { id_work_day } = newWorkDayInformation;
-        const { inventory_operation_descriptions } = inventoryOperation;
 
         inventoryOperationAggregate.createInventoryOperation(
             this.idService.generateID(),
@@ -105,7 +104,7 @@ export class StartWorkDayUseCase {
             id_work_day
         );
 
-        for (const description of inventory_operation_descriptions) {
+        for (const description of inventoryOperationDescriptions) {
             const { price_at_moment, amount, id_product } = description;
             inventoryOperationAggregate.addInventoryOperationDescription(
                 this.idService.generateID(),
@@ -179,21 +178,22 @@ export class StartWorkDayUseCase {
         petty_cash: number,
         routeSelectedDTO: RouteDTO,
         productToRegisterDTO: ProductDTO[],
-        inventoryOperationDTO: InventoryOperationDTO,
+        inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
         routeDaySelectedDTO: RouteDayDTO
     ): Promise<void> {
         const mapper = new MapperDTO();
 
         const routeSelected: Route = mapper.toEntity(routeSelectedDTO);
         const productToRegister: Product[] = productToRegisterDTO.map(productDTO => mapper.toEntity(productDTO));
-        const inventoryOperation: InventoryOperation = mapper.toEntity(inventoryOperationDTO);
+        const inventoryOperationDescriptions: InventoryOperationDescription[] = inventoryOperationDescriptionDTO
+            .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const routeDaySelected: RouteDay = mapper.toEntity(routeDaySelectedDTO);
 
         return this.executeUseCase(
             petty_cash,
             routeSelected,
             productToRegister,
-            inventoryOperation,
+            inventoryOperationDescriptions,
             routeDaySelected
         );
     }
