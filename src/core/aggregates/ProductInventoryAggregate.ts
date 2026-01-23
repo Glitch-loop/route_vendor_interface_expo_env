@@ -23,10 +23,11 @@ export class ProductInventoryAggregate {
         this.productInventory.push(newProductInventory);
     }
 
-    increaseStock(idProductInventory: string, amount: number) {
+    // This function should find the product to decrease by its idProductInventory, but instead it uses id_product.
+    increaseStock(idProduct: string, amount: number) {
         if (this.productInventory.length === 0) throw new Error("No products in inventory.");
 
-        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product_inventory'] === idProductInventory);
+        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product'] === idProduct);
         
         if (productIndex === -1) throw new Error("Product inventory not found.");
 
@@ -51,10 +52,11 @@ export class ProductInventoryAggregate {
         });
     }
 
-    decreaseStock(idProductInventory: string, amount: number) {
+    // This function should find the product to decrease by its idProductInventory, but instead it uses id_product.
+    decreaseStock(idProduct: string, amount: number) {
         if (this.productInventory.length === 0) throw new Error("No products in inventory.");
-
-        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product_inventory'] === idProductInventory);
+        
+        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product'] === idProduct);
         
         if (productIndex === -1) throw new Error("Product inventory not found.");
 
