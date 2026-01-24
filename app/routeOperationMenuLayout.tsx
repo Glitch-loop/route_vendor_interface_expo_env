@@ -1,7 +1,7 @@
 // Libraries
 import React, { use, useEffect, useState } from 'react';
 import { BackHandler, ScrollView, View, Pressable } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
 import { Router, useRouter, useLocalSearchParams } from 'expo-router';
 
@@ -41,6 +41,14 @@ import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import ActionDialog from '../components/ActionDialog';
 import { maintainUserTable } from '../services/authenticationService';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+
+
+
+
 
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
@@ -95,13 +103,11 @@ const routeOperationMenuLayout = () => {
   }
 
   // Handlers
-  const onSelectStore = (dayOperation: IDayOperation):void => {
-    dispatch(setCurrentOperation(dayOperation));
+  const onSelectStore = (dayOperation: DayOperationDTO):void => {
     router.push('/storeMenuLayout');
   };
 
-  const onSelectInventoryOperation = (dayOperation: IDayOperation):void => {
-    dispatch(setCurrentOperation(dayOperation));
+  const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => {
     router.push('/inventoryOperationLayout');
   };
 
@@ -295,65 +301,79 @@ const routeOperationMenuLayout = () => {
             <TypeOperationItem />
           </View>
         </View>
-        <View style={tw`w-full h-full flex flex-col items-center`}>
-          {dayOperations.map(dayOperation => {
-            let itemOrder = '';
-            let itemName = '';
-            let description = '';
-            let totalValue = '';
-            let style = '';
-            let typeOperation = true; /*true = client, false = inventory operation*/
+        {/* List of day operations */}
+        { dayOperations === null ?
+          <View style={tw`h-64 flex flex-col justify-center items-center`}>
+            <ActivityIndicator size={'large'} />
+          </View> :
+          <View style={tw`w-full h-full flex flex-col items-center`}>
+            {dayOperations.map(dayOperation => {
+              let itemOrder = '';
+              let itemName = '';
+              let description = '';
+              let totalValue = '';
+              let style = '';
+              let isClientOperation = true; /*true = client, false = inventory operation*/
 
-            const { operation_order } = dayOperation;
+              const { id_day_operation, id_item, operation_type, created_at } = dayOperation;
 
-            const index = stores.findIndex(store => store.id_store === dayOperation.id_item);
-            if (index === -1) {
-              /* If an index was not found, it means that the operation is not related to a client. */
 
-              // Style for inventory operation card
-              style = 'my-2 bg-red-300 rounded w-11/12 h-16 flex flex-row justify-center items-center text-white';
-
-              // Determining the type of inventory operation
-              if (dayOperation.id_type_operation === DAYS_OPERATIONS.start_shift_inventory){
-                itemName = 'Inventario de inicio de ruta';
-                // It is a "start shift inventory"
-              } else if (dayOperation.id_type_operation === DAYS_OPERATIONS.restock_inventory) {
-                // It is a "restock inventory"
-                itemName = 'Restock de producto';
-              } else if (dayOperation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-                // It is a "restock inventory"
-                itemName = 'Devolución de producto';
-              } else if (dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory) {
-                // It is a "end shift inventory"
-                itemName = 'Inventario de fin de ruta';
+              // Inventory operations type
+              style = getStyleDayOperationForMenuOperation(operation_type);
+              
+              if (operation_type === DAY_OPERATIONS.start_shift_inventory
+                ||  operation_type === DAY_OPERATIONS.restock_inventory
+                ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
+                || operation_type === DAY_OPERATIONS.end_shift_inventory
+              ) {
+                isClientOperation = false;
+                itemName = getTitleDayOperationForMenuOperation(operation_type);
+              } else if (operation_type === DAY_OPERATIONS.route_client_attention
+                || operation_type === DAY_OPERATIONS.attend_client_petition
+                || operation_type === DAY_OPERATIONS.new_client_registration
+                || operation_type === DAY_OPERATIONS.attention_out_of_route
+              ) {
+                isClientOperation = true;
+                
+                itemOrder = '0'
+                totalValue = '';
+                if (stores === null) {
+                  itemName = 'Nombre cliente desconocido.';
+                  description = '';
+                } else {
+                  const foundStore:StoreDTO|undefined = stores.find(store => store.id_store === id_item);
+                  
+                  if (foundStore === undefined) {
+                    itemName = 'Nombre cliente desconocido.';
+                    description = '';
+                  } else {
+                    const { store_name, street, ext_number, colony } = foundStore;
+                    itemName = store_name || 'Nombre cliente desconocido.';
+                    description = street + ' #' + ext_number + ', ' + colony;
+                  }                  
+                }
               }
-              typeOperation = false;
-            } else {
-              // It means that the operation is related with a client
-              itemOrder = operation_order > 0 ? operation_order.toString() : ''; 
-              itemName = stores[index].store_name!;
-              description = stores[index].street + ' #' + stores[index].ext_number + ', ' + stores[index].colony;
-              totalValue = '';
-              style = `my-2 ${ getColorContextOfStore(stores[index], dayOperation) } rounded w-11/12 h-16 flex flex-row justify-center items-center text-white`;
-              typeOperation = true;
-            }
 
-            return (
-              <RouteCard
-                key={dayOperation.id_day_operation}
-                itemOrder={itemOrder}
-                itemName={itemName}
-                description={description}
-                totalValue={totalValue}
-                style={style}
-                onSelectItem={ typeOperation ?
-                  () => { onSelectStore(dayOperation); } :
-                  () => { onSelectInventoryOperation(dayOperation); }}/>
-              );
-          })}
-        </View>
+              
+
+              return (
+                <RouteCard
+                  key={dayOperation.id_day_operation}
+                  itemOrder={itemOrder}
+                  itemName={itemName}
+                  description={description}
+                  totalValue={totalValue}
+                  style={style}
+                  onSelectItem={ isClientOperation ?
+                    () => { onSelectStore(dayOperation); } :
+                    () => { onSelectInventoryOperation(dayOperation); }}/>
+                );
+            })}
+          </View>
+        }
         <View style={tw`h-32`}/>
       </ScrollView>
+      {/* Actions menu */}
       <View style={tw`w-full
         absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
         flex flex-row justify-around
