@@ -5,6 +5,7 @@ import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 import { Store } from '@/src/core/entities/Store';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import { DayOperation } from '@/src/core/entities/DayOperation';
 
 export function isRoute(entity: any): entity is Route {
         return (
@@ -52,5 +53,12 @@ export function isProductInventory(entity: any): entity is ProductInventory {
     return (
         entity instanceof ProductInventory ||
         (typeof entity?.get_stock_of_product === 'function' && typeof entity?.get_price_of_product === 'function')
+    );
+}
+
+export function isDayOperation(entity: any): entity is DayOperation {
+    return (
+        entity instanceof DayOperation ||
+        ('id_day_operation' in entity && 'id_item' in entity && 'operation_type' in entity && 'created_at' in entity)
     );
 }

@@ -8,6 +8,7 @@ import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO'
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 export function isProductDTO(dto: any): dto is ProductDTO {
     return (
@@ -89,5 +90,15 @@ export function isProductInventoryDTO(dto: any): dto is ProductInventoryDTO {
         'price_at_moment' in dto &&
         'stock' in dto &&
         'id_product' in dto
+    );
+}
+
+export function isDayOperationDTO(dto: any): dto is DayOperationDTO {
+    return (
+        dto && typeof dto === 'object' &&
+        'id_day_operation' in dto &&
+        'id_item' in dto &&
+        'operation_type' in dto &&
+        'created_at' in dto
     );
 }

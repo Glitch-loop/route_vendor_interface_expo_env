@@ -264,14 +264,18 @@ const routeSelectionLayout = () => {
         :        
           vendorRoutes.length > 0 ?
           vendorRoutes.map((route:RouteDTO) => {
+            const { id_route, route_day_by_day} = route;
             return <View
               style={tw`w-full flex flex-col items-center`}
-              key={route.id_route}>
+              key={id_route}>
                 {
                   DAYS_ARRAY.map((day) => {
                     const { route_name, description } = route;
                     const { day_name } = day;
-                    const routeDay = route.route_day_by_day.get(day.id_day);
+
+                    if (route_day_by_day === null) return null;
+                    
+                    const routeDay = route_day_by_day.get(day.id_day);
                     if (routeDay === undefined) return null;
 
                     const {id_route_day, id_day} = routeDay;

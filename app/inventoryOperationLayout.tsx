@@ -305,8 +305,9 @@ const inventoryOperationLayout = () => {
           // Note: In case of failure, the background process will eventually synchronize the records.
           // TODO: syncingRecordsWithCentralDatabase();
           
-          const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
           const retrieveWorkDayInformationQuery = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+          const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+          
 
           const workDayInformationResult = await retrieveWorkDayInformationQuery.execute()
 

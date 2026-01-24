@@ -6,16 +6,9 @@ import { Product } from '@/src/core/entities/Product';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // DTOs
-// import { 
-//   RouteDTO, 
-//   RouteTransactionDTO, 
-//   StoreDTO,
-//   ProductDTO,
-//   WorkDayDTO,
-//   InventoryOperationDTO
-// } from '@/src/application/dto';
 import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
@@ -25,6 +18,7 @@ import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 import { RouteDay } from '@/src/core/object-values/RouteDay';
 import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
@@ -47,7 +41,8 @@ import {
     isTransaction,
     isStore,
     isProductInventory,
-    isWorkDay
+    isWorkDay,
+    isDayOperation
 } from '@/src/application/guards/entityGuards';
 
 // Object values
@@ -64,11 +59,9 @@ export class MapperDTO {
     toDTO(entity: InventoryOperation): InventoryOperationDTO;
     toDTO(entity: ProductInventory): ProductInventoryDTO;
     toDTO(entity: WorkDayInformation): WorkDayInformationDTO;
+    toDTO(entity: DayOperation): DayOperationDTO;
 //   toDTO(entity: RouteTransaction): RouteTransactionDTO;
-//   toDTO(entity: Store): StoreDTO;
-//   toDTO(entity: WorkDayInformation): WorkDayDTO;
-//   toDTO(entity: Route | RouteTransaction | Store | Product | WorkDayInformation | InventoryOperation): any {
-        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation): any {
+        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation | DayOperation): any {
         // Route
         if (isRoute(entity)) {
             return this.routeToDTO(entity);
@@ -98,6 +91,11 @@ export class MapperDTO {
         if (isWorkDay(entity)) {
             return this.workDayToDTO(entity);
         }
+
+        // DayOperation
+        if (isDayOperation(entity)) {
+            return this.dayOperationToDTO(entity as DayOperation);
+        }
         // RouteTransaction
         // if (this.isTransaction(entity)) {
         //   return this.transactionToDTO(entity);
@@ -125,13 +123,14 @@ export class MapperDTO {
     toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
     toEntity(dto: RouteDTO): Route;
     toEntity(dto: RouteDayDTO): RouteDay;
-    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay {
+    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO | DayOperationDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay | DayOperation {
         if (isProductDTO(dto)) return this.productDTOToEntity(dto);
         if (isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
         if (isInventoryOperationDescriptionDTO(dto)) return this.inventoryProductDescriptionDTOToEntity(dto);
         if (isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
         if (isRouteDTO(dto)) return this.routeDTOToEntity(dto);
         if (isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
+        if ((dto as any) && 'id_day_operation' in dto) return this.dayOperationDTOToEntity(dto as DayOperationDTO);
         
         throw new Error('Unknown DTO type');
     }
@@ -254,6 +253,15 @@ export class MapperDTO {
         };
     }
 
+    private dayOperationToDTO(entity: DayOperation): DayOperationDTO {
+        return {
+            id_day_operation: entity.id_day_operation,
+            id_item: entity.id_item,
+            operation_type: entity.operation_type,
+            created_at: entity.created_at,
+        };
+    }
+
 
     // ==================== DTO TYPE GUARDS ====================
 
@@ -317,6 +325,17 @@ export class MapperDTO {
             dto.route_status,
             dto.id_day,
             dto.id_route_day,
+        );
+    }
+
+    // DayOperationDTO -> DayOperation (domain)
+    dayOperationDTOToEntity(dto: DayOperationDTO): DayOperation {
+        const createdAt = dto.created_at instanceof Date ? dto.created_at : new Date(dto.created_at);
+        return new DayOperation(
+            dto.id_day_operation,
+            dto.id_item,
+            dto.operation_type,
+            createdAt
         );
     }
 
