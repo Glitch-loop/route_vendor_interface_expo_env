@@ -45,6 +45,7 @@ import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 
@@ -258,161 +259,163 @@ const routeOperationMenuLayout = () => {
   }
 
   return (
-    <View style={tw`flex-1`}>
-      <ActionDialog
-        visible={showDialog}
-        onAcceptDialog={onAcceptDialog}
-        onDeclinedialog={onDeclinedialog}
-        >
-        <View style={tw`w-full flex flex-col basis-11/12 justify-center items-center`}>
-          <Text style={tw`text-center text-black text-lg`}>
-            ¿Seguro que quieres regresar al menu princial?
-          </Text>
-          <Text style={tw`text-center text-black text-base mt-2`}>
-            (Una vez aceptado no podras volver a este menú)
-          </Text>
-        </View>
-      </ActionDialog>
-      <View style={tw`flex flex-row justify-center items-center`}>
-      <Pressable
-        onPress={() => {
-          if (isDayWorkClosed) {
-            Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-          } else {
-            handlerSearchClient();
-          }
-        }}
-        style={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}>
-        <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
-      </Pressable>
-      </View>
-      <ScrollView
-        style={tw`w-full h-full flex flex-col`}
-        scrollEventThrottle={16}>
-        <View style={tw`my-5`}>
-          {/* <MenuHeader
-            showGoBackButton={false}
-            showStoreName={false}
-            showPrinterButton={true}
-            onGoBack={() => {}}/> */}
-        </View>
-        <View style={tw`w-full flex flex-row justify-center`}>
-          <View style={tw`w-11/12 flex flex-row justify-start`}>
-            <TypeOperationItem />
+    <SafeAreaView>
+      <View style={tw`w-full h-full`}>
+        <ActionDialog
+          visible={showDialog}
+          onAcceptDialog={onAcceptDialog}
+          onDeclinedialog={onDeclinedialog}
+          >
+          <View style={tw`w-full flex flex-col basis-11/12 justify-center items-center`}>
+            <Text style={tw`text-center text-black text-lg`}>
+              ¿Seguro que quieres regresar al menu princial?
+            </Text>
+            <Text style={tw`text-center text-black text-base mt-2`}>
+              (Una vez aceptado no podras volver a este menú)
+            </Text>
           </View>
+        </ActionDialog>
+        <View style={tw`flex flex-row justify-center items-center`}>
+        <Pressable
+          onPress={() => {
+            if (isDayWorkClosed) {
+              Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+            } else {
+              handlerSearchClient();
+            }
+          }}
+          style={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}>
+          <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
+        </Pressable>
         </View>
-        {/* List of day operations */}
-        { dayOperations === null ?
-          <View style={tw`h-64 flex flex-col justify-center items-center`}>
-            <ActivityIndicator size={'large'} />
-          </View> :
-          <View style={tw`w-full h-full flex flex-col items-center`}>
-            {dayOperations.map(dayOperation => {
-              let itemOrder = '';
-              let itemName = '';
-              let description = '';
-              let totalValue = '';
-              let style = '';
-              let isClientOperation = true; /*true = client, false = inventory operation*/
+        <ScrollView
+          style={tw`w-full h-full flex flex-col`}
+          scrollEventThrottle={16}>
+          <View style={tw`my-5`}>
+            {/* <MenuHeader
+              showGoBackButton={false}
+              showStoreName={false}
+              showPrinterButton={true}
+              onGoBack={() => {}}/> */}
+          </View>
+          <View style={tw`w-full flex flex-row justify-center`}>
+            <View style={tw`w-11/12 flex flex-row justify-start`}>
+              <TypeOperationItem />
+            </View>
+          </View>
+          {/* List of day operations */}
+          { dayOperations === null ?
+            <View style={tw`h-64 flex flex-col justify-center items-center`}>
+              <ActivityIndicator size={'large'} />
+            </View> :
+            <View style={tw`w-full h-full flex flex-col items-center`}>
+              {dayOperations.map(dayOperation => {
+                let itemOrder = '';
+                let itemName = '';
+                let description = '';
+                let totalValue = '';
+                let style = '';
+                let isClientOperation = true; /*true = client, false = inventory operation*/
 
-              const { id_day_operation, id_item, operation_type, created_at } = dayOperation;
+                const { id_day_operation, id_item, operation_type, created_at } = dayOperation;
 
 
-              // Inventory operations type
-              style = getStyleDayOperationForMenuOperation(operation_type);
-              
-              if (operation_type === DAY_OPERATIONS.start_shift_inventory
-                ||  operation_type === DAY_OPERATIONS.restock_inventory
-                ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
-                || operation_type === DAY_OPERATIONS.end_shift_inventory
-              ) {
-                isClientOperation = false;
-                itemName = getTitleDayOperationForMenuOperation(operation_type);
-              } else if (operation_type === DAY_OPERATIONS.route_client_attention
-                || operation_type === DAY_OPERATIONS.attend_client_petition
-                || operation_type === DAY_OPERATIONS.new_client_registration
-                || operation_type === DAY_OPERATIONS.attention_out_of_route
-              ) {
-                isClientOperation = true;
+                // Inventory operations type
+                style = getStyleDayOperationForMenuOperation(operation_type);
                 
-                itemOrder = '0'
-                totalValue = '';
-                if (stores === null) {
-                  itemName = 'Nombre cliente desconocido.';
-                  description = '';
-                } else {
-                  const foundStore:StoreDTO|undefined = stores.find(store => store.id_store === id_item);
+                if (operation_type === DAY_OPERATIONS.start_shift_inventory
+                  ||  operation_type === DAY_OPERATIONS.restock_inventory
+                  ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
+                  || operation_type === DAY_OPERATIONS.end_shift_inventory
+                ) {
+                  isClientOperation = false;
+                  itemName = getTitleDayOperationForMenuOperation(operation_type);
+                } else if (operation_type === DAY_OPERATIONS.route_client_attention
+                  || operation_type === DAY_OPERATIONS.attend_client_petition
+                  || operation_type === DAY_OPERATIONS.new_client_registration
+                  || operation_type === DAY_OPERATIONS.attention_out_of_route
+                ) {
+                  isClientOperation = true;
                   
-                  if (foundStore === undefined) {
+                  itemOrder = '0'
+                  totalValue = '';
+                  if (stores === null) {
                     itemName = 'Nombre cliente desconocido.';
                     description = '';
                   } else {
-                    const { store_name, street, ext_number, colony } = foundStore;
-                    itemName = store_name || 'Nombre cliente desconocido.';
-                    description = street + ' #' + ext_number + ', ' + colony;
-                  }                  
+                    const foundStore:StoreDTO|undefined = stores.find(store => store.id_store === id_item);
+                    
+                    if (foundStore === undefined) {
+                      itemName = 'Nombre cliente desconocido.';
+                      description = '';
+                    } else {
+                      const { store_name, street, ext_number, colony } = foundStore;
+                      itemName = store_name || 'Nombre cliente desconocido.';
+                      description = street + ' #' + ext_number + ', ' + colony;
+                    }                  
+                  }
                 }
-              }
 
-              return (
-                <RouteCard
-                  key={dayOperation.id_day_operation}
-                  itemOrder={itemOrder}
-                  itemName={itemName}
-                  description={description}
-                  totalValue={totalValue}
-                  style={style}
-                  onSelectItem={ isClientOperation ?
-                    () => { onSelectStore(dayOperation); } :
-                    () => { onSelectInventoryOperation(dayOperation); }}/>
-                );
-            })}
-          </View>
-        }
-        <View style={tw`h-32`}/>
-      </ScrollView>
-      {/* Actions menu */}
-      <View style={tw`w-full
-        absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
-        flex flex-row justify-around
-        `}>
-          <Pressable
-            onPress={() => {
-              if (isDayWorkClosed) {
-                Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-              } else {
-                // createNewClient();
-              }
-            }}
-            style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-            <Text style={tw`text-sm text-center`}>Crear nuevo cliente</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (isDayWorkClosed) {
-                Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-              } else {
-                onRestockInventory();
-              }
-            }}
-            style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}>
-            <Text style={tw`text-sm text-center`}>Restock de producto</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (isDayWorkClosed) {
-                onShowDialog();
-              } else {
-                onFinishInventory();
-              }
-            }}
-            style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-            <Text style={tw`text-sm text-center`}>
-              { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
-            </Text>
-          </Pressable>
+                return (
+                  <RouteCard
+                    key={dayOperation.id_day_operation}
+                    itemOrder={itemOrder}
+                    itemName={itemName}
+                    description={description}
+                    totalValue={totalValue}
+                    style={style}
+                    onSelectItem={ isClientOperation ?
+                      () => { onSelectStore(dayOperation); } :
+                      () => { onSelectInventoryOperation(dayOperation); }}/>
+                  );
+              })}
+            </View>
+          }
+          <View style={tw`h-32`}/>
+        </ScrollView>
+        {/* Actions menu */}
+        <View style={tw`w-full
+          absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
+          flex flex-row justify-around
+          `}>
+            <Pressable
+              onPress={() => {
+                if (isDayWorkClosed) {
+                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+                } else {
+                  // createNewClient();
+                }
+              }}
+              style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
+              <Text style={tw`text-sm text-center`}>Crear nuevo cliente</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                if (isDayWorkClosed) {
+                  Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+                } else {
+                  onRestockInventory();
+                }
+              }}
+              style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}>
+              <Text style={tw`text-sm text-center`}>Restock de producto</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                if (isDayWorkClosed) {
+                  onShowDialog();
+                } else {
+                  onFinishInventory();
+                }
+              }}
+              style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
+              <Text style={tw`text-sm text-center`}>
+                { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
+              </Text>
+            </Pressable>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

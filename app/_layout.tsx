@@ -24,6 +24,7 @@ import store from "@/redux/store";
 import { PaperProvider } from "react-native-paper";
 import ToastMessage from "@/components/generalComponents/ToastMessage";
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 async function appSetUp() {
     console.log("Rootlayout Initialization started");
@@ -44,12 +45,14 @@ export default function RootLayout() {
 
   }, [])
   return (
-    <Provider store={store}>
-      <PaperProvider>
-        <ToastMessage />
-        <Slot/>
-      </PaperProvider>
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <PaperProvider>
+          <ToastMessage />
+          <Slot/>
+        </PaperProvider>
+      </Provider>
+    </SafeAreaProvider>
 
   )
 }

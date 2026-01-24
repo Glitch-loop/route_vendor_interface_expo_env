@@ -81,6 +81,7 @@ import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/Re
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import { setStores } from '@/redux/slices/storesSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -496,171 +497,173 @@ const inventoryOperationLayout = () => {
   }
 
   return (
-    <ScrollView style={tw`w-full flex flex-col`}>
-      <ActionDialog
-        visible={showDialog}
-        onAcceptDialog={handleConfirmInventoryOperation}
-        onDeclinedialog={handleCancelInventoryOperationProcess}>
-          <View style={tw`w-11/12 flex flex-col`}>
-            <Text style={tw`text-center text-black text-xl`}>
-              ¿Estas seguró de continuar?
+    <SafeAreaView>
+      <ScrollView style={tw`w-full flex flex-col`}>
+        <ActionDialog
+          visible={showDialog}
+          onAcceptDialog={handleConfirmInventoryOperation}
+          onDeclinedialog={handleCancelInventoryOperationProcess}>
+            <View style={tw`w-11/12 flex flex-col`}>
+              <Text style={tw`text-center text-black text-xl`}>
+                ¿Estas seguró de continuar?
+              </Text>
+              <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
+                {
+                id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
+                || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ?
+                'Puede ser que estes olvidando registrar algún producto o cantidad de dinero.' :
+                'Puede ser que estes olvidando registrar algún producto'
+                }
+              </Text>
+            </View>
+        </ActionDialog>
+
+        <View style={tw`mt-3 w-full flex basis-1/6`}>
+          {/* Go back it's considered as canceling the inventory operation */}
+          <RouteHeader onGoBack={handlerOnVendorCancelation}/> 
+        </View>
+
+        {/* Inventory operation section. */}
+        <View style={tw`w-full flex flex-row items-center justify-center`}>
+          <View style={tw`flex flex-col items-center justify-center`}>
+            <Text style={tw`text-center text-black text-2xl`}>
+              { getTitleDayOperation(id_type_of_operation_search_param) }
             </Text>
-            <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-              {
-              id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-              || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ?
-              'Puede ser que estes olvidando registrar algún producto o cantidad de dinero.' :
-              'Puede ser que estes olvidando registrar algún producto'
-              }
+            { !isActiveOperation &&
+            <Text style={tw`text-center text-black text-base`}>
+              Operación cancelada
+            </Text>
+            }
+          </View>
+          { (isInventoryOperationModifiable && !isOperation) &&
+            <Pressable
+              style={tw`bg-blue-500 py-6 px-6 rounded-full ml-3`}
+              onPress={handleStartInventoryOperationFromThisOperation}
+              >
+              <Icon
+                name={'edit'}
+                style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
+            </Pressable>
+          }
+        </View>
+
+        {/* Depending on the action, it will be decided the menu to be displayed. */}
+        { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+          <View style={tw`flex basis-auto w-full mt-3`}>
+            <TableInventoryVisualization 
+              availableProduct                = {availableProducts}
+              suggestedInventory              = {suggestedInventory}
+              initialInventory                = {[]}
+              restockInventories              = {restockInventories}
+              soldOperations                  = {productSoldTransactions}
+              repositionsOperations           = {productRepositionTransactions}
+              returnedInventory               = {[]}
+              inventoryWithdrawal             = {inventoryWithdrawal}
+              inventoryOutflow                = {inventoryOutflow}
+              finalOperation                  = {finalOperation}
+              issueInventory                  = {issueInventory}
+              isInventoryOperationModifiable  = {isInventoryOperationModifiable}
+              />
+            { (inventoryOperationToConsult?.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && isActiveOperation === true) &&
+              <View style={tw`flex basis-auto w-full mt-3`}>
+                <Text style={tw`w-full text-center text-black text-2xl`}>
+                  Producto vendido por tienda
+                </Text>
+                <TableRouteTransactionProductVisualization
+                    availableProducts               = {availableProducts}
+                    stores                          = {[]}
+                    routeTransactions               = {[]}
+                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                    calculateTotalOfProduct         = {true}/>
+                <Text style={tw`w-full text-center text-black text-2xl`}>
+                  Producto vendido por tienda
+                </Text>
+                <TableRouteTransactionProductVisualization
+                    availableProducts               = {availableProducts}
+                    stores                          = {[]}
+                    routeTransactions               = {[]}
+                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                    calculateTotalOfProduct         = {true}/>
+                <Text style={tw`w-full text-center text-black text-2xl`}>
+                  Reposición de producto por tienda
+                </Text>
+                  <TableRouteTransactionProductVisualization
+                    availableProducts               = {availableProducts}
+                    stores                          = {[]}
+                    routeTransactions               = {[]}
+                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                    calculateTotalOfProduct         = {true}/>
+              </View>
+            }
+          </View> :
+          <View style={tw`flex basis-auto w-full mt-3`}>
+            <TableInventoryOperations
+                availableProducts={availableProducts}
+                suggestedInventory={suggestedInventory}
+                currentInventory={currentShiftInventory}
+                movementsOfOperation={inventoryOperationMovements}
+                setInventoryOperation={setInventoryOperationMovements}
+                id_type_of_operation={id_type_of_operation_search_param} />
+          </View>
+        }
+        {/* Cash reception section. */}
+        {((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
+        || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)
+        && isOperation && !isOperationToUpdate) &&
+          <View style={tw`flex basis-auto w-full mt-3`}>
+            <Text style={tw`w-full text-center text-black text-2xl`}>
+              {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'}
+              {id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory && 'Fondo + dinero de venta (efectivo)'}
+            </Text>
+            <TableCashReception
+              cashInventoryOperation={cashInventory}
+              setCashInventoryOperation={setCashInventory}/>
+            <Text style={tw`w-full text-center text-black text-xl mt-2`}>
+              Total:
+              ${cashInventory.reduce((accumulator, denomination) => {
+                  return accumulator + denomination.amount! * denomination.value;},0)}
+              </Text>
+          </View>
+        }
+        {/* Total amount of petty cash */}
+        { ((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
+        || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) 
+        && !isOperation
+        && isActiveOperation
+        && workDayInformation) &&
+          <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
+            <Text style={tw`text-black text-lg`}>
+              Dinero llevado al inicio de la ruta: ${workDayInformation.start_petty_cash}
             </Text>
           </View>
-      </ActionDialog>
-
-      <View style={tw`mt-3 w-full flex basis-1/6`}>
-        {/* Go back it's considered as canceling the inventory operation */}
-        <RouteHeader onGoBack={handlerOnVendorCancelation}/> 
-      </View>
-
-      {/* Inventory operation section. */}
-      <View style={tw`w-full flex flex-row items-center justify-center`}>
-        <View style={tw`flex flex-col items-center justify-center`}>
-          <Text style={tw`text-center text-black text-2xl`}>
-            { getTitleDayOperation(id_type_of_operation_search_param) }
-          </Text>
-          { !isActiveOperation &&
-          <Text style={tw`text-center text-black text-base`}>
-            Operación cancelada
-          </Text>
-          }
-        </View>
-        { (isInventoryOperationModifiable && !isOperation) &&
-          <Pressable
-            style={tw`bg-blue-500 py-6 px-6 rounded-full ml-3`}
-            onPress={handleStartInventoryOperationFromThisOperation}
-            >
-            <Icon
-              name={'edit'}
-              style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
-          </Pressable>
         }
-      </View>
-
-      {/* Depending on the action, it will be decided the menu to be displayed. */}
-      { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
-        <View style={tw`flex basis-auto w-full mt-3`}>
-          <TableInventoryVisualization 
-            availableProduct                = {availableProducts}
-            suggestedInventory              = {suggestedInventory}
-            initialInventory                = {[]}
-            restockInventories              = {restockInventories}
-            soldOperations                  = {productSoldTransactions}
-            repositionsOperations           = {productRepositionTransactions}
-            returnedInventory               = {[]}
-            inventoryWithdrawal             = {inventoryWithdrawal}
-            inventoryOutflow                = {inventoryOutflow}
-            finalOperation                  = {finalOperation}
-            issueInventory                  = {issueInventory}
-            isInventoryOperationModifiable  = {isInventoryOperationModifiable}
-            />
-          { (inventoryOperationToConsult?.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && isActiveOperation === true) &&
-            <View style={tw`flex basis-auto w-full mt-3`}>
-              <Text style={tw`w-full text-center text-black text-2xl`}>
-                Producto vendido por tienda
-              </Text>
-              <TableRouteTransactionProductVisualization
-                  availableProducts               = {availableProducts}
-                  stores                          = {[]}
-                  routeTransactions               = {[]}
-                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
-                  calculateTotalOfProduct         = {true}/>
-              <Text style={tw`w-full text-center text-black text-2xl`}>
-                Producto vendido por tienda
-              </Text>
-              <TableRouteTransactionProductVisualization
-                  availableProducts               = {availableProducts}
-                  stores                          = {[]}
-                  routeTransactions               = {[]}
-                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
-                  calculateTotalOfProduct         = {true}/>
-              <Text style={tw`w-full text-center text-black text-2xl`}>
-                Reposición de producto por tienda
-              </Text>
-                <TableRouteTransactionProductVisualization
-                  availableProducts               = {availableProducts}
-                  stores                          = {[]}
-                  routeTransactions               = {[]}
-                  idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
-                  calculateTotalOfProduct         = {true}/>
-            </View>
-          }
-        </View> :
-        <View style={tw`flex basis-auto w-full mt-3`}>
-          <TableInventoryOperations
-              availableProducts={availableProducts}
-              suggestedInventory={suggestedInventory}
-              currentInventory={currentShiftInventory}
-              movementsOfOperation={inventoryOperationMovements}
-              setInventoryOperation={setInventoryOperationMovements}
-              id_type_of_operation={id_type_of_operation_search_param} />
-        </View>
-      }
-      {/* Cash reception section. */}
-      {((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-      || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)
-      && isOperation && !isOperationToUpdate) &&
-        <View style={tw`flex basis-auto w-full mt-3`}>
-          <Text style={tw`w-full text-center text-black text-2xl`}>
-            {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'}
-            {id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory && 'Fondo + dinero de venta (efectivo)'}
-          </Text>
-          <TableCashReception
-            cashInventoryOperation={cashInventory}
-            setCashInventoryOperation={setCashInventory}/>
-          <Text style={tw`w-full text-center text-black text-xl mt-2`}>
-            Total:
-            ${cashInventory.reduce((accumulator, denomination) => {
-                return accumulator + denomination.amount! * denomination.value;},0)}
+        { (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory
+        && !isOperation
+        && isActiveOperation
+        && workDayInformation) &&
+          <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
+            <Text style={tw`text-black text-lg`}>
+              Dinero regresado al final de la ruta: ${workDayInformation.final_petty_cash ? workDayInformation.final_petty_cash : 0}
             </Text>
+          </View>
+        }
+        {/* User actions */}
+        <View style={tw`flex basis-1/6 mt-3`}>
+          <VendorConfirmation
+            onConfirm={isOperation ?
+              handleAcceptInventoryOperation : handleGoBackOperationDayMenu}
+            onCancel={isOperation ? handlerOnVendorCancelation : handleGoBackOperationDayMenu}
+            message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
+            confirmMessageButton={isOperation ? 'Aceptar' : 'Volver al menú'}
+            cancelMessageButton={isOperation ? 'Cancelar' : 'Volver al menú'}
+            requiredValidation={
+              false
+              //isOperation
+              }/>
         </View>
-      }
-      {/* Total amount of petty cash */}
-      { ((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-      || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) 
-      && !isOperation
-      && isActiveOperation
-      && workDayInformation) &&
-        <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
-          <Text style={tw`text-black text-lg`}>
-            Dinero llevado al inicio de la ruta: ${workDayInformation.start_petty_cash}
-          </Text>
-        </View>
-      }
-      { (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory
-      && !isOperation
-      && isActiveOperation
-      && workDayInformation) &&
-        <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
-          <Text style={tw`text-black text-lg`}>
-            Dinero regresado al final de la ruta: ${workDayInformation.final_petty_cash ? workDayInformation.final_petty_cash : 0}
-          </Text>
-        </View>
-      }
-      {/* User actions */}
-      <View style={tw`flex basis-1/6 mt-3`}>
-        <VendorConfirmation
-          onConfirm={isOperation ?
-            handleAcceptInventoryOperation : handleGoBackOperationDayMenu}
-          onCancel={isOperation ? handlerOnVendorCancelation : handleGoBackOperationDayMenu}
-          message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
-          confirmMessageButton={isOperation ? 'Aceptar' : 'Volver al menú'}
-          cancelMessageButton={isOperation ? 'Cancelar' : 'Volver al menú'}
-          requiredValidation={
-            false
-            //isOperation
-            }/>
-      </View>
-      <View style={tw`flex basis-1/6`} />
-    </ScrollView>
+        <View style={tw`flex basis-1/6`} />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

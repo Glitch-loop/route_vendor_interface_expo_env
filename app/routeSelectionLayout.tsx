@@ -57,6 +57,7 @@ import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 // Utils
 import { DAYS_ARRAY } from '@/src/core/constants/Days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const routeSelectionLayout = () => {
   // Redux (context definitions)
@@ -235,71 +236,73 @@ const routeSelectionLayout = () => {
   }
 
   return (
-    <View style={tw`w-full h-full`}>
-        <ActionDialog
-          visible={showDialog}
-          onAcceptDialog={handleOnAcceptMakeRoute}
-          onDeclinedialog={handleOnCancelMakeRoute}>
-            <View style={tw`w-11/12 flex flex-col`}>
-              <Text style={tw`text-center text-black text-xl`}>
-                Este dia de la ruta no corresponde hacerla hoy. ¿Estas seguro seguir adelante?
-              </Text>
-              <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                Ruta a hacer: {pendingToAcceptRoute?.route_name}
-              </Text>
-              <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                Dia: {pendingToAcceptRouteDay?.day.day_name}
-              </Text>
+    <SafeAreaView>
+      <View style={tw`w-full h-full`}>
+          <ActionDialog
+            visible={showDialog}
+            onAcceptDialog={handleOnAcceptMakeRoute}
+            onDeclinedialog={handleOnCancelMakeRoute}>
+              <View style={tw`w-11/12 flex flex-col`}>
+                <Text style={tw`text-center text-black text-xl`}>
+                  Este dia de la ruta no corresponde hacerla hoy. ¿Estas seguro seguir adelante?
+                </Text>
+                <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
+                  Ruta a hacer: {pendingToAcceptRoute?.route_name}
+                </Text>
+                <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
+                  Dia: {pendingToAcceptRouteDay?.day.day_name}
+                </Text>
+              </View>
+          </ActionDialog>
+        <MainMenuHeader/>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+          {/* Show vendor's options by route in natural days order. */}
+          { vendorRoutes === null ?
+            <View style={tw`h-64 flex flex-col justify-center items-center`}>
+              <ActivityIndicator size={'large'} />
             </View>
-        </ActionDialog>
-      <MainMenuHeader/>
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-        {/* Show vendor's options by route in natural days order. */}
-        { vendorRoutes === null ?
-          <View style={tw`h-64 flex flex-col justify-center items-center`}>
-            <ActivityIndicator size={'large'} />
-          </View>
-        :        
-          vendorRoutes.length > 0 ?
-          vendorRoutes.map((route:RouteDTO) => {
-            const { id_route, route_day_by_day} = route;
-            return <View
-              style={tw`w-full flex flex-col items-center`}
-              key={id_route}>
-                {
-                  DAYS_ARRAY.map((day) => {
-                    const { route_name, description } = route;
-                    const { day_name } = day;
+          :        
+            vendorRoutes.length > 0 ?
+            vendorRoutes.map((route:RouteDTO) => {
+              const { id_route, route_day_by_day} = route;
+              return <View
+                style={tw`w-full flex flex-col items-center`}
+                key={id_route}>
+                  {
+                    DAYS_ARRAY.map((day) => {
+                      const { route_name, description } = route;
+                      const { day_name } = day;
 
-                    if (route_day_by_day === null) return null;
-                    
-                    const routeDay = route_day_by_day.get(day.id_day);
-                    if (routeDay === undefined) return null;
+                      if (route_day_by_day === null) return null;
+                      
+                      const routeDay = route_day_by_day.get(day.id_day);
+                      if (routeDay === undefined) return null;
 
-                    const {id_route_day, id_day} = routeDay;
-                    return (
-                    <RouteSelectionCard
-                      key={id_route_day}
-                      routeName={route_name}
-                      day={day_name}
-                      description={description}
-                      routeDay={routeDay}
-                      todayTurn={determineIfCurrentDay(id_day)}
-                      onSelectCard={handleSelectRoute}/>
-                  );
-                  })
-                }
-            </View>;
-          })
-          :
-          <View style={tw`h-64 flex flex-row justify-center items-center`}>
-            <Text style={tw`text-2xl font-bold`}>No tienes rutas asignadas</Text>
-          </View>
-        }
-      </ScrollView>
-    </View>
+                      const {id_route_day, id_day} = routeDay;
+                      return (
+                      <RouteSelectionCard
+                        key={id_route_day}
+                        routeName={route_name}
+                        day={day_name}
+                        description={description}
+                        routeDay={routeDay}
+                        todayTurn={determineIfCurrentDay(id_day)}
+                        onSelectCard={handleSelectRoute}/>
+                    );
+                    })
+                  }
+              </View>;
+            })
+            :
+            <View style={tw`h-64 flex flex-row justify-center items-center`}>
+              <Text style={tw`text-2xl font-bold`}>No tienes rutas asignadas</Text>
+            </View>
+          }
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
