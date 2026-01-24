@@ -354,8 +354,6 @@ const routeOperationMenuLayout = () => {
                 }
               }
 
-              
-
               return (
                 <RouteCard
                   key={dayOperation.id_day_operation}

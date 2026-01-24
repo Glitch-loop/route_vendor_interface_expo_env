@@ -79,6 +79,8 @@ import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import { setStores } from '@/redux/slices/storesSlice';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -309,13 +311,14 @@ const inventoryOperationLayout = () => {
 
 
           const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-          const retrieveWorkDayInformationQuery = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-          const retrieveCurrentDayOperationsQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-
+          const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+          const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+          const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
           
           const productInventoryResult     = await retrieveCurrentShiftInventoryQuery.execute()
           const workDayInformationResult   = await retrieveWorkDayInformationQuery.execute()
           const currentDayOperationsResult = await retrieveCurrentDayOperationsQuery.execute()
+          const allRegisterdStoresResult   = await listAllRegisterdStoresQuery.execute()
 
           if (workDayInformationResult === null) {
             Toast.show({
@@ -329,6 +332,7 @@ const inventoryOperationLayout = () => {
           dispatch(setProductInventory(productInventoryResult));
           dispatch(setWorkDayInformation(workDayInformationResult));
           dispatch(setDayOperations(currentDayOperationsResult));
+          dispatch(setStores(allRegisterdStoresResult))
 
           Toast.show({
             type: 'success',
