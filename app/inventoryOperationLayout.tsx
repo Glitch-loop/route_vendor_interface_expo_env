@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 
 // Components
 import RouteHeader from '../components/RouteHeader';
@@ -77,6 +78,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -304,12 +306,15 @@ const inventoryOperationLayout = () => {
           // Executing a synchronization process to register the start shift inventory
           // Note: In case of failure, the background process will eventually synchronize the records.
           // TODO: syncingRecordsWithCentralDatabase();
-          
-          const retrieveWorkDayInformationQuery = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+          console.log("RETRIEVING INFORMATION FOR REDUX UPDATE AFTER START SHIFT DAY EXECUTION");          
           const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-          
+          const retrieveWorkDayInformationQuery = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+          const retrieveCurrentDayOperationsQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
-          const workDayInformationResult = await retrieveWorkDayInformationQuery.execute()
+          
+          const productInventoryResult     = await retrieveCurrentShiftInventoryQuery.execute()
+          const workDayInformationResult   = await retrieveWorkDayInformationQuery.execute()
+          const currentDayOperationsResult = await retrieveCurrentDayOperationsQuery.execute()
 
           if (workDayInformationResult === null) {
             Toast.show({
@@ -319,9 +324,11 @@ const inventoryOperationLayout = () => {
             });
             return
           }
-
-          setWorkDayInformation(workDayInformationResult);
-          setProductInventory(await retrieveCurrentShiftInventoryQuery.execute());
+          
+          // console.log("Redux updation*************************")
+          dispatch(setProductInventory(productInventoryResult));
+          dispatch(setWorkDayInformation(workDayInformationResult));
+          dispatch(setDayOperations(currentDayOperationsResult));
 
           Toast.show({
             type: 'success',
@@ -330,6 +337,8 @@ const inventoryOperationLayout = () => {
           });
 
           // TODO: Update redux
+          
+
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {

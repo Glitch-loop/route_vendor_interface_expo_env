@@ -72,10 +72,10 @@ export class MapperDTO {
           return this.productToDTO(entity);
         }
 
-                // Store
-                if (isStore(entity)) {
-                    return this.storeToDTO(entity);
-                }
+        // Store
+        if (isStore(entity)) {
+            return this.storeToDTO(entity);
+        }
 
         // InventoryOperation
         if (isInventoryOperation(entity)) {
@@ -101,17 +101,6 @@ export class MapperDTO {
         //   return this.transactionToDTO(entity);
         // }
         
-        
-
-
-
-        // // WorkDayInformation
-        // if (this.isWorkDay(entity)) {
-        //   return this.workDayToDTO(entity);
-        // }
-
-
-
           throw new Error('Unknown entity type');
   }
 
@@ -240,8 +229,8 @@ export class MapperDTO {
     private workDayToDTO(entity: WorkDayInformation): WorkDayInformationDTO {
         return {
             id_work_day: entity.id_work_day,
-            start_date: entity.start_date,
-            finish_date: entity.finish_date,
+            start_date: entity.start_date.toISOString(),
+            finish_date: entity.finish_date ? entity.finish_date.toISOString() : null,
             start_petty_cash: entity.start_petty_cash,
             final_petty_cash: entity.final_petty_cash,
             id_route: entity.id_route,
@@ -311,8 +300,26 @@ export class MapperDTO {
 
     // WorkDayInformationDTO -> WorkDayInformation (domain)
     workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
-        const start = dto.start_date instanceof Date ? dto.start_date : new Date(dto.start_date);
-        const finish = dto.finish_date === null ? null : (dto.finish_date instanceof Date ? dto.finish_date : new Date(dto.finish_date));
+        const { start_date, finish_date } = dto;
+        let start = new Date();
+        let finish = null;
+
+        if (typeof start_date === 'string') {
+            if(isNaN(Date.parse(start_date))) {
+                throw new Error('Invalid start_date format in WorkDayInformationDTO');
+            }
+            start = new Date(start_date);
+
+        }
+
+
+        if (finish_date !== null) {
+            if(isNaN(Date.parse(finish_date))) {
+                throw new Error('Invalid finish_date format in WorkDayInformationDTO');
+            }
+            finish = new Date(finish_date);
+        }
+
         return new WorkDayInformation(
             dto.id_work_day,
             start,

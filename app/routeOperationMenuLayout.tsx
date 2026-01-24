@@ -58,18 +58,7 @@ const routeOperationMenuLayout = () => {
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
   useEffect(() => {
-    // Determining if the day is still open
-    const endShiftInventoryOperation:IDayOperation|undefined
-    = dayOperations.find(dayOperation =>
-      dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory);
-
-    if (endShiftInventoryOperation === undefined) {
-      /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
-      /*There is an end shift operation, the work day was closed. */
-      setIsDayWorkClosed(false);
-    } else {
-      setIsDayWorkClosed(true);
-    }
+    setUpOperationMenu();
 
     const backAction = () => {
       /*
@@ -89,6 +78,21 @@ const routeOperationMenuLayout = () => {
     return () => backHandler.remove();
 
   }, [dayOperations, isDayWorkClosed, routeDay]);
+
+  const setUpOperationMenu = ():void => {
+    // Determining if the day is still open
+    const endShiftInventoryOperation:IDayOperation|undefined
+    = dayOperations.find(dayOperation =>
+      dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory);
+
+    if (endShiftInventoryOperation === undefined) {
+      /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
+      /*There is an end shift operation, the work day was closed. */
+      setIsDayWorkClosed(false);
+    } else {
+      setIsDayWorkClosed(true);
+    }
+  }
 
   // Handlers
   const onSelectStore = (dayOperation: IDayOperation):void => {
