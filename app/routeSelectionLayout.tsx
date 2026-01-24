@@ -232,7 +232,6 @@ const routeSelectionLayout = () => {
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
-
   }
 
   return (

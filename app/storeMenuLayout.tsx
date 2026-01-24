@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import tw from 'twrnc';
-import { Router, useRouter } from 'expo-router';
+import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 
 // Interface and enums
 import {
@@ -31,6 +31,10 @@ import {
   getRouteTransactionOperations,
 } from '../queries/SQLite/sqlLiteQueries';
 
+// Mappers and DTOs
+import { container as conatiner_di } from '@/src/infrastructure/di/container';
+
+
 // Utils
 import { getStoreFromContext } from '../utils/routesFunctions';
 import DAYS_OPERATIONS from '../lib/day_operations';
@@ -40,9 +44,12 @@ import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 import RouteMap from '@/components/RouteMap';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import { setStores } from '@/redux/slices/storesSlice';
 
 
-function buildAddress(store:IStore) {
+function buildAddress(store:StoreDTO) {
   let address = '';
 
   if (store.street !== ''){
@@ -93,13 +100,23 @@ const INITIAL_REGION = {
   zoom: 5
 }
 
+type typeSearchParams = {
+  id_store_search_param: string;
+}
+
+
 const storeMenuLayout = () => {
+  const params = useLocalSearchParams<typeSearchParams>();
+
+  const { 
+    id_store_search_param
+  } = params as typeSearchParams;
 
   //Defining redux context
   const dispatch: AppDispatch = useDispatch();
-  const currentOperation = useSelector((state: RootState) => state.currentOperation);
   const stores = useSelector((state: RootState) => state.stores);
   const dayOperations = useSelector((state: RootState) => state.dayOperations);
+  const workDay = useSelector((state: RootState) => state.workDayInformation);
 
   //Router
   const router:Router = useRouter()
@@ -107,21 +124,38 @@ const storeMenuLayout = () => {
   // Defining state
   const [isConsultTransaction, setIsConsultTransaction] = useState<boolean>(false);
   const [routeTransactions, setRouteTransactions] = useState<IRouteTransaction[]>([]);
-  const [ routeTransactionOperations, setRouteTransactionOperations]
+  const [routeTransactionOperations, setRouteTransactionOperations]
     = useState<Map<string, IRouteTransactionOperation[]>>(new Map());
   const [
     routeTransactionOperationDescriptions,
     setRouteTransactionOperationDescriptions,
   ] = useState<Map<string, IRouteTransactionOperationDescription[]>>(new Map());
 
-  const [store, setStore] = useState<IStore&IStoreStatusDay|null>(null)
+  const [consultedStore, setConsultedStore] = useState<StoreDTO|null>(null)
 
 
   useEffect(() => {
     // Definig only-read variables
-    setStore(getStoreFromContext(currentOperation, stores))
+    setUpStoreMenu();
   }, []);
 
+  const setUpStoreMenu = async ():Promise<void> => { 
+    let allStores:StoreDTO[]|null = stores;
+    if (allStores === null) {
+      const listAllResgisterdStores:ListAllRegisterdStoresQuery = conatiner_di.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+      allStores = await listAllResgisterdStores.execute() 
+      dispatch(setStores(allStores))
+    }
+    
+    const foundStore:StoreDTO|undefined = allStores
+      .find(storeItem => storeItem.id_store === id_store_search_param);
+
+    if (foundStore === undefined) {
+      setConsultedStore(null);
+    } else {
+      setConsultedStore(foundStore);
+    }
+  }
 
   // handlers
   const handlerGoBackToMainOperationMenu = () => {
@@ -157,9 +191,9 @@ const storeMenuLayout = () => {
       };
 
       /* Getting all the transaciton of the store of today. */
-      if (store) {
+      if (consultedStore) {
         apiResponseProcess((
-          await getRouteTransactionByStore(store.id_store)),
+          await getRouteTransactionByStore(consultedStore.id_store)),
           settingRouteTransactionByStore)
         .forEach((transaction:IRouteTransaction) => {
           arrTransactions.push(transaction);
@@ -205,14 +239,14 @@ const storeMenuLayout = () => {
     // Main menu of store
     <View style={tw`w-full h-full flex-col justify-center items-center`}>
       <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
-        <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/>
+        {/* <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/> */}
       </View>
-      { store != null &&
+      { consultedStore != null &&
         <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
           <RouteMap
-            latitude={parseFloat(store.latitude)}
-            longitude={parseFloat(store.longuitude)}
-            stores={[ store ]}
+            latitude={parseFloat(consultedStore.latitude)}
+            longitude={parseFloat(consultedStore.longitude)}
+            stores={[ consultedStore ]}
           /> 
         </View>
         // :
@@ -221,11 +255,11 @@ const storeMenuLayout = () => {
         // </View>
       }
       <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
-        { store !== null &&
+        { consultedStore !== null &&
           <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
             <View style={tw`flex flex-col justify-around`}>
               <Text style={tw`text-black text-xl`}>Dirección</Text>
-              <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(store))}</Text>
+              <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
             </View>
             {/* <View style={tw`flex flex-col basis-1/2 justify-around`}>
               <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
@@ -235,13 +269,13 @@ const storeMenuLayout = () => {
             </View> */}
           </View>
         }
-        { store !== null &&
+        { consultedStore !== null &&
           <View style={tw`flex basis-1/4 flex-col justify-start items-start`}>
             <Text style={tw`text-black text-xl`}>Referencia</Text>
             <Text style={tw`text-black`}>
-              { store.address_reference === '' || store.address_reference === null ?
+              { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
                 'No disponible' :
-                capitalizeFirstLetter(store.address_reference)
+                capitalizeFirstLetter(consultedStore.address_reference)
               }
             </Text>
           </View>
@@ -260,16 +294,17 @@ const storeMenuLayout = () => {
               style={tw`h-14 w-11/12 bg-green-500 rounded border-solid border
                         flex flex-row justify-center items-center`}
               onPress={() => {
-                const endShiftInventoryOperation:IDayOperation|undefined
-                  = dayOperations.find(dayOperation =>
-                      dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory);
-
-                if (endShiftInventoryOperation === undefined) {
-                  /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
-                  handlerOnStartSale();
+                if (workDay === null) {
+                  Toast.show({type: 'error', text1:'Día de trabajo no iniciado', text2: 'No es posible iniciar una venta sin antes iniciar un día de trabajo'});
                 } else {
-                  /*There is an end shift operation, the work day was closed. */
-                  Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+                  /*
+                  Business rule:
+                    - Once the vendor has closed his shift (end shift inventory operation),
+                      he cannot start selling again until he starts a new work day.
+                  */
+                  const { finish_date } = workDay;
+                  if (finish_date === null) handlerOnStartSale();
+                  else Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
                 }
               }}>
               <Text style={tw`text-center text-black`}>Iniciar venta</Text>

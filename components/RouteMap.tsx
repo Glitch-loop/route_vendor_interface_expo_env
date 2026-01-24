@@ -14,6 +14,7 @@ import { Button } from 'react-native';
 import { View } from 'react-native';
 import { LocaleDirContext } from '@react-navigation/native';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 
 const styles = StyleSheet.create({
   container: {
@@ -70,8 +71,8 @@ const RouteMap = ({
 }:{
   latitude:number, 
   longitude:number,
-  stores:IStore[],
-  onClick?:(store:IStore) => void
+  stores:StoreDTO[],
+  onClick?:(store:StoreDTO) => void
 }) => {
   const mapRef = useRef<MapView|null>(null);
 
@@ -125,7 +126,7 @@ const RouteMap = ({
             key={store.id_store}
               title={capitalizeFirstLetterOfEachWord(store.store_name)}
               onPress={() => { if (onClick) onClick(store) }}
-              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longuitude) }}/>
+              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longitude) }}/>
           )
         })
         }
