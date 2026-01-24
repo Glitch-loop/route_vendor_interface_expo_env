@@ -273,7 +273,6 @@ const inventoryOperationLayout = () => {
         - End shift inventory: Unique in the day.
 
       */
-      console.log("Executing inventory operation of type: ", id_type_of_operation_search_param);
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
         const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
 
@@ -305,8 +304,10 @@ const inventoryOperationLayout = () => {
 
           // Executing a synchronization process to register the start shift inventory
           // Note: In case of failure, the background process will eventually synchronize the records.
+          
           // TODO: syncingRecordsWithCentralDatabase();
-          console.log("RETRIEVING INFORMATION FOR REDUX UPDATE AFTER START SHIFT DAY EXECUTION");          
+
+
           const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
           const retrieveWorkDayInformationQuery = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
           const retrieveCurrentDayOperationsQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
@@ -325,7 +326,6 @@ const inventoryOperationLayout = () => {
             return
           }
           
-          // console.log("Redux updation*************************")
           dispatch(setProductInventory(productInventoryResult));
           dispatch(setWorkDayInformation(workDayInformationResult));
           dispatch(setDayOperations(currentDayOperationsResult));
@@ -335,11 +335,7 @@ const inventoryOperationLayout = () => {
             text1: 'Se ha registrado el inventario inicial con exito.',
             text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
           });
-
-          // TODO: Update redux
-          
-
-
+ 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
           console.log("Error during start shift inventory operation execution:", error);

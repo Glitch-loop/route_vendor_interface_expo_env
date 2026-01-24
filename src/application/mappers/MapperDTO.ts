@@ -247,7 +247,7 @@ export class MapperDTO {
             id_day_operation: entity.id_day_operation,
             id_item: entity.id_item,
             operation_type: entity.operation_type,
-            created_at: entity.created_at,
+            created_at: entity.created_at.toISOString(),
         };
     }
 
@@ -309,7 +309,6 @@ export class MapperDTO {
                 throw new Error('Invalid start_date format in WorkDayInformationDTO');
             }
             start = new Date(start_date);
-
         }
 
 
@@ -337,7 +336,13 @@ export class MapperDTO {
 
     // DayOperationDTO -> DayOperation (domain)
     dayOperationDTOToEntity(dto: DayOperationDTO): DayOperation {
-        const createdAt = dto.created_at instanceof Date ? dto.created_at : new Date(dto.created_at);
+        const { created_at } = dto;
+        if(isNaN(Date.parse(created_at))) {
+            throw new Error('Invalid start_date format in WorkDayInformationDTO');
+        }
+
+        const createdAt: Date = new Date(dto.created_at);
+
         return new DayOperation(
             dto.id_day_operation,
             dto.id_item,
