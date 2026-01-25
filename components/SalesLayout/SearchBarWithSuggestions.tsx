@@ -41,9 +41,8 @@ const SearchBarWithSuggestions = ({
         let validQuery = item[fieldToSearch].toLowerCase().includes(query.toLowerCase());
         let result = false;
         if (validQuery) {
-          const selectedItem = selectedCatalog.find(verifySelectedItem => {
-            return verifySelectedItem[fieldToSearch] === item[fieldToSearch];
-          });
+          const selectedItem = selectedCatalog
+            .find(verifySelectedItem => { return verifySelectedItem[fieldToSearch] === item[fieldToSearch]; });
 
           if (selectedItem === undefined) {
             // Valid product to show.

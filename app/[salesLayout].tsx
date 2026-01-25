@@ -534,9 +534,7 @@ const salesLayout = () => {
     }
   };
 
-  const handlerOnSuccessfullCompletionSale = async () => {
-    router.push('/routeOperationMenuLayout');
-  };
+  const handlerOnSuccessfullCompletionSale = async () => { router.push('/routeOperationMenuLayout'); };
 
   const handlerOnFailedCompletionSale = () => {
     // Updating the status of the store and moving to the next operation.

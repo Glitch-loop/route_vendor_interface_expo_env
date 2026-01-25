@@ -1,15 +1,15 @@
 // Librarires
 import React, { useEffect, useState } from 'react';
+
+// DTOs
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
+
+// UI
 import { View, Text, Pressable } from 'react-native';
 import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-// Components
 import ActionButton from './ActionButton';
 import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
-
-// Interfaces
-import { IProductInventory } from '../../interfaces/interfaces';
 
 const CardProduct = ({
     productName,
@@ -24,7 +24,7 @@ const CardProduct = ({
     price:number,
     amount:number,
     subtotal:number,
-    item:IProductInventory,
+    item: RouteTransactionDescription,
     onChangeAmount:any,
     onDeleteItem: any,
   }) => {
