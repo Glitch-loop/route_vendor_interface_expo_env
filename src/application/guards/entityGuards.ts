@@ -7,6 +7,8 @@ import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { DayOperation } from '@/src/core/entities/DayOperation';
 
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
+
 export function isRoute(entity: any): entity is Route {
         return (
             entity instanceof Route || 
@@ -32,6 +34,13 @@ export function isTransaction(entity: any): entity is RouteTransaction {
         return (
             entity instanceof RouteTransaction || 
             ('id_route_transaction' in entity && 'transaction_description' in entity)
+        );
+    }
+
+export function isTransactionDescription(entity: any): entity is RouteTransactionDescription {
+        return (
+            entity instanceof RouteTransactionDescription || 
+            ('id_route_transaction_description' in entity && 'price_at_moment' in entity && 'amount' in entity)
         );
     }
 

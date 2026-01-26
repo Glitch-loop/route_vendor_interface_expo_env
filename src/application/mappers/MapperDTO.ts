@@ -35,7 +35,9 @@ import {
      isInventoryOperationDescriptionDTO,
     isWorkDayDTO,
     isRouteDTO,
-    isRouteDayDTO
+    isRouteDayDTO,
+    isRouteTransactionDescriptionDTO,
+    isRouteTransactionDTO
  } from '@/src/application/guards/dtoGuards';
 
 // entity guard
@@ -47,7 +49,8 @@ import {
     isStore,
     isProductInventory,
     isWorkDay,
-    isDayOperation
+    isDayOperation,
+    isTransactionDescription
 } from '@/src/application/guards/entityGuards';
 
 export class MapperDTO {
@@ -63,8 +66,8 @@ export class MapperDTO {
     toDTO(entity: WorkDayInformation): WorkDayInformationDTO;
     toDTO(entity: DayOperation): DayOperationDTO;
     toDTO(entity: RouteTransaction): RouteTransactionDTO;
-//   toDTO(entity: RouteTransaction): RouteTransactionDTO;
-        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation | DayOperation | RouteTransaction): any {
+    toDTO(entity: RouteTransactionDescription): RouteTransactionDescriptionDTO;
+        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation | DayOperation | RouteTransaction | RouteTransactionDescription): any {
         // Route
         if (isRoute(entity)) {
             return this.routeToDTO(entity);
@@ -99,16 +102,18 @@ export class MapperDTO {
         if (isDayOperation(entity)) {
             return this.dayOperationToDTO(entity as DayOperation);
         }
+
         // RouteTransaction
         if (isTransaction(entity)) {
             return this.routeTransactionToDTO(entity as RouteTransaction);
         }
-        // RouteTransaction
-        // if (this.isTransaction(entity)) {
-        //   return this.transactionToDTO(entity);
-        // }
+
+        // RouteTransactionDescription
+        if (isTransactionDescription(entity)) {
+            return this.routeTransactionDescriptionToDTO(entity as RouteTransactionDescription);
+        }       
         
-          throw new Error('Unknown entity type');
+        throw new Error('Unknown entity type');
   }
 
     // Unified DTO -> Entity mapping
@@ -119,15 +124,18 @@ export class MapperDTO {
     toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
     toEntity(dto: RouteDTO): Route;
     toEntity(dto: RouteDayDTO): RouteDay;
-    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO | DayOperationDTO | RouteTransactionDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay | DayOperation | RouteTransaction {
+    toEntity(dto: RouteTransactionDTO): RouteTransaction;
+    toEntity(dto: RouteTransactionDescriptionDTO): RouteTransactionDescription;
+    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO | DayOperationDTO | RouteTransactionDTO | RouteTransactionDescriptionDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay | DayOperation | RouteTransaction | RouteTransactionDescription {
         if (isProductDTO(dto)) return this.productDTOToEntity(dto);
         if (isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
         if (isInventoryOperationDescriptionDTO(dto)) return this.inventoryProductDescriptionDTOToEntity(dto);
         if (isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
         if (isRouteDTO(dto)) return this.routeDTOToEntity(dto);
         if (isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
-        if ((dto as any) && 'id_route_transaction' in dto && 'transaction_description' in dto) return this.routeTransactionDTOToEntity(dto as RouteTransactionDTO);
-        if ((dto as any) && 'id_day_operation' in dto) return this.dayOperationDTOToEntity(dto as DayOperationDTO);
+        if (isRouteTransactionDTO(dto)) return this.routeTransactionDTOToEntity(dto);
+        if (isRouteTransactionDescriptionDTO(dto)) return this.routeTransactionDescriptionDTOToEntity(dto);
+
         
         throw new Error('Unknown DTO type');
     }

@@ -32,6 +32,7 @@ import WorkDayInformationDTO from '../dto/WorkdayInformationDTO';
 import RouteTransactionDTO from '../dto/RouteTransactionDTO';
 import { MapperDTO } from '../mappers/MapperDTO';
 import { Route } from 'expo-router';
+import RouteTransactionDescriptionDTO from '../dto/RouteTransactionDescriptionDTO';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
@@ -125,7 +126,7 @@ export default class RegisterNewRouteTransaction {
     }
 
     async execute(
-        routeTransactionDescription: RouteTransactionDTO[],
+        routeTransactionDescription: RouteTransactionDescriptionDTO[],
         workDayInformation: WorkDayInformationDTO,
         paymentMethod: PAYMENT_METHODS,
         cashReceived: number,
