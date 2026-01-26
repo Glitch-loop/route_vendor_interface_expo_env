@@ -1,4 +1,4 @@
-export enum RouteTransactionState {
+export enum ROUTE_TRANSACTION_STATE {
   ACTIVE = "ACTIVE",
   CANCELLED = "CANCELLED"
 }

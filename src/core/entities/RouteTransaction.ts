@@ -1,19 +1,19 @@
 // Enums
-import { RouteTransactionState } from '@/src/core/enums/RouteTransactionState';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import { PAYMENT_METHODS } from '@/src/core/enums/PaymentMethod';
 
 // Object values
-import { PaymentMethod } from '@/src/core/object-values/PaymentMethod';
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
 export class RouteTransaction {
   constructor(
     public readonly id_route_transaction: string,
-    public readonly date: string,
-    public readonly state: RouteTransactionState,
+    public readonly date: Date,
+    public readonly state: ROUTE_TRANSACTION_STATE,
     public readonly cash_received: number,
     public readonly id_work_day: string,
     public readonly id_store: string,
-    public readonly payment_method: PaymentMethod,
+    public readonly payment_method: PAYMENT_METHODS,
     public readonly transaction_description: RouteTransactionDescription[]
   ) {}
 

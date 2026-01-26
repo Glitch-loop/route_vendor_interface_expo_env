@@ -68,8 +68,6 @@ export class InventoryOperationAggregate {
     cancelInventoryOperation(): void {
         if (!this._inventoryOperation) throw new Error("No inventory operation available.");
 
-        const state = 0; // Active
-
         this._inventoryOperation = new InventoryOperation(
             this._inventoryOperation.id_inventory_operation,
             this._inventoryOperation.sign_confirmation,
