@@ -113,14 +113,7 @@ const routeOperationMenuLayout = () => {
   };
 
   const onRestockInventory = ():void => {
-    dispatch(setCurrentOperation({
-      id_day_operation: routeDay.id_route_day, // Specifying that this operation belongs to this day.
-      id_item: '', // It is still not an operation.
-      id_type_operation: DAYS_OPERATIONS.restock_inventory,
-      operation_order: 0,
-      current_operation: 0,
-    }));
-    router.push('/inventoryOperationLayout');
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`);
   };
 
   const onFinishInventory = ():void => {

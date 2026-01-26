@@ -3,31 +3,42 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
-// Interfaces
-import { IProductInventory, IRouteTransaction } from '../../interfaces/interfaces';
-
 // Utils
-import { getProductDevolutionBalance, getPaymentMethod, calculateChange } from '../../utils/saleFunction';
+import { getPaymentMethod } from '../../utils/saleFunction';
+
+import { 
+  getProductDevolutionBalance,
+  calculateChange
+} from '@/utils/route-transaciton/utils';
+
 import PAYMENT_METHODS from '../../utils/paymentMethod';
+
+// DTOs
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 
 const TotalsSummarize = ({
   routeTransaction,
   productsDevolution,
   productsReposition,
   productsSale,
+  productInventoryMap,
   }:{
-  routeTransaction?:IRouteTransaction
-  productsDevolution:IProductInventory[],
-  productsReposition:IProductInventory[],
-  productsSale:IProductInventory[]
+  routeTransaction?:RouteTransactionDTO
+  productsDevolution:RouteTransactionDescriptionDTO[],
+  productsReposition:RouteTransactionDescriptionDTO[],
+  productsSale:RouteTransactionDescriptionDTO[],
+  productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
   }) => {
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[]);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[]);
-  let subtotalSaleProduct = getProductDevolutionBalance(productsSale,[]);
-  let productDevolutionBalance = '$0';
-  let greatTotal = '$0';
-  let cashReceived = '$0';
-  let greatTotalNumber = (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution);
+  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[], productInventoryMap);
+  let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[], productInventoryMap);
+  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale,[], productInventoryMap);
+  let productDevolutionBalance  = '$0';
+  let greatTotal                = '$0';
+  let cashReceived              = '$0';
+  let greatTotalNumber          = (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution);
 
   // Getting product devolution balance
   if (subtotalProductReposition - subtotalProductDevolution < 0) {

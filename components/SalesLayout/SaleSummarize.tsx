@@ -5,18 +5,23 @@ import { Text } from 'react-native-paper';
 import tw from 'twrnc';
 
 // Interfaces and utils
-import { IProductInventory } from '../../interfaces/interfaces';
-import { getProductDevolutionBalanceWithoutNegativeNumber } from '../../utils/saleFunction';
+import { getProductDevolutionBalanceWithoutNegativeNumber } from '@/utils/route-transaciton/utils';
 
 // Components
-import SubtotalLine from './SubtotalLine';
-import TotalsSummarize from './TotalsSummarize';
+
+import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
+import TotalsSummarize from '@/components/SalesLayout/TotalsSummarize';
+
+// DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
 
 function combineCommitedProduct(
-  productSale:IProductInventory[],
-  productReposition:IProductInventory[]):IProductInventory[][] {
-    const combinedCommitedProduct:IProductInventory[][] = [];
+  productSale:RouteTransactionDescriptionDTO[],
+  productReposition:RouteTransactionDescriptionDTO[],
+):RouteTransactionDescriptionDTO[][] {
+    const combinedCommitedProduct:RouteTransactionDescriptionDTO[][] = [];
 
 
     // Populate the matrix with the products of the first list
@@ -63,10 +68,12 @@ const SaleSummarize = ({
     productsDevolution,
     productsReposition,
     productsSale,
+    productInventoryMap
   }:{
     productsDevolution:RouteTransactionDescriptionDTO[],
     productsReposition:RouteTransactionDescriptionDTO[],
     productsSale:RouteTransactionDescriptionDTO[],
+    productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
   }) => {
 
     /*
@@ -74,7 +81,7 @@ const SaleSummarize = ({
       [[saleProduct][repositionProduct]]
     */
     const [summarizeProduct, setSummarizeProduct] =
-      useState<IProductInventory[][]>(combineCommitedProduct(productsSale, productsReposition));
+      useState<RouteTransactionDescriptionDTO[][]>(combineCommitedProduct(productsSale, productsReposition));
 
 
     useEffect(() => {
@@ -98,17 +105,29 @@ const SaleSummarize = ({
         <Text style={tw`flex basis-1/4 font-bold text-center text-black`}>Valor</Text>
       </View>
       { productsDevolution.length > 0 ? (
-        productsDevolution.map(product => {
-        return (
-          <View key={product.id_product} style={tw`w-full my-1 flex flex-row items-center`}>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>{product.product_name}</Text>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>${product.price}</Text>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>{product.amount}</Text>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>
-              ${product.amount * product.price}
-            </Text>
-          </View>
-        );})
+        productsDevolution.map((product: RouteTransactionDescriptionDTO) => {
+          const { id_product_inventory } = product;
+          
+          if (productInventoryMap.has(id_product_inventory)) {
+            const inventoryProduct = productInventoryMap.get(id_product_inventory)!;
+
+            const { product_name, price_at_moment } = inventoryProduct;
+            const { amount } = product;
+
+            return (
+              <View key={id_product_inventory} style={tw`w-full my-1 flex flex-row items-center`}>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>{product_name}</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>${price_at_moment}</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>{amount}</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>
+                  ${amount * price_at_moment}
+                </Text>
+              </View>
+            );
+          } else {
+            return null;
+          }
+        })
         ) : (
           <Text style={tw`text-black text-xl text-center mt-3`}>
             No se ha seleccionado ningún producto
@@ -118,8 +137,11 @@ const SaleSummarize = ({
       { productsDevolution.length > 0 &&
         <SubtotalLine
           description={'Total devolución de producto:'}
-          total={getProductDevolutionBalanceWithoutNegativeNumber(productsDevolution,
-                  []).toString()}
+          total={ getProductDevolutionBalanceWithoutNegativeNumber(
+            productsDevolution,
+            [],
+            productInventoryMap)
+            .toString() }
           fontStyle={'font-bold italic text-base'}/>
       }
 
@@ -132,6 +154,7 @@ const SaleSummarize = ({
       <ScrollView
         horizontal={true}>
         <View style={tw`flex flex-col`}>
+          {/* Component headers for subtotal */}
           <View style={tw`flex flex-row items-center justify-around`}>
             <View style={tw`w-24 flex`}>
               <Text style={tw`font-bold text-center text-black`}>Producto</Text>
@@ -157,53 +180,68 @@ const SaleSummarize = ({
           </View>
 
           { summarizeProduct.length > 0 ? (
-          summarizeProduct.map(product => {
-          return (
-            <View key={product[0].id_product} style={tw`w-full my-1 flex flex-row items-center`}>
-              {/* Information related for both concepts */}
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`text-center text-black`}>{product[0].product_name}</Text>
-              </View>
+            summarizeProduct.map(product => {
+              const productSale = product[0]; 
+              const productReposition = product[1]; 
+              
+              const { id_product_inventory } = productSale;
+              
+              if (productInventoryMap.has(id_product_inventory) === false)  {
+                return null;
+              }
 
-              {/* Information related to the sales */}
+              const productInventory:ProductDTO&ProductInventoryDTO = productInventoryMap.get(id_product_inventory)!;
 
-              <View style={tw`w-16 flex`}>
-                <Text style={tw`text-center text-black`}>${product[0].price}</Text>
-              </View>
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`text-center text-black`}>{product[0].amount}</Text>
-              </View>
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`text-center text-black`}>
-                  ${product[0].price * product[0].amount}
-                </Text>
-              </View>
+              const { product_name, price_at_moment } = productInventory;
 
-              {/* Information related to the reposition */}
+              return (
+                <View key= { id_product_inventory } style={tw`w-full my-1 flex flex-row items-center`}>
+                  {/* Information related for both concepts */}
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`text-center text-black`}>{ product_name }</Text>
+                  </View>
 
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`flex basis-1/12 text-center text-black`}>
-                  {product[1].amount}
-                </Text>
-              </View>
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`text-center text-black`}>
-                  ${product[1].price * product[1].amount}
-                </Text>
-              </View>
-              <View style={tw`w-24 flex`}>
-                <Text style={tw`underline font-bold text-center text-black`}>
-                  {product[0].amount + product[1].amount}
-                </Text>
-              </View>
-            </View>
-          );})
-          ) : (
-            <Text style={tw`text-black text-xl text-center mt-3`}>
-              No se ha seleccionado ningún producto
-            </Text>
-          )}
-          {/* Getting totals for each concept */}
+                  {/* Information related to the sales */}
+
+                  <View style={tw`w-16 flex`}>
+                    <Text style={tw`text-center text-black`}>${ price_at_moment }</Text>
+                  </View>
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`text-center text-black`}>{ productSale.amount }</Text>
+                  </View>
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`text-center text-black`}>
+                      ${ price_at_moment * productSale.amount }
+                    </Text>
+                  </View>
+
+                  {/* Information related to the reposition */}
+
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`flex basis-1/12 text-center text-black`}>
+                      {productReposition.amount}
+                    </Text>
+                  </View>
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`text-center text-black`}>
+                      ${ price_at_moment * productReposition.amount }
+                    </Text>
+                  </View>
+                  <View style={tw`w-24 flex`}>
+                    <Text style={tw`underline font-bold text-center text-black`}>
+                      {productSale.amount + productReposition.amount}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+            ) : (
+              <Text style={tw`text-black text-xl text-center mt-3`}>
+                No se ha seleccionado ningún producto
+              </Text>
+            )
+          }
+          {/* Getting subtotal of selling and product reposition. */}
           { summarizeProduct.length > 0 &&
             <View style={tw`flex flex-row items-center justify-around`}>
                 {/* Product name */}
@@ -217,7 +255,7 @@ const SaleSummarize = ({
                 {/* Sale Subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    ${getProductDevolutionBalanceWithoutNegativeNumber(productsSale, [])}
+                    ${getProductDevolutionBalanceWithoutNegativeNumber(productsSale, [], productInventoryMap)}
                   </Text>
                 </View>
                 {/* Reposition amount */}
@@ -227,7 +265,7 @@ const SaleSummarize = ({
                 {/* Reposition subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    ${getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition)}
+                    ${getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition, productInventoryMap)}
                   </Text>
                 </View>
                 {/* Total product amount amount */}
@@ -282,7 +320,8 @@ const SaleSummarize = ({
       <TotalsSummarize
         productsDevolution={productsDevolution}
         productsReposition={productsReposition}
-        productsSale={productsSale}/>
+        productsSale={productsSale}
+        productInventoryMap={productInventoryMap}/>
     </View>
   );
 };

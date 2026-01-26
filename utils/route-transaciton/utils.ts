@@ -187,6 +187,29 @@ export function productCommitedValidation(
     return productCommited;//productCommited;
 }
 
+export function calculateChange(total:number, received:number){
+  let difference:number = 0;
+  if (total < 0) {
+    /*
+      It means that the vendor has to give money to the client, this probably
+      becuase of a product devolution.
+    */
+    if (total + received < 0) {
+      difference = 0;
+    } else {
+      difference = (total + received);
+    }
+  } else {
+    /* Do nothing; It is a normal selling (vendor has to receive money)*/
+    if (total - received < 0) {
+      difference = (total - received) * -1;
+    } else {
+      difference = 0;
+    }
+  }
+  return difference;
+}
+
 
 
 

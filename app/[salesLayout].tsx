@@ -97,6 +97,7 @@ import {
   productCommitedValidation
  } from '@/utils/route-transaciton/utils';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProductDTO from '@/src/application/dto/ProductDTO';
 
 
 
@@ -150,20 +151,48 @@ const salesLayout = () => {
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
 
   useEffect(() => {
-    if (productInventory !== null) {
-      const productInventoryMapTemp:Map<string, ProductInventoryDTO> = new Map<string, ProductInventoryDTO>();
-      productInventory.forEach((productInv:ProductInventoryDTO) => {
+    if (productInventory !== null && availableProducts !== null) {
+      const productInventoryMapTemp:Map<string, ProductInventoryDTO&ProductDTO> = new Map<string, ProductInventoryDTO&ProductDTO>();
+
+      for (const currentProductInventory of productInventory) {
+        const { id_product_inventory, price_at_moment, stock, id_product } = currentProductInventory;
+        
+        const productFound:ProductDTO|undefined = availableProducts.find(prod => prod.id_product === id_product);
+        
+        if (productFound === undefined) continue;
+        const {
+          product_name,
+          barcode,
+          weight,
+          unit,
+          comission,
+          price,
+          product_status,
+          order_to_show
+
+        } = productFound;
+        
         productInventoryMapTemp.set(
-          productInv.id_product_inventory, {
-          id_product_inventory: productInv.id_product_inventory,
-          price_at_moment: productInv.price_at_moment,
-          stock: productInv.stock,
-          id_product: productInv.id_product,
-        });
-      });
+          id_product_inventory, {
+            id_product_inventory: id_product_inventory,
+            price_at_moment: price_at_moment,
+            stock: stock,
+            id_product: id_product,
+            product_name: product_name,
+            barcode: barcode,
+            weight: weight,
+            unit: unit,
+            comission: comission,
+            price: price,
+            product_status: product_status,
+            order_to_show: order_to_show,
+          }
+        )
+      }
+    
       setProductInventoryMap(productInventoryMapTemp);
     }
-  }, [productInventory])
+  }, [productInventory, availableProducts])
 
   // Routing
   const router:Router = useRouter();
@@ -179,7 +208,7 @@ const salesLayout = () => {
   const [productSale, setProductSale]
     = useState<RouteTransactionDescriptionDTO[]>([]);
 
-  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO> | undefined>(undefined);
+  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
 
   /* States used in the logic of the layout. */
   const [startPaymentProcess, setStartPaymentProcess] = useState<boolean>(false);
@@ -696,10 +725,10 @@ const salesLayout = () => {
                   />
               </View>
               <View style={tw`w-full flex flex-row justify-center my-5`}>
-                {/* <SaleSummarize
+                <SaleSummarize
                   productsDevolution={productDevolution}
                   productsReposition={productReposition}
-                  productsSale={productSale}/> */}
+                  productsSale={productSale}/>
               </View>
             </View>
             <View style={tw`w-full flex flex-row justify-center my-3`}>
