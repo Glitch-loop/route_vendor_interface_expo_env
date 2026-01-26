@@ -216,17 +216,13 @@ const salesLayout = () => {
   const [resultSaleState, setResultSaleState] = useState<boolean>(true);
 
   // Handlers
-  const handleCancelSale = () => {
-    router.push('/storeMenuLayout');
-  };
+  const handleCancelSale = () => { router.replace('/storeMenuLayout'); };
 
-  const handleOnGoBack = () => {
-    router.push('/storeMenuLayout');
-  };
+  const handleOnGoBack = () => { router.replace('/storeMenuLayout'); };
 
   const handleSalePaymentProcess = () => {
     /* Validating if the product reposition is valid */
-    // TODO: At the moment this validation is disabled requirements are being defined.
+    // TODO: Define if this validation will be needed.
     // if(!validatingIfRepositionIsValid(productReposition, productDevolution, productReposition)) {
     //   Toast.show({
     //     type: 'error',

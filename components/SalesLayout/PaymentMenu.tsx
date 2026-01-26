@@ -4,18 +4,16 @@ import { View, Text } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import tw from 'twrnc';
 
-// Interfaces
-import { IPaymentMethod } from '../../interfaces/interfaces';
-
 // Utils
-import { getTransactionIdentifier, calculateChange } from '../../utils/saleFunction';
+import { calculateChange, getTransactionIdentifier } from '@/utils/route-transaciton/utils';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
-function initializeState(total:number, paymentMethod: IPaymentMethod) {
+function initializeState(total:number, paymentMethod: PAYMENT_METHODS) {
   let result:number = 0;
-  if (paymentMethod.id_payment_method === '52757755-1471-44c3-b6d5-07f7f83a0f6f') {
+  if (paymentMethod === PAYMENT_METHODS.CASH) {
     // Cash method
     result = 0;
-  } else if (paymentMethod.id_payment_method === 'b68e6be3-8919-41dd-9d09-6527884e162e') {
+  } else if (paymentMethod === PAYMENT_METHODS.TRANSFER) {
     // Transference
     result = total;
   } else {
@@ -33,7 +31,7 @@ const PaymentMenu = ({
   onCashReceived,
 }:{
   transactionIdentifier:string
-  paymentMethod:IPaymentMethod
+  paymentMethod:PAYMENT_METHODS
   total:number,
   onCashReceived:any,
 }) => {
@@ -66,7 +64,7 @@ const PaymentMenu = ({
         </Text>
       </View>
       {/* Section for cash method */}
-      { paymentMethod.id_payment_method === '52757755-1471-44c3-b6d5-07f7f83a0f6f' &&
+      { paymentMethod === PAYMENT_METHODS.CASH &&
         <View style={tw`flex flex-row justify-end items-center my-1`}>
           <Text style={tw`mr-3 text-xl text-black text-right flex flex-row basis-1/2 justify-end `}>
             {total > 0 ? 'Recibido:' : 'Entregado:' }
@@ -81,24 +79,24 @@ const PaymentMenu = ({
         </View>
       }
       {/* Section for cash method */}
-      { paymentMethod.id_payment_method === '52757755-1471-44c3-b6d5-07f7f83a0f6f' &&
+      { paymentMethod === PAYMENT_METHODS.CASH && calculateChange(total, cashReceived) > 0 &&
         <View style={tw`flex flex-row justify-end items-center my-1`}>
           <Text style={tw`mr-3 text-black text-xl text-right flex flex-row basis-1/2 justify-end`}>
             Cambio { total > 0 ? '(a entregar)' : '(a recibir)'}:
           </Text>
           <Text style={tw`text-black text-xl text-left flex flex-row basis-1/2`}>
-            ${calculateChange(total, cashReceived)}
+            ${ calculateChange(total, cashReceived) }
           </Text>
         </View>
       }
       {/* Section for transference */}
-      { paymentMethod.id_payment_method === 'b68e6be3-8919-41dd-9d09-6527884e162e' &&
+      { paymentMethod === PAYMENT_METHODS.TRANSFER &&
         <View style={tw`flex flex-row justify-end my-1`}>
           <Text style={tw`mr-3 text-black text-xl text-right flex flex-row basis-1/2 justify-end`}>
             Referencia:
           </Text>
           <Text style={tw`text-black text-xl text-left flex flex-row basis-1/2`}>
-          {getTransactionIdentifier(transactionIdentifier)}
+          { getTransactionIdentifier(transactionIdentifier) }
           </Text>
       </View>
       }

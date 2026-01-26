@@ -6,7 +6,8 @@ import { ToastAndroid } from 'react-native';
 import { IPaymentMethod } from '../../interfaces/interfaces';
 
 // Utils
-import PAYMENT_METHODS from '../../utils/paymentMethod';
+// import PAYMENT_METHODS from '../../utils/paymentMethod';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
 // Components
 import PaymentMenu from './PaymentMenu';
@@ -29,7 +30,7 @@ const PaymentProcess = ({
 
   const [confirmedPaymentMethod, setConfirmedPaymentMethod] = useState<boolean>(false);
 
-  const [paymnetMethod, setPaymentMethod] = useState<IPaymentMethod>(PAYMENT_METHODS[0]);
+  const [paymnetMethod, setPaymentMethod] = useState<PAYMENT_METHODS>(PAYMENT_METHODS.CASH); // Cash as default payment method
   const [cashReceived, setCashReceived] = useState<number>(0);
 
   const handleConfirmPaymentMethod = () => {
@@ -41,7 +42,7 @@ const PaymentProcess = ({
     let resultCashMovement = 0;
     let messageToShow = '';
 
-    if (paymnetMethod.id_payment_method === '52757755-1471-44c3-b6d5-07f7f83a0f6f') {
+    if (paymnetMethod === PAYMENT_METHODS.CASH) {
       // Cash payment method
       if (totalToPay >= 0) {
           /* It means the vendor will receive money, product of a sale or due to a product devolution with positive balance */
@@ -59,7 +60,7 @@ const PaymentProcess = ({
       } else {
         ToastAndroid.show(messageToShow, 1500);
       }
-    } else if (paymnetMethod.id_payment_method === 'b68e6be3-8919-41dd-9d09-6527884e162e'){
+    } else if (paymnetMethod === PAYMENT_METHODS.TRANSFER){
       // Transference method
       /* Since transference is a digital method, the vendor doesn't recieve cash, so
       according with the flow of the application, cashReceived should be zero. */
@@ -70,12 +71,8 @@ const PaymentProcess = ({
   const handlerDeclineDialog = () => {
     setCashReceived(0);
     onCancelPaymentProcess(false);
-    setPaymentMethod(PAYMENT_METHODS[0]);
+    setPaymentMethod(PAYMENT_METHODS.CASH); // Resetting to default payment method.
     setConfirmedPaymentMethod(false);
-  };
-
-  const handlerSelectPaymentMethod = (selectedPaymentMethod:IPaymentMethod) => {
-    setPaymentMethod(selectedPaymentMethod);
   };
 
   return (
@@ -92,8 +89,8 @@ const PaymentProcess = ({
           :
         <PaymentMethod
           currentPaymentMethod={paymnetMethod}
-          onSelectPaymentMethod={
-            (selectedPaymentMethod:IPaymentMethod) => handlerSelectPaymentMethod(selectedPaymentMethod)}/>
+          onSelectPaymentMethod={setPaymentMethod}
+          />
       }
     </ActionDialog>
   );

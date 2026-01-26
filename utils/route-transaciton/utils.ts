@@ -1,7 +1,15 @@
+// Dto
 import RouteTransactionDescriptionDTO from "@/src/application/dto/RouteTransactionDescriptionDTO";
 import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
+
+// UI
 import Toast from "react-native-toast-message";
 
+// Enums
+import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
+
+// Date
+import { time_posix_format } from "@/utils/date/momentFormat";
 
 export function retrievePriceFromProductInventory(
   id_product_inventory:string, 
@@ -224,8 +232,39 @@ export function calculateChange(total:number, received:number){
   return difference;
 }
 
+export function getNamePaymentMethodById(id_payment_method:string):string {
+  let name_payment_method:string = '';
+    switch (id_payment_method) {
+        case PAYMENT_METHODS.CASH:
+            name_payment_method = 'Efectivo';
+            break;
+        case PAYMENT_METHODS.TRANSFER:
+            name_payment_method = 'Transferencia';
+            break;
+        case PAYMENT_METHODS.CREDIT_CARD:
+            name_payment_method = 'Tarjeta de crédito';
+            break;
+        case PAYMENT_METHODS.DEBIT_CARD:
+            name_payment_method = 'Tarjeta de débito';
+            break;
+    }
+    return name_payment_method;
+}
 
+export function getTransactionIdentifier(transactionIdentifier:string) {
+  let finalTransactionIdentifier = '';
+  if (transactionIdentifier === undefined) {
+    finalTransactionIdentifier = time_posix_format().toString() + time_posix_format().toString().slice(0,3);
+  } else {
+    if (transactionIdentifier.length > 5) {
+      finalTransactionIdentifier = time_posix_format().toString() + transactionIdentifier.slice(0,3);
+    } else {
+      finalTransactionIdentifier = time_posix_format().toString() + time_posix_format().toString().slice(0,3);
+    }
+  }
 
+  return finalTransactionIdentifier;
+}
 
 /*
     TODO: Verify if this function will be used in the future
