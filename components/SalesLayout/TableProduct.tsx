@@ -14,6 +14,7 @@ import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSugg
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 
 function createCatalog(avialableProducts:ProductDTO[], productsInventory:ProductInventoryDTO[]):(ProductDTO&ProductInventoryDTO)[] {
   const catalog:(ProductDTO&ProductInventoryDTO)[] = [];
@@ -147,16 +148,16 @@ const TableProduct = ({
   return (
     <View style={tw`w-full flex-1 items-center`}>
       <SectionTitle
-        title={sectionTitle}
-        caption={sectionCaption}
-        titlePositionStyle={'justify-center items-center'}/>
+        title               = { sectionTitle }
+        caption             = { sectionCaption }
+        titlePositionStyle  = { 'justify-center items-center' }/>
       <View style={tw`w-full mt-3 flex flex-row justify-center my-2`}>
         <SearchBarWithSuggestions
-          selectedCatalog={commitedProducts}
-          catalog={catalog}
-          fieldToSearch={'product_name'}
-          keyField={'id_product_inventory'}
-          onSelectHandler={onSelectAnItem}
+          selectedCatalog = { commitedProducts }
+          catalog         = { catalog }
+          fieldToSearch   = { 'product_name' }
+          keyField        = { 'id_product_inventory' }
+          onSelectHandler = { onSelectAnItem }
           />
       </View>
       <HeaderProduct />
@@ -184,7 +185,7 @@ const TableProduct = ({
               style={tw`my-1`}
               key={ id_product_inventory }>
               <CardProduct
-                productName   = { product_name }
+                productName   = { capitalizeFirstLetterOfEachWord(product_name) }
                 price         = { price_at_moment }
                 amount        = { amount }
                 subtotal      = { price_at_moment * amount}

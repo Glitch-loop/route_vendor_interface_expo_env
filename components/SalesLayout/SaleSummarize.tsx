@@ -17,6 +17,9 @@ import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransacti
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 
+// Utils
+import { capitalizeFirstLetter } from '@/utils/string/utils';
+
 function combineCommitedProduct(
   productSale:RouteTransactionDescriptionDTO[],
   productReposition:RouteTransactionDescriptionDTO[],
@@ -116,11 +119,11 @@ const SaleSummarize = ({
 
             return (
               <View key={id_product_inventory} style={tw`w-full my-1 flex flex-row items-center`}>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>{product_name}</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>${price_at_moment}</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>{amount}</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>{ capitalizeFirstLetter(product_name) }</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>${ price_at_moment }</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>{ amount }</Text>
                 <Text style={tw`flex basis-1/4 text-center text-black`}>
-                  ${amount * price_at_moment}
+                  ${ amount * price_at_moment }
                 </Text>
               </View>
             );
@@ -198,7 +201,7 @@ const SaleSummarize = ({
                 <View key= { id_product_inventory } style={tw`w-full my-1 flex flex-row items-center`}>
                   {/* Information related for both concepts */}
                   <View style={tw`w-24 flex`}>
-                    <Text style={tw`text-center text-black`}>{ product_name }</Text>
+                    <Text style={tw`text-center text-black`}>{ capitalizeFirstLetter(product_name) }</Text>
                   </View>
 
                   {/* Information related to the sales */}
