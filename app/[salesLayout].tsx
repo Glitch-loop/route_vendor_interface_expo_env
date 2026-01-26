@@ -728,7 +728,8 @@ const salesLayout = () => {
                 <SaleSummarize
                   productsDevolution={productDevolution}
                   productsReposition={productReposition}
-                  productsSale={productSale}/>
+                  productsSale={productSale}
+                  productInventoryMap={productInventoryMap}/>
               </View>
             </View>
             <View style={tw`w-full flex flex-row justify-center my-3`}>

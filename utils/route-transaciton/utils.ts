@@ -89,7 +89,8 @@ export function productCommitedValidation(
 ):RouteTransactionDescriptionDTO[] {
     let isNewAmountAllowed:boolean = true;
     let errorCaption:string|undefined = undefined;
-    const productCommited:RouteTransactionDescriptionDTO[] = [];
+
+    const reviewedProducts:RouteTransactionDescriptionDTO[] = [];
 
     const productSharingInventoryMap:Map<string, RouteTransactionDescriptionDTO> = new Map();
 
@@ -97,7 +98,7 @@ export function productCommitedValidation(
       productSharingInventoryMap.set(productShared.id_product_inventory, productShared);
     });
 
-    // Using product to commit as reference for the validation
+    // Using 'product to commit' as reference for the validation
     for (const productToCommit of productsToCommit) {
         const idProductInventoryToEvaluate = productToCommit.id_product_inventory;
         const amountToCommit = productToCommit.amount;
@@ -105,29 +106,30 @@ export function productCommitedValidation(
         let amountShared: number|undefined = undefined;
 
         // Find the current stock for the product to commit
-        if (productInventory.has(idProductInventoryToEvaluate) === true) {
-            const productInventoryFound = productInventory.get(idProductInventoryToEvaluate);
-            if (productInventoryFound !== undefined) amountInStockOfCurrentProduct = productInventoryFound.stock;
-            else errorCaption = 'El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.'; 
-        } else errorCaption = 'El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.';
+        if (productInventory.has(idProductInventoryToEvaluate)) {
+            const productInventoryFound = productInventory.get(idProductInventoryToEvaluate)!;
+            amountInStockOfCurrentProduct = productInventoryFound.stock;
+        } else {
+            errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0'
+        };
         
 
         if (amountInStockOfCurrentProduct === 0) { /* There is not product in stock */
             isNewAmountAllowed = false;
             errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
-            break;
+            // Product is not added because there is no stock available.
+            continue; // No need to continue with the other validations
         }
         
-        // Find if the product is being shared in another type of operation
-        if (productSharingInventoryMap.has(idProductInventoryToEvaluate) === true) {
-            const productSharingFound = productSharingInventoryMap.get(idProductInventoryToEvaluate);
-            if (productSharingFound !== undefined) amountShared = productSharingFound.amount;
-            else errorCaption = 'El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.'; 
+        // Find if the product is being shared with another type of operation
+        if (productSharingInventoryMap.has(idProductInventoryToEvaluate)) {
+            const productSharingFound = productSharingInventoryMap.get(idProductInventoryToEvaluate)!;
+            amountShared = productSharingFound.amount;
         } else errorCaption = 'El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.';
 
         if (amountShared !== undefined) { // The product is being shared between two operations
             if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
-                productCommited.unshift({
+                reviewedProducts.push({
                 ...productToCommit,
                 amount: amountToCommit,
                 });
@@ -138,11 +140,12 @@ export function productCommitedValidation(
                 if (amountInStockOfCurrentProduct - amountShared > 0) {
                     // There is not enough product to fullfill the current movement. So, it will add the information with the maximum amount possible.
                     errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
-                    productCommited.unshift({
+                    reviewedProducts.push({
                         ...productToCommit,
                         amount: amountInStockOfCurrentProduct - amountShared,
                     });
                 } else { /* All the stock is already being used by shared inventory*/
+                    // Prouct is not being added because there is no stock available.
                     if(isProductReposition) errorCaption = `Actualmente la totalidad del stock esta siendo usado para la venta. Stock: ${amountInStockOfCurrentProduct}`;
                     else errorCaption = `Actualmente la totalidad del stock esta siendo usado para la reposición de producto. Stock: ${amountInStockOfCurrentProduct}`;
                 }
@@ -150,7 +153,7 @@ export function productCommitedValidation(
         } else { /* It means that only one concept (product reposition or sale) is outflowing product. */
             if (amountToCommit <= amountInStockOfCurrentProduct) { 
                 // There is enough product to commit the requested amount
-                productCommited.unshift({
+                reviewedProducts.push({
                 ...productToCommit,
                 amount: amountToCommit,
                 });
@@ -158,12 +161,12 @@ export function productCommitedValidation(
                 isNewAmountAllowed = false;
                 if(amountInStockOfCurrentProduct > 0) {
                 // There is not enough product to fullfill the requeriment, but at least there is some stock
-                productCommited.unshift({
+                reviewedProducts.push({
                     ...productToCommit,
                     amount: amountInStockOfCurrentProduct,
                 });
                 errorCaption = `Estas excediendo el stock actual del producto, stock: ${amountInStockOfCurrentProduct}`;
-                } else errorCaption = 'Actualmente no tienes stock para el producto, stock: 0';
+                } else errorCaption = 'Actualmente no tienes stock para el producto, stock: 0'; // Product is not being added because there is no stock available.
             
                 // isNewAmountAllowed = false; // There is not product enough to fullfill the requeriment.
                 // if (isProductReposition) {
@@ -175,6 +178,17 @@ export function productCommitedValidation(
         }
     }
 
+    // Prepare the final list of valid products to commit
+    // reviewedProducts.forEach((:RouteTransactionDescriptionDTO) => {
+    //     const { id_product } = productToCommit;
+
+    //     const productCommittedFound:RouteTransactionDescriptionDTO|undefined = affectedProducts
+    //         .find((currentProductCommitted:RouteTransactionDescriptionDTO) => { return id_product === currentProductCommitted.id_product; });
+    //     if(productCommittedFound !== undefined) productsReadyToCommit.push(productCommittedFound)
+        
+    // });
+
+
     if (isNewAmountAllowed === false && errorCaption !== undefined) {
         // There was an error during the validation
         Toast.show({
@@ -184,7 +198,7 @@ export function productCommitedValidation(
         });
     }
 
-    return productCommited;//productCommited;
+    return reviewedProducts;
 }
 
 export function calculateChange(total:number, received:number){

@@ -3,36 +3,41 @@ import React from 'react';
 import { View } from 'react-native';
 import tw from 'twrnc';
 
-// Components
-import CardProduct from './CardProduct';
-import SectionTitle from './SectionTitle';
-import SubtotalLine from './SubtotalLine';
-import HeaderProduct from './HeaderProduct';
-import SearchBarWithSuggestions from './SearchBarWithSuggestions';
+// UI Components
+import CardProduct from '@/components/SalesLayout/CardProduct';
+import SectionTitle from '@/components/SalesLayout/SectionTitle';
+import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
+import HeaderProduct from '@/components/SalesLayout/HeaderProduct';
+import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
 
-import { IProductInventory } from '../../interfaces/interfaces';
+
 import ProductDTO from '@/src/application/dto/ProductDTO';
-import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
-
-/*
-  RouteTransactionDescriptionDTO should depend on ProductInventoryDTO id but since the requirements say
-  that only one product will appear then it is ok to depend directly on ProductDTO id.
-
-  In a futuree, if needed, this could be implemented to handle different prices for the same product depending on inventory.
-*/
-
 function createCatalog(avialableProducts:ProductDTO[], productsInventory:ProductInventoryDTO[]):(ProductDTO&ProductInventoryDTO)[] {
   const catalog:(ProductDTO&ProductInventoryDTO)[] = [];
-  for (const productInventory of productsInventory) {
-    const productDetails = avialableProducts.find(prod => prod.id_product ===   productInventory.id_product);
+  let id_product_inventory:string = '';
+  let price_at_moment:number = 0;
+  let stock:number = 0;
 
-    if (productDetails === undefined) continue;
+  const availableProductsOrdered = avialableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
 
-    const { id_product, product_name, barcode, weight, unit, comission, price, product_status, order_to_show } = productDetails;
-    const { id_product_inventory, price_at_moment, stock } = productInventory;
+  for (const availableProduct of availableProductsOrdered) {
+    const { id_product, product_name, barcode, weight, unit, comission, price, product_status, order_to_show } = availableProduct;
+
+    const productInInventory = productsInventory.find(prodInv => prodInv.id_product === availableProduct.id_product);
+
+    if (productInInventory === undefined) {
+      id_product_inventory = id_product;
+      price_at_moment = price;
+      stock = 0;
+    } else {
+      id_product_inventory = productInInventory.id_product_inventory;
+      price_at_moment = productInInventory.price_at_moment;
+      stock = productInInventory.stock;
+    }
+
 
     catalog.push({
       id_product: id_product,
@@ -48,6 +53,18 @@ function createCatalog(avialableProducts:ProductDTO[], productsInventory:Product
       price_at_moment: price_at_moment,
       stock: stock,
     })
+
+  }
+
+  for (const productInventory of productsInventory) {
+    const productDetails = avialableProducts.find(prod => prod.id_product === productInventory.id_product);
+
+    if (productDetails === undefined) continue;
+
+
+
+
+
   }
 
   return catalog;
@@ -150,7 +167,7 @@ const TableProduct = ({
           
 
           if (id_product_inventory === null)  return null;
-          
+
           if (catalogMap.has(id_product_inventory)) {
             productCatalog = catalogMap.get(id_product_inventory);
           } else {
@@ -185,15 +202,15 @@ const TableProduct = ({
         total={
           commitedProducts.reduce((accumulator, currentValue) => {
           let price:number = 0;
-          const { amount, id_product } = currentValue;
+          const { amount, id_product_inventory } = currentValue;
 
-          if (catalogMap.has(id_product)) {
-            const productCatalog = catalogMap.get(id_product);
-            if (productCatalog !== undefined) {
-              price = productCatalog.price_at_moment;
-            }
-          } 
-            return accumulator + amount * price;
+          if (catalogMap.has(id_product_inventory)) {
+            const productCatalog = catalogMap.get(id_product_inventory)!;
+            const { price_at_moment } = productCatalog;
+            price = price_at_moment;
+          }
+          
+          return accumulator + amount * price;
           }, 0).toString()
         }
         fontStyle={'font-bold text-lg'}
