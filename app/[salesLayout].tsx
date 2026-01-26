@@ -240,7 +240,7 @@ const salesLayout = () => {
     that the sale is closed.
   */
 
-  const handlerPaySale = async (receivedCash:number, paymnetMethod:IPaymentMethod) => {
+  const handlePaySale = async (receivedCash:number, paymnetMethod:IPaymentMethod) => {
     /*This handler inserts the sale in the database*/
     /* Validating that the payment a correct state for the payment method*/
     setFinishedSale(true); // Finishing sale payment process.
@@ -579,15 +579,11 @@ const salesLayout = () => {
     }
   };
 
-  const handlerOnSuccessfullCompletionSale = async () => { router.push('/routeOperationMenuLayout'); };
+  const handleOnSuccessfullCompletionSale = async () => { router.push('/routeOperationMenuLayout'); };
 
-  const handlerOnFailedCompletionSale = () => {
-    // Updating the status of the store and moving to the next operation.
-    // dispatch(setNextOperation());
-    router.push('/routeOperationMenuLayout');
-  };
+  const handleOnFailedCompletionSale = () => { router.push('/routeOperationMenuLayout'); };
 
-  const handlerOnPrintTicket = async () => {
+  const handlePrintTicket = async () => {
     try {
       await printTicketBluetooth(getTicketSale(productDevolution,productReposition, productSale));
     } catch(error) {
@@ -598,7 +594,7 @@ const salesLayout = () => {
     }
   };
 
-  const handlerOnTryAgain = () => {
+  const handleOnTryAgain = () => {
     setFinishedSale(false);
     setResultSaleState(false);
   };
@@ -675,7 +671,7 @@ const salesLayout = () => {
                 totalToPay              = { getGreatTotal(productDevolution, productReposition, productSale, productInventoryMap) }
                 paymentProcess          = { startPaymentProcess }
                 onCancelPaymentProcess  = { setStartPaymentProcess }
-                onPaySale               = {(receivedCash:number, paymnetMethod:IPaymentMethod) => handlerPaySale(receivedCash, paymnetMethod)}/>
+                onPaySale               = {(receivedCash:number, paymnetMethod:IPaymentMethod) => handlePaySale(receivedCash, paymnetMethod)}/>
             <View style={tw`w-full flex flex-1 flex-col items-center`}>
               <View style={tw`my-3 w-full flex flex-row justify-center items-center`}>
                 <MenuHeader onGoBack={handleOnGoBack}/>
@@ -697,9 +693,9 @@ const salesLayout = () => {
                   productInventory    = { productInventory || [] }
                   commitedProducts    = { productReposition }
                   setCommitedProduct  = { handlerSetProductReposition }
-                  sectionTitle        = {'Reposición de producto'}
-                  sectionCaption      = {'(Precios actuales tomados para la reposición)'}
-                  totalMessage        = {'Total de valor de la reposición:'}
+                  sectionTitle        = { 'Reposición de producto' }
+                  sectionCaption      = { '(Precios actuales tomados para la reposición)' }
+                  totalMessage        = { 'Total de valor de la reposición:' }
                   />
               </View>
               <View style={tw`flex flex-row my-1`}>
@@ -715,29 +711,29 @@ const salesLayout = () => {
                   productInventory    = { productInventory || [] }
                   commitedProducts    = { productSale }
                   setCommitedProduct  = { handlerSetSaleProduct }
-                  sectionTitle        = {'Productos para vender'}
-                  sectionCaption      = {'(Venta sugerida: Última venta)'}
-                  totalMessage        = {'Total de la venta:'}
+                  sectionTitle        = { 'Productos para vender' }
+                  sectionCaption      = { '(Venta sugerida: Última venta)' }
+                  totalMessage        = { 'Total de la venta:' }
                   />
               </View>
               <View style={tw`w-full flex flex-row justify-center my-5`}>
                 <SaleSummarize
-                  productsDevolution={productDevolution}
-                  productsReposition={productReposition}
-                  productsSale={productSale}
-                  productInventoryMap={productInventoryMap}/>
+                  productsDevolution  = { productDevolution }
+                  productsReposition  = { productReposition }
+                  productsSale        = { productSale }
+                  productInventoryMap = { productInventoryMap }/>
               </View>
             </View>
             <View style={tw`w-full flex flex-row justify-center my-3`}>
-              <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => {handlerOnPrintTicket()}}>
+              <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => { handleOnTryAgain() }}>
                 <Text>Imprimir ticket</Text>
               </ActionButton>
             </View>
             <ConfirmationBand
-              textOnAccept={'Continuar'}
-              textOnCancel={'Cancelar operación'}
-              handleOnAccept={handleSalePaymentProcess}
-              handleOnCancel={handleCancelSale}/>
+              textOnAccept    = { 'Continuar' }
+              textOnCancel    = { 'Cancelar operación' }
+              handleOnAccept  = { handleSalePaymentProcess }
+              handleOnCancel  = { handleCancelSale }/>
             <View style={tw`flex flex-row mt-10`} />
           </ScrollView> 
         }
@@ -745,11 +741,11 @@ const salesLayout = () => {
       :
       <SafeAreaView>
         <ResultSale
-          onSuccessfullCompletion={handlerOnSuccessfullCompletionSale}
-          onPrintTicket={handlerOnPrintTicket}
-          onFailedCompletion={handlerOnFailedCompletionSale}
-          onTryAgain={handlerOnTryAgain}
-          resultSaleState={resultSaleState}/>
+          onSuccessfullCompletion = { handleOnSuccessfullCompletionSale }
+          onPrintTicket           = { handlePrintTicket }
+          onFailedCompletion      = { handleOnFailedCompletionSale }
+          onTryAgain              = { handleOnTryAgain }
+          resultSaleState         = { resultSaleState } />
       </SafeAreaView>
   );
 };
