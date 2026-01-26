@@ -11,6 +11,7 @@ import { getProductDevolutionBalanceWithoutNegativeNumber } from '../../utils/sa
 // Components
 import SubtotalLine from './SubtotalLine';
 import TotalsSummarize from './TotalsSummarize';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
 function combineCommitedProduct(
   productSale:IProductInventory[],
@@ -63,9 +64,9 @@ const SaleSummarize = ({
     productsReposition,
     productsSale,
   }:{
-    productsDevolution:IProductInventory[],
-    productsReposition:IProductInventory[],
-    productsSale:IProductInventory[],
+    productsDevolution:RouteTransactionDescriptionDTO[],
+    productsReposition:RouteTransactionDescriptionDTO[],
+    productsSale:RouteTransactionDescriptionDTO[],
   }) => {
 
     /*

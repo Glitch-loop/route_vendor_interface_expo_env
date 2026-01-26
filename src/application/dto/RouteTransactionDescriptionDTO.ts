@@ -8,5 +8,5 @@ export default interface RouteTransactionDescriptionDTO {
     id_transaction_operation_type: DAY_OPERATIONS,
     id_product: string,
     id_route_transaction: string,
-    id_product_inventory: string | null,
+    id_product_inventory: string,
 }

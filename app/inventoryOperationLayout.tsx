@@ -82,6 +82,8 @@ import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOper
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import { setStores } from '@/redux/slices/storesSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import { setProducts } from '@/redux/slices/productSlice';
 
 // TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
@@ -315,11 +317,13 @@ const inventoryOperationLayout = () => {
           const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
           const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
           const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-          
+          const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+
           const productInventoryResult     = await retrieveCurrentShiftInventoryQuery.execute()
           const workDayInformationResult   = await retrieveWorkDayInformationQuery.execute()
           const currentDayOperationsResult = await retrieveCurrentDayOperationsQuery.execute()
           const allRegisterdStoresResult   = await listAllRegisterdStoresQuery.execute()
+          const allRegisteredProductsResult   = await listAllRegisteredProductsQuery.execute()
 
           if (workDayInformationResult === null) {
             Toast.show({
@@ -334,6 +338,7 @@ const inventoryOperationLayout = () => {
           dispatch(setWorkDayInformation(workDayInformationResult));
           dispatch(setDayOperations(currentDayOperationsResult));
           dispatch(setStores(allRegisterdStoresResult))
+          dispatch(setProducts(allRegisteredProductsResult))
 
           Toast.show({
             type: 'success',
