@@ -29,15 +29,22 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 export class SQLiteRouteTransactionRepository implements RouteTransactionRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
-    private getPaymentMethodFromId(id_payment_method: string): PaymentMethod {
-        // Map enum values to PaymentMethod
-        const paymentMethodMap: { [key: string]: string } = {
-            [PAYMENT_METHODS.CASH]: 'Cash',
-            [PAYMENT_METHODS.TRANSFER]: 'Transfer',
-        };
-        const name = paymentMethodMap[id_payment_method] || 'Unknown';
-        return new PaymentMethod(id_payment_method, name);
-    }
+    // private getPaymentMethodFromId(id_payment_method: string): PAYMENT_METHODS {
+    //     // Map enum UUIDs to human-readable names
+
+    //     if id_payment_method === PAYMENT_METHODS.CASH {
+    //         return PAYMENT_METHODS.CASH;
+    //     } 
+
+    //     const paymentMethodMap: { [key: string]: string } = {
+    //         [PAYMENT_METHODS.CASH]: 'Efectivo',
+    //         [PAYMENT_METHODS.TRANSFER]: 'Transferencia',
+    //         [PAYMENT_METHODS.CREDIT_CARD]: 'Tarjeta de crédito',
+    //         [PAYMENT_METHODS.DEBIT_CARD]: 'Tarjeta de débito',
+    //     };
+    //     const name = paymentMethodMap[id_payment_method] ?? 'Desconocido';
+    //     return new PaymentMethod(id_payment_method, name);
+    // }
 
     async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
         try {
@@ -53,7 +60,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 payment_method,
                 transaction_description
             } = route_transaction;
-            const { id_payment_method } = payment_method
+            
 
             const db: SQLiteDatabase = await this.dataSource.getClient();
 
@@ -70,11 +77,11 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 `,
                 [
                     id_route_transaction,
-                    date,
+                    date.toISOString(),
                     state,
                     cash_received,
                     id_work_day,
-                    id_payment_method,
+                    payment_method,
                     id_store,
                 ]);
 
@@ -85,6 +92,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         price_at_moment,
                         amount,
                         created_at,
+                        id_product_inventory,
                         id_transaction_operation_type,
                         id_product,
                         id_route_transaction
@@ -95,6 +103,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         price_at_moment, 
                         amount, 
                         created_at,
+                        id_product_inventory,
                         id_transaction_operation_type, 
                         id_product, 
                         id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -104,6 +113,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         price_at_moment,
                         amount,
                         created_at.toISOString(),
+                        id_product_inventory,
                         id_transaction_operation_type,
                         id_product,
                         id_route_transaction
@@ -126,7 +136,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 id_store,
                 payment_method,
             } = route_transaction;
-            const { id_payment_method } = payment_method
 
             const db: SQLiteDatabase = await this.dataSource.getClient();
 
@@ -140,10 +149,10 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             WHERE id_route_transaction = ?;
             `,
             [
-                date,
+                date.toISOString(),
                 state,
                 id_work_day,
-                id_payment_method,
+                payment_method,
                 id_store,
                 id_route_transaction,
             ]);
@@ -200,8 +209,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
-
                 transactions.push(
                     new RouteTransaction(
                         transaction[0],
@@ -210,7 +217,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction[3],
                         transaction[4],
                         transaction[5],
-                        payment_method,
+                        transaction[6],
                         descriptions
                     )
                 );
@@ -251,8 +258,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
-
                 transactions.push(
                     new RouteTransaction(
                         transaction[0],
@@ -261,7 +266,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction[3],
                         transaction[4],
                         transaction[5],
-                        payment_method,
+                        transaction[6],
                         descriptions
                     )
                 );
@@ -301,8 +306,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
-                const payment_method = this.getPaymentMethodFromId(transaction.id_payment_method);
-
                 transactions.push(
                     new RouteTransaction(
                         transaction[0],
@@ -311,7 +314,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction[3],
                         transaction[4],
                         transaction[5],
-                        payment_method,
+                        transaction[6],
                         descriptions
                     )
                 );

@@ -111,7 +111,8 @@ export const routeTransactionnDescriptionsEmbeddedTable = `
     price_at_moment                             NUMERIC(6,3) NOT NULL,
     amount                                      INT NOT NULL,
     created_at                                  DATETIME NOT NULL,
-    id_transaction_operation_type         TEXT NOT NULL,
+    id_product_inventory                        TEXT NOT NULL,
+    id_transaction_operation_type               TEXT NOT NULL,
     id_product                                  TEXT NOT NULL,
     id_route_transaction                        TEXT NOT NULL
   );

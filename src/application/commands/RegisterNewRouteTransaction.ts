@@ -9,6 +9,7 @@ import { ProductInventoryAggregate } from '@/src/core/aggregates/ProductInventor
 import { DayOperation } from '@/src/core/entities/DayOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
+import { Store } from '@/src/core/entities/Store';
 
 // Interfaces
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -16,12 +17,21 @@ import { IDService } from '@/src/core/interfaces/IDService';
 import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
 import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
 import { DateService } from '@/src/core/interfaces/DateService';
+import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 
 // Object values
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
+import WorkDayInformationDTO from '../dto/WorkdayInformationDTO';
+import RouteTransactionDTO from '../dto/RouteTransactionDTO';
+import { MapperDTO } from '../mappers/MapperDTO';
+import { Route } from 'expo-router';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
@@ -30,6 +40,7 @@ export default class RegisterNewRouteTransaction {
         @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
         @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
         @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
+        @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
 
         // Services
         @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -37,17 +48,102 @@ export default class RegisterNewRouteTransaction {
     ) { }
 
     private async executeUseCase(
-       routeTransactionDescription: RouteTransactionDescription[],
-       workDayInformation: WorkDayInformation 
-    ) {
-        const { id_work_day } = workDayInformation;
+        routeTransactionDescription: RouteTransactionDescription[],
+        workDayInformation: WorkDayInformation,
+        paymentMethod: PAYMENT_METHODS,
+        cashReceived: number,
+        id_store: string
+    ):Promise<void> {
+        const { id_work_day, id_route } = workDayInformation;
         
         const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+        const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
 
+        if (storesRetrieved.length === 0) throw new Error("The store where the route transaction is being registered does not exist.");
+
+        const { status_store } = storesRetrieved[0];
+
+        if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
+
+
+        const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
         const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
+
+        // Create route transaction
+        routeTransactionAggregate.createRouteTransaction(
+            this.idService.generateID(),
+            new Date(this.dateService.getCurrentTimestamp()),
+            cashReceived,
+            id_work_day,
+            id_store,
+            paymentMethod
+        );
+
+        for (const description of routeTransactionDescription) {
+            const { price_at_moment, amount, created_at, id_product_inventory, id_transaction_operation_type, id_product } = description;
+            routeTransactionAggregate.addRouteTransactionDescription(
+                this.idService.generateID(),
+                price_at_moment,
+                amount,
+                created_at,
+                id_product_inventory,
+                id_transaction_operation_type,
+                id_product
+            );
+        }
+
+        // Update product inventory
+        for (const description of routeTransactionDescription) {
+            const { amount, id_product, id_transaction_operation_type } = description;
+            if (id_transaction_operation_type === DAY_OPERATIONS.sales || id_transaction_operation_type === DAY_OPERATIONS.product_reposition) {
+                productInventoryAggregate.decreaseStock(id_product, amount);
+            } else {
+                /* Product devolution does not affect inventory */
+            }
+        }
+
+        const { id_route_transaction } = routeTransactionAggregate.getRouteTransaction()!;
+
+        // Add day operation
+        dayOperationAggregate.registerRouteTransaction(
+            this.idService.generateID(),
+            id_route_transaction,
+            new Date(this.dateService.getCurrentTimestamp()),
+        );
+
+        
+        // Persist all changes
+        const routeTransaction: RouteTransaction = routeTransactionAggregate.getRouteTransaction()!;
+        const updatedInventory: ProductInventory[] = productInventoryAggregate.getProductInventory();
+        const newListdayOperations: DayOperation[] = dayOperationAggregate.getDayOperations() || [];
+
+        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
+        await this.localProductInventoryRepo.updateInventory(updatedInventory);
+        await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
     }
 
+    async execute(
+        routeTransactionDescription: RouteTransactionDTO[],
+        workDayInformation: WorkDayInformationDTO,
+        paymentMethod: PAYMENT_METHODS,
+        cashReceived: number,
+        id_store: string) {
+            const mapper = new MapperDTO();
 
+            const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
+                .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
+
+            const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
+
+            this.executeUseCase(
+                routeTransactionDescriptions,
+                workDayInformationEntity,
+                paymentMethod,
+                cashReceived,
+                id_store
+            );
+        
+    }
 }

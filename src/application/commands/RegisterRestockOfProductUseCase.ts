@@ -100,7 +100,7 @@ export default class RegisterRestockOfProductUseCase {
         
         await this.localProductInventoryRepo.updateInventory(updatedInventory);
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
-        this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+        await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     }
 
     async execute(
