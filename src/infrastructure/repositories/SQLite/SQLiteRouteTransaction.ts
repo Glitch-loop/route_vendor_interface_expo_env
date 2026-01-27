@@ -65,7 +65,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const db: SQLiteDatabase = await this.dataSource.getClient();
 
             await db.withExclusiveTransactionAsync(async (tx) => {
-                console.log("Inserting route transaction:", route_transaction);
                 await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
                     (id_route_transaction, 
                     date, 
@@ -85,7 +84,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     id_store,
                 ]);
 
-                console.log("Insert route transaction descriptions");
                 for (const description of transaction_description) {
                     const {
                         id_route_transaction_description,
@@ -106,7 +104,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         id_product_inventory,
                         id_transaction_operation_type, 
                         id_product, 
-                        id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?);
+                        id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     `,
                     [
                         id_route_transaction_description,

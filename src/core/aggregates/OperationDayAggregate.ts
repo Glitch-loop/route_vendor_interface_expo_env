@@ -8,12 +8,14 @@ import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 import { ShiftDayOperations } from "@/src/core/enums/ShiftDayOperations";
 
 export class OperationDayAggregate {
-    private dayOperations: DayOperation[] | null;
     private routeTransactions: RouteTransaction[] | null;
+    private dayOperations: DayOperation[] | null;
+    private initialDayOperations: DayOperation[] | null;
 
     constructor(dayOperations: DayOperation[] | null, routeTransactions: RouteTransaction[] | null) {
-        this.dayOperations = dayOperations;
         this.routeTransactions = routeTransactions;
+        this.dayOperations = dayOperations;
+        this.initialDayOperations = dayOperations;
     }
 
     registerAttendTodaysClient(idDayOperation: string, idClient: string, createdAt: Date): void {
@@ -146,6 +148,18 @@ export class OperationDayAggregate {
 
     getDayOperations(): DayOperation[] | null {
         return this.dayOperations;
+    }
+
+    getNewDayOperations(): DayOperation[] | null {
+        if (this.dayOperations === null && this.initialDayOperations === null) {
+            return null;
+        } else {
+            return this.dayOperations!.filter(dayOperation => {
+                if (this.initialDayOperations === null) return true;
+                return !this.initialDayOperations.find(initialOp => initialOp.id_day_operation === dayOperation.id_day_operation);
+            });
+        }
+
     }
 
     private insertOperationDayNextToCurrentOperation(newDayOperation: DayOperation): void {

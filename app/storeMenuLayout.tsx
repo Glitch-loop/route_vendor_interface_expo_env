@@ -104,7 +104,6 @@ type typeSearchParams = {
   id_store_search_param: string;
 }
 
-
 const storeMenuLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
@@ -158,19 +157,11 @@ const storeMenuLayout = () => {
   }
 
   // handlers
-  const handlerGoBackToMainOperationMenu = () => {
-    dispatch(cleanCurrentOperation());
-    router.replace('/routeOperationMenuLayout');
-    // router.back();
-  };
+  const handlerGoBackToMainOperationMenu = () => { router.replace('/routeOperationMenuLayout') };
 
-  const handlerGoBackToStoreMenu = () => {
-    setIsConsultTransaction(false);
-  };
+  const handlerGoBackToStoreMenu = () => { setIsConsultTransaction(false); };
 
-  const handlerOnStartSale = () => {
-    router.push('/salesLayout');
-  };
+  const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}`); };
 
   const handlerOnConsultTransactions = async() => {
     try {

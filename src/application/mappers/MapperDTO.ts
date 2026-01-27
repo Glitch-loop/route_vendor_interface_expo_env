@@ -135,14 +135,9 @@ export class MapperDTO {
         if (isRouteDayDTO(dto)) return this.routeDayDTOToEntity(dto);
         if (isRouteTransactionDTO(dto)) return this.routeTransactionDTOToEntity(dto);
         if (isRouteTransactionDescriptionDTO(dto)) return this.routeTransactionDescriptionDTOToEntity(dto);
-
         
         throw new Error('Unknown DTO type');
     }
-
-
-  // ==================== ENTITY TYPE GUARDS ====================
-
 
     // ==================== MAPPER METHODS ENTITY to DTO ====================
 
@@ -280,14 +275,35 @@ export class MapperDTO {
         };
     }
 
+    // InventoryOperationDescription (domain) -> InventoryOperationDescriptionDTO (UI)
+    private inventoryProductDescriptionToDTO(desc: InventoryOperationDescription): InventoryOperationDescriptionDTO {
+        return {
+            id_product_operation_description: desc.id_inventory_operation_description,
+            price_at_moment: desc.price_at_moment,
+            amount: desc.amount,
+            id_inventory_operation: desc.id_inventory_operation,
+            id_product: desc.id_product,
+        };
+    }
 
-    // ==================== DTO TYPE GUARDS ====================
+    private routeTransactionDescriptionToDTO(desc: RouteTransactionDescription): RouteTransactionDescriptionDTO {
+        return {
+            id_route_transaction_description: desc.id_route_transaction_description,
+            price_at_moment: desc.price_at_moment,
+            amount: desc.amount,
+            created_at: desc.created_at,
+            id_transaction_operation_type: desc.id_transaction_operation_type,
+            id_product: desc.id_product,
+            id_route_transaction: desc.id_route_transaction,
+            id_product_inventory: desc.id_product_inventory,
+        };
+    }
 
  
     // ==================== MAPPER METHODS DTO to ENTITY ====================
 
     // ProductDTO -> Product (domain)
-    productDTOToEntity(dto: ProductDTO): Product {
+    private productDTOToEntity(dto: ProductDTO): Product {
         return new Product(
             dto.id_product,
             dto.product_name,
@@ -314,7 +330,7 @@ export class MapperDTO {
     }
 
     // InventoryOperationDTO -> InventoryOperation (domain)
-    inventoryOperationDTOToEntity(dto: InventoryOperationDTO): InventoryOperation {
+    private inventoryOperationDTOToEntity(dto: InventoryOperationDTO): InventoryOperation {
         return new InventoryOperation(
             dto.id_inventory_operation,
             dto.sign_confirmation,
@@ -328,7 +344,7 @@ export class MapperDTO {
     }
 
     // WorkDayInformationDTO -> WorkDayInformation (domain)
-    workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
+    private workDayDTOToEntity(dto: WorkDayInformationDTO): WorkDayInformation {
         const { start_date, finish_date } = dto;
         let start = new Date();
         let finish = null;
@@ -364,7 +380,7 @@ export class MapperDTO {
     }
 
     // DayOperationDTO -> DayOperation (domain)
-    dayOperationDTOToEntity(dto: DayOperationDTO): DayOperation {
+    private dayOperationDTOToEntity(dto: DayOperationDTO): DayOperation {
         const { created_at } = dto;
         if(isNaN(Date.parse(created_at))) {
             throw new Error('Invalid start_date format in WorkDayInformationDTO');
@@ -380,7 +396,8 @@ export class MapperDTO {
         );
     }
 
-    routeTransactionDTOToEntity(dto: RouteTransactionDTO): RouteTransaction {
+    // RouteTransactionDTO -> RouteTransaction (domain)
+    private routeTransactionDTOToEntity(dto: RouteTransactionDTO): RouteTransaction {
         const { id_route_transaction, date, state, cash_received, id_work_day, id_store, payment_method, transaction_description } = dto;
         const dateObj = typeof date === 'string' ? new Date(date) : new Date(date as any);
         return new RouteTransaction(
@@ -395,8 +412,23 @@ export class MapperDTO {
         );
     }
 
+    // RouteTransactionDescriptionDTO -> RouteTransactionDescription (domain)
+    private routeTransactionDescriptionDTOToEntity(dto: RouteTransactionDescriptionDTO): RouteTransactionDescription {
+        const createdAt = dto.created_at instanceof Date ? dto.created_at : new Date(dto.created_at);
+        console.log("Mapping DTO to Entity (routeTransactionDescriptionDTOToEntity):", dto);
+        return new RouteTransactionDescription(
+            dto.id_route_transaction_description,
+            dto.price_at_moment,
+            dto.amount,
+            createdAt,
+            dto.id_product_inventory,
+            dto.id_transaction_operation_type,
+            dto.id_product,
+            dto.id_route_transaction
+        );
+    }
     // RouteDTO -> Route (domain)
-    routeDTOToEntity(dto: RouteDTO): Route {
+    private routeDTOToEntity(dto: RouteDTO): Route {
         const routeDays: RouteDay[] = [];
         const { route_day_by_day } = dto;
         if (route_day_by_day !== null) {
@@ -430,7 +462,7 @@ export class MapperDTO {
     }
 
     // RouteDayDTO -> RouteDay (domain)
-    routeDayDTOToEntity(dto: RouteDayDTO): RouteDay {
+    private routeDayDTOToEntity(dto: RouteDayDTO): RouteDay {
         const stores: RouteDayStore[] = (dto.stores || []).map(s =>
             new RouteDayStore(
                 s.id_route_day_store,
@@ -453,43 +485,6 @@ export class MapperDTO {
     return `${store.street} ${store.ext_number}, ${store.colony}`;
   }
 
-    // InventoryOperationDescription (domain) -> InventoryOperationDescriptionDTO (UI)
-    private inventoryProductDescriptionToDTO(desc: InventoryOperationDescription): InventoryOperationDescriptionDTO {
-        return {
-            id_product_operation_description: desc.id_inventory_operation_description,
-            price_at_moment: desc.price_at_moment,
-            amount: desc.amount,
-            id_inventory_operation: desc.id_inventory_operation,
-            id_product: desc.id_product,
-        };
-    }
-
-    private routeTransactionDescriptionToDTO(desc: RouteTransactionDescription): RouteTransactionDescriptionDTO {
-        return {
-            id_route_transaction_description: desc.id_route_transaction_description,
-            price_at_moment: desc.price_at_moment,
-            amount: desc.amount,
-            created_at: desc.created_at,
-            id_transaction_operation_type: desc.id_transaction_operation_type,
-            id_product: desc.id_product,
-            id_route_transaction: desc.id_route_transaction,
-            id_product_inventory: desc.id_product_inventory,
-        };
-    }
-
-    private routeTransactionDescriptionDTOToEntity(dto: RouteTransactionDescriptionDTO): RouteTransactionDescription {
-        const createdAt = dto.created_at instanceof Date ? dto.created_at : new Date(dto.created_at);
-        return new RouteTransactionDescription(
-            dto.id_route_transaction_description,
-            dto.price_at_moment,
-            dto.amount,
-            createdAt,
-            dto.id_product_inventory,
-            dto.id_transaction_operation_type,
-            dto.id_product,
-            dto.id_route_transaction
-        );
-    }
 
     private mapPaymentMethodToDTO(id_payment_method: string): PaymentMethod {
         // Create a minimal PaymentMethod value object; label mapping can be centralized if needed

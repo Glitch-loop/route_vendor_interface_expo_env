@@ -10,11 +10,14 @@ import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
 import HeaderProduct from '@/components/SalesLayout/HeaderProduct';
 import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
 
-
+// DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+
+// Utils
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
+
 
 function createCatalog(avialableProducts:ProductDTO[], productsInventory:ProductInventoryDTO[]):(ProductDTO&ProductInventoryDTO)[] {
   const catalog:(ProductDTO&ProductInventoryDTO)[] = [];
@@ -92,14 +95,14 @@ const TableProduct = ({
     avialableProducts:ProductDTO[],
     productInventory:ProductInventoryDTO[],
     commitedProducts:RouteTransactionDescriptionDTO[],
-    setCommitedProduct:(movements: RouteTransactionDescriptionDTO[]) => void,
+    setCommitedProduct:(movements: RouteTransactionDescriptionDTO[], newItem: ProductDTO&ProductInventoryDTO|null, amount: number) => void,
     sectionTitle:string,
     sectionCaption: string,
     totalMessage: string,
   }) => {
 
     const catalog:(ProductDTO&ProductInventoryDTO)[] = createCatalog(avialableProducts, productInventory);
-    const catalogMap: Map<string, ProductDTO&ProductInventoryDTO> = converCatalogToMap(catalog);
+    const catalogMap: Map<string, ProductDTO&ProductInventoryDTO> = converCatalogToMap(catalog); // <id_product_inventory, ProductDTO&ProductInventoryDTO>
 
     // Handlers
     /*
@@ -108,41 +111,41 @@ const TableProduct = ({
       It depends on the product inventory and not in the product perse.
     */
 
-    const onSelectAnItem = (selectedItem:RouteTransactionDescriptionDTO) => {
-      const newItem:RouteTransactionDescriptionDTO = { ...selectedItem };
-
+    const onSelectAnItem = (selectedItem:ProductInventoryDTO&ProductDTO) => {
       //Avoiding duplicates
       const foundItem:RouteTransactionDescriptionDTO|undefined = commitedProducts.find(product => {
         return product.id_product_inventory === selectedItem.id_product_inventory;
       });
 
       if (foundItem === undefined) {
-        newItem.amount = 1;
-
-        setCommitedProduct([
-          {...newItem},
-          ...commitedProducts,
-        ]);
+        setCommitedProduct(
+          [...commitedProducts], 
+          {...selectedItem},
+          1 // Default amount when adding a new product
+        );
       }
     };
 
     const handleOnChangeAmount = (changedItem:RouteTransactionDescriptionDTO, newAmount:number) => {
-      const updatedCommitedProducts = commitedProducts.map(product => {
-        if (product.id_product_inventory === changedItem.id_product_inventory) {
-          return {
-            ...changedItem,
-            amount: newAmount,
-          };
-        } else {
-          return product;
-        }
-      });
-      setCommitedProduct(updatedCommitedProducts);
+      if (newAmount <= 0) return;
+      
+      const { id_product_inventory } = changedItem;
+
+      if (catalogMap.has(id_product_inventory) === false) return;
+
+      const productDetails = catalogMap.get(id_product_inventory)!;
+
+
+      setCommitedProduct(
+        [ ...commitedProducts ],
+        { ...productDetails },
+        newAmount   
+      );
     };
 
     const handleOnDelteItem = (deleteItem:RouteTransactionDescriptionDTO) => {
       const updatedCommitedProducts = commitedProducts.filter(product => product.id_product_inventory !== deleteItem.id_product_inventory);
-      setCommitedProduct(updatedCommitedProducts);
+      setCommitedProduct(updatedCommitedProducts, null, 0);
     };
 
   return (

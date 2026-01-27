@@ -13,35 +13,68 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 export function isProductDTO(dto: any): dto is ProductDTO {
     return (
         dto && typeof dto === 'object' &&
-        'id_product' in dto && 'product_name' in dto && 'price' in dto
+        'id_product' in dto &&
+        'product_name' in dto &&
+        'barcode' in dto &&
+        'weight' in dto &&
+        'unit' in dto &&
+        'comission' in dto &&
+        'price' in dto &&
+        'product_status' in dto &&
+        'order_to_show' in dto
     );
 }
 
 export function isInventoryOperationDTO(dto: any): dto is InventoryOperationDTO {
     return (
         dto && typeof dto === 'object' &&
-        'id_inventory_operation' in dto && 'id_inventory_operation_type' in dto && 'inventoryOperationDescriptions' in dto
+        'id_inventory_operation' in dto &&
+        'sign_confirmation' in dto &&
+        'date' in dto &&
+        'state' in dto &&
+        'audit' in dto &&
+        'id_inventory_operation_type' in dto &&
+        'id_work_day' in dto &&
+        'inventory_operation_descriptions' in dto
     );
 }
 
 export function isWorkDayDTO(dto: any): dto is WorkDayInformationDTO {
     return (
         dto && typeof dto === 'object' &&
-        'id_work_day' in dto && 'start_date' in dto && 'id_route_day' in dto
+        'id_work_day' in dto &&
+        'start_date' in dto &&
+        'finish_date' in dto &&
+        'start_petty_cash' in dto &&
+        'final_petty_cash' in dto &&
+        'id_route' in dto &&
+        'route_name' in dto &&
+        'description' in dto &&
+        'route_status' in dto &&
+        'id_day' in dto &&
+        'id_route_day' in dto
     );
 }
 
 export function isRouteDTO(dto: any): dto is RouteDTO {
     return (
         dto && typeof dto === 'object' &&
-        'id_route' in dto && 'route_day_by_day' in dto
+        'id_route' in dto &&
+        'route_name' in dto &&
+        'description' in dto &&
+        'route_status' in dto &&
+        'id_vendor' in dto &&
+        'route_day_by_day' in dto
     );
 }
 
 export function isRouteDayDTO(dto: any): dto is RouteDayDTO {
     return (
         dto && typeof dto === 'object' &&
-        'id_route_day' in dto && 'stores' in dto
+        'id_route_day' in dto &&
+        'id_route' in dto &&
+        'id_day' in dto &&
+        'stores' in dto
     )
 }
 
@@ -54,7 +87,8 @@ export function isRouteTransactionDescriptionDTO(dto: any): dto is RouteTransact
         'created_at' in dto &&
         'id_transaction_operation_type' in dto &&
         'id_product' in dto &&
-        'id_route_transaction' in dto
+        'id_route_transaction' in dto &&
+        'id_product_inventory' in dto
     );
 }
 

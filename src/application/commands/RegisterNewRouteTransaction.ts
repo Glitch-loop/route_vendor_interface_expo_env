@@ -118,7 +118,7 @@ export default class RegisterNewRouteTransaction {
         // Persist all changes
         const routeTransaction: RouteTransaction = routeTransactionAggregate.getRouteTransaction()!;
         const updatedInventory: ProductInventory[] = productInventoryAggregate.getProductInventory();
-        const newListdayOperations: DayOperation[] = dayOperationAggregate.getDayOperations() || [];
+        const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
         await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
         await this.localProductInventoryRepo.updateInventory(updatedInventory);
@@ -132,12 +132,12 @@ export default class RegisterNewRouteTransaction {
         cashReceived: number,
         id_store: string) {
             const mapper = new MapperDTO();
-
             const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
                 .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
 
             const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
 
+            console.log(routeTransactionDescriptions)
             this.executeUseCase(
                 routeTransactionDescriptions,
                 workDayInformationEntity,
