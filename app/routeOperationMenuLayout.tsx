@@ -285,11 +285,11 @@ const routeOperationMenuLayout = () => {
           style={tw`w-full h-full flex flex-col`}
           scrollEventThrottle={16}>
           <View style={tw`my-5`}>
-            {/* <MenuHeader
+            <MenuHeader
               showGoBackButton={false}
               showStoreName={false}
               showPrinterButton={true}
-              onGoBack={() => {}}/> */}
+              onGoBack={() => {}}/>
           </View>
           <View style={tw`w-full flex flex-row justify-center`}>
             <View style={tw`w-11/12 flex flex-row justify-start`}>

@@ -1,5 +1,5 @@
 // Libraries
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import tw from 'twrnc';
 
@@ -100,9 +100,23 @@ const TableProduct = ({
     sectionCaption: string,
     totalMessage: string,
   }) => {
-
     const catalog:(ProductDTO&ProductInventoryDTO)[] = createCatalog(avialableProducts, productInventory);
     const catalogMap: Map<string, ProductDTO&ProductInventoryDTO> = converCatalogToMap(catalog); // <id_product_inventory, ProductDTO&ProductInventoryDTO>
+    
+    const [catalogToShow, setCatalogToShow] = useState<(ProductDTO&ProductInventoryDTO)[]>(catalog);  
+
+
+
+    useEffect(() => {
+      const newCatalogToShow:(ProductDTO&ProductInventoryDTO)[] = catalog.filter(product => {
+        const { id_product_inventory } = product;
+        if (commitedProducts.find((commitedProduct) => commitedProduct.id_product_inventory === id_product_inventory) === undefined) return true
+        else return false
+      });
+
+      setCatalogToShow(newCatalogToShow);
+      
+    }, [commitedProducts]);
 
     // Handlers
     /*
@@ -157,7 +171,7 @@ const TableProduct = ({
       <View style={tw`w-full mt-3 flex flex-row justify-center my-2`}>
         <SearchBarWithSuggestions
           selectedCatalog = { commitedProducts }
-          catalog         = { catalog }
+          catalog         = { catalogToShow }
           fieldToSearch   = { 'product_name' }
           keyField        = { 'id_product_inventory' }
           onSelectHandler = { onSelectAnItem }

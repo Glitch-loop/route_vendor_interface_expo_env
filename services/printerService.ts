@@ -13,9 +13,12 @@ export async function getBluetoothPermissionStatus():Promise<boolean> {
 }
 
 export async function getPrinterConnectionStatus():Promise<boolean> {
+  console.log("Checking printer connection status...")
   let statusConnection = false;
   let connectedDevices:BluetoothDevice[]
     = await RNBluetoothClassic.getConnectedDevices();
+
+  console.log("Connected devices:", connectedDevices);
 
   for (let i = 0; i < connectedDevices.length; i++) {
     if (connectedDevices[i].deviceClass !== undefined) {
