@@ -9,7 +9,7 @@ export class ProductInventoryAggregate {
 
     insertProductToInventory(idProductInventory: string, priceAtMoment: number, stock: number, idProduct: string) {
 
-        const indexFound:number = this.productInventory.findIndex(pi => pi['id_product_inventory'] === idProductInventory);
+        const indexFound:number = this.productInventory.findIndex(pi => pi.get_id_product_inventory() === idProductInventory);
 
         if (indexFound !== -1) throw new Error("The product you are trying to insert already exists in the inventory.");
 
@@ -24,10 +24,10 @@ export class ProductInventoryAggregate {
     }
 
     // This function should find the product to decrease by its idProductInventory, but instead it uses id_product.
-    increaseStock(idProduct: string, amount: number) {
+    increaseStock(idProductInventory: string, amount: number) {
         if (this.productInventory.length === 0) throw new Error("No products in inventory.");
 
-        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product'] === idProduct);
+        const productIndex: number = this.productInventory.findIndex(pi => pi.get_id_product_inventory() === idProductInventory);
         
         if (productIndex === -1) throw new Error("Product inventory not found.");
 
@@ -38,10 +38,10 @@ export class ProductInventoryAggregate {
         const updatedStock:number = currentStock + amount;
 
         const updatedProductInventory = new ProductInventory(
-            product['id_product_inventory'],
+            product.get_id_product_inventory(),
             product.get_price_of_product(),
             updatedStock,
-            product['id_product']
+            product.get_id_product()
         );
         
         this.productInventory = this.productInventory.map((pi, index) => {
@@ -53,10 +53,10 @@ export class ProductInventoryAggregate {
     }
 
     // This function should find the product to decrease by its idProductInventory, but instead it uses id_product.
-    decreaseStock(idProduct: string, amount: number) {
+    decreaseStock(idProductInventory: string, amount: number) {
         if (this.productInventory.length === 0) throw new Error("No products in inventory.");
         
-        const productIndex: number = this.productInventory.findIndex(pi => pi['id_product'] === idProduct);
+        const productIndex: number = this.productInventory.findIndex(pi => pi.get_id_product_inventory() === idProductInventory);
         
         if (productIndex === -1) throw new Error("Product inventory not found.");
 
@@ -71,12 +71,14 @@ export class ProductInventoryAggregate {
         const updatedStock:number = currentStock - amount;
 
         const updatedProductInventory = new ProductInventory(
-            product['id_product_inventory'],
+            product.get_id_product_inventory(),
             product.get_price_of_product(),
             updatedStock,
-            product['id_product']
+            product.get_id_product()
         );
         
+        
+
         this.productInventory = this.productInventory.map((pi, index) => {
             if (index === productIndex) {
                 return updatedProductInventory;

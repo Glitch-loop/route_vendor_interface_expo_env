@@ -17,4 +17,12 @@ export class ProductInventory {
   get_price_of_product(): number {
     return this.price_at_moment;
   }
+
+  get_id_product_inventory(): string {
+    return this.id_product_inventory;
+  }
+
+  get_id_product(): string {
+    return this.id_product;
+  }
 }

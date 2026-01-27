@@ -103,6 +103,8 @@ import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import { container as di_conatiner } from '@/src/infrastructure/di/container';
 import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 
 
 function processProductCommitedValidation(
@@ -187,6 +189,7 @@ const salesLayout = () => {
     if (productInventory !== null && availableProducts !== null) {
       const productInventoryMapTemp:Map<string, ProductInventoryDTO&ProductDTO> = new Map<string, ProductInventoryDTO&ProductDTO>();
 
+      console.log("Building product inventory map");
       for (const currentProductInventory of productInventory) {
         const { id_product_inventory, price_at_moment, stock, id_product } = currentProductInventory;
         
@@ -204,7 +207,7 @@ const salesLayout = () => {
           order_to_show
 
         } = productFound;
-        
+        console.log("Product name: ", product_name, " - amount: ", stock);        
         productInventoryMapTemp.set(
           id_product_inventory, {
             id_product_inventory: id_product_inventory,
@@ -264,7 +267,6 @@ const salesLayout = () => {
     //   setStartPaymentProcess(false);
     // } else {
     // }
-    console.log("Starting payment process: ", productSale);
     setStartPaymentProcess(true);
   };
 
@@ -632,6 +634,7 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
+      console.log("Executing command to register new route transaction");
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
@@ -640,6 +643,14 @@ const salesLayout = () => {
         id_store_search_param
       )
       
+      console.log("Retrieving current shift inventory");
+      const retrieveCurrentShiftInventory = di_conatiner.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+      const currentProductInventory = await retrieveCurrentShiftInventory.execute();
+
+      // console.log("Update REDUX")
+      // dispatch(setProductInventory(currentProductInventory));
+
+
       Toast.show({
         type: 'success',
         text1:'Se ha registrado la venta satisfactoriamente.',
@@ -654,7 +665,7 @@ const salesLayout = () => {
     
         setResultSaleState(true);
       } catch (error) {
-        
+      console.error("Error registering new route transaction: ", error);
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',
@@ -738,7 +749,7 @@ const salesLayout = () => {
               price_at_moment: price_at_moment,
               amount: amountToSet,
               created_at: new Date(),
-              id_transaction_operation_type: DAY_OPERATIONS.product_devolution,
+              id_transaction_operation_type: DAY_OPERATIONS.product_reposition,
               id_product: id_product,
               id_route_transaction: '',
               id_product_inventory: id_product_inventory,
@@ -791,7 +802,7 @@ const salesLayout = () => {
             price_at_moment: price_at_moment,
             amount: amountToSet,
             created_at: new Date(),
-            id_transaction_operation_type: DAY_OPERATIONS.product_devolution,
+            id_transaction_operation_type: DAY_OPERATIONS.sales,
             id_product: id_product,
             id_route_transaction: '',
             id_product_inventory: id_product_inventory,

@@ -415,7 +415,6 @@ export class MapperDTO {
     // RouteTransactionDescriptionDTO -> RouteTransactionDescription (domain)
     private routeTransactionDescriptionDTOToEntity(dto: RouteTransactionDescriptionDTO): RouteTransactionDescription {
         const createdAt = dto.created_at instanceof Date ? dto.created_at : new Date(dto.created_at);
-        console.log("Mapping DTO to Entity (routeTransactionDescriptionDTOToEntity):", dto);
         return new RouteTransactionDescription(
             dto.id_route_transaction_description,
             dto.price_at_moment,
