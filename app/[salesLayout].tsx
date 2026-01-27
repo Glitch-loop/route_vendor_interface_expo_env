@@ -2,9 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Pressable, Text } from 'react-native';
 import tw from 'twrnc';
-import Toast from 'react-native-toast-message';
 import { Router, useRouter } from 'expo-router';
-import { generateUUIDv4 } from '../utils/generalFunctions';
+import { useGlobalSearchParams, useLocalSearchParams } from 'expo-router/build/hooks';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,57 +13,57 @@ import { AppDispatch, RootState } from '../redux/store';
 import { IProductInventory } from '../interfaces/interfaces';
 
 // Utils
-import {
-  // getGreatTotal,
-  // getMessageForProductDevolutionOperation,
-  // getProductDevolutionBalanceWithoutNegativeNumber,
-  getTicketSale,
-} from '../utils/saleFunction';
 
-// Components
-// import productInventory from '../moocks/productInventory';
-import TableProduct from '../components/SalesLayout/TableProduct';
-import SaleSummarize from '../components/SalesLayout/SaleSummarize';
-import ConfirmationBand from '../components/ConfirmationBand';
-import ResultSale from '../components/ResultSale';
-import SubtotalLine from '../components/SalesLayout/SubtotalLine';
-import PaymentProcess from '../components/SalesLayout/PaymentProcess';
-import MenuHeader from '../components/generalComponents/MenuHeader';
+// UI Components
+import Toast from 'react-native-toast-message';
+import TableProduct from '@/components/SalesLayout/TableProduct';
+import SaleSummarize from '@/components/SalesLayout/SaleSummarize';
+import ConfirmationBand from '@/components/ConfirmationBand';
+import ResultSale from '@/components/ResultSale';
+import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
+import PaymentProcess from '@/components/SalesLayout/PaymentProcess';
+import MenuHeader from '@/components/generalComponents/MenuHeader';
 import ActionButton from '@/components/SalesLayout/ActionButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 // Services
 import { printTicketBluetooth } from '../services/printerService';
 
-// Utils
-import { useGlobalSearchParams, useLocalSearchParams } from 'expo-router/build/hooks';
 
 // Controllers
 import { 
   getInitialInventoryParametersFromRoute, 
 } from '@/controllers/SaleController';
 
-
+// Mapper and DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+
+
+// Use cases and queries
+import { container as di_conatiner } from '@/src/infrastructure/di/container';
+import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+
+// Redux
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+
+// Utils
+import {
+  getTicketSale,
+} from '../utils/saleFunction';
 import { 
   getProductDevolutionBalanceWithoutNegativeNumber,
   getMessageForProductDevolutionOperation,
   getGreatTotal,
   productCommitedValidation
- } from '@/utils/route-transaciton/utils';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import ProductDTO from '@/src/application/dto/ProductDTO';
-import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
-
-import { container as di_conatiner } from '@/src/infrastructure/di/container';
-import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
+} from '@/utils/route-transaciton/utils';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
-import { setProductInventory } from '@/redux/slices/productsInventorySlice';
-import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
-
 
 function processProductCommitedValidation(
   productInventory: Map<string, ProductInventoryDTO>,
