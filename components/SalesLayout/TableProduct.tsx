@@ -25,7 +25,9 @@ function createCatalog(avialableProducts:ProductDTO[], productsInventory:Product
   let price_at_moment:number = 0;
   let stock:number = 0;
 
-  const availableProductsOrdered = avialableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
+  const arrAvailableProducts = avialableProducts.map(prod => prod);
+
+  const availableProductsOrdered = arrAvailableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
 
   for (const availableProduct of availableProductsOrdered) {
     const { id_product, product_name, barcode, weight, unit, comission, price, product_status, order_to_show } = availableProduct;

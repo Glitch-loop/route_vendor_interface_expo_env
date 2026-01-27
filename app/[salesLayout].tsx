@@ -143,7 +143,6 @@ const salesLayout = () => {
     if (productInventory !== null && availableProducts !== null) {
       const productInventoryMapTemp:Map<string, ProductInventoryDTO&ProductDTO> = new Map<string, ProductInventoryDTO&ProductDTO>();
 
-      console.log("Building product inventory map");
       for (const currentProductInventory of productInventory) {
         const { id_product_inventory, price_at_moment, stock, id_product } = currentProductInventory;
         
@@ -161,7 +160,7 @@ const salesLayout = () => {
           order_to_show
 
         } = productFound;
-        console.log("Product name: ", product_name, " - amount: ", stock);        
+
         productInventoryMapTemp.set(
           id_product_inventory, {
             id_product_inventory: id_product_inventory,
@@ -248,7 +247,6 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
-      console.log("Executing command to register new route transaction");
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
@@ -257,7 +255,6 @@ const salesLayout = () => {
         id_store_search_param
       )
       
-      console.log("Retrieving current shift inventory");
       const retrieveCurrentShiftInventory = di_conatiner.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_conatiner.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
@@ -265,7 +262,6 @@ const salesLayout = () => {
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
 
-      console.log("Update REDUX")
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(setProductInventory(newInventory));
 
@@ -273,17 +269,9 @@ const salesLayout = () => {
         type: 'success',
         text1:'Se ha registrado la venta satisfactoriamente.',
         text2: 'Se ha registrado la venta satisfactoriamente.'});
-        // Updating redux states
-        // dispatch(updateProductsInventory(updateInventory));
-    
-        /* This store doesn't belong to this day, but it was requested to be visited. */
-        // Update redux context
-        // dispatch(updateStores([ updatedStore ]));
-    
-    
+            
         setResultSaleState(true);
       } catch (error) {
-      console.error("Error registering new route transaction: ", error);
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',
@@ -383,6 +371,7 @@ const salesLayout = () => {
           );
         }
       }
+    // TODO: Validate if there will be necessary to provide feedback to the user about the product reposition.
     // if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
     //   setProductReposition(
     //     processProductCommitedValidation(productInventoryMap, productsToCommit, productSale, true));
