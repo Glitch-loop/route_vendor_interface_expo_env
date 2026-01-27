@@ -31,6 +31,7 @@ import {
 
 // Utils
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 
 /*
   The intnetion of this component is to provide an interface to perform an inventory operation.
@@ -120,9 +121,11 @@ const TableInventoryOperation = (
     id_type_of_operation: string,
   }) => {
     // let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
+    const orderedAvailableProducts = availableProducts.map(prod => prod).sort((a, b) => a.order_to_show - b.order_to_show);
+
   return (
     <View style={tw`w-full flex flex-row`}>
-      { availableProducts.length ?
+      { orderedAvailableProducts.length ?
         <View style={tw`w-full flex flex-row`}>
           <DataTable
           style={tw`w-1/3`}
@@ -135,14 +138,13 @@ const TableInventoryOperation = (
               </DataTable.Title>
             </DataTable.Header>
             {/* Body section */}
-            { availableProducts.length > 0 &&
-              availableProducts.map((product) => {
+            { orderedAvailableProducts.length > 0 &&
+              orderedAvailableProducts.map((product) => {
                 const { id_product, product_name } = product;
                 return (
                   <DataTable.Row key={id_product}>
-                    {/* This field is never empty since it is necessary anytime */}
                     <DataTable.Cell style={tw`${cellTableStyle}`}>
-                      <Text style={tw`text-black ${textRowTableStyle}`}> {product_name} </Text>
+                      <Text style={tw`${textRowTableStyle}`}> { capitalizeFirstLetterOfEachWord(product_name) } </Text>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -171,8 +173,8 @@ const TableInventoryOperation = (
                 </DataTable.Title>
               </DataTable.Header>
               {/* Body section*/}
-              { availableProducts.length > 0 &&
-                availableProducts.map((product) => {
+              { orderedAvailableProducts.length > 0 &&
+                orderedAvailableProducts.map((product) => {
                   const { id_product, price } = product;
                   let amount:number = 0;
                   let suggestedAmount:number = 0;
@@ -229,7 +231,7 @@ const TableInventoryOperation = (
         </View> 
         :
         <DataTable.Row>
-          <View style={tw`w-full -full flex flex-col justify-center`}>
+          <View style={tw`w-full flex flex-col justify-center`}>
             <ActivityIndicator size={'large'} />
           </View>
         </DataTable.Row>

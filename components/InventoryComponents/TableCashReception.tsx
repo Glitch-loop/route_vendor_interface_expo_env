@@ -7,6 +7,7 @@ import { DataTable } from 'react-native-paper';
 // Interfaces
 import { ICurrency } from '../../interfaces/interfaces';
 import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
+import { headerTitleTableStyle, textHeaderTableStyle } from '@/utils/inventoryOperationTableStyles';
 
 
 
@@ -23,11 +24,11 @@ const TableCashReception = (
   return (
     <DataTable style={tw`w-full`}>
       <DataTable.Header>
-        <DataTable.Title style={tw`flex flex-row justify-center text-center`}>
-          <Text style={tw`text-black`}>Denominación</Text>
+        <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+          <Text style={tw`text-black ${textHeaderTableStyle}`}>Denominación</Text>
         </DataTable.Title>
-        <DataTable.Title style={tw`flex flex-row justify-center text-center`}>
-          <Text style={tw`text-black`}>Cantidad</Text>
+        <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+          <Text style={tw`text-black ${textHeaderTableStyle}`}>Cantidad</Text>
         </DataTable.Title>
       </DataTable.Header>
       {cashInventoryOperation.map((cashInventoryDenomination:ICurrency) =>

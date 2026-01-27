@@ -104,7 +104,7 @@ const inventoryOperationLayout = () => {
   const dispatch:AppDispatch = useDispatch();
   const route = useSelector((state: RootState) => state.route);
   const routeDay = useSelector((state: RootState) => state.routeDay);
-  const productsInventory = useSelector((state: RootState) => state.productsInventory);
+  const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
 
   // Routing
@@ -166,7 +166,9 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
-    
+    const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
+    const products: ProductDTO[] = await use_case_query.execute();
+
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
       if (id_inventory_operation_search_param === undefined) {
           Toast.show({
@@ -190,8 +192,6 @@ const inventoryOperationLayout = () => {
       /* Dispose the list of product and let the user to introduce the inventory movement. */
 
       // Looking for all the products available for the company
-      const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
-      const products: ProductDTO[] = await use_case_query.execute()
       setAvailableProducts(products);
 
       // TODO: set suggested inventory for start shift inventory
@@ -201,6 +201,20 @@ const inventoryOperationLayout = () => {
       setFinalOperation(true);
       setIssueInventory(true);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+      
+      if (productsInventoryReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error al iniciar operación de inventario.',
+          text2: 'No fue posible rastrar el inventario actual del vendedor, intente nuevamente.',
+        });
+
+        router.replace('/routeOperationMenuLayout');
+      }
+      
+      setAvailableProducts(products);
+      setSuggestedInventory([]);
+      setCurrentShiftInventory(productsInventoryReduxState!);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);

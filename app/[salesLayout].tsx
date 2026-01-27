@@ -65,26 +65,26 @@ import {
 } from '@/utils/route-transaciton/utils';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
-function processProductCommitedValidation(
-  productInventory: Map<string, ProductInventoryDTO>,
-  productsToCommit:RouteTransactionDescriptionDTO[],
-  productSharingInventory:RouteTransactionDescriptionDTO[],
-  isProductReposition:boolean
-):RouteTransactionDescriptionDTO[] {
-  return productCommitedValidation(
-    productInventory, productsToCommit, productSharingInventory, isProductReposition);
+// function productCommitedValidation(
+//   productInventory: Map<string, ProductInventoryDTO>,
+//   productsToCommit:RouteTransactionDescriptionDTO[],
+//   productSharingInventory:RouteTransactionDescriptionDTO[],
+//   isProductReposition:boolean
+// ):RouteTransactionDescriptionDTO[] {
+//   return productCommitedValidation(
+//     productInventory, productsToCommit, productSharingInventory, isProductReposition);
 
-  // const {data, responseCode, error} = responseProductCommitedValidation;
+//   // const {data, responseCode, error} = responseProductCommitedValidation;
 
-  // if (responseCode === 400) {
-  //   Toast.show({type: 'error', 
-  //     text1:'Cantidad a vender excede el inventario.', 
-  //     text2: error
-  //   });
-  // }
+//   // if (responseCode === 400) {
+//   //   Toast.show({type: 'error', 
+//   //     text1:'Cantidad a vender excede el inventario.', 
+//   //     text2: error
+//   //   });
+//   // }
 
-  // return data;
-}
+//   // return data;
+// }
 
 function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO[], productMovement: RouteTransactionDescriptionDTO) {
   const productToCommitForValidation: RouteTransactionDescriptionDTO[] = [];
@@ -342,7 +342,7 @@ const salesLayout = () => {
       if (productInventoryMap !== undefined) {
         if (item === null) {
           setProductSale(
-            processProductCommitedValidation(
+            productCommitedValidation(
               productInventoryMap, 
               productsToCommit, 
               productSale, 
@@ -361,7 +361,7 @@ const salesLayout = () => {
           };
 
           setProductReposition(
-            processProductCommitedValidation(
+            productCommitedValidation(
               productInventoryMap, 
               pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
               productSale, 
@@ -373,7 +373,7 @@ const salesLayout = () => {
     // TODO: Validate if there will be necessary to provide feedback to the user about the product reposition.
     // if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
     //   setProductReposition(
-    //     processProductCommitedValidation(productInventoryMap, productsToCommit, productSale, true));
+    //     productCommitedValidation(productInventoryMap, productsToCommit, productSale, true));
     // } else {
     //   if (productDevolution.length > 0) {
     //     // Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", 
@@ -394,7 +394,7 @@ const salesLayout = () => {
     if (productInventoryMap !== undefined) {
       if (item === null) {
         setProductSale(
-          processProductCommitedValidation(
+          productCommitedValidation(
             productInventoryMap, 
             productsToCommit, 
             productReposition, 
@@ -415,7 +415,7 @@ const salesLayout = () => {
         };
 
         setProductSale(
-          processProductCommitedValidation(
+          productCommitedValidation(
             productInventoryMap, 
             pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
             productReposition, 
