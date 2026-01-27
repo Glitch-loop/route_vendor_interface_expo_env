@@ -11,17 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 
 // Interfaces and enums
-import {
-  IDayOperation,
-  IPaymentMethod,
-  IProductInventory,
-  IResponse,
-  IRouteTransaction,
-  IRouteTransactionOperation,
-  IRouteTransactionOperationDescription,
-  IStore,
-  IStoreStatusDay,
-} from '../interfaces/interfaces';
+import { IProductInventory } from '../interfaces/interfaces';
 
 // Utils
 import {
@@ -30,7 +20,6 @@ import {
   // getProductDevolutionBalanceWithoutNegativeNumber,
   getTicketSale,
 } from '../utils/saleFunction';
-import DAYS_OPERATIONS from '../lib/day_operations';
 
 // Components
 // import productInventory from '../moocks/productInventory';
@@ -43,51 +32,19 @@ import PaymentProcess from '../components/SalesLayout/PaymentProcess';
 import MenuHeader from '../components/generalComponents/MenuHeader';
 import ActionButton from '@/components/SalesLayout/ActionButton';
 
-// Utils
-import { timestamp_format } from '../utils/date/momentFormat';
 
 // Services
 import { printTicketBluetooth } from '../services/printerService';
 
-
-// Database
-import {
-  deleteRouteTransactionById,
-  deleteRouteTransactionOperationById,
-  deleteRouteTransactionOperationDescriptionsById,
-  deleteSyncQueueRecord,
-  deleteSyncQueueRecords,
-  insertDayOperation,
-  insertRouteTransaction,
-  insertSyncQueueRecord,
-  updateProducts,
-  updateStore,
-} from '../queries/SQLite/sqlLiteQueries';
-
 // Utils
-import { apiResponseStatus } from '../utils/apiResponse';
-import { createSyncItem, createSyncItems } from '../utils/syncFunctions';
-import { syncingRecordsWithCentralDatabase } from '../services/syncService';
 import { useGlobalSearchParams, useLocalSearchParams } from 'expo-router/build/hooks';
 
 // Controllers
 import { 
-  createRouteTransactionOperation, 
-  createRouteTransactionOperationDescription, 
   getInitialInventoryParametersFromRoute, 
-  insertionSyncRecordTransactionOperationAndOperationDescriptions, 
-  insertionTransactionOperationsAndOperationDescriptions, 
-  // productCommitedValidation, 
-  substractingProductFromCurrentInventory, 
-  // validatingIfRepositionIsValid 
 } from '@/controllers/SaleController';
 
-import { 
-  determinigNextOperation, 
-  determiningNextStatusOfStore, 
-  updateDayOperations 
-} from '@/controllers/DayOperationController';
-import { enumStoreStates } from '@/interfaces/enumStoreStates';
+
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
 import { 
@@ -178,11 +135,6 @@ const salesLayout = () => {
 
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
-  const currentOperation      = useSelector((state: RootState) => state.currentOperation);
-  const routeDay              = useSelector((state: RootState) => state.routeDay);
-  const dayOperations         = useSelector((state: RootState) => state.dayOperations);
-
-  const stores                = useSelector((state: RootState) => state.stores);
   const productInventory      = useSelector((state: RootState) => state.productsInventory);
   const availableProducts     = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
