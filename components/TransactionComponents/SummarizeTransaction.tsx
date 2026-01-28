@@ -16,9 +16,6 @@ import {
   IStore,
 } from '../../interfaces/interfaces';
 
-// Utils
-import { getTicketSale } from '../../utils/saleFunction';
-
 // Components
 import SectionTitle from '@/components/SalesLayout/SectionTitle';
 import SummarizeFormat from '@/components/TransactionComponents/SummarizeFormat';
@@ -41,15 +38,18 @@ import Toast from 'react-native-toast-message';
 import { apiResponseStatus } from '../../utils/apiResponse';
 import { createSyncItem } from '../../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../../services/syncService';
+
+// DTO
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 
 // Utils
+import { getTicketSale } from '../../utils/saleFunction';
+import { format_date_to_UI_format } from '@/utils/date/momentFormat';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 const SummarizeTransaction = ({
   productInventoryMap,
@@ -66,7 +66,6 @@ const SummarizeTransaction = ({
   const productInventory = useSelector((state: RootState) => state.productsInventory);
   const stores = useSelector((state: RootState) => state.stores);
   const vendor = useSelector((state: RootState) => state.user);
-  const dayOperations = useSelector((state: RootState) => state.dayOperations);
   const shiftWorkDay = useSelector((state: RootState) => state.workDayInformation);
 
   /*
