@@ -34,10 +34,10 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                             id_product
                         ) VALUES (?, ?, ?, ?);
                     `, [
-                        product['id_product_inventory'],
+                        product.get_id_product_inventory(),
                         product.get_price_of_product(),
                         product.get_stock_of_product(),
-                        product['id_product']
+                        product.get_id_product()
                     ]);
                 }
             });
@@ -61,8 +61,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                     `, [
                         product.get_price_of_product(),
                         product.get_stock_of_product(),
-                        product['id_product'],
-                        product['id_product_inventory']
+                        product.get_id_product(),
+                        product.get_id_product_inventory()
                     ]);
                 }
             });

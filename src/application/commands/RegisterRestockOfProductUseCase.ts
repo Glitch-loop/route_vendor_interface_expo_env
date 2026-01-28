@@ -59,6 +59,9 @@ export default class RegisterRestockOfProductUseCase {
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
         const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
 
+        const productToUpdate: ProductInventory[] = [];
+        const productToInsert: ProductInventory[] = [];
+        
         // Create inventory operation
         inventoryOperationAggregate.createInventoryOperation(
             this.idService.generateID(),
@@ -82,8 +85,21 @@ export default class RegisterRestockOfProductUseCase {
 
         // Update product inventory
         for (const description of inventoryOperationDescriptions) {
-            const { amount, id_product } = description;
-            productInventoryAggregate.increaseStock(id_product, amount);
+            const { amount, id_product, price_at_moment } = description; 
+            
+            // Find if there is a product inventory record, if so increase stock, otherwise insert new product.
+            const findProductInventory:ProductInventory | undefined = currentInventory.find((pi) => pi.get_id_product() === id_product);
+            
+            if (findProductInventory === undefined) {
+                productInventoryAggregate.insertProductToInventory(
+                    this.idService.generateID(),
+                    price_at_moment,
+                    amount,
+                    id_product
+                )
+            } else {
+                productInventoryAggregate.increaseStock(findProductInventory.get_id_product_inventory(), amount);
+            }
         }
 
         // Add day operation
@@ -94,11 +110,32 @@ export default class RegisterRestockOfProductUseCase {
         );
 
         // Persist all changes
-        const updatedInventory:ProductInventory[] = productInventoryAggregate.getProductInventory();
         const newInventoryOperation:InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
-        const newDayOperations:DayOperation[] = dayOperationAggregate.getDayOperations() || [];
+        const newDayOperations:DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         
-        await this.localProductInventoryRepo.updateInventory(updatedInventory);
+        // Determine which products were updated and which were inserted
+        const updatedInventory:ProductInventory[] = productInventoryAggregate.getProductInventory();
+        
+        for (const productInventoryToUpdate of updatedInventory) {
+            // Find if there is a product inventory record, if so increase stock, otherwise insert new product.
+            const findProductInventory:ProductInventory | undefined = currentInventory.find((pi) => pi.get_id_product_inventory() === productInventoryToUpdate.get_id_product_inventory());
+            
+            console.log("Processing product inventory: ", productInventoryToUpdate.get_id_product_inventory(), " - Found existing: ", findProductInventory !== undefined);  
+            if (findProductInventory === undefined) {
+                productToInsert.push(productInventoryToUpdate);
+            } else {
+                productToUpdate.push(productInventoryToUpdate);
+                
+            }
+        }
+        
+        console.log("Updated inventory records: ", updatedInventory.length);
+        console.log("Product to insert: ", productToInsert.length);
+        console.log("Product to update: ", productToUpdate.length);
+
+        await this.localProductInventoryRepo.createInventory(productToInsert);
+        await this.localProductInventoryRepo.updateInventory(productToUpdate);
+
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     }
@@ -113,7 +150,7 @@ export default class RegisterRestockOfProductUseCase {
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
 
-        return this.executeUseCase(
+        return await this.executeUseCase(
             inventoryOperationDescriptions,
             workdayInformation
         );

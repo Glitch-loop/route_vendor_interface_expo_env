@@ -246,21 +246,26 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
+      console.log("Registering new route transaction")
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
         paymentMethod,
         receivedCash,
         id_store_search_param
-      )
+      ).then(() => {
+        console.log("OK")
+      });
       
+      console.log("Updating states")
       const retrieveCurrentShiftInventory = di_conatiner.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_conatiner.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-
-
+      
+      
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
-
+      
+      console.log("REDUX DISPATCHING")
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(setProductInventory(newInventory));
 

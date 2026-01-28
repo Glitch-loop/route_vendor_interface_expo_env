@@ -120,8 +120,8 @@ export default class RegisterNewRouteTransaction {
         const updatedInventory: ProductInventory[] = productInventoryAggregate.getProductInventory();
         const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
-        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
         await this.localProductInventoryRepo.updateInventory(updatedInventory);
+        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
         await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
     }
 
@@ -137,7 +137,7 @@ export default class RegisterNewRouteTransaction {
 
             const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
 
-            this.executeUseCase(
+            await this.executeUseCase(
                 routeTransactionDescriptions,
                 workDayInformationEntity,
                 paymentMethod,

@@ -122,7 +122,7 @@ export default class FinishShiftDayUseCase {
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
 
-        return this.executeUseCase(
+        return await this.executeUseCase(
             petty_cash,
             inventoryOperationDescriptions,
             workdayInformation

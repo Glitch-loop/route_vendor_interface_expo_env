@@ -48,9 +48,6 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-
-
-
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
   const dispatch:AppDispatch = useDispatch();
@@ -109,7 +106,7 @@ const routeOperationMenuLayout = () => {
   };
 
   const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_day_operation_search_param=${dayOperation.id_item}`);
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`);
   };
 
   const onRestockInventory = ():void => {

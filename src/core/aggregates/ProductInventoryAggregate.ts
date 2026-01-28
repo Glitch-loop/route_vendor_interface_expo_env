@@ -2,9 +2,11 @@ import { ProductInventory } from "@/src/core/entities/ProductInventory";
 
 export class ProductInventoryAggregate {
     private productInventory: ProductInventory[]; 
+    private initialInventory: ProductInventory[];
 
     constructor(productInventory: ProductInventory[]) {
         this.productInventory = productInventory;
+        this.initialInventory = [ ...this.productInventory ]
     }
 
     insertProductToInventory(idProductInventory: string, priceAtMoment: number, stock: number, idProduct: string) {

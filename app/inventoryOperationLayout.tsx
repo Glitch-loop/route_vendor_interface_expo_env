@@ -142,11 +142,6 @@ const inventoryOperationLayout = () => {
   const [isActiveOperation, setIsActiveOperation] = useState<boolean>(true);
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
-  /* States for route transaction operations */
-  const [productSoldByStore, setProductSoldByStore] = useState<IProductInventory[][]>([]);
-  const [productRepositionByStore, setProductRepositionByStore] = useState<IProductInventory[][]>([]);
-  const [nameOfStores, setNameOfStores] = useState<string[]>([]);
-
   // State used for the logic of the component
   const [isInventoryAccepted, setIsInventoryAccepted] = useState<boolean>(false);
   const [isOperationToUpdate, setIsOperationToUpdate] = useState<boolean>(false);
@@ -169,7 +164,10 @@ const inventoryOperationLayout = () => {
     const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
     const products: ProductDTO[] = await use_case_query.execute();
 
+    const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
+      console.log("Consulting inventory operation with id: ", id_inventory_operation_search_param);
       if (id_inventory_operation_search_param === undefined) {
           Toast.show({
             type: 'error',
@@ -212,12 +210,9 @@ const inventoryOperationLayout = () => {
         router.replace('/routeOperationMenuLayout');
       }
       
+      setCurrentShiftInventory(productsInventoryReduxState!);
       setAvailableProducts(products);
       setSuggestedInventory([]);
-      setCurrentShiftInventory(productsInventoryReduxState!);
-      // setInitialShiftInventory([]);
-      // setRestockInventories([inventoryOperationProducts]);
-      // setFinalShiftInventory([]);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
@@ -312,7 +307,6 @@ const inventoryOperationLayout = () => {
         });
 
         try {
-          console.log("Executing start shift day use case");
           await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),
              route,
@@ -390,22 +384,26 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          registerRestockOfProductCommand.execute(
+          console.log("Executing restock use case");
+          await registerRestockOfProductCommand.execute(
             inventoryOperationMovements,
             workDayInformation
           );
-
+          
           const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-          setProductInventory(await retrieveCurrentShiftInventoryQuery.execute());
+          const currentShiftInventory = await retrieveCurrentShiftInventoryQuery.execute()
+          console.log("Retrieving current shift inventory after restock: ", currentShiftInventory.length);
+          dispatch(setProductInventory(currentShiftInventory));
 
           Toast.show({
                 type: 'success',
                 text1: 'Se ha registrado el restock exitosamente.',
-                text2: '',
+                text2: 'Se ha actualizado el inventario actual.',
           });
           // TODO: Update redux
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.log("Error during restock inventory operation execution:", error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',
