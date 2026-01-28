@@ -46,6 +46,10 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import { format_date_to_UI_format } from '@/utils/date/momentFormat';
+
+// Utils
 
 const SummarizeTransaction = ({
   productInventoryMap,
@@ -260,7 +264,7 @@ const SummarizeTransaction = ({
           </Text>
       </ActionDialog>
       <View style={tw`w-full flex flex-row justify-center pt-7`}>
-        { currentTransaction.state === 1 &&
+        { currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE &&
           <View style={tw`absolute -top-0 -right-3 z-10 mr-3 mb-6`}>
             <DangerButton
               iconName={'trash'}
@@ -268,12 +272,12 @@ const SummarizeTransaction = ({
           </View>
         }
         <View style={tw`w-11/12 
-          ${currentTransaction.state ? 'bg-amber-300' : 'bg-amber-200'} 
+          ${currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE ? 'bg-amber-300' : 'bg-amber-200'} 
           border p-2 flex flex-col justify-center items-center rounded-md`}>
           <View style={tw`w-full flex flex-col`}>
             <SectionTitle
-              title={`Transacción - ${routeTransaction.date}`}
-              caption={currentTransaction.state ? '' : '(Cancelada)'}
+              title={`Transacción - ${format_date_to_UI_format(currentTransaction.date)}`}
+              caption={currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE ? '' : '(Cancelada)'}
               titlePositionStyle={'text-center w-full items-center justify-center'}/>
             {/* Product devolution section */}
             <SectionTitle
