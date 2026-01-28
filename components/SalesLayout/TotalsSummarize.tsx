@@ -4,14 +4,11 @@ import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
 // Utils
-import { getPaymentMethod } from '../../utils/saleFunction';
-
 import { 
   getProductDevolutionBalance,
-  calculateChange
+  calculateChange,
+  getNamePaymentMethodById
 } from '@/utils/route-transaciton/utils';
-
-import PAYMENT_METHODS from '../../utils/paymentMethod';
 
 // DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';
@@ -119,7 +116,7 @@ const TotalsSummarize = ({
       { routeTransaction !== undefined &&
         <View style={tw`w-full flex flex-row`}>
           <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
-            Metodo de pago {`(${getPaymentMethod(routeTransaction,PAYMENT_METHODS).payment_method_name})`}:
+            Metodo de pago {`(${getNamePaymentMethodById(routeTransaction.payment_method)})`}:
           </Text>
           <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
             { cashReceived }

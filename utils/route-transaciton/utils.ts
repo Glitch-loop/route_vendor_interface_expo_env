@@ -233,6 +233,7 @@ export function calculateChange(total:number, received:number){
 }
 
 export function getNamePaymentMethodById(id_payment_method:string):string {
+  console.log("Name payment method: ", id_payment_method)
   let name_payment_method:string = '';
     switch (id_payment_method) {
         case PAYMENT_METHODS.CASH:

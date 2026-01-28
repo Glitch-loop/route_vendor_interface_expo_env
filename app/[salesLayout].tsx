@@ -64,6 +64,7 @@ import {
   productCommitedValidation
 } from '@/utils/route-transaciton/utils';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -140,45 +141,7 @@ const salesLayout = () => {
 
   useEffect(() => {
     if (productInventory !== null && availableProducts !== null) {
-      const productInventoryMapTemp:Map<string, ProductInventoryDTO&ProductDTO> = new Map<string, ProductInventoryDTO&ProductDTO>();
-
-      for (const currentProductInventory of productInventory) {
-        const { id_product_inventory, price_at_moment, stock, id_product } = currentProductInventory;
-        
-        const productFound:ProductDTO|undefined = availableProducts.find(prod => prod.id_product === id_product);
-        
-        if (productFound === undefined) continue;
-        const {
-          product_name,
-          barcode,
-          weight,
-          unit,
-          comission,
-          price,
-          product_status,
-          order_to_show
-
-        } = productFound;
-
-        productInventoryMapTemp.set(
-          id_product_inventory, {
-            id_product_inventory: id_product_inventory,
-            price_at_moment: price_at_moment,
-            stock: stock,
-            id_product: id_product,
-            product_name: product_name,
-            barcode: barcode,
-            weight: weight,
-            unit: unit,
-            comission: comission,
-            price: price,
-            product_status: product_status,
-            order_to_show: order_to_show,
-          }
-        )
-      }
-    
-      setProductInventoryMap(productInventoryMapTemp);
+      setProductInventoryMap(createMapProductInventoryWithProduct(productInventory, availableProducts));
     }
   }, [productInventory, availableProducts])
 

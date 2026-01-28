@@ -7,30 +7,25 @@ import { Router, useRouter } from 'expo-router';
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/store';
-import { updateProductsInventory } from '../../redux/slices/productsInventorySlice';
 
 // Interfaces
 import {
-  IDayOperation,
   IProductInventory,
   IResponse,
   IRouteTransaction,
-  IRouteTransactionOperation,
-  IRouteTransactionOperationDescription,
   IStore,
 } from '../../interfaces/interfaces';
 
 // Utils
-import DAYS_OPERATIONS from '../../lib/day_operations';
 import { getTicketSale } from '../../utils/saleFunction';
 
 // Components
-import SectionTitle from '../SalesLayout/SectionTitle';
-import SummarizeFormat from './SummarizeFormat';
-import TotalsSummarize from '../SalesLayout/TotalsSummarize';
-import DangerButton from '../generalComponents/DangerButton';
-import ActionDialog from '../ActionDialog';
-import ConfirmationBand from '../ConfirmationBand';
+import SectionTitle from '@/components/SalesLayout/SectionTitle';
+import SummarizeFormat from '@/components/TransactionComponents/SummarizeFormat';
+import TotalsSummarize from '@/components/SalesLayout/TotalsSummarize';
+import DangerButton from '@/components/generalComponents/DangerButton';
+import ActionDialog from '@/components/ActionDialog';
+import ConfirmationBand from '@/components/ConfirmationBand';
 
 // Embedded Database
 import {
@@ -46,95 +41,18 @@ import Toast from 'react-native-toast-message';
 import { apiResponseStatus } from '../../utils/apiResponse';
 import { createSyncItem } from '../../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../../services/syncService';
-
-function convertOperationDescriptionToProductInventoryInterface(
-  routeTransactionOperationDescription:IRouteTransactionOperationDescription[]|undefined,
-  productInventory: IProductInventory[],
-):IProductInventory[] {
-  if (routeTransactionOperationDescription === undefined) {
-    return [];
-  } else {
-    return routeTransactionOperationDescription.map((transactionDescription) => {
-      /*
-        Extracting infomration from the transaction:
-        - Amount.
-        - Price at moment of the operation.
-      */
-      const product:IProductInventory = {
-        id_product: transactionDescription.id_product,
-        product_name: '',
-        barcode: '',
-        weight: '',
-        unit: '',
-        comission: 0,
-        price: transactionDescription.price_at_moment,
-        product_status: 1,
-        order_to_show: 0,
-        amount: transactionDescription.amount,
-      };
-
-      /*
-        Extracting information from the product itself.
-
-        Information regarded to the description of the product.
-      */
-      const foundProduct = productInventory
-        .find(currentProduct => { return currentProduct.id_product === transactionDescription.id_product;});
-
-      /* Completing missing spaces */
-      if (foundProduct === undefined) {
-        /* Do nothing */
-      } else {
-        product.product_name =    foundProduct.product_name;
-        product.barcode =         foundProduct.barcode;
-        product.weight =          foundProduct.weight;
-        product.unit =            foundProduct.unit;
-        product.comission =       foundProduct.comission;
-        product.product_status =  foundProduct.product_status;
-        product.order_to_show =   foundProduct.order_to_show;
-      }
-
-      return product;
-    });
-  }
-}
-
-function getConceptTransactionOperation(idTransactionOperationType:string,
-  routeTransactionOperations:IRouteTransactionOperation[]):string {
-    let idTransactionOperation = '';
-
-    /*
-      Find the operation between all the operations of the transaction according with the
-      operation type.
-
-      Remember that at the moment (10-13-24), there are only 3 types of operation that a
-      transaction can have:
-        - Devolution
-        - Reposition
-        - Sale
-    */
-    const foundTransactionOperation = routeTransactionOperations
-      .find(transactionOperation => {
-          return transactionOperation.id_route_transaction_operation_type ===
-          idTransactionOperationType; });
-
-    if (foundTransactionOperation === undefined) {
-      /* Do nothing */
-    } else {
-      idTransactionOperation = foundTransactionOperation.id_route_transaction_operation;
-    }
-
-    return idTransactionOperation;
-  }
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 const SummarizeTransaction = ({
+  productInventoryMap,
   routeTransaction,
-  routeTransactionOperations,
-  routeTransactionOperationDescriptions,
 }:{
-  routeTransaction:IRouteTransaction,
-  routeTransactionOperations:IRouteTransactionOperation[],
-  routeTransactionOperationDescriptions: Map<string,IRouteTransactionOperationDescription[]>,
+  productInventoryMap: Map<string, ProductDTO&ProductInventoryDTO>,
+  routeTransaction:RouteTransactionDTO,
 }) => {
   //Router
   const router:Router = useRouter()
@@ -145,6 +63,7 @@ const SummarizeTransaction = ({
   const stores = useSelector((state: RootState) => state.stores);
   const vendor = useSelector((state: RootState) => state.user);
   const dayOperations = useSelector((state: RootState) => state.dayOperations);
+  const shiftWorkDay = useSelector((state: RootState) => state.workDayInformation);
 
   /*
     Declaring states to store the movements for each operations.
@@ -160,25 +79,16 @@ const SummarizeTransaction = ({
     interface.
 
   */
-  const [currentTransaction, setCurrentTransaction] = useState<IRouteTransaction>(routeTransaction);
+  const [currentTransaction, setCurrentTransaction] = useState<RouteTransactionDTO>(routeTransaction);
 
+  const { transaction_description } = routeTransaction;
 
   // Variables for displaying information
-  const productsDevolution:IProductInventory[] =
-    convertOperationDescriptionToProductInventoryInterface(
-      routeTransactionOperationDescriptions
-      .get(getConceptTransactionOperation(DAYS_OPERATIONS.product_devolution, routeTransactionOperations)), productInventory);
+  const productsDevolution: RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_devolution)
 
-  const productsReposition:IProductInventory[] =
-    convertOperationDescriptionToProductInventoryInterface(
-      routeTransactionOperationDescriptions
-      .get(getConceptTransactionOperation(DAYS_OPERATIONS.product_reposition, routeTransactionOperations)), productInventory);
+  const productsReposition:RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_reposition);
 
-  const productsSale:IProductInventory[] =
-    convertOperationDescriptionToProductInventoryInterface(
-      routeTransactionOperationDescriptions
-      .get(getConceptTransactionOperation(DAYS_OPERATIONS.sales, routeTransactionOperations)),
-      productInventory);
+  const productsSale:RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.sales);
 
   // States regarded to the logic of the component
   const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -335,13 +245,9 @@ const SummarizeTransaction = ({
       });
   };
 
-  const handleOnShowDialog = () => {
-    setShowDialog(true);
-  };
+  const handleOnShowDialog = () => { setShowDialog(true); };
 
-  const handleOnCancelShowDialog = () => {
-    setShowDialog(false);
-  };
+  const handleOnCancelShowDialog = () => { setShowDialog(false); };
 
   return (
     <View style={tw`w-full flex flex-row justify-center pt-7`}>
@@ -376,7 +282,8 @@ const SummarizeTransaction = ({
               titlePositionStyle={'text-center w-full items-center justify-center'}
             />
             <SummarizeFormat
-              arrayProducts={productsDevolution}
+              productInventoryMap={productInventoryMap}
+              productsMovement={productsDevolution}
               totalSectionCaptionMessage={'Valor total de devolución: '}/>
             <View style={tw`w-full border`}/>
             {/* Product reposition section */}
@@ -386,7 +293,8 @@ const SummarizeTransaction = ({
               titlePositionStyle={'text-center w-full flex flex-row justify-center'}
               />
             <SummarizeFormat
-              arrayProducts={productsReposition}
+              productInventoryMap={productInventoryMap}
+              productsMovement={productsReposition}
               totalSectionCaptionMessage={'Valor total de reposición: '}/>
             <View style={tw`w-full border`}/>
             {/* Product sale section */}
@@ -396,8 +304,9 @@ const SummarizeTransaction = ({
               titlePositionStyle={'text-center w-full flex flex-row justify-center'}
               />
             <SummarizeFormat
-              arrayProducts={productsSale}
-                  totalSectionCaptionMessage={'Total venta: '}/>
+              productInventoryMap={productInventoryMap}
+              productsMovement={productsSale}
+              totalSectionCaptionMessage={'Total venta: '}/>
             <View style={tw`w-full border`}/>
             {/* Totals sections */}
             <TotalsSummarize
@@ -405,17 +314,21 @@ const SummarizeTransaction = ({
                 productsDevolution={productsDevolution}
                 productsReposition={productsReposition}
                 productsSale={productsSale}
+                productInventoryMap={productInventoryMap}
             />
             <View style={tw`w-full flex flex-row`}>
               <ConfirmationBand
                 textOnAccept={'Iniciar venta apartir de esta'}
                 textOnCancel={'Imprimr'}
                 handleOnAccept={() => {
-                  const endShiftInventoryOperation:IDayOperation|undefined
-                  = dayOperations.find(dayOperation =>
-                      dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory);
+                  if (shiftWorkDay === null) {
+                    Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
+                    return;
+                  }
 
-                  if (endShiftInventoryOperation === undefined) {
+                  const { finish_date } = shiftWorkDay;
+
+                  if (finish_date === null) {
                     /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
                     handleOnStartASale();
                   } else {

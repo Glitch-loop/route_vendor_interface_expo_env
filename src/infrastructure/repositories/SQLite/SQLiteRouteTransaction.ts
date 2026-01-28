@@ -231,11 +231,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         try {
             await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
-            const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
             const { id_store } = store;
 
             // Retrieve all route transaction descriptions
-            const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
 
             const db: SQLiteDatabase = this.dataSource.getClient();
             
@@ -243,29 +241,22 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
             const resultTransactions = transactionsStatement.executeSync<any>([id_store]);
 
-            // Group descriptions by their route transaction ID
-            for (const transactionDescription of resultRouteTransactionDescriptions) {
-                const descriptions = routeTransactionDescriptions.get(transactionDescription.id_route_transaction) || [];
-                descriptions.push(transactionDescription);
-                routeTransactionDescriptions.set(transactionDescription.id_route_transaction, descriptions);
-            }
-
             // Map descriptions to their respective transactions
             for (const transaction of resultTransactions) {
-                const id_route_transaction:string = transaction[0];
+                const id_route_transaction:string = transaction['id_route_transaction'];
                 
-                const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
+                const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.retrieveRouteTransactionDescriptionsByIds([ id_route_transaction ]);
                 
                 transactions.push(
                     new RouteTransaction(
-                        transaction[0],
-                        transaction[1],
-                        transaction[2],
-                        transaction[3],
-                        transaction[4],
-                        transaction[5],
-                        transaction[6],
-                        descriptions
+                        transaction['id_route_transaction'],
+                        new Date(transaction['date']),
+                        transaction['state'],
+                        transaction['cash_received'],
+                        transaction['id_work_day'],
+                        transaction['id_store'],
+                        transaction['id_payment_method'],
+                        resultRouteTransactionDescriptions
                     )
                 );
             }
@@ -300,19 +291,19 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
 
             // Map descriptions to their respective transactions
             for (const transaction of resultTransactions) {
-                const id_route_transaction:string = transaction[0];
+                const id_route_transaction:string = transaction['id_route_transaction'];
                 
                 const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
                 
                 transactions.push(
                     new RouteTransaction(
-                        transaction[0],
-                        transaction[1],
-                        transaction[2],
-                        transaction[3],
-                        transaction[4],
-                        transaction[5],
-                        transaction[6],
+                        transaction['id_route_transaction'],
+                        new Date(transaction['date']),
+                        transaction['state'],
+                        transaction['cash_received'],
+                        transaction['id_work_day'],
+                        transaction['id_store'],
+                        transaction['id_payment_method'],
                         descriptions
                     )
                 );
@@ -334,12 +325,55 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const resultTransactionDescriptions = statementTransactionDescriptions.executeSync<RouteTransactionDescription>();
 
             for (const description of resultTransactionDescriptions) {
-                routeTransactionDescriptions.push(description);
+                routeTransactionDescriptions.push(
+                    new RouteTransactionDescription(
+                        description['id_route_transaction_description'],
+                        description['price_at_moment'],
+                        description['amount'],
+                        new Date(description['created_at']),
+                        description['id_product_inventory'],
+                        description['id_transaction_operation_type'],
+                        description['id_product'],
+                        description['id_route_transaction']
+                    )
+                );
             }
 
             return routeTransactionDescriptions;
         } catch (error) {
             throw new Error("Failed to list route transaction descriptions: " + error);
+        }
+    }
+
+    async retrieveRouteTransactionDescriptionsByIds(ids_route_transaction: string[]): Promise<RouteTransactionDescription[]> {
+        try {
+            await this.dataSource.initialize();
+            const routeTransactionDescriptions: RouteTransactionDescription[] = [];
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            // We receive route transaction IDs; filter descriptions by id_route_transaction
+            const statementTransactionDescriptions = await db.prepareAsync(
+                `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${ids_route_transaction.map(id => `'${id}'`).join(', ')})`
+            );
+            const execResult = statementTransactionDescriptions.executeSync<any>();
+            const rows = execResult.getAllSync();
+
+            for (const description of rows) {
+                routeTransactionDescriptions.push(
+                    new RouteTransactionDescription(
+                        description.id_route_transaction_description,
+                        description.price_at_moment,
+                        description.amount,
+                        new Date(description.created_at),
+                        description.id_product_inventory,
+                        description.id_transaction_operation_type,
+                        description.id_product,
+                        description.id_route_transaction
+                    )
+                );                
+            }
+            return routeTransactionDescriptions;
+        } catch (error) {
+            throw new Error("Failed to retrieve route transaction descriptions by IDs: " + error);
         }
     }
 }

@@ -132,7 +132,6 @@ const TableInventoryOperationVisualization = (
             <DataTable style={tw`w-full`}>
               {/* Header section */}
               <DataTable.Header>
-                {/* This field is never empty since it is necessary anytime */}
                 { initialInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
@@ -155,9 +154,6 @@ const TableInventoryOperationVisualization = (
                     );
                   })
                 }
-                {/*
-                  This field is never empty since it is the reason of this component (inventory operation)
-                */}
                 { inventoryWithdrawal &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>

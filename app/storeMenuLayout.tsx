@@ -6,12 +6,10 @@ import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 
 // Interface and enums
 import {
-  IDayOperation,
   IRouteTransaction,
   IRouteTransactionOperation,
   IRouteTransactionOperationDescription,
   IStore,
-  IStoreStatusDay,
 } from '../interfaces/interfaces';
 
 // Components
@@ -22,7 +20,6 @@ import MenuHeader from '../components/generalComponents/MenuHeader';
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { cleanCurrentOperation } from '../redux/slices/currentOperationSlice';
 
 // Embedded database
 import {
@@ -36,8 +33,6 @@ import { container as conatiner_di } from '@/src/infrastructure/di/container';
 
 
 // Utils
-import { getStoreFromContext } from '../utils/routesFunctions';
-import DAYS_OPERATIONS from '../lib/day_operations';
 import Toast from 'react-native-toast-message';
 import { apiResponseProcess } from '../utils/apiResponse';
 import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -47,6 +42,12 @@ import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import { setStores } from '@/redux/slices/storesSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 
 
 function buildAddress(store:StoreDTO) {
@@ -114,17 +115,19 @@ const storeMenuLayout = () => {
   //Defining redux context
   const dispatch: AppDispatch = useDispatch();
   const stores = useSelector((state: RootState) => state.stores);
-  const dayOperations = useSelector((state: RootState) => state.dayOperations);
   const workDay = useSelector((state: RootState) => state.workDayInformation);
+  const availableProductsReduxState = useSelector((state: RootState) => state.products);
+  const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
+
+  // Constants
 
   //Router
   const router:Router = useRouter()
 
   // Defining state
-  const [isConsultTransaction, setIsConsultTransaction] = useState<boolean>(false);
-  const [routeTransactions, setRouteTransactions] = useState<IRouteTransaction[]>([]);
-  const [routeTransactionOperations, setRouteTransactionOperations]
-    = useState<Map<string, IRouteTransactionOperation[]>>(new Map());
+  const [isConsultTransaction, setIsConsultTransaction]             = useState<boolean>(false);
+  const [routeTransactions, setRouteTransactions]                   = useState<RouteTransactionDTO[]>([]);
+  const [routeTransactionOperations, setRouteTransactionOperations] = useState<Map<string, IRouteTransactionOperation[]>>(new Map());
   const [
     routeTransactionOperationDescriptions,
     setRouteTransactionOperationDescriptions,
@@ -132,6 +135,8 @@ const storeMenuLayout = () => {
 
   const [consultedStore, setConsultedStore] = useState<StoreDTO|null>(null)
 
+
+  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
 
   useEffect(() => {
     // Definig only-read variables
@@ -146,14 +151,18 @@ const storeMenuLayout = () => {
       dispatch(setStores(allStores))
     }
     
-    const foundStore:StoreDTO|undefined = allStores
-      .find(storeItem => storeItem.id_store === id_store_search_param);
+    const foundStore:StoreDTO|undefined = allStores.find(storeItem => storeItem.id_store === id_store_search_param);
 
     if (foundStore === undefined) {
       setConsultedStore(null);
     } else {
       setConsultedStore(foundStore);
     }
+
+    if (availableProductsReduxState !== null && productsInventoryReduxState !== null) {
+      setProductInventoryMap(createMapProductInventoryWithProduct(productsInventoryReduxState, availableProductsReduxState));
+    }
+
   }
 
   // handlers
@@ -164,9 +173,10 @@ const storeMenuLayout = () => {
   const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}`); };
 
   const handlerOnConsultTransactions = async() => {
+    
     try {
       // Variables used throughout the logic of the handler
-      const arrTransactions:IRouteTransaction[] = [];
+      const arrTransactions:RouteTransactionDTO[] = [];
       const mapTransactionOperations = new Map<string, IRouteTransactionOperation[]>();
       const mapTransactionOperationDescriptions = new Map<string, IRouteTransactionOperationDescription[]>();
 
@@ -182,44 +192,24 @@ const storeMenuLayout = () => {
       };
 
       /* Getting all the transaciton of the store of today. */
-      if (consultedStore) {
-        apiResponseProcess((
-          await getRouteTransactionByStore(consultedStore.id_store)),
-          settingRouteTransactionByStore)
-        .forEach((transaction:IRouteTransaction) => {
-          arrTransactions.push(transaction);
-        });
+      if (consultedStore === undefined || consultedStore === null) {
+        Toast.show({type: 'error',
+          text1:'Error al consultar las transacciones de la tienda',
+          text2: 'Ha habido un error durante la consulta. Reinicie la aplicación e intente nuevamente.'});
+        return;
       }
 
-      /* Getting all the transaction operations from the transaction of today. */
-      for (const transaction of arrTransactions) {
-        const { id_route_transaction } = transaction;
-        mapTransactionOperations.set(
-          id_route_transaction,
-          apiResponseProcess(
-            await getRouteTransactionOperations(id_route_transaction),
-            settingTransactionsOperation)
-        );
-      }
+      console.log("Consult store");
+      const listRouteTransactionByStore: ListRouteTransactionsOfStoreQuery = conatiner_di.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
+    
+      setRouteTransactions(await listRouteTransactionByStore.execute(consultedStore));
+      // setRouteTransactionOperations(mapTransactionOperations);
+      // setRouteTransactionOperationDescriptions(mapTransactionOperationDescriptions);
 
-      /* Getting all the descriptions (or movements) of the transaction operations of today. */
-      for (const [key, transactionOperation] of mapTransactionOperations.entries()) {
-        for (const currentTransactionOperation of transactionOperation) {
-          const { id_route_transaction_operation } = currentTransactionOperation;
-          mapTransactionOperationDescriptions.set(
-            id_route_transaction_operation,
-            apiResponseProcess(await getRouteTransactionOperationDescriptions(id_route_transaction_operation),
-            settingTransactionsOperation)
-          );
-        }
-      }
-
-      setRouteTransactions(arrTransactions);
-      setRouteTransactionOperations(mapTransactionOperations);
-      setRouteTransactionOperationDescriptions(mapTransactionOperationDescriptions);
       setIsConsultTransaction(true);
 
     } catch (error) {
+      console.error(error)
       Toast.show({type: 'error',
         text1:'Error al consultar las ventas de la tienda',
         text2: 'Ha habido un error al intentar recuperar la información de la tienda.'});
@@ -228,144 +218,116 @@ const storeMenuLayout = () => {
 
   return (!isConsultTransaction ?
     // Main menu of store
-    <View style={tw`w-full h-full flex-col justify-center items-center`}>
-      <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
-        {/* <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/> */}
-      </View>
-      { consultedStore != null &&
-        <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
-          <RouteMap
-            latitude={parseFloat(consultedStore.latitude)}
-            longitude={parseFloat(consultedStore.longitude)}
-            stores={[ consultedStore ]}
-          /> 
+    <SafeAreaView>
+      <View style={tw`w-full h-full flex-col justify-center items-center`}>
+        <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
+          {/* <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/> */}
         </View>
-        // :
-        // <View style={tw`w-11/12 flex justify-center items-center basis-1/2`}>
-        //   <Text> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
-        // </View>
-      }
-      <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
-        { consultedStore !== null &&
-          <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
-            <View style={tw`flex flex-col justify-around`}>
-              <Text style={tw`text-black text-xl`}>Dirección</Text>
-              <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
+        { consultedStore != null &&
+          <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
+            <RouteMap
+              latitude={parseFloat(consultedStore.latitude)}
+              longitude={parseFloat(consultedStore.longitude)}
+              stores={[ consultedStore ]}
+            /> 
+          </View>
+          // :
+          // <View style={tw`w-11/12 flex justify-center items-center basis-1/2`}>
+          //   <Text> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
+          // </View>
+        }
+        <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
+          { consultedStore !== null &&
+            <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
+              <View style={tw`flex flex-col justify-around`}>
+                <Text style={tw`text-black text-xl`}>Dirección</Text>
+                <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
+              </View>
+              {/* <View style={tw`flex flex-col basis-1/2 justify-around`}>
+                <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
+                  Información del cliente
+                </Text>
+                <Text style={tw`text-black`}> {capitalizeFirstLetterOfEachWord(displayingClientInformation(store))} </Text>
+              </View> */}
             </View>
-            {/* <View style={tw`flex flex-col basis-1/2 justify-around`}>
-              <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
-                Información del cliente
-              </Text>
-              <Text style={tw`text-black`}> {capitalizeFirstLetterOfEachWord(displayingClientInformation(store))} </Text>
-            </View> */}
-          </View>
-        }
-        { consultedStore !== null &&
-          <View style={tw`flex basis-1/4 flex-col justify-start items-start`}>
-            <Text style={tw`text-black text-xl`}>Referencia</Text>
-            <Text style={tw`text-black`}>
-              { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
-                'No disponible' :
-                capitalizeFirstLetter(consultedStore.address_reference)
-              }
-            </Text>
-          </View>
-        }
-        <View style={tw`flex basis-2/4 flex-row justify-center items-center`}>
-          <View style={tw`flex basis-1/2 justify-center items-center`}>
-            <Pressable
-              style={tw`h-14 w-11/12 border-solid border bg-blue-500 
-                rounded flex flex-row justify-center items-center`}
-              onPress={() => {handlerOnConsultTransactions();}}>
-              <Text style={tw`text-center text-black`}>Transacciones de hoy</Text>
-            </Pressable>
-          </View>
-          <View style={tw`flex basis-1/2 justify-center items-center`}>
-            <Pressable
-              style={tw`h-14 w-11/12 bg-green-500 rounded border-solid border
-                        flex flex-row justify-center items-center`}
-              onPress={() => {
-                if (workDay === null) {
-                  Toast.show({type: 'error', text1:'Día de trabajo no iniciado', text2: 'No es posible iniciar una venta sin antes iniciar un día de trabajo'});
-                } else {
-                  /*
-                  Business rule:
-                    - Once the vendor has closed his shift (end shift inventory operation),
-                      he cannot start selling again until he starts a new work day.
-                  */
-                  const { finish_date } = workDay;
-                  if (finish_date === null) handlerOnStartSale();
-                  else Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+          }
+          { consultedStore !== null &&
+            <View style={tw`flex basis-1/4 flex-col justify-start items-start`}>
+              <Text style={tw`text-black text-xl`}>Referencia</Text>
+              <Text style={tw`text-black`}>
+                { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
+                  'No disponible' :
+                  capitalizeFirstLetter(consultedStore.address_reference)
                 }
-              }}>
-              <Text style={tw`text-center text-black`}>Iniciar venta</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </View> :
-    // Transaction visualization
-    <View style={tw`w-full flex-1 justify-start items-center`}>
-      <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
-        <MenuHeader onGoBack={handlerGoBackToStoreMenu}/>
-      </View>
-        { routeTransactions.length > 0 ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            { routeTransactions.map(current_transaction => {
-              const id_current_transaction = current_transaction.id_route_transaction;
-              const current_transaction_operations:IRouteTransactionOperation[] = [];
-              const current_transaction_operation_descriptions = new Map<string, IRouteTransactionOperationDescription[]>();
-
-              /* Getting the operations of the transactions */
-              let transactionOperations = routeTransactionOperations.get(id_current_transaction);
-
-              /* Avoiding undefined value for operations of the transaction */
-              if (transactionOperations === undefined) {
-                /* Do nothing */
-              } else {
-                /* Storing all the operations related to the current transaction */
-                transactionOperations.forEach(operation => {
-                  const {id_route_transaction_operation} = operation;
-                  current_transaction_operations.push(operation);
-
-                  /* Consulting the description of the operation */
-                  let transactionOperationDescription = routeTransactionOperationDescriptions
-                    .get(id_route_transaction_operation);
-
-                  /* Avoiding undefined values for operation descriptions */
-                  if (transactionOperationDescription === undefined) {
-                    /* Do nothing*/
+              </Text>
+            </View>
+          }
+          <View style={tw`flex basis-2/4 flex-row justify-center items-center`}>
+            { productInventoryMap !== undefined &&
+              <View style={tw`flex basis-1/2 justify-center items-center`}>
+                <Pressable
+                  style={tw`h-14 w-11/12 border-solid border bg-blue-500 
+                    rounded flex flex-row justify-center items-center`}
+                  onPress={() => {handlerOnConsultTransactions();}}>
+                  <Text style={tw`text-center text-black`}>Transacciones de hoy</Text>
+                </Pressable>
+              </View>
+            }
+            <View style={tw`flex basis-1/2 justify-center items-center`}>
+              <Pressable
+                style={tw`h-14 w-11/12 bg-green-500 rounded border-solid border flex flex-row justify-center items-center`}
+                onPress={() => {
+                  if (workDay === null) {
+                    Toast.show({type: 'error', text1:'Día de trabajo no iniciado', text2: 'No es posible iniciar una venta sin antes iniciar un día de trabajo'});
                   } else {
                     /*
-                      If there were found description for the operation, then
-                      store it in the map.
+                    Business rule:
+                      - Once the vendor has closed his shift (end shift inventory operation),
+                        he cannot start selling again until he starts a new work day.
                     */
-                    current_transaction_operation_descriptions
-                      .set(id_route_transaction_operation, transactionOperationDescription);
+                    const { finish_date } = workDay;
+                    if (finish_date === null) handlerOnStartSale();
+                    else Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
                   }
-                });
-              }
-
-              return (
-                <SummarizeTransaction
-                  key={id_current_transaction}
-                  routeTransaction={current_transaction}
-                  routeTransactionOperations={current_transaction_operations}
-                  routeTransactionOperationDescriptions={current_transaction_operation_descriptions}
-                  />
-              );
-            })}
-          <View style={tw`h-32`}/>
-          </ScrollView>
-        ) : (
-          <View style={tw`w-10/12 h-full flex flex-col items-center justify-center`}>
-            <Text style={tw`text-xl font-bold mb-20 text-center`}>
-              Aún no hay ventas realizadas para esta tienda
-            </Text>
+                }}>
+                <Text style={tw`text-center text-black`}>Iniciar venta</Text>
+              </Pressable>
+            </View>
           </View>
-        )
-      }
-    </View>
+        </View>
+      </View> 
+    </SafeAreaView>
+    :
+    // Transaction visualization
+    <SafeAreaView>
+      <View style={tw`w-full h-full flex-col justify-start items-center`}>
+        <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
+          <MenuHeader onGoBack={handlerGoBackToStoreMenu}/>
+        </View>
+          { routeTransactions.length > 0 ? (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              { routeTransactions.map(routeTransaction => {
+                const { id_route_transaction } = routeTransaction;
+                console.log("Rendering transaction: ", id_route_transaction);
+                return (
+                  <SummarizeTransaction
+                    key={id_route_transaction}
+                    productInventoryMap={productInventoryMap!}
+                    routeTransaction={routeTransaction} />
+                );
+              })}
+            <View style={tw`h-32`}/>
+            </ScrollView>
+          ) : (
+            <View style={tw`w-10/12 h-full flex flex-col items-center justify-center`}>
+              <Text style={tw`text-xl font-bold mb-20 text-center`}>
+                Aún no hay ventas realizadas para esta tienda
+              </Text>
+            </View>
+          )
+        }
+      </View>
+    </SafeAreaView>
   );
 };
 
