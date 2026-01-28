@@ -46,7 +46,6 @@ export default class ListRouteTransactionsOfStoreQuery {
     );
 
     const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactionByStore(storeEntity);
-    console.log("Transactions retrieved:", transactions);
     return transactions.map((t) => this.mapperDTO.toDTO(t));
   }
 }

@@ -234,18 +234,8 @@ const SummarizeTransaction = ({
   };
 
   const handleOnStartASale = async () => {
-    const information:string =  JSON.stringify(
-      {
-        'initialProductDevolution': productsDevolution,
-        'initialProductReposition': productsReposition,
-        'initialProductSale': productsSale,
-      }            
-    )
-    router.push(
-      {
-        pathname: '/salesLayout',
-        params: { information },
-      });
+    const { id_store, id_route_transaction } = currentTransaction;
+    router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}`);
   };
 
   const handleOnShowDialog = () => { setShowDialog(true); };

@@ -65,6 +65,7 @@ import {
 } from '@/utils/route-transaciton/utils';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -111,27 +112,29 @@ function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO
 
 type typeSearchParams = {
   id_store_search_param: string;
+  id_route_transaction_search_param?: string;
 }
 
 const salesLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const {
-    id_store_search_param
+    id_store_search_param,
+    id_route_transaction_search_param
   } = params as typeSearchParams;
 
-  const glob = useGlobalSearchParams();
+  // const glob = useGlobalSearchParams();
 
-  // Auxiliar variables
-  // Getting information from parameters
-  let initialProductDevolution:IProductInventory[] 
-  = getInitialInventoryParametersFromRoute(glob.information, 'initialProductDevolution');
+  // // Auxiliar variables
+  // // Getting information from parameters
+  // let initialProductDevolution:IProductInventory[] 
+  // = getInitialInventoryParametersFromRoute(glob.information, 'initialProductDevolution');
 
-  let initialProductResposition:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(glob.information, 'initialProductReposition');
+  // let initialProductResposition:IProductInventory[]
+  //   = getInitialInventoryParametersFromRoute(glob.information, 'initialProductReposition');
 
-  let initialSaleProduct:IProductInventory[]
-    = getInitialInventoryParametersFromRoute(glob.information, 'initialProductSale');
+  // let initialSaleProduct:IProductInventory[]
+  //   = getInitialInventoryParametersFromRoute(glob.information, 'initialProductSale');
 
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
@@ -140,9 +143,8 @@ const salesLayout = () => {
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
 
   useEffect(() => {
-    if (productInventory !== null && availableProducts !== null) {
-      setProductInventoryMap(createMapProductInventoryWithProduct(productInventory, availableProducts));
-    }
+
+    setpUpSalesLayout();
   }, [productInventory, availableProducts])
 
   // Routing
@@ -150,14 +152,11 @@ const salesLayout = () => {
 
   // Use states
   /* States to store the current product according with their context. */
-  const [productDevolution, setProductDevolution]
-    = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productDevolution, setProductDevolution] = useState<RouteTransactionDescriptionDTO[]>([]);
 
-  const [productReposition, setProductReposition]
-    = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
 
-  const [productSale, setProductSale]
-    = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
 
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
 
@@ -166,10 +165,53 @@ const salesLayout = () => {
   const [finishedSale, setFinishedSale] = useState<boolean>(false);
   const [resultSaleState, setResultSaleState] = useState<boolean>(true);
 
-  // Handlers
-  const handleCancelSale = () => { router.replace(`/storeMenuLayout?id_store_search_param=${id_store_search_param}`); };
+  // Use effect
+  const setpUpSalesLayout = async () => {
+    // Setting up initial states for the sale layout.
+    if (productInventory !== null && availableProducts !== null) {
+      const productInventoryMapLocal = createMapProductInventoryWithProduct(productInventory, availableProducts)
+      setProductInventoryMap(productInventoryMapLocal);
 
-  const handleOnGoBack = () => { router.replace(`/storeMenuLayout?id_store_search_param=${id_store_search_param}`); };
+      if (id_route_transaction_search_param !== undefined) {
+        const retrieve_route_transaction_by_id = di_conatiner.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
+        const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
+  
+        if (routeTransactions.length > 0) {
+          const routeTransaction = routeTransactions[0];
+          const devolutionMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.product_devolution));
+          const repositionMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.product_reposition));
+          const saleMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.sales));
+        
+          setProductDevolution(devolutionMovements);
+          setProductReposition(
+            productCommitedValidation(
+              productInventoryMapLocal, 
+              repositionMovements, 
+              saleMovements, 
+              true
+            )
+          );
+  
+          setProductSale(
+            productCommitedValidation(
+              productInventoryMapLocal, 
+              saleMovements, 
+              repositionMovements, 
+              false
+            )
+          );
+        
+        }
+  
+      }   
+    }
+
+  }
+
+  // Handlers
+  const handleCancelSale = () => { router.back(); };
+
+  const handleOnGoBack = () => { router.back(); };
 
   const handleSalePaymentProcess = () => {
     /* Validating if the product reposition is valid */
@@ -209,26 +251,20 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
-      console.log("Registering new route transaction")
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
         paymentMethod,
         receivedCash,
         id_store_search_param
-      ).then(() => {
-        console.log("OK")
-      });
+      );
       
-      console.log("Updating states")
       const retrieveCurrentShiftInventory = di_conatiner.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_conatiner.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-      
-      
+            
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
-      console.log("REDUX DISPATCHING")
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(setProductInventory(newInventory));
 

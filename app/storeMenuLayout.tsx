@@ -199,7 +199,6 @@ const storeMenuLayout = () => {
         return;
       }
 
-      console.log("Consult store");
       const listRouteTransactionByStore: ListRouteTransactionsOfStoreQuery = conatiner_di.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
     
       setRouteTransactions(await listRouteTransactionByStore.execute(consultedStore));
@@ -209,7 +208,6 @@ const storeMenuLayout = () => {
       setIsConsultTransaction(true);
 
     } catch (error) {
-      console.error(error)
       Toast.show({type: 'error',
         text1:'Error al consultar las ventas de la tienda',
         text2: 'Ha habido un error al intentar recuperar la información de la tienda.'});
@@ -308,7 +306,6 @@ const storeMenuLayout = () => {
             <ScrollView showsVerticalScrollIndicator={false}>
               { routeTransactions.map(routeTransaction => {
                 const { id_route_transaction } = routeTransaction;
-                console.log("Rendering transaction: ", id_route_transaction);
                 return (
                   <SummarizeTransaction
                     key={id_route_transaction}
