@@ -52,6 +52,7 @@ import {
     isDayOperation,
     isTransactionDescription
 } from '@/src/application/guards/entityGuards';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 export class MapperDTO {
   
@@ -270,7 +271,7 @@ export class MapperDTO {
             cash_received: entity.cash_received,
             id_work_day: entity.id_work_day,
             id_store: entity.id_store,
-            payment_method: this.mapPaymentMethodToDTO(entity.payment_method),
+            payment_method: entity.payment_method,
             transaction_description: (entity.transaction_description || []).map(d => this.routeTransactionDescriptionToDTO(d)),
         };
     }
@@ -403,11 +404,11 @@ export class MapperDTO {
         return new RouteTransaction(
             id_route_transaction,
             dateObj,
-            state as any,
+            state as ROUTE_TRANSACTION_STATE,
             cash_received,
             id_work_day,
             id_store,
-            payment_method.id_payment_method as any,
+            payment_method as PAYMENT_METHODS,
             (transaction_description || []).map(d => this.routeTransactionDescriptionDTOToEntity(d))
         );
     }
