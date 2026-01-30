@@ -39,6 +39,10 @@ import { apiResponseStatus } from '../../utils/apiResponse';
 import { createSyncItem } from '../../utils/syncFunctions';
 import { syncingRecordsWithCentralDatabase } from '../../services/syncService';
 
+// Use case
+import { container as container_di } from '@/src/infrastructure/di/container';
+import CancelRouteTransaction from '@/src/application/commands/CancelRouteTransactionUseCase';
+
 // DTO
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
@@ -50,6 +54,12 @@ import { getTicketSale } from '../../utils/saleFunction';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import CancelRouteTransactionUseCase from '@/src/application/commands/CancelRouteTransactionUseCase';
+import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+
+
 
 const SummarizeTransaction = ({
   productInventoryMap,
@@ -116,121 +126,51 @@ const SummarizeTransaction = ({
     }
   };
 
-  const handleOnCancelASale = async () => {
-    try {
-      /* The process for canceling a sale only is available for active transactions */
-      if (currentTransaction.state === 1) {
+  const handleOnCancelASale = async () => { // TODO: Synchronization with central database
+    const { id_route_transaction, state } = currentTransaction;
+    if (state === ROUTE_TRANSACTION_STATE.CANCELLED) {
+      Toast.show({type: 'info',
+        text1:'La transacción ya se encuentra cancelada.',
+        text2: 'No es posible cancelar una transacción que ya se encuentra cancelada.'});
+    } else {
+      try {
+        const cancelRouteTransactionUseCase = container_di.resolve<CancelRouteTransactionUseCase>(CancelRouteTransactionUseCase);
+        const retrieveRouteTransactionByIdQuery = container_di.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
+        const retrieveCurrentShiftInventoryQuery = container_di.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
 
-        /* Creating a variable for storing the inventory with the products of the sale.
-        (To store current inventory + products of the sale). */
-        const newInventory:IProductInventory[] = productInventory
-          .map((product:IProductInventory) => { return product; });
+        await cancelRouteTransactionUseCase.execute(id_route_transaction);
 
-        /* Adding the product reposition and product for sale of the transaction to be cancelled. */
-        productsReposition.forEach((product:IProductInventory) => {
-          const index = newInventory.findIndex((newInventoryProduct:IProductInventory) =>
-            { return product.id_product === newInventoryProduct.id_product; });
+        // Retrieving current inventory and route transaction after cancelation
+        const currentInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute()
+        const retrieveRouteTransactionByIdResult: RouteTransactionDTO[] = await retrieveRouteTransactionByIdQuery.execute([id_route_transaction]);
 
-          if (index === -1) {
-            /* The product doesn't exist in the inventory; No instructions */
-          } else {
-            newInventory[index] = {
-              ...newInventory[index],
-              amount: newInventory[index].amount + product.amount,
-            };
-            newInventory[index].amount = newInventory[index].amount + product.amount;
-          }
-        });
-
-        productsSale.forEach((product:IProductInventory) => {
-          const index = newInventory.findIndex((newInventoryProduct:IProductInventory) =>
-            { return product.id_product === newInventoryProduct.id_product; });
-
-          if (index === -1) {
-            /* The product doesn't exist in the inventory; No instructions */
-          } else {
-            newInventory[index] = {
-              ...newInventory[index],
-              amount: newInventory[index].amount + product.amount,
-            };
-          }
-        });
-
-        /* Desactivating state of transaciton */
-        const updatedTransaction:IRouteTransaction = {
-          ...currentTransaction,
-          state: 0, // 0 = Desactivated transaction.
-        };
-
-        // Updating embedded database
-        const resultUpdationTransaction:IResponse<IRouteTransaction>
-          =  await updateTransaction(updatedTransaction);
-
-        /* Updating inventory */
-        // Updating embedded database
-        /* Note:
-            Since 'newInventory' is a table that stores the inventory of the day (something that is
-            going to vary throughout the time) this is not synced with the database.
-        */
-        const resultUpdationProductInventory:IResponse<IProductInventory[]>
-          = await updateProducts(newInventory);
-
-        // Adding records to sync with database
-          const resultUpdateSyncTransaction
-            = await insertSyncQueueRecord(createSyncItem(updatedTransaction, 'PENDING', 'UPDATE'));
-
-
-        if (apiResponseStatus(resultUpdationTransaction, 200)
-        && apiResponseStatus(resultUpdationProductInventory, 200)
-        && apiResponseStatus(resultUpdateSyncTransaction, 201)) {
-          // Updating redux context
-          dispatch(updateProductsInventory(newInventory));
-
-          /* Updating state of transaction; This will activate the 'desactivate status in the card'*/
-          setCurrentTransaction(updatedTransaction);
-
-          Toast.show({type: 'success',
-            text1:'Transacción cancelada exitosamente.',
-            text2: 'Se ha cancelado la transacción exitosamente.'});
-
-          // Executing a synchronization process to register the start shift inventory
-          // Note: In case of failure, the background process will eventually synchronize the records.
-          syncingRecordsWithCentralDatabase();
-
-        } else {
-          /* Something was wrong during the cancelation of the transaction */
-          // Ensuring the transaction is not cancelled
-          await updateTransaction(currentTransaction);
-
-          /* Ensuring the product inventory is in the previous state of the transaction cancelation operation */
-          await updateProducts(productInventory);
-
-          // Deleting records to sync
-          await deleteSyncQueueRecord(createSyncItem(currentTransaction, 'PENDING', 'UPDATE'));
-
+        // Updating redux context
+        dispatch(setProductInventory(currentInventory)) 
+        
+        if (retrieveRouteTransactionByIdResult.length === 0) {
           Toast.show({type: 'error',
             text1:'Ha habido un error durante la cancelación de la transacción.',
             text2: 'Ha hanido un error durante la cancelación de la transacción.'});
+            return;
         }
-      } else {
-        /* It is not possible to cancel a sale that is already cancelled */
+
+        const updatedRouteTransaction:RouteTransactionDTO = retrieveRouteTransactionByIdResult[0];
+
+        // Updating state
+        setCurrentTransaction(updatedRouteTransaction);
+
+        Toast.show({type: 'success',
+          text1:'Transacción cancelada exitosamente.',
+          text2: 'Se ha cancelado la transacción exitosamente.'});
+
+      } catch (error) {
+        Toast.show({type: 'error',
+          text1:'Ha habido un error durante la cancelación de la transacción.',
+          text2: 'Ha hanido un error durante la cancelación de la transacción.'});
       }
-      setShowDialog(false);
-    } catch (error) {
-      setShowDialog(false);
-      // Ensuring the transaction is not cancelled
-      await updateTransaction(currentTransaction);
-
-      /* Ensuring the product inventory is in the previous state of the transaction cancelation operation */
-      await updateProducts(productInventory);
-
-      // Deleting records to sync
-      await deleteSyncQueueRecord(createSyncItem(currentTransaction, 'PENDING', 'UPDATE'));
-
-      Toast.show({type: 'error',
-        text1:'Ha habido un error durante la cancelación de la transacción.',
-        text2: 'Ha hanido un error durante la cancelación de la transacción.'});
     }
+
+    setShowDialog(false);
   };
 
   const handleOnStartASale = async () => {
@@ -265,7 +205,11 @@ const SummarizeTransaction = ({
           border p-2 flex flex-col justify-center items-center rounded-md`}>
           <View style={tw`w-full flex flex-col`}>
             <SectionTitle
-              title={`Transacción - ${format_date_to_UI_format(currentTransaction.date)}`}
+              title={`Transacción`}
+              caption={''}
+              titlePositionStyle={'text-center w-full items-center justify-center'}/>
+            <SectionTitle
+              title={`Fecha: ${format_date_to_UI_format(currentTransaction.date)}`}
               caption={currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE ? '' : '(Cancelada)'}
               titlePositionStyle={'text-center w-full items-center justify-center'}/>
             {/* Product devolution section */}

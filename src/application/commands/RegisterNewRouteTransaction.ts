@@ -55,7 +55,7 @@ export default class RegisterNewRouteTransaction {
         cashReceived: number,
         id_store: string
     ):Promise<void> {
-        const { id_work_day, id_route } = workDayInformation;
+        const { id_work_day } = workDayInformation;
         
         const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();

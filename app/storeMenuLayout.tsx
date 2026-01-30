@@ -6,7 +6,6 @@ import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 
 // Interface and enums
 import {
-  IRouteTransaction,
   IRouteTransactionOperation,
   IRouteTransactionOperationDescription,
   IStore,
@@ -16,38 +15,34 @@ import {
 // import RouteMap from '../components/RouteMap';
 import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
 import MenuHeader from '../components/generalComponents/MenuHeader';
+import Toast from 'react-native-toast-message';
+import RouteMap from '@/components/RouteMap';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-
-// Embedded database
-import {
-  getRouteTransactionByStore,
-  getRouteTransactionOperationDescriptions,
-  getRouteTransactionOperations,
-} from '../queries/SQLite/sqlLiteQueries';
+import { setStores } from '@/redux/slices/storesSlice';
 
 // Mappers and DTOs
 import { container as conatiner_di } from '@/src/infrastructure/di/container';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 
+// Use cases
+import CancelRouteTransactionUseCase from '@/src/application/commands/CancelRouteTransactionUseCase';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
 
 // Utils
-import Toast from 'react-native-toast-message';
-import { apiResponseProcess } from '../utils/apiResponse';
+import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+
 import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
-import RouteMap from '@/components/RouteMap';
+
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import { setStores } from '@/redux/slices/storesSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
-import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
-import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
-import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 
 
 function buildAddress(store:StoreDTO) {

@@ -87,7 +87,16 @@ export class OperationDayAggregate {
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
     }
     
-    registerCancelRouteTransaction(): void { /* Decide if implement */ }
+    registerCancelRouteTransaction(idDayOperation: string, idRouteTransaction: string, createdAt: Date): void { 
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idRouteTransaction,
+            DAY_OPERATIONS.cancel_route_transaction,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+     }
     
     registerStartShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
         const newDayOperation = new DayOperation(
