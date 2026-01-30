@@ -22,7 +22,7 @@ import ActionDialog from '@/components/ActionDialog';
 // Use case - queries
 import { container } from '@/src/infrastructure/di/container';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import { ListRoutesByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
+import ListRoutesByUserQuery from '@/src/application/queries/ListRouteByUserQuery';
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';

@@ -19,7 +19,7 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 import { RouteDay } from "@/src/core/object-values/RouteDay";
 
 @injectable()
-export class ListRoutesByUserQuery {
+export default class ListRoutesByUserQuery {
     constructor(
         @inject(TOKENS.SupabaseRouteRepository) private repo: RouteRepository,
         @inject(MapperDTO) private mapper: MapperDTO
