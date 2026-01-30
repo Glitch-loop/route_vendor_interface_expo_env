@@ -1,121 +1,77 @@
 //Libraries
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import tw from 'twrnc';
-import { ActivityIndicator } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
 import { Router, useRouter } from 'expo-router';
 
 // Redux States and reducers
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
-import { setDayOperations } from '../redux/slices/dayOperationsSlice';
+import { AppDispatch, RootState } from '@/redux/store';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { setProducts } from '@/redux/slices/productSlice';
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
 import { setRoute } from '@/redux/slices/routeSlice';
-import { setProductInventory } from '../redux/slices/productsInventorySlice';
-import { setStores } from '../redux/slices/storesSlice';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+import { setStores } from '@/redux/slices/storesSlice';
 
 // Components
-import RouteSelectionCard from '../components/RouteSelectionComponents/RouteSelectionCard';
-import MainMenuHeader from '../components/MainMenuHeader';
-import ActionDialog from '../components/ActionDialog';
-
-// Interfaces
-import {
-  ICompleteRoute,
-  ICompleteRouteDay,
-  IDayOperation,
-  IResponse,
-  IRoute,
-} from '../interfaces/interfaces';
-
-// Utils
-// import DAYS from '../lib/days';
-import DAYS_OPERATIONS from '../lib/day_operations';
-import { getDataFromApiResponse } from '../utils/apiResponse';
-
-// Controllers
-import { getDayOperationsOfTheWorkDay } from '../controllers/DayOperationController';
-import { getAvailableRoutesForTheVendor } from '../controllers/RoutesController';
-import { getWorkDayFromToday } from '../controllers/WorkDayController';
-import { getCurrentVendorInventory } from '../controllers/InventoryController';
-import { getStoresOfTheCurrentWorkDay } from '../controllers/StoreController';
-
-
-// NEW ==============================
+import RouteSelectionCard from '@/components/RouteSelectionComponents/RouteSelectionCard';
+import MainMenuHeader from '@/components/MainMenuHeader';
+import ActionDialog from '@/components/ActionDialog';
 
 // Use case - queries
-import { ListRoutesByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
 import { container } from '@/src/infrastructure/di/container';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import { ListRoutesByUserQuery } from '@/src/application/queries/ListRouteByUserQuery';
+import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+
+// DTOs
 import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+
+// UI
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 
 // Utils
 import { DAYS_ARRAY } from '@/src/core/constants/Days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import { DayOperation } from '@/src/core/entities/DayOperation';
-import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
-import ProductDTO from '@/src/application/dto/ProductDTO';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 const routeSelectionLayout = () => {
-  // Redux (context definitions)
+  // Redux
   const dispatch: AppDispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
 
   // Routing
   const router:Router = useRouter();
 
-  // Use states definition
-  const [routes, setRoutes] = useState<ICompleteRoute[]|undefined>(undefined);
-  const [pendingToAcceptRoute, setPendingToAcceptRoute] = useState<IRoute|undefined>(undefined);
-  const [pendingToAcceptRouteDay, setPendingToAcceptRouteDay]
-  = useState<ICompleteRouteDay|undefined>(undefined);
-  const [refreshing, setRefreshing] = useState(false);
-  
   // Use states
+  const [refreshing, setRefreshing] = useState(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [vendorRoutes, setVendorRoutes] = useState<RouteDTO[]|null>(null);
-  const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|null>(null);
+  const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|undefined>(undefined);
+  const [routeSelected, setRouteSelected] = useState<RouteDTO|undefined>(undefined);
 
   useEffect(() => { startSession() }, []);
 
   // Auxiliar functions
-  const holdRouteSelected = (routeDaySelected: RouteDayDTO) => {
+  const holdRouteSelected = (routeDaySelected: RouteDayDTO, route: RouteDTO) => {
     /*
       This screen is part of the start shift process of the vendor.
 
       Since the vendor can change from this route to other one, we store the information in
       the redux state temporarily.
     */
-    const { id_route } = routeDaySelected;
-
-    if (vendorRoutes === null) {
-      Toast.show({type: 'error',
-            text1:'Error durante el proceso de selección de la ruta',
-            text2: 'Recarga la pagina para continuar con el proceso.',});
-      return
-    }
-
-
-    const route:RouteDTO|undefined = vendorRoutes.find((route:RouteDTO) => { return route.id_route === id_route });
-
-    if (route === undefined) {
-      Toast.show({type: 'error',
-      text1:'Error durante el proceso de selección de la ruta',
-      text2: 'Recarga la pagina para continuar con el proceso.',});
-      return
-    }
 
     // Store information in redux states.
     dispatch(setRouteDay(routeDaySelected));
@@ -173,31 +129,49 @@ const routeSelectionLayout = () => {
   //Handlers
   const handleSelectRoute = (routeDay: RouteDayDTO) => {
     // If today is not the day that corresponds, ask to route vendor if he wants to continue.
-    const { id_day } = routeDay; 
+    const { id_day, id_route } = routeDay; 
+
+    if (vendorRoutes === null) {
+      Toast.show({type: 'error',
+            text1:'Error durante el proceso de selección de la ruta',
+            text2: 'Recarga la pagina para continuar con el proceso.',});
+      return
+    }
+
+    const route:RouteDTO|undefined = vendorRoutes.find((route:RouteDTO) => { return route.id_route === id_route });
+
+    if (route === undefined) {
+      Toast.show({type: 'error',
+            text1:'Error durante el proceso de selección de la ruta',
+            text2: 'Recarga la pagina para continuar con el proceso.',});
+      return
+    }
 
     setRouteDaySelected(routeDay);
+    setRouteSelected(route);
 
     if (determineIfCurrentDay(id_day)){
       setShowDialog(false);
-      holdRouteSelected(routeDay);
+      holdRouteSelected(routeDay, route);
     } else setShowDialog(true);
     
   };
 
   const handleOnAcceptMakeRoute = () => {
-    if(routeDaySelected !== null) holdRouteSelected(routeDaySelected);
+    if(routeDaySelected !== undefined && routeSelected !== undefined) holdRouteSelected(routeDaySelected, routeSelected);
     setShowDialog(false);
-    setRouteDaySelected(null);
+    setRouteDaySelected(undefined);
+    setRouteSelected(undefined);
   };
 
   const handleOnCancelMakeRoute = () => {
     setShowDialog(false);
-    setRouteDaySelected(null);
+    setRouteDaySelected(undefined);
+    setRouteSelected(undefined);
   };
 
   const onRefresh = () => {
     startSession();
-    setRoutes(undefined);
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
@@ -215,12 +189,16 @@ const routeSelectionLayout = () => {
                 <Text style={tw`text-center text-black text-xl`}>
                   Este dia de la ruta no corresponde hacerla hoy. ¿Estas seguro seguir adelante?
                 </Text>
+                { routeSelected !== undefined &&
+                  <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
+                    Ruta a hacer: {routeSelected.route_name}
+                  </Text>
+                }
+                { routeDaySelected !== undefined &&
                 <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                  Ruta a hacer: {pendingToAcceptRoute?.route_name}
+                  Dia: { DAYS_ARRAY.find((day) => day.id_day === routeDaySelected.id_day)?.day_name || 'Nombre de dia no encontrado' }
                 </Text>
-                <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                  Dia: {pendingToAcceptRouteDay?.day.day_name}
-                </Text>
+                }
               </View>
           </ActionDialog>
         <MainMenuHeader/>
