@@ -113,6 +113,9 @@ export default class RegisterRestockOfProductUseCase {
         const newInventoryOperation:InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
         const newDayOperations:DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         
+        console.log("NEW DAY OPERATIONS: ", newDayOperations.length);
+        console.log(newDayOperations)
+
         // Determine which products were updated and which were inserted
         const updatedInventory:ProductInventory[] = productInventoryAggregate.getProductInventory();
         
@@ -138,6 +141,7 @@ export default class RegisterRestockOfProductUseCase {
 
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+        console.log("##############################################")
     }
 
     async execute(

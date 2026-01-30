@@ -35,23 +35,27 @@ import TypeOperationItem from '../components/TypeOperationItem';
 import { IDayOperation, IResponse } from '../interfaces/interfaces';
 
 // Utils
+import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
 import { apiResponseStatus } from '../utils/apiResponse';
 import { getColorContextOfStore } from '../utils/routesFunctions';
 import DAYS_OPERATIONS from '../lib/day_operations';
-import Toast from 'react-native-toast-message';
 import ActionDialog from '../components/ActionDialog';
 import { maintainUserTable } from '../services/authenticationService';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+
+// UI
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// DTOs
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import Toast from 'react-native-toast-message';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
   const dispatch:AppDispatch = useDispatch();
-  const dayOperations = useSelector((state: RootState) => state.dayOperations);
+  const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
+  const workdayInformationReduxState = useSelector((state: RootState) => state.workDayInformation);
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const stores = useSelector((state: RootState) => state.stores);
   const user = useSelector((state: RootState) => state.user);
@@ -83,35 +87,24 @@ const routeOperationMenuLayout = () => {
 
     return () => backHandler.remove();
 
-  }, [dayOperations, isDayWorkClosed, routeDay]);
+  }, [isDayWorkClosed, routeDay]);
 
   const setUpOperationMenu = ():void => {
-    // Determining if the day is still open
-    const endShiftInventoryOperation:IDayOperation|undefined
-    = dayOperations.find(dayOperation =>
-      dayOperation.id_type_operation === DAYS_OPERATIONS.end_shift_inventory);
-
-    if (endShiftInventoryOperation === undefined) {
-      /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
-      /*There is an end shift operation, the work day was closed. */
-      setIsDayWorkClosed(false);
-    } else {
-      setIsDayWorkClosed(true);
+    if (workdayInformationReduxState === null) {
+      Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Intenta reiniciar la aplicación'});
+      return;
     }
+    const { finish_date } = workdayInformationReduxState;
+    if (finish_date === null) setIsDayWorkClosed(false); // User might make operations
+    else setIsDayWorkClosed(true); // User cannot make more operations
   }
 
   // Handlers
-  const onSelectStore = (dayOperation: DayOperationDTO):void => {
-    router.push(`/storeMenuLayout?id_store_search_param=${dayOperation.id_item}`);
-  };
+  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_search_param=${dayOperation.id_item}`); };
 
-  const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`);
-  };
+  const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
 
-  const onRestockInventory = ():void => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`);
-  };
+  const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
 
   const onFinishInventory = ():void => {
     /*
@@ -231,22 +224,16 @@ const routeOperationMenuLayout = () => {
     }
   };
 
-  const onShowDialog = ():void => {
-    setShowDialog(!showDialog);
-  };
+  const onShowDialog = ():void => { setShowDialog(!showDialog); };
 
   const onAcceptDialog = async ():Promise<void> => {
     setShowDialog(false);
     finishWorkDay();
   };
 
-  const onDeclinedialog = ():void => {
-    setShowDialog(false);
-  };
+  const onDeclinedialog = ():void => { setShowDialog(false); };
 
-  const handlerSearchClient = ():void => {
-    router.push('/searchClientLayout');
-  }
+  const handlerSearchClient = ():void => { router.push('/searchClientLayout'); };
 
   return (
     <SafeAreaView>
@@ -254,8 +241,7 @@ const routeOperationMenuLayout = () => {
         <ActionDialog
           visible={showDialog}
           onAcceptDialog={onAcceptDialog}
-          onDeclinedialog={onDeclinedialog}
-          >
+          onDeclinedialog={onDeclinedialog}>
           <View style={tw`w-full flex flex-col basis-11/12 justify-center items-center`}>
             <Text style={tw`text-center text-black text-lg`}>
               ¿Seguro que quieres regresar al menu princial?
@@ -294,12 +280,12 @@ const routeOperationMenuLayout = () => {
             </View>
           </View>
           {/* List of day operations */}
-          { dayOperations === null ?
+          { dayOperationsReduxState === null ?
             <View style={tw`h-64 flex flex-col justify-center items-center`}>
               <ActivityIndicator size={'large'} />
             </View> :
             <View style={tw`w-full h-full flex flex-col items-center`}>
-              {dayOperations.map(dayOperation => {
+              {dayOperationsReduxState.map(dayOperation => {
                 let itemOrder = '';
                 let itemName = '';
                 let description = '';
@@ -320,11 +306,13 @@ const routeOperationMenuLayout = () => {
                 ) {
                   isClientOperation = false;
                   itemName = getTitleDayOperationForMenuOperation(operation_type);
+                  console.log("An operation: ", itemName);
                 } else if (operation_type === DAY_OPERATIONS.route_client_attention
                   || operation_type === DAY_OPERATIONS.attend_client_petition
                   || operation_type === DAY_OPERATIONS.new_client_registration
                   || operation_type === DAY_OPERATIONS.attention_out_of_route
                 ) {
+                  console.log("A client operation");
                   isClientOperation = true;
                   
                   itemOrder = '0'

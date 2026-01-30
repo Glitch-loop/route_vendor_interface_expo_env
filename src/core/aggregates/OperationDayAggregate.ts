@@ -14,8 +14,14 @@ export class OperationDayAggregate {
 
     constructor(dayOperations: DayOperation[] | null, routeTransactions: RouteTransaction[] | null) {
         this.routeTransactions = routeTransactions;
-        this.dayOperations = dayOperations;
-        this.initialDayOperations = dayOperations;
+
+        if (dayOperations === null) {
+            this.dayOperations = null;
+            this.initialDayOperations = null;
+        } else {
+            this.dayOperations = [ ...dayOperations ];
+            this.initialDayOperations = [ ...dayOperations ];
+        }
     }
 
     registerAttendTodaysClient(idDayOperation: string, idClient: string, createdAt: Date): void {
@@ -110,6 +116,7 @@ export class OperationDayAggregate {
     }
 
     registerRestockInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+        console.log("Registering restock inventory operation in OperationDayAggregate");
         const newDayOperation = new DayOperation(
             idDayOperation,
             idInventoryOperation,
@@ -163,6 +170,9 @@ export class OperationDayAggregate {
         if (this.dayOperations === null && this.initialDayOperations === null) {
             return null;
         } else {
+            console.log("getNewDayOperations called.");
+            console.log("dayOperations length: ", this.dayOperations!.length);
+            console.log("initial dayOperations length: ", this.initialDayOperations!.length);
             return this.dayOperations!.filter(dayOperation => {
                 if (this.initialDayOperations === null) return true;
                 return !this.initialDayOperations.find(initialOp => initialOp.id_day_operation === dayOperation.id_day_operation);

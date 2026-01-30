@@ -91,7 +91,7 @@ export default class RegisterProductDevolutionUseCase {
         const newDayOperations:DayOperation[] = dayOperationAggregate.getDayOperations() || [];
         
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
-        this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+        await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     }
 
     async execute(
@@ -104,7 +104,7 @@ export default class RegisterProductDevolutionUseCase {
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
 
-        return this.executeUseCase(
+        return await this.executeUseCase(
             inventoryOperationDescriptions,
             workdayInformation
         );

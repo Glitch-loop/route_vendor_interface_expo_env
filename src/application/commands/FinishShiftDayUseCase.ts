@@ -105,8 +105,8 @@ export default class FinishShiftDayUseCase {
         const dayOperations: DayOperation[] = dayOperationAggregate.getDayOperations() || [];
     
         // Store information in local database.
-        this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);
-        this.localInventoryOperationRepo.createInventoryOperation(inventoryOperationAggregate.getInventoryOperation());        
+        await this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);
+        await this.localInventoryOperationRepo.createInventoryOperation(inventoryOperationAggregate.getInventoryOperation());        
         await this.localDayOperationRepo.insertDayOperations(dayOperations!);
 
     }

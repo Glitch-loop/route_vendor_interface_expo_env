@@ -312,9 +312,14 @@ const inventoryOperationLayout = () => {
         - End shift inventory: Unique in the day.
 
       */
-      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-        const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
+      const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+      const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+      const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+      const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+      const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
 
+      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+        
         if (route === null || routeDay === null) {
           Toast.show({
             type: 'error',
@@ -324,14 +329,15 @@ const inventoryOperationLayout = () => {
           setIsInventoryAccepted(false);
           return;
         }
-
+        
         Toast.show({
           type: 'info',
           text1: 'Registrando día de trabajo.',
           text2: 'Tomará unos segundos.',
         });
-
+        
         try {
+          const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
           await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),
              route,
@@ -344,14 +350,6 @@ const inventoryOperationLayout = () => {
           // Note: In case of failure, the background process will eventually synchronize the records.
           
           // TODO: syncingRecordsWithCentralDatabase();
-
-
-          const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-          const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-          const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-          const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-          const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
-
           const productInventoryResult             = await retrieveCurrentShiftInventoryQuery.execute()
           const workDayInformationResult           = await retrieveWorkDayInformationQuery.execute()
           const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
@@ -409,11 +407,12 @@ const inventoryOperationLayout = () => {
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
           await registerRestockOfProductCommand.execute(inventoryOperationMovements, workDayInformation);
-          
-          const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+
           const currentShiftInventory = await retrieveCurrentShiftInventoryQuery.execute()
+          const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
 
           dispatch(setProductInventory(currentShiftInventory));
+          dispatch(setDayOperations(currentDayOperationsResult));
 
           Toast.show({
                 type: 'success',
@@ -448,10 +447,17 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
-          registerProductDevolutionCommand.execute(
+          await registerProductDevolutionCommand.execute(
             inventoryOperationMovements,
             workDayInformation
           );
+
+          const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
+          const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+
+          dispatch(setProductInventory(currentShiftInventory));
+          dispatch(setDayOperations(currentDayOperationsResult));
+
           Toast.show({
                 type: 'success',
                 text1: 'Se ha registrado la merma de producto exitosamente.',
@@ -493,6 +499,12 @@ const inventoryOperationLayout = () => {
             inventoryOperationMovements,
             workDayInformation
           );
+
+          const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
+          const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+
+          dispatch(setProductInventory(currentShiftInventory));
+          dispatch(setDayOperations(currentDayOperationsResult));
 
           Toast.show({
                 type: 'success',
