@@ -9,13 +9,11 @@ import { Router, useRouter } from 'expo-router';
 // Redux States and reducers
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { setArrayDayOperations } from '../redux/slices/dayOperationsSlice';
-
-
+import { setDayOperations } from '../redux/slices/dayOperationsSlice';
+import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { setProducts } from '@/redux/slices/productSlice';
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
 import { setRoute } from '@/redux/slices/routeSlice';
-
-import { setCurrentOperation } from '../redux/slices/currentOperationSlice';
 import { setProductInventory } from '../redux/slices/productsInventorySlice';
 import { setStores } from '../redux/slices/storesSlice';
 
@@ -58,6 +56,17 @@ import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import { DAYS_ARRAY } from '@/src/core/constants/Days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import { DayOperation } from '@/src/core/entities/DayOperation';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 const routeSelectionLayout = () => {
   // Redux (context definitions)
@@ -146,7 +155,32 @@ const routeSelectionLayout = () => {
   };
 
   // TODO: Refactor this function.
-  const startApplication = () => {
+  const startApplication = async () => {
+    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+
+    try {
+      const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
+      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
+      const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
+      const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
+      const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
+      
+
+
+      dispatch(setDayOperations(dayOperations));
+
+
+    } catch (error) {
+      Toast.show({type: 'error',
+        text1:'Error durante la inicialización de la aplicación.',
+        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
+      });
+    }
+
     getDayOperationsOfTheWorkDay()
     .then(async (dayOperationsResponse:IResponse<IDayOperation[]>) => {
       let dayOperations:IDayOperation[] = getDataFromApiResponse(dayOperationsResponse);
@@ -192,9 +226,42 @@ const routeSelectionLayout = () => {
   }
 
   const startSession = async () => {
-    const use_case_query = container.resolve(ListRoutesByUserQuery);
-    const routes = await use_case_query.execute('b6665f54-37de-4991-a7c4-283599bb0658')
-    setVendorRoutes(routes);
+    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
+
+    try {
+      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
+
+      
+      if (workDayInformation !== null) { // A work day exists
+        const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
+        const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
+        const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
+        const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
+
+        dispatch(setWorkDayInformation(workDayInformation));
+        dispatch(setProductInventory(productInventory));
+        dispatch(setDayOperations(dayOperations));
+        dispatch(setStores(stores));
+        dispatch(setProducts(products));
+        
+        router.push('/routeOperationMenuLayout');
+
+      } else { // It is a new 'work' day.
+        const routes = await getAllRoutesByUserQuery.execute('b6665f54-37de-4991-a7c4-283599bb0658')
+        setVendorRoutes(routes);
+      }
+    } catch {
+      Toast.show({type: 'error',
+        text1:'Error durante la inicialización de la aplicación.',
+        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
+      });
+    }
+
   }
 
   //Handlers
