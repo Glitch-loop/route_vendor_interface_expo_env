@@ -175,9 +175,9 @@ const inventoryOperationLayout = () => {
           });
         return
       };
-      
+      console.log("ID TO SEARCH: ", id_inventory_operation_search_param)
       const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
-
+      console.log("CONSULTA DE INVENTARIO: ", inventoryOperationToConsult.length)
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
@@ -198,6 +198,13 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
+        console.log("RESTOCK")
+        setAvailableProducts(products);
+        setInitialShiftInventory([])
+        setRestockInventories([inventory_operation_descriptions]);
+        setFinalShiftInventory([]);
+        setProductRepositionTransactions([]);
+        setProductSoldTransactions([]);
       
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
 
@@ -408,8 +415,8 @@ const inventoryOperationLayout = () => {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
           await registerRestockOfProductCommand.execute(inventoryOperationMovements, workDayInformation);
 
-          const currentShiftInventory = await retrieveCurrentShiftInventoryQuery.execute()
-          const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
+          const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
+          const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
 
           dispatch(setProductInventory(currentShiftInventory));
           dispatch(setDayOperations(currentDayOperationsResult));
@@ -422,6 +429,7 @@ const inventoryOperationLayout = () => {
           // TODO: Update redux
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.error(error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',

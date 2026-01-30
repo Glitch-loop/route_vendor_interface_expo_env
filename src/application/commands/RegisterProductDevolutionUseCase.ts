@@ -78,16 +78,17 @@ export default class RegisterProductDevolutionUseCase {
         }
 
         // This inventory doesn't have effect on the product inventory since it's a devolution.
+        const newInventoryOperation:InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
+        const { id_inventory_operation} = newInventoryOperation;
 
         // Add day operation
         dayOperationAggregate.registerRestockInventory(
             this.idService.generateID(),
-            id_work_day,
+            id_inventory_operation,
             new Date(this.dateService.getCurrentTimestamp()),
         );
 
         // Persist all changes
-        const newInventoryOperation:InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
         const newDayOperations:DayOperation[] = dayOperationAggregate.getDayOperations() || [];
         
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
