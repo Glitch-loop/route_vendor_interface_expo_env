@@ -10,7 +10,6 @@ import { SQLiteDatabase } from 'expo-sqlite';
 @injectable()
 export class SQLiteDataSource {
     private client: SQLiteDatabase | null = null;
-    private example: number = 0;
 
     constructor() { 
         console.log('SQLiteDataSource constructor called');
@@ -24,9 +23,6 @@ export class SQLiteDataSource {
                 throw new Error('Failed to make connection to SQLite database: ' + error);
             }
         }
-        // console.log("Example again: ", this.example);
-        // this.example += 1;
-        // return this.client!;
     }
 
     /**

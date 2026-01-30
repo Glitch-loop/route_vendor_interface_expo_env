@@ -117,7 +117,8 @@ const routeSelectionLayout = () => {
         const routes = await getAllRoutesByUserQuery.execute('b6665f54-37de-4991-a7c4-283599bb0658')
         setVendorRoutes(routes);
       }
-    } catch {
+    } catch (error) {
+      console.error(error);
       Toast.show({type: 'error',
         text1:'Error durante la inicialización de la aplicación.',
         text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',

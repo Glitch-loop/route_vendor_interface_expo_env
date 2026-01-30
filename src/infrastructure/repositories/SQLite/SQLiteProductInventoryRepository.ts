@@ -75,17 +75,23 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
         const inventory: ProductInventory[] = [];
         try {
             await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const db: SQLiteDatabase = this.dataSource.getClient();
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
             const result = statement.executeSync<any>();
-            for (let row of result) {
-                inventory.push(new ProductInventory(
-                    row.id_product_inventory,
-                    row.price_at_moment,
-                    row.stock,
-                    row.id_product
-                ));
+            const rows = result.getAllSync();
+
+            for (const row of rows) {
+                inventory.push(
+                    new ProductInventory(
+                        row.id_product_inventory,
+                        row.price_at_moment,
+                        row.stock,
+                        row.id_product,
+                    )
+                );
             }
+
+            await statement.finalizeAsync();
             return inventory;
         } catch (error) {
             throw new Error('Failed to retrieve inventory.' + error);
