@@ -214,7 +214,9 @@ const storeMenuLayout = () => {
     <SafeAreaView>
       <View style={tw`w-full h-full flex-col justify-center items-center`}>
         <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
-          {/* <MenuHeader onGoBack={handlerGoBackToMainOperationMenu}/> */}
+          <MenuHeader 
+          id_store={id_store_search_param}
+          onGoBack={handlerGoBackToMainOperationMenu}/>
         </View>
         { consultedStore != null &&
           <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>

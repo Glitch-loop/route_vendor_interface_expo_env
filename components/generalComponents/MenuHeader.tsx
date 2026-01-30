@@ -1,20 +1,24 @@
 // Libraries
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
-// Interfaces
-import { IStore, IStoreStatusDay } from '../../interfaces/interfaces';
 
 // Redux context
 import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
+import { RootState } from '@/redux/store';
 
 // Components
-import GoButton from '../generalComponents/GoButton';
-import BluetoothButton from '../generalComponents/BluetoothButton';
+import GoButton from '@/components/generalComponents/GoButton';
+import BluetoothButton from '@/components/generalComponents/BluetoothButton';
 import { getColorContextOfStore, getStoreFromContext } from '../../utils/routesFunctions';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+
+// DTOs
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Auxiliar function
 function getJustifyContentConfiguration(showGoBackButton:boolean, showRouteName:boolean, showStoreName:boolean, showPrinterButton:boolean):string {
@@ -58,29 +62,30 @@ const MenuHeader = ({
     showRouteName = true,
     showStoreName = true,
     showPrinterButton = true,
+    id_store = undefined,
     onGoBack,
   }:{
-    showGoBackButton?:boolean,
-    showRouteName?:boolean,
-    showStoreName?:boolean,
-    showPrinterButton?:boolean,
-    onGoBack:any
+    showGoBackButton?: boolean,
+    showRouteName?: boolean,
+    showStoreName?: boolean,
+    showPrinterButton?: boolean,
+    id_store?: string,
+    onGoBack: () => void,
   }) => {
   // Redux (context definitions)
-  const currentOperation = useSelector((state: RootState) => state.currentOperation);
-  const routeDay = useSelector((state: RootState) => state.routeDay);
-  const stores = useSelector((state: RootState) => state.stores);
+  const workdayInformation: WorkDayInformationDTO | null = useSelector((state: RootState) => state.workDayInformation);
+  const dayOperations: DayOperationDTO[] | null = useSelector((state: RootState) => state.dayOperations);
+  const stores: StoreDTO[] | null = useSelector((state: RootState) => state.stores);
 
-  // Read-only variables
-  const store:IStore&IStoreStatusDay = useMemo(() => {
-    return getStoreFromContext(currentOperation, stores);
-  }, [currentOperation, stores]);
+  let storeName: string = "";
 
-  // let store:IStore&IStoreStatusDay = getStoreFromContext(currentOperation, stores);
+  if (stores !== null) storeName = stores.find(store => store.id_store === id_store)?.store_name || "";
+  
 
   return (
-    <View style={tw`flex flex-row items-center ${getJustifyContentConfiguration(showGoBackButton,
-      showRouteName, showStoreName, showPrinterButton)}`}>
+    <View 
+    style={tw`flex flex-row items-center ${getJustifyContentConfiguration(showGoBackButton, showRouteName, showStoreName, showPrinterButton)}`}
+    >
       { showGoBackButton &&
         <View style={tw`ml-0`}>
           <GoButton
@@ -88,22 +93,22 @@ const MenuHeader = ({
             onPressButton={onGoBack}/>
         </View>
       }
-      { showRouteName &&
+      { showRouteName && workdayInformation &&
         <Text style={tw`text-3xl text-black text-center align-middle`}>
-          { capitalizeFirstLetter(routeDay.route_name) }
+          { capitalizeFirstLetter(workdayInformation.route_name) }
         </Text>
       }
       { showRouteName && showStoreName &&
         <Text style={tw`text-2xl text-black text-center align-middle`}>|</Text>
       }
-      { showStoreName &&
+      { showStoreName && stores &&
         <Text style={tw`max-w-25 ml-3 text-lg text-black text-center align-middle`}>
-          { capitalizeFirstLetterOfEachWord(store.store_name) }
+          { capitalizeFirstLetterOfEachWord(storeName) }
         </Text>
       }
-      { showStoreName &&
+      {/* { showStoreName &&
         <View style={tw`${ getColorContextOfStore(store, currentOperation) } rounded-full flex flex-row h-6 w-6`} />
-      }
+      } */}
       { showPrinterButton &&
         <View style={tw`mr-0`}>
           {/* <BluetoothButton /> */}

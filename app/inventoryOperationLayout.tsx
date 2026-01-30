@@ -10,6 +10,8 @@ import { RootState, AppDispatch } from '../redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setStores } from '@/redux/slices/storesSlice';
+import { setProducts } from '@/redux/slices/productSlice';
 
 // Components
 import RouteHeader from '../components/RouteHeader';
@@ -19,19 +21,19 @@ import TableInventoryVisualization from '../components/InventoryComponents/Table
 import TableRouteTransactionProductVisualization from '../components/InventoryComponents/TableRouteTransactionProductVisualization';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+// UI
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+
 // Interfaces
 import {
   ICurrency,
-  IProductInventory,
  } from '../interfaces/interfaces';
 
-// Utils
-// import DAYS_OPERATIONS from '../lib/day_operations';
+ // Utils
+
 import TableCashReception from '../components/InventoryComponents/TableCashReception';
 import { calculateNewInventoryAfterAnInventoryOperation, initialMXNCurrencyState, mergeInventories } from '../utils/inventoryOperations';
-import Toast from 'react-native-toast-message';
-
-import { cleanAllRecordsToSyncFromDatabase, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
 
 import ActionDialog from '../components/ActionDialog';
@@ -69,23 +71,19 @@ import RegisterRestockOfProductUseCase from '@/src/application/commands/Register
 import RegisterProductDevolutionUseCase from '@/src/application/commands/RegisterProductDevolutionUseCase';
 
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
-import GetInventoryOperationByIDQuery from '@/src/application/queries/GetInventoryOperationByIDQuery';
-
+import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
+import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
 
 // Mapper and DTOs
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
-import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
-import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import { setStores } from '@/redux/slices/storesSlice';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
-import { setProducts } from '@/redux/slices/productSlice';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
-// TODO: Define if create a file for this type used in layout
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
   id_inventory_operation_search_param?: string;
@@ -115,21 +113,20 @@ const inventoryOperationLayout = () => {
   const [cashInventory, setCashInventory] = useState<ICurrency[]>(initialMXNCurrencyState());
 
   /* States related to the recommendation for the inventory to be taken. */
-  const [suggestedProduct, setSuggestedProduct] = useState<IProductInventory[]>([]);
+  const [suggestedProduct, setSuggestedProduct] = useState<InventoryOperationDescriptionDTO[]>([]);
 
   /*
     Current inventory state stores the vendor's inventory (the inventory that currently has the
     vendor).
   */
-  const [currentInventory, setCurrentInventory] = useState<IProductInventory[]>([]);
+  const [currentInventory, setCurrentInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
 
   /* States related to the configuration for inventory operation visualization. */
-  const [initialShiftInventory, setInitialShiftInventory] = useState<IProductInventory[]>([]);
-  const [restockInventories, setRestockInventories] = useState<IProductInventory[][]>([]);
-  const [finalShiftInventory, setFinalShiftInventory] = useState<IProductInventory[]>([]);
-  const [productRepositionTransactions, setProductRepositionTransactions]
-    = useState<IProductInventory[]>([]);
-  const [productSoldTransactions, setProductSoldTransactions] = useState<IProductInventory[]>([]);
+  const [initialShiftInventory, setInitialShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
+  const [restockInventories, setRestockInventories] = useState<InventoryOperationDescriptionDTO[][]>([]);
+  const [finalShiftInventory, setFinalShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
+  const [productRepositionTransactions, setProductRepositionTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
 
   const [inventoryWithdrawal, setInventoryWithdrawal] = useState<boolean>(false);
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
@@ -161,13 +158,15 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
-    const use_case_query = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
-    const products: ProductDTO[] = await use_case_query.execute();
-
+    const getProductOfCompany = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  
 
+    
+    const products: ProductDTO[] = await getProductOfCompany.execute();
+    
+    
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
-      console.log("Consulting inventory operation with id: ", id_inventory_operation_search_param);
       if (id_inventory_operation_search_param === undefined) {
           Toast.show({
             type: 'error',
@@ -176,10 +175,34 @@ const inventoryOperationLayout = () => {
           });
         return
       };
+      
+      const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
 
-      const get_inventory_operation_by_id_use_case_query = di_container.resolve<GetInventoryOperationByIDQuery>(GetInventoryOperationByIDQuery);
-      const inventoryOperation = await get_inventory_operation_by_id_use_case_query.execute(id_inventory_operation_search_param)
-      setInventoryOperationToConsult(inventoryOperation);
+      if (inventoryOperationToConsult.length === 0) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error al consultar la operación de inventario.',
+          text2: 'No fue posible rastrar la operación de inventario, intente nuevamente.',
+        });
+        return
+      }
+      setInventoryOperationToConsult(inventoryOperationToConsult[0]);
+      const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
+
+      if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
+        setAvailableProducts(products);
+        setInitialShiftInventory(inventory_operation_descriptions)
+        setRestockInventories([]);
+        setFinalShiftInventory([]);
+        setProductRepositionTransactions([]);
+        setProductSoldTransactions([]);
+      } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
+      
+      } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
+
+      } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
+
+      }      
 
       setInventoryWithdrawal(false);
       setInventoryOutflow(false);
@@ -199,7 +222,8 @@ const inventoryOperationLayout = () => {
       setFinalOperation(true);
       setIssueInventory(true);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-      
+      console.log('Setting environment for restock inventory operation');
+      console.log(productsInventoryReduxState)
       if (productsInventoryReduxState === null) {
         Toast.show({
           type: 'error',
@@ -327,11 +351,11 @@ const inventoryOperationLayout = () => {
           const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
           const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
 
-          const productInventoryResult     = await retrieveCurrentShiftInventoryQuery.execute()
-          const workDayInformationResult   = await retrieveWorkDayInformationQuery.execute()
-          const currentDayOperationsResult = await retrieveCurrentDayOperationsQuery.execute()
-          const allRegisterdStoresResult   = await listAllRegisterdStoresQuery.execute()
-          const allRegisteredProductsResult   = await listAllRegisteredProductsQuery.execute()
+          const productInventoryResult             = await retrieveCurrentShiftInventoryQuery.execute()
+          const workDayInformationResult           = await retrieveWorkDayInformationQuery.execute()
+          const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
+          const allRegisterdStoresResult           = await listAllRegisterdStoresQuery.execute()
+          const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
 
           if (workDayInformationResult === null) {
             Toast.show({
@@ -356,7 +380,6 @@ const inventoryOperationLayout = () => {
  
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.log("Error during start shift inventory operation execution:", error);
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -384,15 +407,11 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          console.log("Executing restock use case");
-          await registerRestockOfProductCommand.execute(
-            inventoryOperationMovements,
-            workDayInformation
-          );
+          await registerRestockOfProductCommand.execute(inventoryOperationMovements, workDayInformation);
           
           const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
           const currentShiftInventory = await retrieveCurrentShiftInventoryQuery.execute()
-          console.log("Retrieving current shift inventory after restock: ", currentShiftInventory.length);
+
           dispatch(setProductInventory(currentShiftInventory));
 
           Toast.show({
@@ -403,7 +422,6 @@ const inventoryOperationLayout = () => {
           // TODO: Update redux
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.log("Error during restock inventory operation execution:", error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',
@@ -568,13 +586,13 @@ const inventoryOperationLayout = () => {
         { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
           <View style={tw`flex basis-auto w-full mt-3`}>
             <TableInventoryVisualization 
-              availableProduct                = {availableProducts}
+              availableProducts               = {availableProducts}
               suggestedInventory              = {suggestedInventory}
-              initialInventory                = {[]}
+              initialInventory                = {initialShiftInventory}
               restockInventories              = {restockInventories}
               soldOperations                  = {productSoldTransactions}
               repositionsOperations           = {productRepositionTransactions}
-              returnedInventory               = {[]}
+              returnedInventory               = {finalShiftInventory}
               inventoryWithdrawal             = {inventoryWithdrawal}
               inventoryOutflow                = {inventoryOutflow}
               finalOperation                  = {finalOperation}

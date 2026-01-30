@@ -26,51 +26,25 @@ import {
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import { convertArrayOfInterfacesToMapOfInterfaces } from '@/utils/interface/utils';
 
 
 /*
   To generalize as much as possible, this component was made to be capable of showing all the possible "inventory operations".
 
-  At the moment of write this,  there are 4 possible operations:
+  At the moment of writing this, there are 4 possible operations:
   - Start inventory
   - Restock inventory
   - Product inventory
   - Final inventory
 
-  Although each one impacts to the inventory in some way, all of them shares the same interface,
-  so it was decided that the component will work as follows.
-
-  The component recieves the following parameters:
-    - suggestedInventory
-    - currentInventory
-    - operationInventory
-    - enablingFinalInventory
-    - setInventoryOperation
-
-  With the combination of all of them is that we can make all the possible inventory operations.
-
-  It is important to know that the pivotal prop is "operationInventory" that is the "state" that will
-  store the input of the user, in this way "suggestedInventory", "currentInventoy" and
-  "enablingFinalInventory" are auxiliar props that complements the information for the user.
-
-  Another thing to take account is that to indicate that some prop is not needed (at least for
-  "suggestedInventory" and "currentInventoy") for the inventory operations, the prop has to recieve
-  an empty array, so in this way the component will know that that information is not needed.
-
-  For example if I want to make an "start inventory", I'm going to pass a prop the state on which I will
-  store the input of the user (in addition of its handler to manage the events) and in the other props
-  I will pass an empty array "[]" and in the case of enablingFinalInventory I will pass "false".
-
-  In the case of a "restock operation" on which I need all auxiliar oepration I will pass the array
-  with the information according to the prop.
-
-  Important note: Since productIventory is taken as the main array to display the table the other array
-  may not be completed with all the products and it will work without problems.
+  Although each one has its particularities (business logic), all of them can share the same UI.
 */
 
 const TableInventoryOperationVisualization = (
   {
-    availableProduct,
+    availableProducts,
     suggestedInventory,
     initialInventory,
     restockInventories,
@@ -82,19 +56,36 @@ const TableInventoryOperationVisualization = (
     finalOperation = false,
     issueInventory = false,
   }:{
-    availableProduct: ProductDTO[],
+    availableProducts: ProductDTO[],
     suggestedInventory: ProductInventoryDTO[],
     initialInventory: InventoryOperationDescriptionDTO[], // There is only "one" initial inventory operation
-    restockInventories:IProductInventory[][], // It could be many "restock" inventories
-    soldOperations: IProductInventory[], // Outflow in concept of selling
-    repositionsOperations: IProductInventory[], // Outflow in concept of repositions
+    restockInventories: InventoryOperationDescriptionDTO[][], // It could be many "restock" inventories
+    soldOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of selling
+    repositionsOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of repositions
     returnedInventory: InventoryOperationDescriptionDTO[], // Refers to the final inventory
-    inventoryWithdrawal:boolean,
-    inventoryOutflow:boolean,
-    finalOperation:boolean,
-    issueInventory:boolean,
-    isInventoryOperationModifiable:boolean
+    inventoryWithdrawal: boolean,
+    inventoryOutflow: boolean,
+    finalOperation: boolean,
+    issueInventory: boolean,
+    isInventoryOperationModifiable: boolean
   }) => {
+
+  const availableProductsStored: ProductDTO[] = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
+
+  const mapSuggestedInventory: Map<string, ProductInventoryDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', suggestedInventory);
+  const mapInitialInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', initialInventory);
+  
+  const restockInventoriesMaps: Map<string, InventoryOperationDescriptionDTO>[] = [];
+  restockInventories.forEach((restockInventory:InventoryOperationDescriptionDTO[]) => {
+    const currentMapRestockInventory: Map<string, InventoryOperationDescriptionDTO>
+      = convertArrayOfInterfacesToMapOfInterfaces('id_product', restockInventory);
+    restockInventoriesMaps.push(currentMapRestockInventory);
+  });
+  
+  const mapReturnedInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', returnedInventory);
+
+  const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', soldOperations);
+  const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', repositionsOperations);
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -113,7 +104,7 @@ const TableInventoryOperationVisualization = (
                 </View>
               </DataTable.Title>
             </DataTable.Header>
-            { availableProduct.map((product) => {
+            { availableProductsStored.map((product) => {
               return (
                 <DataTable.Row key={product.id_product} style={tw`${rowTableStyle}`}>
                   <DataTable.Cell style={tw`${cellTableStyle}`}>
@@ -220,7 +211,7 @@ const TableInventoryOperationVisualization = (
               </DataTable.Header>
               {/* Body section */}
               { (initialInventory.length > 0 || returnedInventory.length > 0 || restockInventories.length > 0) &&
-                availableProduct.map((product) => {
+                availableProductsStored.map((product) => {
                   /*
                     To keep an order of how to print the inventory operations, it is used the variable "inventory" which has
                     all the products (and the current amount for each product).
@@ -252,18 +243,16 @@ const TableInventoryOperationVisualization = (
                   let inventoryIssueAmount = 0;
 
                   // Searching the product in the inventory operations
-                  suggestedAmount                   = findProductAmountInArray(suggestedInventory, id_product);
-                  initialInventoryOperationAmount   = findProductAmountInArray(initialInventory, id_product);
-                  returnedInventoryOperationAmount  = findProductAmountInArray(returnedInventory, id_product);
-                  soldInventoryOperationAmount      = findProductAmountInArray(soldOperations, id_product);
-                  repositionInventoryOperationAmount
-                    = findProductAmountInArray(repositionsOperations, id_product);
-
-                  restockInventories.forEach((restockInventory:IProductInventory[]) => {
-                    const currentRestockProductAmount
-                      = findProductAmountInArray(restockInventory, id_product);
-
-                      withdrawalAmount += currentRestockProductAmount;
+                  suggestedAmount                     = mapSuggestedInventory.has(id_product) ? mapSuggestedInventory.get(id_product)!.stock : 0;
+                  initialInventoryOperationAmount     = mapInitialInventory.has(id_product) ? mapInitialInventory.get(id_product)!.amount : 0;
+                  returnedInventoryOperationAmount    = mapReturnedInventory.has(id_product) ? mapReturnedInventory.get(id_product)!.amount : 0;
+                  soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.amount : 0;
+                  repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.amount : 0;
+                  
+              
+                  restockInventoriesMaps.forEach((mapRestockInventory:Map<string, InventoryOperationDescriptionDTO>) => {
+                    const currentRestockProductAmount = mapRestockInventory.has(id_product) ? mapRestockInventory.get(id_product)!.amount : 0;
+                    withdrawalAmount += currentRestockProductAmount;
                     restockInventoryOperationAmount.push(currentRestockProductAmount);
                   });
 
