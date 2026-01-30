@@ -88,20 +88,7 @@ const routeSelectionLayout = () => {
   const [vendorRoutes, setVendorRoutes] = useState<RouteDTO[]|null>(null);
   const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|null>(null);
 
-  // Setting the current operation 'start shift inventory' (first operation of the day).
-  // dispatch(setCurrentOperation({
-  //   id_day_operation: '', // Specifying that this operation belongs to this day.
-  //   id_item: '',          // It is still not an operation.
-  //   id_type_operation: DAYS_OPERATIONS.start_shift_inventory,
-  //   operation_order: 0,
-  //   current_operation: 0,
-  // }));
-
-
-  useEffect(() => { 
-    // startApplication()
-    startSession()
-   },[]);
+  useEffect(() => { startSession() }, []);
 
   // Auxiliar functions
   const holdRouteSelected = (routeDaySelected: RouteDayDTO) => {
@@ -129,16 +116,6 @@ const routeSelectionLayout = () => {
       text2: 'Recarga la pagina para continuar con el proceso.',});
       return
     }
-    
-
-    // Storing information realted to the route.
-    // dispatch(setRouteInformation(route));
-
-    // Storing information related to the day
-    // dispatch(setDayInformation(routeDay.day));
-
-    //Storing information related to the relation between the route and the day.
-    // dispatch(setRouteDay(routeDay));
 
     // Store information in redux states.
     dispatch(setRouteDay(routeDaySelected));
@@ -153,77 +130,6 @@ const routeSelectionLayout = () => {
 
     router.push('/selectionRouteOperationLayout');
   };
-
-  // TODO: Refactor this function.
-  const startApplication = async () => {
-    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
-
-    try {
-      const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
-      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
-      const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
-      const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
-      const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
-      
-
-
-      dispatch(setDayOperations(dayOperations));
-
-
-    } catch (error) {
-      Toast.show({type: 'error',
-        text1:'Error durante la inicialización de la aplicación.',
-        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
-      });
-    }
-
-    getDayOperationsOfTheWorkDay()
-    .then(async (dayOperationsResponse:IResponse<IDayOperation[]>) => {
-      let dayOperations:IDayOperation[] = getDataFromApiResponse(dayOperationsResponse);
-      if (dayOperations.length > 0) { // A day operation exists
-        /* Retrieving information of the current day. */
-        Toast.show({type: 'info',
-          text1:'Consultando información',
-          text2: 'Recuperando la información del dia.'});
-
-        dispatch(setAllGeneralInformation(
-          getDataFromApiResponse(await getWorkDayFromToday())));
-
-        dispatch(setArrayDayOperations(dayOperations));
-
-        dispatch(setProductInventory(await getCurrentVendorInventory()));
-
-        dispatch(setStores(getDataFromApiResponse(await getStoresOfTheCurrentWorkDay())));
-
-        router.push('/routeOperationMenuLayout');
-      } else {
-        /* It is a new 'work' day. */
-        // Getting all the routes assigned to a vendor
-        Toast.show({type: 'info',
-          text1:'Consultando rutas',
-          text2: 'Consultando rutas disponibles para el vendedor'});
-
-        getAvailableRoutesForTheVendor(user)
-        .then((routesOfVendor:ICompleteRoute[]) => { setRoutes(routesOfVendor); })
-        .catch(() => {
-          Toast.show({type: 'error',
-            text1:'Error durante la consulta de las rutas',
-            text2: 'Ha habido un error durante la consulta de las rutas del vendedor, por favor intente nuevamente',
-          });
-        });
-      }
-    })
-    .catch(() => {
-      Toast.show({type: 'error',
-        text1:'Error durante la recuperación de la información',
-        text2: 'Ha habido un error durante la consulta de la información de las rutas, por favor intente nuevamente',
-      });
-    });
-  }
 
   const startSession = async () => {
     const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
@@ -274,17 +180,14 @@ const routeSelectionLayout = () => {
     if (determineIfCurrentDay(id_day)){
       setShowDialog(false);
       holdRouteSelected(routeDay);
-    } else {
-      setShowDialog(true);
-    }
+    } else setShowDialog(true);
+    
   };
 
   const handleOnAcceptMakeRoute = () => {
-    if(routeDaySelected !== null) {
-      holdRouteSelected(routeDaySelected);
-    }
-      setShowDialog(false);
-      setRouteDaySelected(null);
+    if(routeDaySelected !== null) holdRouteSelected(routeDaySelected);
+    setShowDialog(false);
+    setRouteDaySelected(null);
   };
 
   const handleOnCancelMakeRoute = () => {
@@ -293,7 +196,7 @@ const routeSelectionLayout = () => {
   };
 
   const onRefresh = () => {
-    startApplication();
+    startSession();
     setRoutes(undefined);
     setRefreshing(true);
     setTimeout(() => {
