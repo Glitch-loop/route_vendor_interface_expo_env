@@ -50,6 +50,8 @@ export default class RegisterRestockOfProductUseCase {
         inventoryOperationDescriptions: InventoryOperationDescription[],
         workdayInformation: WorkDayInformation
     ): Promise<void> {
+        if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for a restock operation.");
+
         const { id_work_day } = workdayInformation;
         
         const currentInventory:ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();

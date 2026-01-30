@@ -175,9 +175,7 @@ const inventoryOperationLayout = () => {
           });
         return
       };
-      console.log("ID TO SEARCH: ", id_inventory_operation_search_param)
       const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
-      console.log("CONSULTA DE INVENTARIO: ", inventoryOperationToConsult.length)
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
@@ -190,7 +188,6 @@ const inventoryOperationLayout = () => {
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
 
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-        console.log("START")
         setAvailableProducts(products);
         setInitialShiftInventory(inventory_operation_descriptions)
         setRestockInventories([]);
@@ -198,7 +195,6 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
-        console.log("RESTOCK")
         setAvailableProducts(products);
         setInitialShiftInventory([])
         setRestockInventories([inventory_operation_descriptions]);
@@ -230,8 +226,6 @@ const inventoryOperationLayout = () => {
       setFinalOperation(true);
       setIssueInventory(true);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-      console.log('Setting environment for restock inventory operation');
-      console.log(productsInventoryReduxState)
       if (productsInventoryReduxState === null) {
         Toast.show({
           type: 'error',
@@ -287,8 +281,8 @@ const inventoryOperationLayout = () => {
   const handleAcceptInventoryOperation = ():void => {
     let askToUserIfAgreeWithInventory: boolean = false;
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-     || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory 
+    || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
       if (getTotalAmountFromCashInventory(cashInventory) === 0 || !determineIfExistsOperationDescriptionMovement(inventoryOperationMovements)) askToUserIfAgreeWithInventory = true;
       else askToUserIfAgreeWithInventory = false;
     } else {
@@ -304,12 +298,27 @@ const inventoryOperationLayout = () => {
 
   const handleCancelInventoryOperationProcess = ():void => { setShowDialog(false); };
 
-  const handleConfirmInventoryOperation = async (): Promise<void> => {
+  const handleConfirmInventoryOperation = async (): Promise<void> => {      
+      const inventoryOperationMovementWithoutZeroAmount = inventoryOperationMovements.filter((inv) => inv.amount > 0);
+      
+      setShowDialog(false);
+      
+      if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
+          Toast.show({
+            type: 'error',
+            text1: 'Error al registrar la operación de inventario.',
+            text2: 'Debe haber al menos un producto para poder continuar.',
+        });
+        setIsInventoryAccepted(false);
+        return;
+      }
+
+
       /* Avoiding re-executions */
       if (isInventoryAccepted === true) return;
       
+
       setIsInventoryAccepted(true);
-      setShowDialog(false);
 
       /*
         There are 4 types of inventory operations:
@@ -349,7 +358,7 @@ const inventoryOperationLayout = () => {
              getTotalAmountFromCashInventory(cashInventory),
              route,
              availableProducts,
-             inventoryOperationMovements,
+             inventoryOperationMovementWithoutZeroAmount,
              routeDay
           )
 
@@ -413,7 +422,7 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          await registerRestockOfProductCommand.execute(inventoryOperationMovements, workDayInformation);
+          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, workDayInformation);
 
           const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
           const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
@@ -429,7 +438,6 @@ const inventoryOperationLayout = () => {
           // TODO: Update redux
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.error(error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',
@@ -456,7 +464,7 @@ const inventoryOperationLayout = () => {
         try {
           const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
           await registerProductDevolutionCommand.execute(
-            inventoryOperationMovements,
+            inventoryOperationMovementWithoutZeroAmount,
             workDayInformation
           );
 
@@ -504,7 +512,7 @@ const inventoryOperationLayout = () => {
           const registerEndShiftInventoryCommand = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
           await registerEndShiftInventoryCommand.execute(
             getTotalAmountFromCashInventory(cashInventory),
-            inventoryOperationMovements,
+            inventoryOperationMovementWithoutZeroAmount,
             workDayInformation
           );
 

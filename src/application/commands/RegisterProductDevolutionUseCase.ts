@@ -48,8 +48,10 @@ export default class RegisterProductDevolutionUseCase {
         inventoryOperationDescriptions: InventoryOperationDescription[],
         workdayInformation: WorkDayInformation
     ): Promise<void> {
+
+        if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for a product devolution.");
+
         const { id_work_day } = workdayInformation;
-        
         const dayOperations:DayOperation[] = await this.localDayOperationRepo.listDayOperations();
 
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);

@@ -32,7 +32,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             id_inventory_operation_type,
             id_work_day,
         } = inventory_operation;
-        console.log("CREANDO OPERACION DE INVENTARIO: ", inventory_operation);
+
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();

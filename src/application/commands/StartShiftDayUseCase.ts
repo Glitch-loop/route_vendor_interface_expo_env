@@ -69,6 +69,8 @@ export default class StartWorkDayUseCase {
         inventoryOperationDescriptions: InventoryOperationDescription[],
         routeDaySelected: RouteDay): Promise<void> {
 
+        if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for start shift.");
+
         const shiftORganizationAggregate: ShiftOrganizationAggregate = new ShiftOrganizationAggregate(null);
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate([]);
