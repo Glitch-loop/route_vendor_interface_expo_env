@@ -190,6 +190,7 @@ const inventoryOperationLayout = () => {
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
 
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
+        console.log("START")
         setAvailableProducts(products);
         setInitialShiftInventory(inventory_operation_descriptions)
         setRestockInventories([]);

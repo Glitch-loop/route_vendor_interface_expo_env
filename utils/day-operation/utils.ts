@@ -15,6 +15,10 @@ export function getTitleDayOperation(inventory_operation_type: string): string {
             title = "Re-stock de inventario";
             break;
 
+        case DAY_OPERATIONS.consult_inventory:
+            title = "Consulta de inventario";
+            break;
+
         case DAY_OPERATIONS.product_devolution_inventory:
             title = "Devolución de productos";
             break;
