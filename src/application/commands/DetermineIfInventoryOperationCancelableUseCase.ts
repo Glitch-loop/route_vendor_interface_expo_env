@@ -43,12 +43,6 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
         
         const dayOperations = await this.localDayOperationRepo.listDayOperations();
 
-        // dayOperations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-        dayOperations.forEach( (dayOp, index) => {
-            console.log(`DAY OPERATION ${index} - TYPE: ${dayOp.operation_type} - ITEM ID: ${dayOp.id_item} - CREATED AT: ${dayOp.created_at.getTime()}`);
-        });
-
         const index: number = dayOperations.findIndex( dayOp => dayOp.id_item === id_inventory_operation );
 
         if (index === -1) return false;
@@ -61,8 +55,6 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
         } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) { 
             isCancelable = true;
         } else if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
-            console.log("INDEX: ", index);
-            console.log("DAY OPERATIONS LENGTH: ", dayOperations.length);
             if (index === dayOperations.length -1 ) {
                 isCancelable = true;
             } else {

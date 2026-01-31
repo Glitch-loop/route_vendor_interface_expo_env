@@ -159,7 +159,16 @@ export class OperationDayAggregate {
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
     }
     
-    registerCancelInventoryOperation(): void { /* Decide if implement */ }
+    registerCancelInventoryOperation(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void { 
+        const newDayOperation = new DayOperation(
+            idDayOperation,
+            idInventoryOperation,
+            DAY_OPERATIONS.cancel_inventory_operation,
+            createdAt
+        );
+
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);   
+    }
 
     getDayOperations(): DayOperation[] | null {
         return this.dayOperations;

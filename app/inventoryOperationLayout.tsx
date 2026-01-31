@@ -1,5 +1,5 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
+import React, { JSX, useEffect, useState } from 'react';
 import { View, ScrollView, Text, BackHandler, Pressable } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter, useLocalSearchParams } from 'expo-router';
@@ -62,7 +62,7 @@ const settingAllInventoryOperations:any = {
 import ListAllProductOfCompany from '@/src/application/queries/ListAllProductOfCompany';
 
 // DI container
-import { container as di_container } from '@/src/infrastructure/di/container';
+import { container, container as di_container } from '@/src/infrastructure/di/container';
 
 // Use cases and queries
 import StartWorkDayUseCase from '@/src/application/commands/StartShiftDayUseCase';
@@ -85,6 +85,57 @@ import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOpe
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/commands/DetermineIfInventoryOperationCancelableUseCase';
 import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
+import CancelInventoryOperationUseCase from '@/src/application/commands/CancelInventoryOperationUseCase';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+
+
+// Auxiliar functions
+function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
+  let text:string = "";
+  switch (idTypeOperation) {
+    case DAY_OPERATIONS.start_shift_inventory || DAY_OPERATIONS.end_shift_inventory:
+      text = 'Puede ser que estes olvidando registrar algún producto o cantidad de dinero.';
+      break;
+    case DAY_OPERATIONS.consult_inventory:
+      text = 'Se revertirán los cambios realizados en el inventario.';
+      break;
+    case DAY_OPERATIONS.restock_inventory:
+      text = 'Puede ser que estes olvidando registrar algún producto.';
+      break;
+    default:
+      text = '';
+      break;
+  }
+
+  return text;
+}
+
+  function determineComponentForInventoryCancelation(inventoryOperation: InventoryOperationDTO):JSX.Element {
+    const { state } = inventoryOperation;
+    if (state === 1) {
+      return <View/>;
+    } else {
+      return <Text style={tw`text-center text-black text-base`}> Operación cancelada</Text>
+    }
+  }
+
+  function determineTextOfCashInventoryVisualization(inventoryOperation: InventoryOperationDTO, workdayInformation: WorkDayInformationDTO):string {
+    const { state, id_inventory_operation_type } = inventoryOperation;
+    let text:string = '';
+
+    if (state === 0) text = '';
+    else {
+      if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
+        text = `Dinero llevado al inicio de la ruta: ${workdayInformation.start_petty_cash}`;
+      } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
+        text += ` Dinero regresado al final de la ruta: ${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
+      } else {
+        text = '';
+      }
+    }
+
+    return text;
+  }
 
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
@@ -152,6 +203,7 @@ const inventoryOperationLayout = () => {
   const [inventoryOperationMovements, setInventoryOperationMovements] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [inventoryOperationToConsult, setInventoryOperationToConsult] = useState<InventoryOperationDTO | null>(null);
 
+
   // Use effect operations
   useEffect(() => {
     setEnvironmentForInventoryOperation();
@@ -168,11 +220,13 @@ const inventoryOperationLayout = () => {
     const products: ProductDTO[] = await getProductOfCompany.execute();
     
     let inventoryOperationToConsult:InventoryOperationDTO[] = [];
+    let isCancelable: boolean = false;
 
     if (id_inventory_operation_search_param === undefined) {
       inventoryOperationToConsult = [];
     } else {
       inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
+      isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
     }
     
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
@@ -185,11 +239,7 @@ const inventoryOperationLayout = () => {
         return
       }
 
-      const isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
-
       setIsInventoryCancelable(isCancelable);
-
-
 
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
@@ -264,7 +314,7 @@ const inventoryOperationLayout = () => {
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
-      
+
       // Setting movements because the user started the inventory operation from another one.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
@@ -583,7 +633,6 @@ const inventoryOperationLayout = () => {
   };
 
   const handleStartInventoryOperationFromThisOperation = async () => {
-    console.log('Starting inventory operation from this operation');
     if (inventoryOperationToConsult !== null) {
       const { id_inventory_operation } = inventoryOperationToConsult;
       const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
@@ -593,24 +642,54 @@ const inventoryOperationLayout = () => {
     }
   }
 
+  const handleInventoryOperationCancelationProcess = (): void => { setShowDialog(true); }
+
+
+  const handleInventoryOperationCancelationConfirmation = async (): Promise<void> => {
+    setShowDialog(false);
+    const cancelInventoryOperationUseCase = container.resolve<CancelInventoryOperationUseCase>(CancelInventoryOperationUseCase); 
+    
+    try {
+      await cancelInventoryOperationUseCase.execute(id_inventory_operation_search_param!);
+      Toast.show({
+        type: 'success',
+        text1: 'Operación de inventario cancelada con éxito.',
+        text2: 'La operación de inventario ha sido cancelada correctamente.',
+      });
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error al cancelar la operación de inventario.',
+        text2: 'Intente nuevamente.',
+      });
+      return;
+    }
+  }
+
+  const handleCancelInventoryOperationCancelationProcess = (): void => { setShowDialog(false); }  
+
+
+
   return (
     <SafeAreaView>
       <ScrollView style={tw`w-full flex flex-col`}>
         <ActionDialog
           visible={showDialog}
-          onAcceptDialog={handleConfirmInventoryOperation}
-          onDeclinedialog={handleCancelInventoryOperationProcess}>
+          onAcceptDialog={
+            id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+            handleInventoryOperationCancelationConfirmation :
+            handleConfirmInventoryOperation
+          }
+          onDeclinedialog={
+            id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 
+            handleCancelInventoryOperationCancelationProcess :
+            handleCancelInventoryOperationProcess
+            }>
             <View style={tw`w-11/12 flex flex-col`}>
-              <Text style={tw`text-center text-black text-xl`}>
-                ¿Estas seguró de continuar?
-              </Text>
+              <Text style={tw`text-center text-black text-xl`}>¿Estas seguró de continuar?</Text>
               <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                {
-                id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-                || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory ?
-                'Puede ser que estes olvidando registrar algún producto o cantidad de dinero.' :
-                'Puede ser que estes olvidando registrar algún producto'
-                }
+                { getTextForConfirmationDialog(id_type_of_operation_search_param as DAY_OPERATIONS) }
               </Text>
             </View>
         </ActionDialog>
@@ -626,19 +705,14 @@ const inventoryOperationLayout = () => {
             <Text style={tw`text-center text-black text-2xl`}>
               { getTitleDayOperation(id_type_of_operation_search_param) }
             </Text>
-            { !isActiveOperation &&
-            <Text style={tw`text-center text-black text-base`}>
-              Operación cancelada
-            </Text>
-            }
+            { inventoryOperationToConsult !== null && determineComponentForInventoryCancelation(inventoryOperationToConsult)}
           </View>
           { (isInventoryCancelable && id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) &&
             <Pressable
-              style={tw`bg-blue-500 py-6 px-6 rounded-full ml-3`}
-              onPress={handleStartInventoryOperationFromThisOperation}
-              >
+              style={tw`bg-red-500 py-6 px-6 rounded-full ml-3`}
+              onPress={handleInventoryOperationCancelationProcess}>
               <Icon
-                name={'edit'}
+                name={'trash'}
                 style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
             </Pressable>
           }
@@ -704,8 +778,7 @@ const inventoryOperationLayout = () => {
         }
         {/* Cash reception section. */}
         {((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-        || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)
-        && isOperation && !isOperationToUpdate) &&
+        || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)) &&
           <View style={tw`flex basis-auto w-full mt-3`}>
             <Text style={tw`w-full text-center text-black text-2xl`}>
               {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'}
@@ -716,30 +789,16 @@ const inventoryOperationLayout = () => {
               setCashInventoryOperation={setCashInventory}/>
             <Text style={tw`w-full text-center text-black text-xl mt-2`}>
               Total:
-              ${cashInventory.reduce((accumulator, denomination) => {
-                  return accumulator + denomination.amount! * denomination.value;},0)}
+              ${cashInventory
+                .reduce((accumulator, denomination) => { return accumulator + denomination.amount! * denomination.value;},0)}
               </Text>
           </View>
         }
         {/* Total amount of petty cash */}
-        { ((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-        || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) 
-        && !isOperation
-        && isActiveOperation
-        && workDayInformation) &&
+        { id_inventory_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
           <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
             <Text style={tw`text-black text-lg`}>
-              Dinero llevado al inicio de la ruta: ${workDayInformation.start_petty_cash}
-            </Text>
-          </View>
-        }
-        { (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory
-        && !isOperation
-        && isActiveOperation
-        && workDayInformation) &&
-          <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
-            <Text style={tw`text-black text-lg`}>
-              Dinero regresado al final de la ruta: ${workDayInformation.final_petty_cash ? workDayInformation.final_petty_cash : 0}
+              { determineTextOfCashInventoryVisualization(inventoryOperationToConsult, workDayInformation) }
             </Text>
           </View>
         }

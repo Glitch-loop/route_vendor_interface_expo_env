@@ -157,12 +157,19 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const result = statement.executeSync<InventoryOperation>();
             
             for(let row of result) {
-                inventoryOperations.push(row);
+                const newInventoryOperation = new InventoryOperation(
+                    row.id_inventory_operation,
+                    row.sign_confirmation,
+                    new Date(row.date),
+                    row.state,
+                    row.audit,
+                    row.id_inventory_operation_type,
+                    row.id_work_day,
+                    await this.retrieveInventoryOperationDescription(inventoryOperations) // Descriptions will be filled later
+                )
+                inventoryOperations.push(newInventoryOperation);
             }
             
-            // const inventoryOperationDescriptions:InventoryOperationDescription[] = await this.getInventoryOperationDescription(inventoryOperations);
-            
-
             return inventoryOperations;
         } catch (error) {
             throw new Error('Failed to list inventory operations: ' + error);
@@ -180,10 +187,19 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const result = statement.executeSync<InventoryOperation>();
 
             for (let row of result) {
-                inventoryOperations.push(row);
-            }
+                const newInventoryOperation = new InventoryOperation(
+                    row.id_inventory_operation,
+                    row.sign_confirmation,
+                    new Date(row.date),
+                    row.state,
+                    row.audit,
+                    row.id_inventory_operation_type,
+                    row.id_work_day,
+                    await this.retrieveInventoryOperationDescription(inventoryOperations) // Descriptions will be filled later
+                )
 
-            // const inventoryOperationDescriptions:InventoryOperationDescription[] = await this.getInventoryOperationDescription(inventoryOperations);    
+                inventoryOperations.push(newInventoryOperation);
+            }
 
             return inventoryOperations;
         } catch (error) {

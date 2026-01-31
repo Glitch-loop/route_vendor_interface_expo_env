@@ -30,9 +30,11 @@ export class SQLiteDataSource {
      * Automatically initializes if needed
      */
     getClient(): SQLiteDatabase {
-        if (!this.client) {
+        if (this.client === undefined || this.client === null) {
             throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
         }
-        return this.client!;
+        console.info('SQLiteDataSource getClient called');
+        console.log('SQLite Client:', this.client);
+        return this.client;
     }
 }

@@ -292,7 +292,7 @@ const routeOperationMenuLayout = () => {
                 let totalValue = '';
                 let style = '';
                 let isClientOperation = true; /*true = client, false = inventory operation*/
-
+                let isPrintableOperation = true;
                 const { id_day_operation, id_item, operation_type, created_at } = dayOperation;
 
 
@@ -305,15 +305,15 @@ const routeOperationMenuLayout = () => {
                   || operation_type === DAY_OPERATIONS.end_shift_inventory
                 ) {
                   isClientOperation = false;
+                  isPrintableOperation = true;
                   itemName = getTitleDayOperationForMenuOperation(operation_type);
-                  console.log("An operation: ", itemName);
                 } else if (operation_type === DAY_OPERATIONS.route_client_attention
                   || operation_type === DAY_OPERATIONS.attend_client_petition
                   || operation_type === DAY_OPERATIONS.new_client_registration
                   || operation_type === DAY_OPERATIONS.attention_out_of_route
                 ) {
-                  console.log("A client operation");
                   isClientOperation = true;
+                  isPrintableOperation = true;
                   
                   itemOrder = '0'
                   totalValue = '';
@@ -332,20 +332,27 @@ const routeOperationMenuLayout = () => {
                       description = street + ' #' + ext_number + ', ' + colony;
                     }                  
                   }
+                } else { // Other operations
+                  isPrintableOperation = false;
                 }
 
-                return (
-                  <RouteCard
-                    key={dayOperation.id_day_operation}
-                    itemOrder={itemOrder}
-                    itemName={itemName}
-                    description={description}
-                    totalValue={totalValue}
-                    style={style}
-                    onSelectItem={ isClientOperation ?
-                      () => { onSelectStore(dayOperation); } :
-                      () => { onSelectInventoryOperation(dayOperation); }}/>
-                  );
+                if (isPrintableOperation) {
+                  return (
+                    <RouteCard
+                      key={dayOperation.id_day_operation}
+                      itemOrder={itemOrder}
+                      itemName={itemName}
+                      description={description}
+                      totalValue={totalValue}
+                      style={style}
+                      onSelectItem={ isClientOperation ?
+                        () => { onSelectStore(dayOperation); } :
+                        () => { onSelectInventoryOperation(dayOperation); }}/>
+                    );
+                } else {
+                  console.log("Operation not printable");
+                  return null;
+                }
               })}
             </View>
           }
@@ -375,7 +382,17 @@ const routeOperationMenuLayout = () => {
                   onRestockInventory();
                 }
               }}
-              style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}>
+
+              // style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}
+            
+                // android_ripple={{ color: tw.color('orange-700'), borderless: false }}
+                style={({ pressed }) =>
+                  tw.style(
+                    'px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center bg-orange-500',
+                    pressed ? tw.color('bg-orange-600') : tw.color('bg-orange-500') 
+                  )
+                }
+              >
               <Text style={tw`text-sm text-center`}>Restock de producto</Text>
             </Pressable>
             <Pressable

@@ -84,13 +84,11 @@ export default class RegisterRestockOfProductUseCase {
         }
 
         // Update product inventory
-
         for (const description of inventoryOperationDescriptions) {
             const { amount, id_product, price_at_moment } = description; 
             
             // Find if there is a product inventory record, if so increase stock, otherwise insert new product.            
             if (productInventoryAggregate.isNewProductInventory(id_product)) { // There is not a product inventory record for this product.
-                console.log("NEW PRODUCT INVENTORY")
                 productInventoryAggregate.insertProductToInventory(
                     this.idService.generateID(),
                     price_at_moment,
@@ -98,10 +96,8 @@ export default class RegisterRestockOfProductUseCase {
                     id_product
                 )
             } else { // There is a product inventory record for this product.
-
                 const findProductInventory:ProductInventory | undefined = currentInventory.find((pi) => pi.get_id_product() === id_product);
                 if (!findProductInventory) throw new Error("Unexpected error: Product inventory not found.");
-                console.log("EXISTING PRODUCT INVENTORY")
                 productInventoryAggregate.increaseStock(findProductInventory.get_id_product_inventory(), amount);
             }
         }
@@ -120,22 +116,14 @@ export default class RegisterRestockOfProductUseCase {
         const newDayOperations:DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         
         // Determine which products were updated and which were inserted
-        const currentProductInventory:ProductInventory[] = productInventoryAggregate.getProductInventory();
         const productInventoryToInsert: ProductInventory[] = productInventoryAggregate.getNewProductsInventory()
         const productInventoryToUpdate: ProductInventory[] = productInventoryAggregate.getModifiedProductInventory();
-        
-        console.log("Updated inventory records: ", currentProductInventory.length);
-        console.log("Product to insert: ", productInventoryToInsert.length);
-        console.log("Product to update: ", productInventoryToUpdate.length);
-
-        
+                
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
 
-        console.log("Update inventory++++++++++++++++++++++++++++++++++++++")
         await this.localProductInventoryRepo.createInventory(productInventoryToInsert);
         await this.localProductInventoryRepo.updateInventory(productInventoryToUpdate);
-        console.log("##############################################")
     }
 
     async execute(
