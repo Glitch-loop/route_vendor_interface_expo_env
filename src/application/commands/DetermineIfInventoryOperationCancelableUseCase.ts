@@ -41,13 +41,15 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
         const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
         if (!inventoryOperation) return false;
         
+        const { id_inventory_operation_type, state } = inventoryOperation;
+
+        if (state === 0) return false;
+
         const dayOperations = await this.localDayOperationRepo.listDayOperations();
 
         const index: number = dayOperations.findIndex( dayOp => dayOp.id_item === id_inventory_operation );
 
         if (index === -1) return false;
-
-        const { id_inventory_operation_type } = inventoryOperation;
 
         
         if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution) {
