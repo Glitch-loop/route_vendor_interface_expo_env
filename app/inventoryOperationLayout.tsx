@@ -83,6 +83,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/commands/DetermineIfInventoryOperationCancelableUseCase';
 
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
@@ -132,7 +133,7 @@ const inventoryOperationLayout = () => {
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
   const [finalOperation, setFinalOperation] = useState<boolean>(false);
   const [issueInventory, setIssueInventory] = useState<boolean>(false);
-  const [isInventoryOperationModifiable, setIsInventoryOperationModifiable] = useState<boolean>(false);
+  const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
 
   /* States related to the layout logic */
   const [isOperation, setIsOperation] = useState<boolean>(true);
@@ -161,7 +162,7 @@ const inventoryOperationLayout = () => {
     const getProductOfCompany = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  
-
+    const determineIfInventoryOperationCancelableUseCase = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
     
     const products: ProductDTO[] = await getProductOfCompany.execute();
     
@@ -175,6 +176,12 @@ const inventoryOperationLayout = () => {
           });
         return
       };
+
+      const isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
+      console.log("IS CANCELABLE: ", isCancelable);
+
+      setIsInventoryCancelable(isCancelable);
+
       const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
@@ -184,6 +191,7 @@ const inventoryOperationLayout = () => {
         });
         return
       }
+
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
 
@@ -599,7 +607,7 @@ const inventoryOperationLayout = () => {
             </Text>
             }
           </View>
-          { (isInventoryOperationModifiable && !isOperation) &&
+          { (isInventoryCancelable && id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) &&
             <Pressable
               style={tw`bg-blue-500 py-6 px-6 rounded-full ml-3`}
               onPress={handleStartInventoryOperationFromThisOperation}
@@ -626,7 +634,6 @@ const inventoryOperationLayout = () => {
               inventoryOutflow                = {inventoryOutflow}
               finalOperation                  = {finalOperation}
               issueInventory                  = {issueInventory}
-              isInventoryOperationModifiable  = {isInventoryOperationModifiable}
               />
             { (inventoryOperationToConsult?.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && isActiveOperation === true) &&
               <View style={tw`flex basis-auto w-full mt-3`}>

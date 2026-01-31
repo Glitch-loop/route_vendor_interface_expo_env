@@ -67,7 +67,6 @@ const TableInventoryOperationVisualization = (
     inventoryOutflow: boolean,
     finalOperation: boolean,
     issueInventory: boolean,
-    isInventoryOperationModifiable: boolean
   }) => {
 
   const availableProductsStored: ProductDTO[] = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);

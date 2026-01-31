@@ -17,8 +17,8 @@ export enum DAY_OPERATIONS {
     product_devolution = '8ebe4f07-d28e-46f5-988e-3ab3790e612d',
     sales = '992f002c-13e2-4fb8-ac20-b7b571b9162a',
     product_reposition = 'ec313b8e-ba1d-4a77-bbfb-bb662663720c',
-    route_transaction = 'd3b5f3e3-1f4c-4f7a- ninety-nine 9c3b-5c4f6e2d7a8b',
-    cancel_route_transaction = '1a7b7010-a637-465d-bead-df79b0e67f6b', // This operation doesn't exist in the central database.
+    route_transaction = '3dfde724-fb9c-4944-b38b-2022a9689bb4',
+    cancel_route_transaction = 'f11d95a4-2d40-4dad-9209-d2731c884597', // This operation doesn't exist in the central database.
 
     // Related to client operations.
     attention_out_of_route = '473e5d83-5f45-4d85-b74e-e4e26fee9279',

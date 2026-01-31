@@ -1,0 +1,91 @@
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
+import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { injectable, inject } from "tsyringe";
+
+/*
+    There are 4 types of inventories:
+        - Start shift inventory
+        - Re-stock inventory
+        - Product devolution inventory
+        - Final shift inventory
+
+    How to determine if an inventory is "cancelable"?
+    
+    - Start shift inventory
+        1. There is not route transactions after this operation.
+        2.  There is not inventory operations after this operation.
+
+    - Re-stock inventory
+        1. It is the last inventory operation.
+        2. There is not a route transaction after this operation.
+
+    - Product devolution
+        * This operation cannot be never cancelled.
+
+    - Final inventory
+        * This operation can be always cancelled.
+*/
+
+
+@injectable()
+export default class DetermineIfInventoryOperationCancelableUseCase {
+    constructor(
+        @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+        @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository
+    ) { }
+
+    async execute(id_inventory_operation: string): Promise<boolean> {
+        let isCancelable: boolean = false
+        const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
+        if (!inventoryOperation) return false;
+        
+        const dayOperations = await this.localDayOperationRepo.listDayOperations();
+
+        // dayOperations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        dayOperations.forEach( (dayOp, index) => {
+            console.log(`DAY OPERATION ${index} - TYPE: ${dayOp.operation_type} - ITEM ID: ${dayOp.id_item} - CREATED AT: ${dayOp.created_at.getTime()}`);
+        });
+
+        const index: number = dayOperations.findIndex( dayOp => dayOp.id_item === id_inventory_operation );
+
+        if (index === -1) return false;
+
+        const { id_inventory_operation_type } = inventoryOperation;
+
+        
+        if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution) {
+            isCancelable = false;
+        } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) { 
+            isCancelable = true;
+        } else if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
+            console.log("INDEX: ", index);
+            console.log("DAY OPERATIONS LENGTH: ", dayOperations.length);
+            if (index === dayOperations.length -1 ) {
+                isCancelable = true;
+            } else {
+                for (let i = index + 1; i < dayOperations.length; i++) {
+                    const currentDayOperation = dayOperations[i];
+                    const currentDayOperationType = currentDayOperation.operation_type;
+    
+                    if (currentDayOperationType === DAY_OPERATIONS.route_transaction ||
+                        currentDayOperationType === DAY_OPERATIONS.restock_inventory ||
+                        currentDayOperationType === DAY_OPERATIONS.start_shift_inventory ||
+                        currentDayOperationType === DAY_OPERATIONS.product_devolution_inventory ||
+                        currentDayOperationType === DAY_OPERATIONS.end_shift_inventory) {
+                        isCancelable = false;
+                        break;
+                    } else {
+                        isCancelable = true;
+                    }
+                }
+            }
+
+        } else {
+            isCancelable = false;   
+        }
+        return isCancelable;
+    }
+}
