@@ -275,7 +275,6 @@ const salesLayout = () => {
             
         setResultSaleState(true);
       } catch (error) {
-        console.error("Error during sale registration: ", error);
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',

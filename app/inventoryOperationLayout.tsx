@@ -244,8 +244,6 @@ const inventoryOperationLayout = () => {
     }
 
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
-      
-      console.log("Consulting inventory operation")
       setIsInventoryCancelable(isCancelable);
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
@@ -263,10 +261,7 @@ const inventoryOperationLayout = () => {
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
-      
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-        console.log("Product devolution")
-        console.log("Product devolution descriptions: ", inventory_operation_descriptions.length)
         setAvailableProducts(products);
         setInitialShiftInventory([])
         setRestockInventories([inventory_operation_descriptions]);
@@ -274,11 +269,9 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        console.log("End shift inventory")
-      } else { console.error("Unknown inventory operation type") }
-      console.log("id: ", id_inventory_operation_type)
-      console.log("enum: ", DAY_OPERATIONS.product_devolution_inventory)
-      console.log("++++++++++++++++++++++++++++++++++")
+        
+      }
+
       setInventoryWithdrawal(false);
       setInventoryOutflow(false);
       setFinalOperation(false);
