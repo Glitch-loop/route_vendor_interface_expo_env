@@ -65,7 +65,6 @@ import { container, container as di_container } from '@/src/infrastructure/di/co
 
 // Use cases and queries
 import StartWorkDayUseCase from '@/src/application/commands/StartShiftDayUseCase';
-import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 import RegisterRestockOfProductUseCase from '@/src/application/commands/RegisterRestockOfProductUseCase';
 import RegisterProductDevolutionUseCase from '@/src/application/commands/RegisterProductDevolutionUseCase';
 
@@ -86,6 +85,7 @@ import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/co
 import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
 import CancelInventoryOperationUseCase from '@/src/application/commands/CancelInventoryOperationUseCase';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/RegisterFinalShiftInventoryUseCase';
 
 
 // Auxiliar functions
@@ -597,7 +597,7 @@ const inventoryOperationLayout = () => {
         });
 
         try {
-          const registerEndShiftInventoryCommand = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
+          const registerEndShiftInventoryCommand = di_container.resolve<RegisterFinalShiftInventoryUseCase>(RegisterFinalShiftInventoryUseCase);
           await registerEndShiftInventoryCommand.execute(
             getTotalAmountFromCashInventory(cashInventory),
             inventoryOperationMovementWithoutZeroAmount,

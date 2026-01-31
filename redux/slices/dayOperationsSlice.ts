@@ -13,7 +13,7 @@ const dayOperationsSlice = createSlice({
         created_at: operation.created_at,
       }));
     },
-    clenDayOperations: (state) => {
+    clearDayOperations: (state) => {
       return null;
     }
   },
@@ -21,7 +21,7 @@ const dayOperationsSlice = createSlice({
 
 export const {
   setDayOperations,
-  clenDayOperations,
+  clearDayOperations,
 } = dayOperationsSlice.actions;
 
 export default dayOperationsSlice.reducer;

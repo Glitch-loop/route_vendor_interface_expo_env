@@ -21,7 +21,7 @@ const productsInventorySlice = createSlice({
         }
       });
     },
-    cleanProductInventory: (state, action: PayloadAction<void>) => {
+    clearProductInventory: (state, action: PayloadAction<void>) => {
       return null;
     },
   },
@@ -29,7 +29,7 @@ const productsInventorySlice = createSlice({
 
 export const {
   setProductInventory,
-  cleanProductInventory,
+  clearProductInventory,
 } = productsInventorySlice.actions;
 
 export default productsInventorySlice.reducer;

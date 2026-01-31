@@ -23,7 +23,7 @@ const workDayInformationSlice = createSlice({
           id_route_day: action.payload.id_route_day,
        }
     },
-    cleanWorkDayInformation: (state) => {
+    clearWorkDayInformation: (state) => {
       return null;
     }
   }
@@ -31,7 +31,7 @@ const workDayInformationSlice = createSlice({
 
 export const {
   setWorkDayInformation,
-  cleanWorkDayInformation
+  clearWorkDayInformation
  } = workDayInformationSlice.actions;
 
 export default workDayInformationSlice.reducer;

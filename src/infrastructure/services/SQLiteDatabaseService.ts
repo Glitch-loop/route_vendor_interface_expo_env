@@ -49,6 +49,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
         ];
 
         try {
+            await this.dataSource.initialize();
             const db = await this.dataSource.getClient();
             
             const createTablePromises:any[] = tablesToCreate
@@ -81,6 +82,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
             EMBEDDED_TABLES.SYNC_HISTORIC,
         ];
         try {
+            await this.dataSource.initialize();
             const db = await this.dataSource.getClient();
             
             const dropTablePromises:any[] = tablesToDelete
@@ -97,7 +99,6 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
     async cleanDatabase(): Promise<void> { 
         const tablesToDelete:string[] = [
-            EMBEDDED_TABLES.USER,
             EMBEDDED_TABLES.ROUTE_DAY,
             EMBEDDED_TABLES.STORES,
             EMBEDDED_TABLES.PRODUCTS,
@@ -112,6 +113,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
         ];
 
         try {
+            await this.dataSource.initialize();
             const db = await this.dataSource.getClient();
 
             const cleanTablePromises:any[] = tablesToDelete.map((tableName:string) => {

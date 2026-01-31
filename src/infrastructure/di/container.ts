@@ -60,7 +60,7 @@ container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource,
 container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
 
 // Services
-container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
+container.register<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
     useClass: SQLiteDatabaseService
 })
 
@@ -112,50 +112,5 @@ container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
 container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
     useClass: SupabaseProductRepository
 });
-
-
-
-
-
-// Also register under its concrete type
-// const SQLiteFactory = (c: DependencyContainer) => {
-//     console.log('Creating an instance with factory*****************************')
-//     return new SQLiteDatabaseService(c.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource))
-// }
-
-// container.register<LocalDatabaseService>(TOKENS.SQLiteDatabaseService, {
-//     useFactory: SQLiteFactory
-// })
-
-// // Register Repositories - Generic (default: Supabase for remote operations)
-// container.register<RouteRepository>(TOKENS.RouteRepository, {
-//     useClass: SupabaseRouteRepository
-// })
-
-// container.register<StoreRepository>(TOKENS.StoreRepository, {
-//     useClass: SupabaseStoreRepository
-// })
-
-// // Register Repositories - Specific implementations
-// // SQLite
-
-
-// container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRepository, {
-//     useClass: SQLiteShiftOrganizationRepository
-// })
-
-// container.register<InventoryOperationRepository>(TOKENS.SQLiteInventoryOperationRepository, {
-//     useClass: SQLiteInventoryOperationRepository
-// })
-
-// container.register<ProductInventoryRepository>(TOKENS.SQLiteInventoryRepository, {
-//     useClass: SQLiteInventoryRepository
-// })
-
-// container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
-//     useClass: SQLiteRouteTransactionRepository
-// })
-
-
 
 export { container }

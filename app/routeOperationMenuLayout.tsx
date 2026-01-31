@@ -14,14 +14,14 @@ import {
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import {
-  cleanCurrentOperation,
-  setCurrentOperation,
-} from '../redux/slices/currentOperationSlice';
-import { cleanCurrentOperationsList } from '../redux/slices/dayOperationsSlice';
-import { cleanProductsInventory } from '../redux/slices/productsInventorySlice';
-import { cleanAllGeneralInformation } from '../redux/slices/workdayInformation';
-import { cleanStores } from '../redux/slices/storesSlice';
+import { clearDayOperations } from '../redux/slices/dayOperationsSlice';
+import { clearProductInventory } from '@/redux/slices/productsInventorySlice';
+import { clearProducts } from '@/redux/slices/productSlice';
+import { clearRouteDay } from '../redux/slices/routeDaySlice';
+import { clearRoute } from '../redux/slices/routeSlice';
+import { clearStores } from '../redux/slices/storesSlice';
+import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
+
 
 // Services
 import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
@@ -54,6 +54,7 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import { container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
+import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
@@ -159,7 +160,6 @@ const routeOperationMenuLayout = () => {
   const finishWorkDay = async ():Promise<void> => {
     try {
       console.log("Finishing day")
-      
       const isConnected = await deviceHasInternetConnection();      
       if (!isConnected) {
         Toast.show({
@@ -175,60 +175,30 @@ const routeOperationMenuLayout = () => {
         text1:'Sincronizando con base de datos, por favor espere',
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
-      // Storing the information in the main database.
-      const resultSyncingProcess:boolean = await syncingRecordsWithCentralDatabase(true);
+      
+      const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
+      
 
-      /* The user only will be capable to finish the day if all the records were correctly
-      synchronized with the database. */
-      if (resultSyncingProcess) {
-        Toast.show({
-          type: 'success',
-          text1:'Se ha guardado toda la inforamción correctamente',
-          text2: 'Se ha sincronizado toda la información correctamente con la base de datos.'});
+      await finishShiftDayUseCase.execute();
 
-        // Clean data of database.
-        const resultCleanDatabase:IResponse<null> = await cleanEmbeddedDatbase();
+      // Clean redux states
+      dispatch(clearDayOperations());
+      dispatch(clearProductInventory());
+      dispatch(clearProducts());
+      dispatch(clearRouteDay());
+      dispatch(clearRoute());
+      dispatch(clearStores());
+      dispatch(clearWorkDayInformation());
 
-        // Creating database with new information (not necessary).
-        // await dropEmbeddedDatabase();
-        // const resultCreateDatabase:IResponse<null> = await createEmbeddedDatabase();
+      Toast.show({
+        type: 'success',
+        text1:'Ruta finalizada con éxito',
+        text2: ''});
 
-        // Maintaining user's table
-        const resultMaintainUsersTable:IResponse<null> = await maintainUserTable(user);
+      router.replace('/routeSelectionLayout');
 
-        if(apiResponseStatus(resultCleanDatabase, 200)
-        // && apiResponseStatus(resultCreateDatabase, 201)
-        && apiResponseStatus(resultMaintainUsersTable, 200)) {
-          // Clean states
-          cleanCurrentOperation();
-          cleanCurrentOperationsList();
-          cleanProductsInventory();
-          cleanAllGeneralInformation();
-          cleanStores();
-
-          // Resetting the navigation stack (avoiding user go back to the route operation).
-          // navigation.reset({
-          //   index: 0, // Set the index of the new state (0 means first screen)
-          //   routes: [{ name: 'routeSelection' }], // Array of route objects, with the route to navigate to
-          // });
-          // navigation.navigate('routeSelection');
-
-          // Redirecting to main menu.
-          router.replace('/routeSelectionLayout');
-        } else {
-          /* Something was wrong*/
-          Toast.show({
-            type: 'error',
-            text1:'Ha habido un error al momento de guardar la información, asegurate de tener conexión a internet para completar el proceso',
-            text2: 'Ha habido un error durante el sincronizado con la base de datos.'});
-        }
-      } else {
-        Toast.show({
-          type: 'error',
-          text1:'Ha habido un error al momento de guardar la información, asegurate de tener conexión a internet para completar el proceso',
-          text2: 'Ha habido un error durante el sincronizado con la base de datos.'});
-      }
     } catch (error) {
+      console.log("Error finishing work day: ", error);
       Toast.show({
         type: 'error',
         text1:'Ha habido un error al momento de guardar la información, asegurate de tener conexión a internet para completar el proceso',

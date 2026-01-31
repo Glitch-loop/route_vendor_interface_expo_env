@@ -29,13 +29,13 @@ const storesSlice = createSlice({
           };
       });
     },
-    cleanStores: (state, action: PayloadAction<void>) => {
+    clearStores: (state) => {
       return null;
     },
   },
 });
 
 
-export const { setStores, cleanStores } = storesSlice.actions;
+export const { setStores, clearStores } = storesSlice.actions;
 
 export default storesSlice.reducer;

@@ -17,11 +17,11 @@ const routeSlice = createSlice({
                 route_day_by_day: null // Avoid store route days. The selected day is store in routeDaySlice.
             }
         },
-        cleanRoute: (state) => {
+        clearRoute: (state) => {
             return null;
         }
     }
 })
 
-export const { setRoute, cleanRoute } = routeSlice.actions;
+export const { setRoute, clearRoute } = routeSlice.actions;
 export default routeSlice.reducer;

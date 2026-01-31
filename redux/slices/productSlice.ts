@@ -11,7 +11,7 @@ const productSlice = createSlice({
                 return { ...product };
             });
         },
-        cleanProducts: (state, action: PayloadAction<void>) => {
+        clearProducts: (state) => {
             return null;
         },
     },
@@ -19,7 +19,7 @@ const productSlice = createSlice({
 
 export const {
   setProducts,
-  cleanProducts,
+  clearProducts,
 } = productSlice.actions;
 
 export default productSlice.reducer;

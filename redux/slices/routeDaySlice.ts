@@ -14,12 +14,12 @@ const routeDaySlice = createSlice({
                 stores: action.payload.stores,
             }
         },
-        cleanRouteDay: (state) => {
+        clearRouteDay: (state) => {
             return null;
         }
     }
 });
 
 
-export const { setRouteDay, cleanRouteDay } = routeDaySlice.actions;
+export const { setRouteDay, clearRouteDay } = routeDaySlice.actions;
 export default routeDaySlice.reducer;
