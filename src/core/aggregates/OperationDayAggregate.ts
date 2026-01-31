@@ -1,11 +1,9 @@
 // Entities
-import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
 import { DayOperation } from "@/src/core/entities/DayOperation";
 import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 
 // Enums
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
-import { ShiftDayOperations } from "@/src/core/enums/ShiftDayOperations";
 
 export class OperationDayAggregate {
     private routeTransactions: RouteTransaction[] | null;

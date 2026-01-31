@@ -162,47 +162,33 @@ const inventoryOperationLayout = () => {
   const router:Router = useRouter();
 
   // Defining states
-  /* States related to 'movements' in the operation. */
+  // States to store inventory movements and cash inventory
   const [cashInventory, setCashInventory] = useState<ICurrency[]>(initialMXNCurrencyState());
+  const [inventoryOperationMovements, setInventoryOperationMovements] = useState<InventoryOperationDescriptionDTO[]>([]);
 
-  /* States related to the recommendation for the inventory to be taken. */
-  const [suggestedProduct, setSuggestedProduct] = useState<InventoryOperationDescriptionDTO[]>([]);
+  // States related to recommendation.
+  const [suggestedInventory, setSuggestedInventory] = useState<ProductInventoryDTO[]>([]);
 
-  /*
-    Current inventory state stores the vendor's inventory (the inventory that currently has the
-    vendor).
-  */
-  const [currentInventory, setCurrentInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
+  // States related to inventory operation.
+  const [currentShiftInventory, setCurrentShiftInventory] = useState<ProductInventoryDTO[]>([]);
 
-  /* States related to the configuration for inventory operation visualization. */
+  // States related to consult inventory operation
   const [initialShiftInventory, setInitialShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [restockInventories, setRestockInventories] = useState<InventoryOperationDescriptionDTO[][]>([]);
   const [finalShiftInventory, setFinalShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [productRepositionTransactions, setProductRepositionTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
-
   const [inventoryWithdrawal, setInventoryWithdrawal] = useState<boolean>(false);
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
   const [finalOperation, setFinalOperation] = useState<boolean>(false);
   const [issueInventory, setIssueInventory] = useState<boolean>(false);
   const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
 
-  /* States related to the layout logic */
-  const [isOperation, setIsOperation] = useState<boolean>(true);
-  const [isActiveOperation, setIsActiveOperation] = useState<boolean>(true);
+  // States related to UI logic
   const [showDialog, setShowDialog] = useState<boolean>(false);
-
-  // State used for the logic of the component
   const [isInventoryAccepted, setIsInventoryAccepted] = useState<boolean>(false);
-  const [isOperationToUpdate, setIsOperationToUpdate] = useState<boolean>(false);
-
-  // =============== New states =====================
-  const [currentShiftInventory, setCurrentShiftInventory] = useState<ProductInventoryDTO[]>([]);
   const [availableProducts, setAvailableProducts] = useState<ProductDTO[]>([]);
-  const [suggestedInventory, setSuggestedInventory] = useState<ProductInventoryDTO[]>([]);
-  const [inventoryOperationMovements, setInventoryOperationMovements] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [inventoryOperationToConsult, setInventoryOperationToConsult] = useState<InventoryOperationDTO | null>(null);
-
 
   // Use effect operations
   useEffect(() => {
@@ -325,8 +311,6 @@ const inventoryOperationLayout = () => {
       const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const currentShiftInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
       setCurrentShiftInventory(currentShiftInventory);            
-
-      setIsOperation(true);
     } else {
       /* Do nothing */
     }
@@ -719,7 +703,7 @@ const inventoryOperationLayout = () => {
         </View>
 
         {/* Depending on the action, it will be decided the menu to be displayed. */}
-        { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+        { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null ?
           <View style={tw`flex basis-auto w-full mt-3`}>
             <TableInventoryVisualization 
               availableProducts               = {availableProducts}
@@ -734,7 +718,7 @@ const inventoryOperationLayout = () => {
               finalOperation                  = {finalOperation}
               issueInventory                  = {issueInventory}
               />
-            { (inventoryOperationToConsult?.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && isActiveOperation === true) &&
+            { (inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && inventoryOperationToConsult.state === 1) &&
               <View style={tw`flex basis-auto w-full mt-3`}>
                 <Text style={tw`w-full text-center text-black text-2xl`}>
                   Producto vendido por tienda
