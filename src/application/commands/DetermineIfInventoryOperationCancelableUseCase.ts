@@ -28,7 +28,7 @@ import { injectable, inject } from "tsyringe";
         * This operation can be always cancelled.
 */
 
-
+// TODO: What happen if the first route transaction is cancelled? Should be possible to cancel previous inventory operations?
 @injectable()
 export default class DetermineIfInventoryOperationCancelableUseCase {
     constructor(

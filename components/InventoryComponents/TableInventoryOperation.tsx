@@ -91,6 +91,21 @@ function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   return result;                        
 }
 
+function determineHeaderOfFinalColumn(id_type_of_operation: string):string {
+  let result:string = ""
+  if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
+    result = 'Merma a reportar';
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
+    result = 'Producto regresado';
+  } else {
+    result = 'Producto en ruta';
+  }
+
+  return result;                        
+}
+
+
+
 function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
   let result:string = ""
   if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
@@ -169,7 +184,7 @@ const TableInventoryOperation = (
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
                 </DataTable.Title>
                 <DataTable.Title style={tw`${headerTitleTableStyle}`} >
-                  <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
+                  <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfFinalColumn(id_type_of_operation) }</Text>
                 </DataTable.Title>
               </DataTable.Header>
               {/* Body section*/}

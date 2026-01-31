@@ -96,7 +96,7 @@ const inventoryOperationLayout = () => {
 
   const { 
     id_type_of_operation_search_param, 
-    id_inventory_operation_search_param 
+    id_inventory_operation_search_param,
   } = params as typeSearchParams;
 
 
@@ -167,22 +167,15 @@ const inventoryOperationLayout = () => {
     
     const products: ProductDTO[] = await getProductOfCompany.execute();
     
+    let inventoryOperationToConsult:InventoryOperationDTO[] = [];
+
+    if (id_inventory_operation_search_param === undefined) {
+      inventoryOperationToConsult = [];
+    } else {
+      inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
+    }
     
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
-      if (id_inventory_operation_search_param === undefined) {
-          Toast.show({
-            type: 'error',
-            text1: 'Error al consultar la operación de inventario.',
-            text2: 'No fue posible rastrar la operación de inventario, intente nuevamente.',
-          });
-        return
-      };
-
-      const isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
-      
-      setIsInventoryCancelable(isCancelable);
-
-      const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
@@ -191,6 +184,12 @@ const inventoryOperationLayout = () => {
         });
         return
       }
+
+      const isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
+
+      setIsInventoryCancelable(isCancelable);
+
+
 
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
@@ -233,6 +232,14 @@ const inventoryOperationLayout = () => {
       setInventoryOutflow(true);
       setFinalOperation(true);
       setIssueInventory(true);
+
+      // Setting movements because the user started the inventory operation from another one.
+      if (inventoryOperationToConsult.length > 0) {
+        const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
+        setInventoryOperationMovements( inventory_operation_descriptions );
+      }
+
+      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
       if (productsInventoryReduxState === null) {
         Toast.show({
@@ -247,11 +254,22 @@ const inventoryOperationLayout = () => {
       setCurrentShiftInventory(productsInventoryReduxState!);
       setAvailableProducts(products);
       setSuggestedInventory([]);
+
+      // Setting movements because the user started the inventory operation from another one.
+      if (inventoryOperationToConsult.length > 0) {
+        const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
+        setInventoryOperationMovements( inventory_operation_descriptions );
+      }
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
-
+      
+      // Setting movements because the user started the inventory operation from another one.
+      if (inventoryOperationToConsult.length > 0) {
+        const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
+        setInventoryOperationMovements( inventory_operation_descriptions );
+      }
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
       /* Getting the current inventory of the vendor */
       const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
@@ -566,8 +584,13 @@ const inventoryOperationLayout = () => {
 
   const handleStartInventoryOperationFromThisOperation = async () => {
     console.log('Starting inventory operation from this operation');
-    const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
-    console.log(await determineNextOperationToStart.execute())
+    if (inventoryOperationToConsult !== null) {
+      const { id_inventory_operation } = inventoryOperationToConsult;
+      const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
+      const typeOfOperationToStart: DAY_OPERATIONS = await determineNextOperationToStart.execute()
+      
+      router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
+    }
   }
 
   return (
