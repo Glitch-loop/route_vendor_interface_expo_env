@@ -84,6 +84,7 @@ import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/commands/DetermineIfInventoryOperationCancelableUseCase';
+import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
 
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
@@ -178,8 +179,7 @@ const inventoryOperationLayout = () => {
       };
 
       const isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
-      console.log("IS CANCELABLE: ", isCancelable);
-
+      
       setIsInventoryCancelable(isCancelable);
 
       const inventoryOperationToConsult:InventoryOperationDTO[] = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
@@ -564,8 +564,10 @@ const inventoryOperationLayout = () => {
     }
   };
 
-  const handleStartInventoryOperationFromThisOperation = () => {
+  const handleStartInventoryOperationFromThisOperation = async () => {
     console.log('Starting inventory operation from this operation');
+    const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
+    console.log(await determineNextOperationToStart.execute())
   }
 
   return (
@@ -721,12 +723,17 @@ const inventoryOperationLayout = () => {
         {/* User actions */}
         <View style={tw`flex basis-1/6 mt-3`}>
           <VendorConfirmation
-            onConfirm={isOperation ?
-              handleAcceptInventoryOperation : handleGoBackOperationDayMenu}
-            onCancel={isOperation ? handlerOnVendorCancelation : handleGoBackOperationDayMenu}
+            onConfirm={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+              handleStartInventoryOperationFromThisOperation : 
+              handleAcceptInventoryOperation 
+            }
+            onCancel={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 
+              handleGoBackOperationDayMenu : 
+              handlerOnVendorCancelation 
+            }
             message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
-            confirmMessageButton={isOperation ? 'Aceptar' : 'Volver al menú'}
-            cancelMessageButton={isOperation ? 'Cancelar' : 'Volver al menú'}
+            confirmMessageButton={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 'Comenzar operación apartir de esta' : 'Aceptar'}
+            cancelMessageButton={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 'Volver al menú' : 'Cancelar'}
             requiredValidation={
               false
               //isOperation
