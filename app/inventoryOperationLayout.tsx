@@ -472,6 +472,7 @@ const inventoryOperationLayout = () => {
  
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.error("Error during start shift inventory registration: ", error);
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',

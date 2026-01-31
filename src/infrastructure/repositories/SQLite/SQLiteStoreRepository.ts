@@ -81,7 +81,8 @@ export class SQLiteStoreRepository implements StoreRepository {
                 }
             });
         } catch (error) {
-            throw new Error("Failed to insert stores.");
+
+          throw new Error("Failed to insert stores: " + error);
         }
     }
 
@@ -143,7 +144,7 @@ export class SQLiteStoreRepository implements StoreRepository {
             ]);
         });
         } catch(error) {
-            throw new Error('Failed to update store.');
+            throw new Error('Failed to update store: ' + error);
         }
     }
 
@@ -163,7 +164,7 @@ export class SQLiteStoreRepository implements StoreRepository {
         return stores;
 
       } catch (error) {
-        return []
+        throw new Error('Failed to retrieve stores: ' + error);
       }
     }
 
@@ -183,7 +184,7 @@ export class SQLiteStoreRepository implements StoreRepository {
         return stores;
 
       } catch (error) {
-        return []
+        throw new Error('Failed to list stores: ' + error);
       }
     }
 
@@ -197,7 +198,7 @@ export class SQLiteStoreRepository implements StoreRepository {
           }
         });
       } catch (error) {
-        throw new Error('Failed to delete stores.');
+        throw new Error('Failed to delete stores: ' + error);
       }
       
     }

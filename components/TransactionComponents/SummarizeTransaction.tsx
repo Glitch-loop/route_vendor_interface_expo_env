@@ -178,7 +178,18 @@ const SummarizeTransaction = ({
     router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}`);
   };
 
-  const handleOnShowDialog = () => { setShowDialog(true); };
+  const handleOnShowDialog = () => { 
+    if (shiftWorkDay === null) {
+      Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
+      return;
+    }
+
+    const { finish_date } = shiftWorkDay;
+
+    if (finish_date !== null) Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+    else setShowDialog(true);       
+    
+  };
 
   const handleOnCancelShowDialog = () => { setShowDialog(false); };
 
@@ -188,9 +199,7 @@ const SummarizeTransaction = ({
         visible={showDialog}
         onAcceptDialog={() => {handleOnCancelASale();}}
         onDeclinedialog={() => {handleOnCancelShowDialog();}}>
-          <Text style={tw`text-black text-xl text-center`}>
-            ¿Estas seguro de cancelar la venta?
-          </Text>
+          <Text style={tw`text-black text-xl text-center`}>¿Estas seguro de cancelar la venta?</Text>
       </ActionDialog>
       <View style={tw`w-full flex flex-row justify-center pt-7`}>
         { currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE &&
@@ -257,22 +266,7 @@ const SummarizeTransaction = ({
               <ConfirmationBand
                 textOnAccept={'Iniciar venta apartir de esta'}
                 textOnCancel={'Imprimr'}
-                handleOnAccept={() => {
-                  if (shiftWorkDay === null) {
-                    Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
-                    return;
-                  }
-
-                  const { finish_date } = shiftWorkDay;
-
-                  if (finish_date === null) {
-                    /* There is not an end shift operation, the work day is still open. So, user can make more operations*/
-                    handleOnStartASale();
-                  } else {
-                    /*There is an end shift operation, the work day was closed. */
-                    Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-                  }
-                }}
+                handleOnAccept={() => { handleOnStartASale(); }}
                 handleOnCancel={() => {handleOnPrint();}}
                 styleOnCancel={'bg-blue-500'}
                 />
