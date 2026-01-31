@@ -31,7 +31,6 @@ import {
  } from '../interfaces/interfaces';
 
  // Utils
-
 import TableCashReception from '../components/InventoryComponents/TableCashReception';
 import { calculateNewInventoryAfterAnInventoryOperation, initialMXNCurrencyState, mergeInventories } from '../utils/inventoryOperations';
 
