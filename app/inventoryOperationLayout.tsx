@@ -228,25 +228,28 @@ const inventoryOperationLayout = () => {
         return;
       }
     }
-
+    console.log("FINAL INVENTORY");
     // Validations for consult inventory operation
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) {
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
           text1: 'Error al consultar la operación de inventario.',
-          text2: 'No fue posible rastrar la operación de inventario, intente nuevamente.',
+          text2: 'No fue posible obtener la operación de inventario, intente nuevamente.',
         });
         router.replace('/routeOperationMenuLayout');
         return;
       }
-
     }
-
+    
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
       setIsInventoryCancelable(isCancelable);
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
+      setInventoryWithdrawal(false);
+      setInventoryOutflow(false);
+      setFinalOperation(false);
+      setIssueInventory(false);
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
         setAvailableProducts(products);
         setInitialShiftInventory(inventory_operation_descriptions)
@@ -269,13 +272,20 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        
+        console.log("Final shift inventory descriptions: ", inventory_operation_descriptions);
+        setAvailableProducts(products);
+        setInitialShiftInventory([])
+        setRestockInventories([]);
+        setFinalShiftInventory(inventory_operation_descriptions);
+        setProductRepositionTransactions([]);
+        setProductSoldTransactions([]);
+
+        setInventoryWithdrawal(true);
+        setInventoryOutflow(true);
+        setFinalOperation(true);
+        setIssueInventory(true);
       }
 
-      setInventoryWithdrawal(false);
-      setInventoryOutflow(false);
-      setFinalOperation(false);
-      setIssueInventory(false);
 
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
       /* Dispose the list of product and let the user to introduce the inventory movement. */

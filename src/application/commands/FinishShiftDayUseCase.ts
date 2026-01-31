@@ -94,11 +94,13 @@ export default class FinishShiftDayUseCase {
             )
         }
 
+        const newInventoryOperation:InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
+        const { id_inventory_operation} = newInventoryOperation;
 
         // Register day operation
         dayOperationAggregate.registerEndShiftInventory(
             this.idService.generateID(),
-            id_work_day,
+            id_inventory_operation,
             new Date(this.dateService.getCurrentTimestamp()),
         )
 
@@ -106,7 +108,7 @@ export default class FinishShiftDayUseCase {
     
         // Store information in local database.
         await this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);
-        await this.localInventoryOperationRepo.createInventoryOperation(inventoryOperationAggregate.getInventoryOperation());        
+        await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);        
         await this.localDayOperationRepo.insertDayOperations(dayOperations!);
 
     }
