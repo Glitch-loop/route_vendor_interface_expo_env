@@ -63,7 +63,7 @@ const routeSelectionLayout = () => {
   const [routeSelected, setRouteSelected] = useState<RouteDTO|undefined>(undefined);
 
   useEffect(() => { 
-    // startSession() 
+    startSession() 
   }, []);
 
   // Auxiliar functions

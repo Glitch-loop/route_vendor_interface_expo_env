@@ -46,7 +46,7 @@ async function appInitialization() {
   // Initializing local database
   const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.SQLiteDatabaseService);
   try {
-  await sqliteDatabaseService.dropDatabase();
+  // await sqliteDatabaseService.dropDatabase();
   await sqliteDatabaseService.createDatabase();
   } catch (error) {
     console.log("Error during database initialization: ", error);
