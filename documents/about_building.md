@@ -41,7 +41,7 @@ Note: Configure your project using ***App.json***. Please, as far as possible av
 ```
     cd ./android
 ```
-This command wull move you to the folder where resides the native code. 
+This command will move you to the folder where resides the native code. 
 
 3. Execute
 ```

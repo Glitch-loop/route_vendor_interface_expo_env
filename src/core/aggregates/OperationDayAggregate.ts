@@ -124,22 +124,22 @@ export class OperationDayAggregate {
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
     }
 
-    registerEndShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+    registerProductDevolutionInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idInventoryOperation,
-            DAY_OPERATIONS.end_shift_inventory,
+            DAY_OPERATIONS.product_devolution_inventory,
             createdAt
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
     }
 
-    registerProductDevolutionInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+    registerEndShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idInventoryOperation,
-            DAY_OPERATIONS.product_devolution_inventory,
+            DAY_OPERATIONS.end_shift_inventory,
             createdAt
         );
 

@@ -214,21 +214,41 @@ const inventoryOperationLayout = () => {
       isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
     }
     
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
+    // Validations for inventory operations
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory 
+    ||  id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      if (productsInventoryReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error al iniciar operación de inventario.',
+          text2: 'No fue posible rastrar el inventario actual del vendedor, intente nuevamente.',
+        });
+
+        router.replace('/routeOperationMenuLayout');
+        return;
+      }
+    }
+
+    // Validations for consult inventory operation
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) {
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
           text1: 'Error al consultar la operación de inventario.',
           text2: 'No fue posible rastrar la operación de inventario, intente nuevamente.',
         });
-        return
+        router.replace('/routeOperationMenuLayout');
+        return;
       }
 
-      setIsInventoryCancelable(isCancelable);
+    }
 
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
+      
+      console.log("Consulting inventory operation")
+      setIsInventoryCancelable(isCancelable);
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
         setAvailableProducts(products);
         setInitialShiftInventory(inventory_operation_descriptions)
@@ -245,11 +265,20 @@ const inventoryOperationLayout = () => {
         setProductSoldTransactions([]);
       
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-
+        console.log("Product devolution")
+        console.log("Product devolution descriptions: ", inventory_operation_descriptions.length)
+        setAvailableProducts(products);
+        setInitialShiftInventory([])
+        setRestockInventories([inventory_operation_descriptions]);
+        setFinalShiftInventory([]);
+        setProductRepositionTransactions([]);
+        setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-
-      }      
-
+        console.log("End shift inventory")
+      } else { console.error("Unknown inventory operation type") }
+      console.log("id: ", id_inventory_operation_type)
+      console.log("enum: ", DAY_OPERATIONS.product_devolution_inventory)
+      console.log("++++++++++++++++++++++++++++++++++")
       setInventoryWithdrawal(false);
       setInventoryOutflow(false);
       setFinalOperation(false);
@@ -271,21 +300,11 @@ const inventoryOperationLayout = () => {
       // Setting movements because the user started the inventory operation from another one.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-        setInventoryOperationMovements( inventory_operation_descriptions );
+        setInventoryOperationMovements(inventory_operation_descriptions);
       }
 
       
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-      if (productsInventoryReduxState === null) {
-        Toast.show({
-          type: 'error',
-          text1: 'Error al iniciar operación de inventario.',
-          text2: 'No fue posible rastrar el inventario actual del vendedor, intente nuevamente.',
-        });
-
-        router.replace('/routeOperationMenuLayout');
-      }
-      
       setCurrentShiftInventory(productsInventoryReduxState!);
       setAvailableProducts(products);
       setSuggestedInventory([]);
@@ -293,9 +312,14 @@ const inventoryOperationLayout = () => {
       // Setting movements because the user started the inventory operation from another one.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-        setInventoryOperationMovements( inventory_operation_descriptions );
+        setInventoryOperationMovements(inventory_operation_descriptions);
       }
+      
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+      setAvailableProducts(products);
+
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      setAvailableProducts(products);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
@@ -303,13 +327,8 @@ const inventoryOperationLayout = () => {
       // Setting movements because the user started the inventory operation from another one.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-        setInventoryOperationMovements( inventory_operation_descriptions );
+        setInventoryOperationMovements(inventory_operation_descriptions);
       }
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
-      /* Getting the current inventory of the vendor */
-      const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-      const currentShiftInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
-      setCurrentShiftInventory(currentShiftInventory);            
     } else {
       /* Do nothing */
     }
@@ -386,12 +405,18 @@ const inventoryOperationLayout = () => {
         - Product devolution inventory: It might be several ones.
         - End shift inventory: Unique in the day.
 
+        
       */
+      // Use cases - queries
       const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
       const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
       const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+      
+
+      // Use cases - commands
+
 
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
         
@@ -577,19 +602,30 @@ const inventoryOperationLayout = () => {
 
           const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
           const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+          const currentWorkdayInformation = await retrieveWorkDayInformationQuery.execute()
+
+          if (currentWorkdayInformation === null) {
+            Toast.show({
+              type: 'error',
+              text1: 'Ha ocurrido un error.',
+              text2: 'Reinicia la aplicación para finalizar el día de trabajo.',
+            })
+            return;
+          }
 
           dispatch(setProductInventory(currentShiftInventory));
           dispatch(setDayOperations(currentDayOperationsResult));
+          dispatch(setWorkDayInformation(currentWorkdayInformation));
 
           Toast.show({
                 type: 'success',
                 text1: 'Se ha registrado el inventario final exitosamente.',
                 text2: '',
           });
-          // TODO: Update redux
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.error(error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',

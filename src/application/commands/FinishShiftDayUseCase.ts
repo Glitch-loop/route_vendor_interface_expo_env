@@ -102,7 +102,7 @@ export default class FinishShiftDayUseCase {
             new Date(this.dateService.getCurrentTimestamp()),
         )
 
-        const dayOperations: DayOperation[] = dayOperationAggregate.getDayOperations() || [];
+        const dayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
     
         // Store information in local database.
         await this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);

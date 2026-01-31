@@ -1,9 +1,9 @@
 // Libraries
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BackHandler, ScrollView, View, Pressable } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
-import { Router, useRouter, useLocalSearchParams } from 'expo-router';
+import { Router, useRouter } from 'expo-router';
 
 // Databases
 // Embedded
@@ -51,6 +51,10 @@ import StoreDTO from '@/src/application/dto/StoreDTO';
 import Toast from 'react-native-toast-message';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
+import { container as di_container } from '@/src/infrastructure/di/container';
+import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
+import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
+
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
   const dispatch:AppDispatch = useDispatch();
@@ -94,6 +98,7 @@ const routeOperationMenuLayout = () => {
       Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Intenta reiniciar la aplicación'});
       return;
     }
+    console.log("Finish date: ", workdayInformationReduxState);
     const { finish_date } = workdayInformationReduxState;
     if (finish_date === null) setIsDayWorkClosed(false); // User might make operations
     else setIsDayWorkClosed(true); // User cannot make more operations
@@ -106,41 +111,48 @@ const routeOperationMenuLayout = () => {
 
   const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
 
-  const onFinishInventory = ():void => {
+  const onFinishInventory = async ():Promise<void> => {
     /*
-      There are two operations to make at the end of the day:
-      1 - product devolution inventory.
-      2 - final inventory (remaining product).
+      When finishing the inventory, there are two 'movements' that are needed to be done:
+      - Product devolution inventory
+      - Final inventory
 
-      The complete process for finishing work day is first making the product devolution and then
-      making the final inventory.
+      First the product devolution inventory must be done, then the final inventory.
+
+      It's possible the user doesn't finish the full process, only making the product devolution, and then he nagivates to another view,
+      in this case, it's needed to determine if it already exists a produdct devolution inventory and if it is, then pass directly to the final inventory.
     */
-    let mustBeCompleteProcess:boolean = true;
-    // Determining if there is already an product devolution, if it is, then skip it
-    dayOperations.forEach((dayOperation) => {
-      if(dayOperation.id_type_operation === DAYS_OPERATIONS.product_devolution_inventory) {
-        mustBeCompleteProcess = false;
-      }
-    });
 
-    if (mustBeCompleteProcess) {
-      dispatch(setCurrentOperation({
-        id_day_operation: routeDay.id_route_day, // Specifying that this operation belongs to this day.
-        id_item: '', // It is still not an operation.
-        id_type_operation: DAYS_OPERATIONS.product_devolution_inventory,
-        operation_order: 0,
-        current_operation: 0,
-      }));
-    } else {
-      dispatch(setCurrentOperation({
-        id_day_operation: routeDay.id_route_day, // Specifying that this operation belongs to this day.
-        id_item: '', // It is still not an operation.
-        id_type_operation: DAYS_OPERATIONS.end_shift_inventory,
-        operation_order: 0,
-        current_operation: 0,
-      }));
+    let isProductDevolutionDone:boolean = false;
+    const productDevolutionOperationIds:string[] = [];
+
+    if (dayOperationsReduxState === null) {
+      Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Reinicia la aplicación'});
+      return;
     }
-    router.push('/inventoryOperationLayout');
+
+    // Verify if there is alreadu an 'active' product devolution inventory.
+    for (const dayOperation of dayOperationsReduxState) { 
+      if(dayOperation.operation_type === DAYS_OPERATIONS.product_devolution_inventory) {
+        const { id_item } = dayOperation;
+        productDevolutionOperationIds.push(id_item);
+      }
+    }
+
+    const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
+    
+    const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
+
+    for (const inventoryOperation of productDevolutionOperations) {
+      const { state } = inventoryOperation;
+      if (state === 1) {
+        isProductDevolutionDone = true;
+        break;
+      }
+    }
+
+    if (isProductDevolutionDone) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+    else router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}`);
   };
 
   // Related with to the end of  the day.
@@ -350,7 +362,6 @@ const routeOperationMenuLayout = () => {
                         () => { onSelectInventoryOperation(dayOperation); }}/>
                     );
                 } else {
-                  console.log("Operation not printable");
                   return null;
                 }
               })}
@@ -359,10 +370,7 @@ const routeOperationMenuLayout = () => {
           <View style={tw`h-32`}/>
         </ScrollView>
         {/* Actions menu */}
-        <View style={tw`w-full
-          absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4
-          flex flex-row justify-around
-          `}>
+        <View style={tw`w-full absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4 flex flex-row justify-around items-center`}>
             <Pressable
               onPress={() => {
                 if (isDayWorkClosed) {
@@ -397,16 +405,11 @@ const routeOperationMenuLayout = () => {
             </Pressable>
             <Pressable
               onPress={() => {
-                if (isDayWorkClosed) {
-                  onShowDialog();
-                } else {
-                  onFinishInventory();
-                }
+                if (isDayWorkClosed) onShowDialog();
+                else onFinishInventory();
               }}
               style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}>
-                { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
-              </Text>
+              <Text style={tw`text-sm text-center`}> { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }</Text>
             </Pressable>
         </View>
       </View>

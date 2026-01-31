@@ -35,7 +35,6 @@ export default class RegisterProductDevolutionUseCase {
     constructor(
     // Repositories
     @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-    @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
     @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,   
 
     // Services
@@ -64,7 +63,7 @@ export default class RegisterProductDevolutionUseCase {
             '0', // signConfirmation
             new Date(this.dateService.getCurrentTimestamp()),
             0, // audit
-            DAY_OPERATIONS.restock_inventory,
+            DAY_OPERATIONS.product_devolution_inventory,
             id_work_day
         );
 
@@ -84,14 +83,14 @@ export default class RegisterProductDevolutionUseCase {
         const { id_inventory_operation} = newInventoryOperation;
 
         // Add day operation
-        dayOperationAggregate.registerRestockInventory(
+        dayOperationAggregate.registerProductDevolutionInventory(
             this.idService.generateID(),
             id_inventory_operation,
             new Date(this.dateService.getCurrentTimestamp()),
         );
 
         // Persist all changes
-        const newDayOperations:DayOperation[] = dayOperationAggregate.getDayOperations() || [];
+        const newDayOperations:DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
