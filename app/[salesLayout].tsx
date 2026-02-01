@@ -287,7 +287,6 @@ const salesLayout = () => {
   const handleOnFailedCompletionSale = () => { router.push('/routeOperationMenuLayout'); };
 
   const handlePrintTicket = async () => {
-    console.log("PRINTING TICKET");
     if (productInventoryMap === undefined) {
       Toast.show({
         type: 'error',
@@ -296,16 +295,19 @@ const salesLayout = () => {
       return;
     }
 
+    if (productDevolution.length === 0 && productReposition.length === 0 && productSale.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'No hay movimientos para imprimir el ticket de la venta.',
+        text2: 'Agrega movimientos antes de intentar imprimir el ticket.'});
+      return;
+    }
 
     try {
       let storeToConsult:StoreDTO|undefined = undefined;
 
-      if (stores !== null) {
-        storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
-        
-      }
-
-      console.log("PRINT TICKET")
+      if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
+      
       await printTicketBluetooth(
         getTicketSale(
           productInventoryMap,

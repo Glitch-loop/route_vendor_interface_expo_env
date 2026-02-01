@@ -410,6 +410,9 @@ export function getTicketSale(
 
     paymentMethodName = getNamePaymentMethodById(payment_method);
 
+  } else { // Route transaction is in process.
+    status = 'En proceso';
+    routeTransactionDate = format_date_to_UI_format(time_posix_format().toString());
   }
 
   if (storeTransaction !== undefined) {
