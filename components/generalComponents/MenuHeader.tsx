@@ -111,7 +111,7 @@ const MenuHeader = ({
       } */}
       { showPrinterButton &&
         <View style={tw`mr-0`}>
-          {/* <BluetoothButton /> */}
+          <BluetoothButton />
         </View>
       }
     </View>

@@ -384,14 +384,17 @@ const inventoryOperationLayout = () => {
       
       setShowDialog(false);
       
-      if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
-          Toast.show({
-            type: 'error',
-            text1: 'Error al registrar la operación de inventario.',
-            text2: 'Debe haber al menos un producto para poder continuar.',
-        });
-        setIsInventoryAccepted(false);
-        return;
+
+      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+        if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
+            Toast.show({
+              type: 'error',
+              text1: 'Error al registrar la operación de inventario.',
+              text2: 'Debe haber al menos un producto para poder continuar.',
+          });
+          setIsInventoryAccepted(false);
+          return;
+        }
       }
 
 
