@@ -43,6 +43,7 @@ import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import { getTicketSale } from '@/utils/route-transaciton/utils';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 
 
 const SummarizeTransaction = ({
@@ -92,10 +93,19 @@ const SummarizeTransaction = ({
 
   // Handlers
   const handleOnPrint = async () => {
+    if (productInventoryMap === undefined) {
+      Toast.show({
+        type: 'error',
+        text1: 'No se pudo imprimir el ticket de la venta.',
+        text2: 'Intenta recargar la pagina nuevamente.'});
+      return;
+    }
+
     try {
-      
-      const foundStore:IStore|undefined =
-        stores.find((store) => {return store.id_store === routeTransaction.id_store;});
+      const { id_store } = routeTransaction;
+      let storeToConsult:StoreDTO|undefined = undefined;
+
+      if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store);
 
       await printTicketBluetooth(
         getTicketSale(
@@ -104,7 +114,7 @@ const SummarizeTransaction = ({
           productsReposition,
           productsSale,
           routeTransaction,
-          foundStore
+          storeToConsult
         ));
     } catch(error) {
       /* There are no actions */
