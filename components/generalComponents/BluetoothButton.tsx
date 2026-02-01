@@ -10,6 +10,7 @@ import {
   getPrinterConnectionStatus,
   getBluetoothPrinterConnection,
   disconnectPrinter,
+  ensureBluetoothPermissions
 } from '../../services/printerService';
 
 // Hooks
@@ -78,12 +79,7 @@ const BluetoothButton = () => {
 
   const handlerConnectPrinter = async () => {
     try {
-      // if (await requestPermissions()) {
-      //   await scanForPeripherals()
-
-      // } else {
-
-      // }
+      await ensureBluetoothPermissions();
       if (isBeingConnected === false){ // Avoiding multiple click from the user
         if (await getPrinterConnectionStatus()) {
           /* Maybe the user wants to disconnect the printer from the device */

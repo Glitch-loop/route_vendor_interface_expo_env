@@ -41,9 +41,8 @@ import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransacti
 // Utils
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import { getTicketSale } from '../../utils/saleFunction';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
-
+import { getTicketSale } from '@/utils/route-transaciton/utils';
 
 
 const SummarizeTransaction = ({
@@ -94,17 +93,18 @@ const SummarizeTransaction = ({
   // Handlers
   const handleOnPrint = async () => {
     try {
+      
       const foundStore:IStore|undefined =
         stores.find((store) => {return store.id_store === routeTransaction.id_store;});
 
       await printTicketBluetooth(
         getTicketSale(
+          productInventoryMap,
           productsDevolution,
           productsReposition,
           productsSale,
           routeTransaction,
-          foundStore,
-          vendor
+          foundStore
         ));
     } catch(error) {
       /* There are no actions */

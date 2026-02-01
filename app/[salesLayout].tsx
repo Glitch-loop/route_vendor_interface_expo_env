@@ -51,18 +51,17 @@ import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 
 // Utils
-import {
-  getTicketSale,
-} from '../utils/saleFunction';
 import { 
   getProductDevolutionBalanceWithoutNegativeNumber,
   getMessageForProductDevolutionOperation,
   getGreatTotal,
-  productCommitedValidation
+  productCommitedValidation,
+  getTicketSale
 } from '@/utils/route-transaciton/utils';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -138,6 +137,7 @@ const salesLayout = () => {
   const productInventory      = useSelector((state: RootState) => state.productsInventory);
   const availableProducts     = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
+  const stores                = useSelector((state: RootState) => state.stores);
 
   useEffect(() => {
 
@@ -287,13 +287,40 @@ const salesLayout = () => {
   const handleOnFailedCompletionSale = () => { router.push('/routeOperationMenuLayout'); };
 
   const handlePrintTicket = async () => {
+    console.log("PRINTING TICKET");
+    if (productInventoryMap === undefined) {
+      Toast.show({
+        type: 'error',
+        text1: 'No se pudo imprimir el ticket de la venta.',
+        text2: 'Intenta recargar la pagina nuevamente.'});
+      return;
+    }
+
+
     try {
-      await printTicketBluetooth(getTicketSale(productDevolution,productReposition, productSale));
+      let storeToConsult:StoreDTO|undefined = undefined;
+
+      if (stores !== null) {
+        storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
+        
+      }
+
+      console.log("PRINT TICKET")
+      await printTicketBluetooth(
+        getTicketSale(
+          productInventoryMap,
+          productDevolution,
+          productReposition,
+          productSale,
+          undefined, // At this point, the route transacion doesn't exist, it only exsits the movements of the route transaction.
+          storeToConsult
+        ));
+
     } catch(error) {
       Toast.show({
         type: 'error',
-        text1:'Hubo un problema de conexción con la impresora.',
-        text2: 'No se encontro la impresora, porfavor intente conectarla con el telefono he intente nuevamente.'});
+        text1:'Hubo un problema de conexión con la impresora.',
+        text2: 'No se encontró la impresora, por favor intente conectarla con el teléfono e intente nuevamente.'});
     }
   };
 
@@ -502,7 +529,7 @@ const salesLayout = () => {
               </View>
             </View>
             <View style={tw`w-full flex flex-row justify-center my-3`}>
-              <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => { handleOnTryAgain() }}>
+              <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => { handlePrintTicket() }}>
                 <Text>Imprimir ticket</Text>
               </ActionButton>
             </View>

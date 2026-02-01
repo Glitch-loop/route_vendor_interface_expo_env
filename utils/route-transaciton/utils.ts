@@ -1,16 +1,20 @@
 // Dto
 import RouteTransactionDescriptionDTO from "@/src/application/dto/RouteTransactionDescriptionDTO";
 import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
+import ProductDTO from "@/src/application/dto/ProductDTO";
+import RouteTransactionDTO from "@/src/application/dto/RouteTransactionDTO";
+import StoreDTO from "@/src/application/dto/StoreDTO";
 
 // UI
 import Toast from "react-native-toast-message";
 
-// Enums
+// Utils
 import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
+import { format_date_to_UI_format, time_posix_format } from "@/utils/date/momentFormat";
+import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState";
+import { capitalizeFirstLetter } from "../string/utils";
 
-// Date
-import { time_posix_format } from "@/utils/date/momentFormat";
-
+// Related to route transaction workflow
 export function retrievePriceFromProductInventory(
   id_product_inventory:string, 
   productInventory: Map<string, ProductInventoryDTO>):number {
@@ -266,6 +270,271 @@ export function getTransactionIdentifier(transactionIdentifier:string) {
 
   return finalTransactionIdentifier;
 }
+
+// Related to ticket service
+/*
+  This function helps to determine if it is needed to break the "line to write" depending on the
+  lenght of the text and the anchor of the printer.
+
+  The anchor of the printer that is currently being used is 58mm, this measure allows us to write a
+  line of lenght 32 characteres.
+
+  The parameter of indentation is of type of number and depending of the input is the number of 
+  "blank spaces" that it will be let in the ticket.
+*/
+export function getTicketLine(lineToWrite:string, enterAtTheEnd:boolean = true, indent:number = 0) {
+  const anchorPrint:number = 32;
+  let text:string = '';
+  let writtenLine:string = '';
+  let filteredLineToWrite:string = '';
+  let indentation = 0;
+
+  // Validation for indentation
+  if (indent < 0) {
+    indentation = 0;
+  } else if  (indent > 32) {
+    indentation = 25; // Maximum allowed indentantion
+  } else {
+    indentation = indent;
+  }
+
+  // Filtering tabulators and enters
+  for (let i = 0; i < lineToWrite.length; i++) {
+    if (lineToWrite[i] === '\n') {
+      continue;
+    } else if (lineToWrite[i] === '\t') {
+      continue;
+    } else {
+      filteredLineToWrite += lineToWrite[i];
+    }
+  }
+
+  const wordsToFilter:string[] = filteredLineToWrite.split(' ');
+
+  // Filtering blank spaces or empty strings.
+  const words = wordsToFilter.filter((word:string) => {return word !== '';});
+  for(let i = 0; i < words.length; i++) {
+    const totalLineLength = indentation + writtenLine.length + words[i].length;
+    if (i === words.length - 1) { // Last iteration
+      if (totalLineLength < anchorPrint) {
+        /*anchorPrint + 1: The addition represents the space between words.*/
+        text = text + ' '.repeat(indentation) + writtenLine + words[i];
+      } else {
+        text = text + '\n' + ' '.repeat(indentation) + writtenLine + '\n' + ' '.repeat(indentation) + words[i];
+      }
+    } else {
+      if (totalLineLength + 1 < anchorPrint) {
+        /*anchorPrint + 1: It represents a 'space' between words.*/
+        writtenLine = writtenLine + words[i] + ' ';
+      } else {
+        text = text  + ' '.repeat(indentation) + writtenLine + '\n';
+        writtenLine = words[i] + ' ';
+      }
+    }
+  }
+
+  if (enterAtTheEnd) {
+    text = text + '\n';
+  } else {
+    /* Do nothing*/
+  }
+
+  return text;
+}
+
+export function getTicketSale(
+    productInventory: Map<string, ProductInventoryDTO&ProductDTO>,
+    productsDevolution:RouteTransactionDescriptionDTO[],
+    productsReposition:RouteTransactionDescriptionDTO[],
+    productsSale: RouteTransactionDescriptionDTO[],
+    routeTransacion?:RouteTransactionDTO,
+    storeTransaction?:StoreDTO
+) {
+  // Variable to keep the text of the ticket .
+  let ticket = '\n';
+
+  // Getting Subtotals of each concept
+  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[], productInventory);
+  let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[], productInventory);
+  let subtotalSaleProduct = getProductDevolutionBalance(productsSale,[], productInventory);
+  let productDevolutionBalance = '$0';
+  let greatTotal = '$0';
+  let cashReceived = '$0';
+  let greatTotalNumber = subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
+
+  /*
+    Variables for setting the format of the ticket.
+    Note: The anchor of the printer that is used for the application is 58mm equivalent to 32
+    characters
+  */
+
+  let showTotalPosition:number = 26; // 32 - 26 = $99999 (maximum possible number to print)
+
+  // Variables for header information
+  let vendor:string = 'No disponible';
+  let status:string = 'No disponible';
+  let storeName:string = 'No disponible';
+  let routeTransactionDate:string = 'No disponible';
+  let paymentMethodName:string = 'No disponible';
+
+  // Formating totals of ticket.
+  if (subtotalProductReposition - subtotalProductDevolution < 0) {
+    productDevolutionBalance = '-$' + ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+  } else {
+    productDevolutionBalance = '$' + (subtotalProductReposition - subtotalProductDevolution).toString();
+  }
+
+  if (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution < 0) {
+    greatTotal = '-$' + ((subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+  } else {
+    greatTotal = '$' + (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution).toString();
+  }
+
+
+  // If there is information about the transaction, store and vendor, add it to the ticket
+  if (routeTransacion !== undefined) {
+    const { state, date, payment_method } = routeTransacion;
+    if (state === ROUTE_TRANSACTION_STATE.ACTIVE) {
+      status = 'Completada';
+    } else {
+      status = 'Cancelada';
+    }
+
+    routeTransactionDate = format_date_to_UI_format(date);
+
+    if (routeTransacion.cash_received < 0) {
+      cashReceived = '$' + (routeTransacion.cash_received * -1).toString();
+    } else {
+      cashReceived = '$' + (routeTransacion.cash_received).toString();
+    }
+
+    paymentMethodName = getNamePaymentMethodById(payment_method);
+
+  }
+
+  if (storeTransaction !== undefined) {
+    const { store_name } = storeTransaction;
+    storeName = store_name !== null ? store_name : 'No disponible'; 
+  }
+
+  // if (vendorTransaction !== undefined) {
+  //   vendor = vendorTransaction.name;
+  // }
+
+  // Header of the ticket
+  ticket += getTicketLine('Ferdis', true, 13);
+  ticket += getTicketLine(`Fecha: ${routeTransactionDate}`, true);
+  ticket += getTicketLine(`Vendedor: ${vendor}`, true);
+  ticket += getTicketLine(`Estatus: ${status}`, true);
+  ticket += getTicketLine(`Cliente: ${storeName}`, true);
+  ticket += getTicketLine('', true);
+
+  // Body of the ticket
+  // Writing devolution products section
+  ticket += getTicketLine('Devolucion de producto', true, 5);
+  ticket += getTicketLine('Cantidad Producto Precio Total',true);
+  ticket += getListSectionTicket(productInventory, productsDevolution, 'No hubo movmimentos en la seccion de mermas');
+  if (productsDevolution.length > 0) {
+    ticket += getTicketLine(`Valor total de devolucion: $${subtotalProductDevolution}`,true);
+  }
+  ticket += getTicketLine('', true);
+
+  // Writing reposition product section
+  ticket += getTicketLine('Reposicion de producto', true, 5);
+  ticket += getTicketLine('Cantidad Producto Precio Total',true);
+  ticket += getListSectionTicket(productInventory, productsReposition, 'No hubo movmimentos en la seccion de reposiciones');
+  if (productsReposition.length > 0) {
+    ticket += getTicketLine(`Valor total de reposicion: $${subtotalProductReposition}`,true);
+  }
+  ticket += getTicketLine('', true);
+
+  // Writing product of the sale section
+  ticket += getTicketLine('Venta', true, 13);
+  ticket += getTicketLine('Cantidad Producto Precio Total',true);
+  ticket += getListSectionTicket(productInventory, productsSale, 'No hubo movmimentos en la seccion de ventas');
+  if (productsSale.length > 0) {
+    ticket += getTicketLine('Total venta:', false); // 12-lenght characters string
+    ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 12));
+  } else {
+    ticket += getTicketLine('',true);
+  }
+
+  // Summarizing Section
+  ticket += getTicketLine('--------------------------------',true);
+
+  ticket += getTicketLine('Valor concepto devolucion:', false); // 26-lenght characters string
+  ticket += getTicketLine(`-$${subtotalProductDevolution}`,true, (showTotalPosition - 26));
+
+  ticket += getTicketLine('Valor concepto reposicion:',false); // 26-lenght characters string
+  ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 26));
+
+  ticket += getTicketLine('Balance devolucion de productos:',false);
+  ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 10));
+
+  ticket += getTicketLine('Venta total:',false); // 11-lenght characters string
+  ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 12));
+
+  ticket += getTicketLine('Gran total:',false); // 11-lenght characters string
+  ticket += getTicketLine(`${greatTotal}`,true, (showTotalPosition - 11));
+
+  if (routeTransacion !== undefined) {
+    ticket += getTicketLine(`Metodo de pago (${paymentMethodName}):`,false);
+    ticket += getTicketLine(`${cashReceived}`,true, (showTotalPosition - 32));
+    ticket += getTicketLine('Cambio:',false);
+    ticket += getTicketLine(`$${calculateChange(greatTotalNumber, routeTransacion.cash_received)}`,true, (showTotalPosition - 7));
+  }
+
+  // Finishing ticket
+  ticket += '\n\n';
+
+  return ticket;
+}
+
+export function getListSectionTicket(productInventory: Map<string, ProductInventoryDTO&ProductDTO>, routeTransactionMovement:RouteTransactionDescriptionDTO[], messageNoMovements?:string|undefined) {
+  let sectionTicket = '';
+  if (routeTransactionMovement.length > 0) {
+    routeTransactionMovement.forEach(movement => {
+      const { id_product_inventory, amount, price_at_moment } = movement;
+
+
+      if (!productInventory.has(id_product_inventory)) return;
+
+      const productInfo = productInventory.get(id_product_inventory)!;
+
+      const { product_name } = productInfo
+
+      let amountMovement:   string = `${amount}`;
+      let productName:  string = `${capitalizeFirstLetter(product_name)}`;
+      let price:  string = `$${ price_at_moment }`;
+      let total:  string = `$${amount * price_at_moment}`;
+
+      /*
+        At least for sale ticket section, the indentation is calculated according with the headers of the list 
+        on which are displayed.
+        The issue is that what is going to be displayed before will affect into the indentation. So that means
+        that the words that will be displayed must be subtracted to the next word indentation.
+      */
+
+      // First section
+      sectionTicket = sectionTicket + getTicketLine(amountMovement, false); // Cantidad
+      sectionTicket = sectionTicket + getTicketLine(productName, true, (9 - amountMovement.length)); // Producto
+
+      // Second section
+      sectionTicket = sectionTicket + getTicketLine(price, false, 18); // Price
+      sectionTicket = sectionTicket + getTicketLine(total, true, (8 - price.length)); // Total
+    });
+  } else {
+    if (messageNoMovements !== undefined) {
+      sectionTicket += getTicketLine(messageNoMovements,true, 0);
+    } else {
+      sectionTicket += getTicketLine('No hubieron movimientos en este concepto',true, 0);
+    }
+  }
+
+  return sectionTicket;
+}
+
+
 
 /*
     TODO: Verify if this function will be used in the future
