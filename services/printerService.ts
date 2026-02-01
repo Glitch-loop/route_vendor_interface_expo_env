@@ -3,10 +3,32 @@
 import { Alert } from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-classic';
 import Toast from 'react-native-toast-message';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 let connectedPritner:BluetoothDevice|undefined;
 const deviceClassCode: number = 1664;
 const majorClassCode: number = 1536;
+
+export async function ensureBluetoothPermissions() {
+  if (Platform.OS !== 'android') return true;
+
+  // Android 12+ (API 31+)
+  const isAndroid12Plus = Platform.Version >= 31;
+  const perms12 = [
+    PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+  ];
+
+  // Older Android: sometimes still need location for discovery
+  const legacyPerms = [
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  ];
+
+  const toRequest = isAndroid12Plus ? perms12 : legacyPerms;
+
+  const results = await PermissionsAndroid.requestMultiple(toRequest);
+  return Object.values(results).every(r => r === PermissionsAndroid.RESULTS.GRANTED);
+}
 
 export async function getBluetoothPermissionStatus():Promise<boolean> {
   return await RNBluetoothClassic.isBluetoothEnabled();
@@ -17,7 +39,9 @@ export async function getPrinterConnectionStatus():Promise<boolean> {
   let statusConnection = false;
   let connectedDevices:BluetoothDevice[]
     = await RNBluetoothClassic.getConnectedDevices();
-
+    // console.log("This: ", await RNBluetoothClassic.requestBluetoothEnabled());
+    console.log("Has persmission: ", await getBluetoothPermissionStatus());
+  console.log("Bonded devices: ", await RNBluetoothClassic.getBondedDevices())
   console.log("Connected devices:", connectedDevices);
 
   for (let i = 0; i < connectedDevices.length; i++) {

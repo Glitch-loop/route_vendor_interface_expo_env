@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
@@ -17,7 +17,7 @@
     },
     "android": {
       "experimental" : {
-        "useNewArchitecture": false
+        "useNewArchitecture": true
       },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -37,6 +37,13 @@
           "AIRMapWMSTile"
         ]
       },
+      "permissions": [
+        "android.permission.BLUETOOTH", 
+        "android.permission.BLUETOOTH_ADMIN", 
+        "android.permission.BLUETOOTH_CONNECT", 
+        "android.permission.BLUETOOTH_SCAN", 
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "package": "com.renet_perez.route_vendor_interface",
       "runtimeVersion": "1.0.0",
       "config": {

@@ -1,8 +1,15 @@
-import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+// Libraries
+import { injectable, inject } from "tsyringe";
+
+// Interfaces
 import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
 import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
+
+// Use cases
 import { TOKENS } from "@/src/infrastructure/di/tokens";
-import { injectable, inject } from "tsyringe";
+
+// Utils
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 
 /*
     There are 4 types of inventories:

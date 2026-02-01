@@ -7,12 +7,10 @@ import { Router, useRouter } from 'expo-router';
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/store';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 
 // Interfaces
 import {
-  IProductInventory,
-  IResponse,
-  IRouteTransaction,
   IStore,
 } from '../../interfaces/interfaces';
 
@@ -24,24 +22,15 @@ import DangerButton from '@/components/generalComponents/DangerButton';
 import ActionDialog from '@/components/ActionDialog';
 import ConfirmationBand from '@/components/ConfirmationBand';
 
-// Embedded Database
-import {
-  deleteSyncQueueRecord,
-  insertSyncQueueRecord,
-  updateProducts,
-  updateTransaction,
-} from '../../queries/SQLite/sqlLiteQueries';
-
 // Services
 import { printTicketBluetooth } from '../../services/printerService';
 import Toast from 'react-native-toast-message';
-import { apiResponseStatus } from '../../utils/apiResponse';
-import { createSyncItem } from '../../utils/syncFunctions';
-import { syncingRecordsWithCentralDatabase } from '../../services/syncService';
 
-// Use case
+// Use cases
 import { container as container_di } from '@/src/infrastructure/di/container';
-import CancelRouteTransaction from '@/src/application/commands/CancelRouteTransactionUseCase';
+import CancelRouteTransactionUseCase from '@/src/application/commands/CancelRouteTransactionUseCase';
+import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 
 // DTO
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
@@ -50,14 +39,10 @@ import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
 // Utils
-import { getTicketSale } from '../../utils/saleFunction';
-import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import CancelRouteTransactionUseCase from '@/src/application/commands/CancelRouteTransactionUseCase';
-import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
-import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+import { getTicketSale } from '../../utils/saleFunction';
+import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 
 
 

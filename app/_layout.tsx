@@ -27,7 +27,6 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 async function appSetUp() {
-    console.log("Rootlayout Initialization started");
     // const sqliteDataSource: SQLiteDataSource = diContainer.resolve(TOKENS.SQLiteDataSource);
     // await sqliteDataSource.initialize(); // Starting local database
 

@@ -99,7 +99,6 @@ const routeOperationMenuLayout = () => {
       Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Intenta reiniciar la aplicación'});
       return;
     }
-    console.log("Finish date: ", workdayInformationReduxState);
     const { finish_date } = workdayInformationReduxState;
     if (finish_date === null) setIsDayWorkClosed(false); // User might make operations
     else setIsDayWorkClosed(true); // User cannot make more operations

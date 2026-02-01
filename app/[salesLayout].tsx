@@ -3,14 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Pressable, Text } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
-import { useGlobalSearchParams, useLocalSearchParams } from 'expo-router/build/hooks';
+import { useLocalSearchParams } from 'expo-router/build/hooks';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-
-// Interfaces and enums
-import { IProductInventory } from '../interfaces/interfaces';
 
 // Utils
 
