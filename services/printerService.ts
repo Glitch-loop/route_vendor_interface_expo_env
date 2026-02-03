@@ -1,6 +1,4 @@
 // Libraries
-//import ThermalPrinterModule from 'react-native-thermal-printer';
-import { Alert } from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-classic';
 import Toast from 'react-native-toast-message';
 import { PermissionsAndroid, Platform } from 'react-native';
@@ -40,9 +38,9 @@ export async function getPrinterConnectionStatus():Promise<boolean> {
   let connectedDevices:BluetoothDevice[]
     = await RNBluetoothClassic.getConnectedDevices();
     // console.log("This: ", await RNBluetoothClassic.requestBluetoothEnabled());
-    console.log("Has persmission: ", await getBluetoothPermissionStatus());
-  console.log("Bonded devices: ", await RNBluetoothClassic.getBondedDevices())
-  console.log("Connected devices:", connectedDevices);
+  //   console.log("Has persmission: ", await getBluetoothPermissionStatus());
+  // console.log("Bonded devices: ", await RNBluetoothClassic.getBondedDevices())
+  // console.log("Connected devices:", connectedDevices);
 
   for (let i = 0; i < connectedDevices.length; i++) {
     if (connectedDevices[i].deviceClass !== undefined) {

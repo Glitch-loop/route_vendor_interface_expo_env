@@ -19,6 +19,7 @@ import {
 // Components
 import ActionDialog from '../ActionDialog';
 import Toast from 'react-native-toast-message';
+import RNBluetoothClassic, { BluetoothDevice, BluetoothEventListener } from 'react-native-bluetooth-classic';
 
 const BluetoothButton = () => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -78,6 +79,9 @@ const BluetoothButton = () => {
   }, [isBeingConnected]);
 
   const handlerConnectPrinter = async () => {
+    RNBluetoothClassic.onDeviceDiscovered((device) => {
+            console.log("Discovered device: ", device);
+        });
     try {
       await ensureBluetoothPermissions();
       if (isBeingConnected === false){ // Avoiding multiple click from the user

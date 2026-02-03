@@ -37,4 +37,6 @@ export const TOKENS = {
     DateService: Symbol('DateService'),
     SQLiteDatabaseService: Symbol('SQLiteDatabaseService'),
     LocalDatabaseService: Symbol('LocalDatabaseService'),
+    PlataformService: Symbol('PlataformService'),
+    PrinterService: Symbol('PrinterService'),
 }
