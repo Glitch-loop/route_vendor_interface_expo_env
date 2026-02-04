@@ -6,13 +6,10 @@ import { Router, useRouter } from 'expo-router';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../redux/store';
+import { AppDispatch, RootState } from '@/redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 
 // Interfaces
-import {
-  IStore,
-} from '../../interfaces/interfaces';
 
 // Components
 import SectionTitle from '@/components/SalesLayout/SectionTitle';
@@ -22,8 +19,7 @@ import DangerButton from '@/components/generalComponents/DangerButton';
 import ActionDialog from '@/components/ActionDialog';
 import ConfirmationBand from '@/components/ConfirmationBand';
 
-// Services
-import { printTicketBluetooth } from '../../services/printerService';
+// UI - components
 import Toast from 'react-native-toast-message';
 
 // Use cases
