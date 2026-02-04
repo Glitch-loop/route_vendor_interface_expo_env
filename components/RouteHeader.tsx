@@ -13,8 +13,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 
 // Components
-import GoButton from './generalComponents/GoButton';
-import BluetoothButton from './generalComponents/BluetoothButton';
+import GoButton from './shared-components/GoButton';
+import BluetoothButton from './bluetooth/BluetoothButton';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import { DAYS_ARRAY } from '@/src/core/constants/Days';
 
@@ -40,7 +40,7 @@ const RouteHeader = ({onGoBack}:{onGoBack:any}) => {
           </Text>
         }
       </View>
-      {/* <BluetoothButton /> */}
+      <BluetoothButton />
     </View>
   );
 };

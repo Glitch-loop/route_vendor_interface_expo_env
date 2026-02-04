@@ -9,8 +9,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 
 // Components
-import GoButton from '@/components/generalComponents/GoButton';
-import BluetoothButton from '@/components/generalComponents/BluetoothButton';
+import GoButton from '@/components/shared-components/GoButton';
+import BluetoothButton from '@/components/bluetooth/BluetoothButton';
 import { getColorContextOfStore, getStoreFromContext } from '../../utils/routesFunctions';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 

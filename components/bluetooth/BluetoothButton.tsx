@@ -215,7 +215,6 @@ const BluetoothButton = () => {
 
       setRenderingComponent(false);
       setIsBeingConnected(false);
-      setIsConnected(false);
     } catch (error) {
       Toast.show({type: 'error',
         text1:'No se ha podido desconectar la impresora',
@@ -244,7 +243,10 @@ const BluetoothButton = () => {
         
       }
       <Pressable
-        style={tw`bg-blue-700 py-6 px-6 rounded-full`}
+        style={({pressed}) => [
+          tw`bg-blue-700 py-6 px-6 rounded-full`,
+          pressed ? tw`bg-blue-800` : tw`bg-blue-600`,
+        ]}
         onPress={handleOnAccessBleMenu}>
         <Icon name={'print'}
           style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
