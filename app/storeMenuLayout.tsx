@@ -20,7 +20,7 @@ import RouteMap from '@/components/RouteMap';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
+import { AppDispatch, RootState } from '@/redux/store';
 import { setStores } from '@/redux/slices/storesSlice';
 
 // Mappers and DTOs
@@ -30,7 +30,6 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 
 // Use cases
-import CancelRouteTransactionUseCase from '@/src/application/commands/CancelRouteTransactionUseCase';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
 
@@ -63,30 +62,6 @@ function buildAddress(store:StoreDTO) {
   return address;
 }
 
-function displayingClientInformation(store:IStore) {
-  let ownerStoreInformation = '';
-  if ((store.owner_name !== '' && store.owner_name !== null)  && (store.cellphone !== '' && store.cellphone !== null)) {
-    ownerStoreInformation = store.owner_name + ' | ' + store.cellphone;
-  } else if ((store.owner_name !== ''
-            && store.owner_name !== null
-            && store.owner_name !== undefined) &&
-            (store.cellphone === ''
-            || store.owner_name === null
-            || store.owner_name === undefined)) {
-    ownerStoreInformation = store.owner_name;
-  } else if ((store.owner_name === ''
-            || store.owner_name === null
-            || store.owner_name === undefined) &&
-            (store.cellphone !== ''
-            && store.cellphone !== null
-            && store.cellphone !== undefined)){
-    ownerStoreInformation = store.cellphone;
-  } else {
-    ownerStoreInformation = 'No disponible';
-  }
-
-  return ownerStoreInformation;
-}
 
 const INITIAL_REGION = {
   latitude: 20.641640381312676,
