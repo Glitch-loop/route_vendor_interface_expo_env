@@ -204,9 +204,7 @@ export class BluetoothPrinterService implements PrinterService {
     }
 
     async discoverDevice(cb: (device: BluetoothDeviceEvent) => void) {
-        console.log("Setting up Bluetooth environment for discovery...");
         if (this.onDiscoverSubscription === null) {
-            console.log("Starting discovery for devices...");
             RNBluetoothClassic.startDiscovery();
             this.onDiscoverSubscription = RNBluetoothClassic.onDeviceDiscovered((deviceEvent: BluetoothDeviceEvent) => { 
                 const { device } = deviceEvent;

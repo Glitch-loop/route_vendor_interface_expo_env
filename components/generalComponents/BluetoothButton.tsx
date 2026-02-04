@@ -99,10 +99,9 @@ const BluetoothButton = () => {
   const handleOnAccessBleMenu = async () => {
     console.log("Accessing BLE menu");
 
-    setPairedPrinters(await printerService.getBondedPrinters());
+    setPairedPrinters(await getPairedPrinters(true));
     printerService.discoverDevice(
       (device: BluetoothDeviceEvent) => {
-        console.log("Discovered device: ", device);
         // Functional update to avoid stale closure and dedupe by address
         setDiscoveredPrinters((prevDevices) => {
           const exists = prevDevices.some(d => d.device.address === device.device.address);
@@ -153,6 +152,27 @@ const BluetoothButton = () => {
     setShowDialog(false);
   };
 
+  // Auxiliar functions
+  const getPairedPrinters = async (excludeConnectedPrinter: boolean): Promise<BluetoothDevice[]> => {
+    // If possible, exclude the currently connected printer from the list
+    const bondedPrinters: BluetoothDevice[] = await printerService.getBondedPrinters();
+    let printersToReturn: BluetoothDevice[] = bondedPrinters;
+    
+    if (excludeConnectedPrinter === true) {
+      if (connectedPrinter === null) {
+        printersToReturn = bondedPrinters;
+      } else {
+        printersToReturn = bondedPrinters.filter(p => p.address !== connectedPrinter.address);
+      }
+    } else {
+      printersToReturn = bondedPrinters;
+    }
+    
+    
+    return printersToReturn;
+  };
+
+  // Handlers
   const handlePairDevice = async (deviceEvent: BluetoothDeviceEvent) => {
     console.log("Pairing device: ", deviceEvent);
     const { device } = deviceEvent;
@@ -161,7 +181,7 @@ const BluetoothButton = () => {
 
       if (result) {
 
-        setPairedPrinters(await printerService.getBondedPrinters())
+        setPairedPrinters(await getPairedPrinters(true));
 
         setDiscoveredPrinters(discoveredPrinters.filter(d => d.device.address !== device.address));
 
@@ -191,8 +211,6 @@ const BluetoothButton = () => {
       return;
     }
     try {
-        
-
         Toast.show({type: 'info',
         text1:'Iniciando conexión con la impresora',
         text2: 'Puede tomar unos segundos...'});
@@ -224,7 +242,7 @@ const BluetoothButton = () => {
           Toast.show({type: 'success',
           text1:'Impresora removida del registro',
           text2: 'Puedes volver a registrarla después.'});
-          setPairedPrinters(await printerService.getBondedPrinters())
+          setPairedPrinters(await getPairedPrinters(true));
           // Clear connected state if this device was connected
           setConnectedPrinter(prev => (prev && prev.address === device.address) ? null : prev);
         } else {
@@ -240,10 +258,6 @@ const BluetoothButton = () => {
     }
   }
 
-  const handleCloseDialog = () => {
-    setShowListPrintersDialog(false);
-  }
-
   const handleDisconnectConnectedDevice = async (device: BluetoothDevice) => {
     try {
       Toast.show({type: 'info',
@@ -252,7 +266,7 @@ const BluetoothButton = () => {
       const result = await printerService.disconnectDevice(device);
       if (result) {
         setConnectedPrinter(null);
-        setPairedPrinters(await printerService.getBondedPrinters());
+        setPairedPrinters(await getPairedPrinters(false));
         Toast.show({type: 'success',
           text1:'Impresora desconectada',
           text2: 'Puedes reconectarla cuando lo necesites.'});
@@ -268,6 +282,10 @@ const BluetoothButton = () => {
     }
   }
 
+  const handleCloseDialog = () => {
+    printerService.stopDiscoverDevice();
+    setShowListPrintersDialog(false);
+  }
   return (
     <View>
       { showListPrintersDialog &&
@@ -283,14 +301,6 @@ const BluetoothButton = () => {
         />
         
       }
-        {/* <ActionDialog
-          visible={showDialog}
-          onAcceptDialog={handlerDisconnectPrinter}
-          onDeclinedialog={handlerCancelDisconnectDevice}>
-          <Text>
-            ¿Quieres desconetar el dispositivo de la impresora?
-          </Text>
-        </ActionDialog> */}
       <Pressable
         style={tw`bg-blue-700 py-6 px-6 rounded-full`}
         onPress={handleOnAccessBleMenu}>
