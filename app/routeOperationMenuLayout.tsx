@@ -55,6 +55,7 @@ import { container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
+import ProjectButton from '@/components/sharedComponents/ProjectButton';
 
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
@@ -339,19 +340,19 @@ const routeOperationMenuLayout = () => {
           <View style={tw`h-32`}/>
         </ScrollView>
         {/* Actions menu */}
-        <View style={tw`w-full absolute mb-3 bottom-0 left-0 right-0 bg-amber-300 p-4 flex flex-row justify-around items-center`}>
-            <Pressable
+        <View style={tw`w-full absolute bottom-0 left-0 right-0 bg-amber-300 p-4 flex flex-row justify-center items-center`}>
+            <ProjectButton
+              title={'Restock de producto'}
               onPress={() => {
-                if (isDayWorkClosed) {
-                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-                } else {
+                if (isDayWorkClosed) Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+                else {
                   // createNewClient();
                 }
               }}
-              style={tw`bg-green-500 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}>Crear nuevo cliente</Text>
-            </Pressable>
-            <Pressable
+              buttonVariant='success'
+              buttonStyle={tw`h-full px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}/>
+            <ProjectButton
+              title={'Restock de producto'}
               onPress={() => {
                 if (isDayWorkClosed) {
                   Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
@@ -359,27 +360,14 @@ const routeOperationMenuLayout = () => {
                   onRestockInventory();
                 }
               }}
-
-              // style={tw`bg-orange-500 px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center`}
-            
-                // android_ripple={{ color: tw.color('orange-700'), borderless: false }}
-                style={({ pressed }) =>
-                  tw.style(
-                    'px-4 py-3 mx-1 rounded flex flex-row basis-1/3 justify-center bg-orange-500',
-                    pressed ? tw.color('bg-orange-600') : tw.color('bg-orange-500') 
-                  )
-                }
-              >
-              <Text style={tw`text-sm text-center`}>Restock de producto</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                if (isDayWorkClosed) onShowDialog();
-                else onFinishInventory();
-              }}
-              style={tw`bg-indigo-400 px-4 py-3 rounded flex flex-row basis-1/3 justify-center`}>
-              <Text style={tw`text-sm text-center`}> { isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }</Text>
-            </Pressable>
+              buttonVariant='warning'
+              buttonStyle={tw`h-full px-4 py-3 mx-2 rounded flex flex-row basis-1/3 justify-center`}/>
+            <ProjectButton
+              title={ isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
+              onPress={() => { if (isDayWorkClosed) onShowDialog(); else onFinishInventory();}}
+              buttonVariant='indigo'
+              buttonStyle={tw`h-full px-4 py-3 rounded flex flex-row basis-1/3 justify-center items-center`}
+            />
         </View>
       </View>
     </SafeAreaView>

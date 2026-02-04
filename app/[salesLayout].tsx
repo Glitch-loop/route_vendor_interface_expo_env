@@ -7,9 +7,7 @@ import { useLocalSearchParams } from 'expo-router/build/hooks';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
-
-// Utils
+import { AppDispatch, RootState } from '@/redux/store';
 
 // UI Components
 import Toast from 'react-native-toast-message';
@@ -22,16 +20,6 @@ import PaymentProcess from '@/components/SalesLayout/PaymentProcess';
 import MenuHeader from '@/components/generalComponents/MenuHeader';
 import ActionButton from '@/components/SalesLayout/ActionButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-
-// Services
-import { printTicketBluetooth } from '../services/printerService';
-
-
-// Controllers
-import { 
-  getInitialInventoryParametersFromRoute, 
-} from '@/controllers/SaleController';
 
 // Mapper and DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
