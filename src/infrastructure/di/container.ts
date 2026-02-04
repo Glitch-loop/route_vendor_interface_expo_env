@@ -40,12 +40,16 @@ import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositor
 import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
 import { DateService } from '@/src/infrastructure/services/DateService'
 import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatabaseService';
+import { AndroidPlatformPermissions } from '@/src/infrastructure/services/AndroidPlataformPermissions';
 
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
+import { BluetoothPrinterService } from '../services/BluetoothPrinterService';
+import { PrinterService } from '@/src/core/interfaces/PrinterService';
 
 
 // Register DataSources as SINGLETON (one instance for entire app)
@@ -54,7 +58,7 @@ container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, Supab
 container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource, 
     { useClass: SQLiteDataSource },
     { lifecycle: Lifecycle.Singleton }
-)
+);
 
 // DTOs
 container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
@@ -62,7 +66,11 @@ container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
 // Services
 container.register<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
     useClass: SQLiteDatabaseService
-})
+});
+
+container.register<PlatformPermissionsService>(TOKENS.PlataformService, {
+    useClass: AndroidPlatformPermissions
+});
 
 container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
 container.registerSingleton<IDateService>(TOKENS.DateService, DateService);

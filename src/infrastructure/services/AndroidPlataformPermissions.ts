@@ -3,7 +3,7 @@ import { PlatformPermissionsService } from "@/src/core/interfaces/PlatformPermis
 import { Permission, PermissionsAndroid, Platform } from "react-native";
 
 @injectable()
-export default class AndroidPlatformPermissions implements PlatformPermissionsService {
+export class AndroidPlatformPermissions implements PlatformPermissionsService {
     async requestPermissions(permissions: Permission[]): Promise<boolean> {
         if (Platform.OS !== 'android') throw new Error('AndroidPlatformPermissions can only be used on Android platform.');
 
@@ -21,7 +21,4 @@ export default class AndroidPlatformPermissions implements PlatformPermissionsSe
         const isGranted = await PermissionsAndroid.check(permission);
         return !isGranted;
     }
-
-    
-
 }
