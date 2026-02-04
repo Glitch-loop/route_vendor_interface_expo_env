@@ -23,7 +23,7 @@ import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
 // UI
-import RouteCard from '@/components/RouteCard';
+import RouteCard from '@/components/route-operation-menu/RouteCard';
 import MenuHeader from '@/components/generalComponents/MenuHeader';
 import TypeOperationItem from '@/components/TypeOperationItem';
 import { SafeAreaView } from 'react-native-safe-area-context';

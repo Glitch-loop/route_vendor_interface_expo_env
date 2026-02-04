@@ -4,7 +4,7 @@ import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
 // Components
-import GoButton from './generalComponents/GoButton';
+import GoButton from '../generalComponents/GoButton';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 
