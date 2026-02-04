@@ -10,6 +10,7 @@ import RNBluetoothClassic, { BluetoothDevice, BluetoothDeviceEvent, BluetoothEve
 export class BluetoothPrinterService implements PrinterService {
     private deviceConnected: BluetoothDevice | null = null;
     private onDiscoverSubscription: BluetoothEventSubscription | null = null;
+    private onDisconnectSubscription: BluetoothEventSubscription | null = null;
     private readonly deviceClassCode: number = 1664; // Example device class code for printers
     private readonly majorClassCode: number = 1536; // Example major class code for peripherals
 
@@ -95,23 +96,21 @@ export class BluetoothPrinterService implements PrinterService {
     }
 
     async discoverAndConnectToPrinter(deviceCandidate: BluetoothDeviceEvent): Promise<void> {
-        console.log("Discovered device: ", deviceCandidate);
-        const { device } = deviceCandidate;
-        const { deviceClass, address, bonded } = device
-        if (deviceClass !== undefined && bonded !== undefined) {
-            const dClass:number = deviceClass.deviceClass;
-            const majorClass:number = deviceClass.majorClass;
+        const anyDevice: any = deviceCandidate.device;
+        const bonded = anyDevice?.bonded as boolean | undefined;
+        const cls = anyDevice?.deviceClass;
+        const dClass: number | undefined = cls && typeof cls === 'object' ? cls.deviceClass : undefined;
+        const majorClass: number | undefined = cls && typeof cls === 'object' ? cls.majorClass : undefined;
 
+        if (bonded !== undefined && dClass !== undefined && majorClass !== undefined) {
             if (dClass === this.deviceClassCode && majorClass === this.majorClassCode) {
-                await this.establishConnectionToPrinter(device);
+                await this.establishConnectionToPrinter(anyDevice as BluetoothDevice);
             }
         }
     }
 
     async establishConnectionToPrinter(deviceToConnect: BluetoothDevice): Promise<void> {
-        console.log("Establishing connection")
         const { address } = deviceToConnect;
-        console.log("Device to connect: ", address);
         const paired = await RNBluetoothClassic.pairDevice(address);
         const device = await RNBluetoothClassic.connectToDevice(address)
         // console.log("Paired: ", paired);
@@ -178,8 +177,8 @@ export class BluetoothPrinterService implements PrinterService {
         const { address } = device;
         await this.setBluetoothEnvironment();
         const result = await RNBluetoothClassic.unpairDevice(address);
-        RNBluetoothClassic.cancelDiscovery();
-        RNBluetoothClassic.startDiscovery();
+        await RNBluetoothClassic.cancelDiscovery();
+        await RNBluetoothClassic.startDiscovery();
 
         return result;
     }
@@ -191,29 +190,41 @@ export class BluetoothPrinterService implements PrinterService {
         return !(await RNBluetoothClassic.isDeviceConnected(address));
     }
 
+    async disconnectPrinterListener(cb: (device: BluetoothDeviceEvent) => void): Promise<void> {
+        // Listen for any device disconnect; UI can filter by address if needed
+        if (this.onDisconnectSubscription === null) {
+            this.onDisconnectSubscription = RNBluetoothClassic.onDeviceDisconnected((deviceEvent: BluetoothDeviceEvent) => {
+                cb(deviceEvent);
+            });
+        }
+    }
+
+    async stopDisconnectPrinterListener(): Promise<void> {
+        if (this.onDisconnectSubscription !== null) {
+            this.onDisconnectSubscription.remove();
+            this.onDisconnectSubscription = null;
+        }
+    }
+    
     async getBondedPrinters(): Promise<BluetoothDevice[]> {
         await this.setBluetoothEnvironment();
         const bondedDevices:BluetoothDevice[] = await RNBluetoothClassic.getBondedDevices();
-
-        const bondedPrinters: BluetoothDevice[] = bondedDevices.filter((device: BluetoothDevice) => {
-            const {deviceClass, majorClass} = device.deviceClass;
-            return deviceClass === this.deviceClassCode && majorClass === this.majorClassCode;
-        });
-
+        const bondedPrinters: BluetoothDevice[] = bondedDevices.filter((device: BluetoothDevice) => { return this.determineIfDeviceIsPrinter(device); });
         return bondedPrinters;
     }
 
-    async discoverDevice(cb: (device: BluetoothDeviceEvent) => void) {
+    async discoverPrinters(cb: (device: BluetoothDeviceEvent) => void) {
         if (this.onDiscoverSubscription === null) {
-            RNBluetoothClassic.startDiscovery();
-            this.onDiscoverSubscription = RNBluetoothClassic.onDeviceDiscovered((deviceEvent: BluetoothDeviceEvent) => { 
-                const { device } = deviceEvent;
-                const { bonded } = device;
-                const {deviceClass, majorClass} = device.deviceClass;
+            await RNBluetoothClassic.cancelDiscovery();
+            await RNBluetoothClassic.startDiscovery();
+            this.onDiscoverSubscription = RNBluetoothClassic.onDeviceDiscovered(async (deviceEvent: BluetoothDeviceEvent) => { 
+                const anyDevice: any = deviceEvent.device;
+                const bonded = anyDevice?.bonded as boolean | undefined;
+                
+
 
                 if (bonded !== undefined) {
-                    if (!bonded && (deviceClass === this.deviceClassCode || majorClass === this.majorClassCode)) {
-                        console.log("Discovered printer device: ", bonded);
+                    if (!bonded && this.determineIfDeviceIsPrinter(deviceEvent.device)) {
                         cb(deviceEvent); 
                     }
                 }
@@ -222,12 +233,33 @@ export class BluetoothPrinterService implements PrinterService {
         }
     }
 
-    async stopDiscoverDevice(): Promise<void> {
+    async stopDiscoverPrinters(): Promise<void> {
         await this.setBluetoothEnvironment();
         if (this.onDiscoverSubscription !== null) {
+            await RNBluetoothClassic.cancelDiscovery();
             this.onDiscoverSubscription.remove();
             this.onDiscoverSubscription = null;
         }
     }
     
+    async getConnectedPrinter(): Promise<BluetoothDevice | null> {
+        
+        const connectedDevices: BluetoothDevice[] = await RNBluetoothClassic.getConnectedDevices();
+        let connectedPrinter: BluetoothDevice | null = null;
+        for (const connectedDevice of connectedDevices) {
+            if (this.determineIfDeviceIsPrinter(connectedDevice)) {
+                connectedPrinter = connectedDevice;
+                break;
+            }
+        }
+
+        return connectedPrinter;
+    }
+
+    private determineIfDeviceIsPrinter(device: BluetoothDevice | BluetoothNativeDevice): boolean {
+        const cls: any = (device as any)?.deviceClass;
+        const dClass: number | undefined = cls && typeof cls === 'object' ? cls.deviceClass : undefined;
+        const majorClass: number | undefined = cls && typeof cls === 'object' ? cls.majorClass : undefined;
+        return dClass === this.deviceClassCode || majorClass === this.majorClassCode;
+    }
 }

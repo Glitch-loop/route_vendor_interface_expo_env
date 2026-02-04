@@ -37,11 +37,12 @@ const BluetoothButton = () => {
   const [isBeingConnected, setIsBeingConnected] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [showListPrintersDialog, setShowListPrintersDialog] = useState<boolean>(false);
-  const [renderingComponent, setRenderingComponent] = useState<boolean>(true);
+  const [renderingComponent, setRenderingComponent] = useState<boolean>(false);
   
   const [pairedPrinters, setPairedPrinters] = useState<BluetoothDevice[]>([]);
   const [discoveredPrinters, setDiscoveredPrinters] = useState<BluetoothDeviceEvent[]>([]);
   const [connectedPrinter, setConnectedPrinter] = useState<BluetoothDevice | null>(null);
+  const connectedPrinterRef = useRef<BluetoothDevice | null>(null);
 
 
   // const { 
@@ -93,65 +94,20 @@ const BluetoothButton = () => {
   // }, [isBeingConnected]);
 
   useEffect(() => {
-    // printerService.connectToPrinter();
-  });
+    createListenerForDisconnectedDevice();
+    initializeBluetoohComponent();
+
+    return () => {
+      // Cleanup any active listeners on unmount
+      printerService.stopDisconnectPrinterListener();
+      printerService.stopDiscoverPrinters();
+    };
+  }, []);
+
+  useEffect(() => {
+    connectedPrinterRef.current = connectedPrinter;
+  }, [connectedPrinter]);
   
-  const handleOnAccessBleMenu = async () => {
-    console.log("Accessing BLE menu");
-
-    setPairedPrinters(await getPairedPrinters(true));
-    printerService.discoverDevice(
-      (device: BluetoothDeviceEvent) => {
-        // Functional update to avoid stale closure and dedupe by address
-        setDiscoveredPrinters((prevDevices) => {
-          const exists = prevDevices.some(d => d.device.address === device.device.address);
-          if (exists) return prevDevices;
-          return [...prevDevices, device];
-        });
-      }
-    )
-    setShowListPrintersDialog(true);
-    
-  }
-
-  const handlerConnectPrinter = async () => {
-    printerService.connectToPrinter();
-    // const event = RNBluetoothClassic.onDeviceDiscovered((device) => {
-    //         console.log("Discovered device: ", device);
-            
-    //     });
-
-      
-    // try {
-    //   await ensureBluetoothPermissions();
-    //   if (isBeingConnected === false){ // Avoiding multiple click from the user
-    //     if (await getPrinterConnectionStatus()) {
-    //       /* Maybe the user wants to disconnect the printer from the device */
-    //       setIsConnected(true);
-    //       setShowDialog(true);
-    //     } else {
-    //       /* Beginning process for printer connection */
-    //       setIsBeingConnected(true);
-    //       setIsConnected(false);
-    //     }
-    //   } else {
-    //     /* User cannot start a connection process more than once. */
-    //   }
-    // } catch (error) {
-    //   console.log(error)
-    // }
-  };
-
-  const handlerCancelDisconnectDevice = () => {
-    setShowDialog(false);
-  };
-
-  const handlerDisconnectPrinter = async () => {
-    await disconnectPrinter();
-    setIsConnected(false);
-    setShowDialog(false);
-  };
-
   // Auxiliar functions
   const getPairedPrinters = async (excludeConnectedPrinter: boolean): Promise<BluetoothDevice[]> => {
     // If possible, exclude the currently connected printer from the list
@@ -172,9 +128,43 @@ const BluetoothButton = () => {
     return printersToReturn;
   };
 
+  const createListenerForDisconnectedDevice = async () => {
+    await printerService.disconnectPrinterListener(
+      (deviceEvent: BluetoothDeviceEvent) => {
+        const { device } = deviceEvent;
+        const { address } = device;
+        const current = connectedPrinterRef.current;
+        if (current && current.address === address) {
+          // Deterministically mark disconnected and move it back to registered
+          setIsConnected(false);
+          setConnectedPrinter(null);
+          getPairedPrinters(false).then((printers) => setPairedPrinters(printers));
+        }
+      }
+    );
+  };
+      
+  const initializeBluetoohComponent = async () => {
+    setConnectedPrinter(await printerService.getConnectedPrinter())
+  }
   // Handlers
+  const handleOnAccessBleMenu = async () => {
+    setPairedPrinters(await getPairedPrinters(true));
+    printerService.discoverPrinters(
+      (device: BluetoothDeviceEvent) => {
+        // Functional update to avoid stale closure and dedupe by address
+        setDiscoveredPrinters((prevDevices) => {
+          const exists = prevDevices.some(d => d.device.address === device.device.address);
+          if (exists) return prevDevices;
+          return [...prevDevices, device];
+        });
+      }
+    )
+    setShowListPrintersDialog(true);
+    
+  }
+
   const handlePairDevice = async (deviceEvent: BluetoothDeviceEvent) => {
-    console.log("Pairing device: ", deviceEvent);
     const { device } = deviceEvent;
     try {
       const result = await printerService.pairDevice(device)
@@ -211,22 +201,30 @@ const BluetoothButton = () => {
       return;
     }
     try {
-        Toast.show({type: 'info',
-        text1:'Iniciando conexión con la impresora',
-        text2: 'Puede tomar unos segundos...'});
-      
+      Toast.show({type: 'info',
+      text1:'Iniciando conexión con la impresora',
+      text2: 'Puede tomar unos segundos...'});
       const result = await printerService.connectDevice(device);
       if (result) {
         setConnectedPrinter(device);
         setPairedPrinters(prev => prev.filter(p => p.address !== device.address));
+        
+        setRenderingComponent(false);
+        setIsBeingConnected(false);
+        setIsConnected(true);
+
         Toast.show({type: 'success',
           text1:'Impresora conectada',
           text2: 'La impresora está lista para usar.'});
+      } else {
+        Toast.show({type: 'error',
+          text1:'No se ha podido conectar la impresora',
+          text2: 'Asegurate que la impresora este encendida o cerca al telefono.'});   
       }
     } catch (error) {
       Toast.show({type: 'error',
         text1:'No se ha podido conectar la impresora',
-        text2: 'Intenta nuevamente.'});   
+        text2: 'Asegurate que la impresora este encendida o cerca al telefono.'});   
     }
   }
 
@@ -275,6 +273,10 @@ const BluetoothButton = () => {
           text1:'No se ha podido desconectar la impresora',
           text2: 'Intenta nuevamente.'});
       }
+
+      setRenderingComponent(false);
+      setIsBeingConnected(false);
+      setIsConnected(false);
     } catch (error) {
       Toast.show({type: 'error',
         text1:'No se ha podido desconectar la impresora',
@@ -283,9 +285,10 @@ const BluetoothButton = () => {
   }
 
   const handleCloseDialog = () => {
-    printerService.stopDiscoverDevice();
+    printerService.stopDiscoverPrinters();
     setShowListPrintersDialog(false);
   }
+
   return (
     <View>
       { showListPrintersDialog &&
@@ -310,7 +313,7 @@ const BluetoothButton = () => {
       { isBeingConnected || renderingComponent ?
         <ActivityIndicator style={tw`absolute top-0 right-8`}/> :
         <View
-          style={tw`absolute top-0 right-8 ${isConnected ? 'bg-green-500' : 'bg-red-700'} py-3 px-3 
+          style={tw`absolute top-0 right-8 ${connectedPrinter !== null ? 'bg-green-500' : 'bg-red-700'} py-3 px-3 
           rounded-full`}/>
       }
     </View>

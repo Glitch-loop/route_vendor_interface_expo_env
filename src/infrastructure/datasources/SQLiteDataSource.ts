@@ -33,8 +33,6 @@ export class SQLiteDataSource {
         if (this.client === undefined || this.client === null) {
             throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
         }
-        console.info('SQLiteDataSource getClient called');
-        console.log('SQLite Client:', this.client);
         return this.client;
     }
 }
