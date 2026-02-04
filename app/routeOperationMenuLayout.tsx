@@ -1,61 +1,51 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
-import { BackHandler, ScrollView, View, Pressable } from 'react-native';
+import { BackHandler, ScrollView, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 
 // Databases
-// Embedded
-import {
-  cleanEmbeddedDatbase,
-} from '../queries/SQLite/sqlLiteQueries';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
-import { clearDayOperations } from '../redux/slices/dayOperationsSlice';
+import { AppDispatch, RootState } from '@/redux/store';
+import { clearDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { clearProductInventory } from '@/redux/slices/productsInventorySlice';
 import { clearProducts } from '@/redux/slices/productSlice';
-import { clearRouteDay } from '../redux/slices/routeDaySlice';
-import { clearRoute } from '../redux/slices/routeSlice';
-import { clearStores } from '../redux/slices/storesSlice';
+import { clearRouteDay } from '@/redux/slices/routeDaySlice';
+import { clearRoute } from '@/redux/slices/routeSlice';
+import { clearStores } from '@/redux/slices/storesSlice';
 import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 
 
 // Services
 import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
-// Components
-import RouteCard from '../components/RouteCard';
-import MenuHeader from '../components/generalComponents/MenuHeader';
-import TypeOperationItem from '../components/TypeOperationItem';
-
-// Interfaces and enums
-import { IDayOperation, IResponse } from '../interfaces/interfaces';
-
-// Utils
-import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
-import { apiResponseStatus } from '../utils/apiResponse';
-import { getColorContextOfStore } from '../utils/routesFunctions';
-import DAYS_OPERATIONS from '../lib/day_operations';
-import ActionDialog from '../components/ActionDialog';
-import { maintainUserTable } from '../services/authenticationService';
-import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-
 // UI
+import RouteCard from '@/components/RouteCard';
+import MenuHeader from '@/components/generalComponents/MenuHeader';
+import TypeOperationItem from '@/components/TypeOperationItem';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // DTOs
 import StoreDTO from '@/src/application/dto/StoreDTO';
-import Toast from 'react-native-toast-message';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
+// Use cases and queries
 import { container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
-import ProjectButton from '@/components/sharedComponents/ProjectButton';
+
+// Utils
+import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
+import { maintainUserTable } from '../services/authenticationService';
+import ActionDialog from '../components/ActionDialog';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+
 
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
@@ -134,7 +124,7 @@ const routeOperationMenuLayout = () => {
 
     // Verify if there is alreadu an 'active' product devolution inventory.
     for (const dayOperation of dayOperationsReduxState) { 
-      if(dayOperation.operation_type === DAYS_OPERATIONS.product_devolution_inventory) {
+      if(dayOperation.operation_type === DAY_OPERATIONS.product_devolution_inventory) {
         const { id_item } = dayOperation;
         productDevolutionOperationIds.push(id_item);
       }
@@ -234,7 +224,8 @@ const routeOperationMenuLayout = () => {
           </View>
         </ActionDialog>
         <View style={tw`flex flex-row justify-center items-center`}>
-        <Pressable
+        <ProjectButton
+          title={'Buscar cliente'}
           onPress={() => {
             if (isDayWorkClosed) {
               Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
@@ -242,9 +233,9 @@ const routeOperationMenuLayout = () => {
               handlerSearchClient();
             }
           }}
-          style={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}>
-          <Text style={tw`text-sm text-center`}>Buscar cliente</Text>
-        </Pressable>
+          buttonVariant= 'primary'
+          buttonStyle={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}
+        />
         </View>
         <ScrollView
           style={tw`w-full h-full flex flex-col`}

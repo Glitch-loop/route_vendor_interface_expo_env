@@ -14,7 +14,7 @@ interface ButtonProps {
 }
 
 const variantClasses: Record<ButtonVariant, { normal: string; pressed: string; text: string }> = {
-  primary: { normal: 'bg-blue-600', pressed: 'bg-blue-700', text: 'text-black' },
+  primary: { normal: 'bg-blue-400', pressed: 'bg-blue-500', text: 'text-black' },
   success: { normal: 'bg-green-500', pressed: 'bg-green-600', text: 'text-black' },
   warning: { normal: 'bg-orange-500', pressed: 'bg-orange-600', text: 'text-black' },
   indigo: { normal: 'bg-indigo-400', pressed: 'bg-indigo-500', text: 'text-black' },
