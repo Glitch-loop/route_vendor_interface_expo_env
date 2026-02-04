@@ -1,9 +1,14 @@
-import { PrinterService } from "@/src/core/interfaces/PrinterService";
+// Libraries
 import { injectable, inject } from "tsyringe";
-import { TOKENS } from "../di/tokens";
-import { PlatformPermissionsService } from "@/src/core/interfaces/PlatformPermissions";
-import { PermissionsAndroid } from "react-native";
 import RNBluetoothClassic, { BluetoothDevice, BluetoothDeviceEvent, BluetoothEventSubscription, BluetoothNativeDevice } from "react-native-bluetooth-classic";
+import { PermissionsAndroid } from "react-native";
+
+// Interfaces
+import { PrinterService } from "@/src/core/interfaces/PrinterService";
+import { PlatformPermissionsService } from "@/src/core/interfaces/PlatformPermissions";
+
+// di container
+import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 
 @injectable()
@@ -17,13 +22,6 @@ export class BluetoothPrinterService implements PrinterService {
     constructor(
         @inject(TOKENS.PlataformService) private readonly platformPermissionsService: PlatformPermissionsService
     ) {}
-
-    async printTicket(messageToPrint: string): Promise<void> {
-        // Implementation for printing ticket via Bluetooth
-        console.log("Printing ticket:", messageToPrint);
-
-    }
-
     private async arePrinterPermissionsGranted(): Promise<boolean> {
         let allPermissionsGranted = true;
         
@@ -154,6 +152,17 @@ export class BluetoothPrinterService implements PrinterService {
 
 
     // New methods
+    async printTicket(messageToPrint: string): Promise<void> {
+        // Implementation for printing ticket via Bluetooth
+        if (this.deviceConnected === null) throw new Error("No printer connected.");
+
+        const { address } = this.deviceConnected;
+        const isConnected = await RNBluetoothClassic.isDeviceConnected(address);
+        if (!isConnected) throw new Error("Printer is not connected.");
+
+        await RNBluetoothClassic.writeToDevice(address, messageToPrint);
+    }
+
     async connectDevice(device: BluetoothDevice): Promise<boolean> {
         await this.setBluetoothEnvironment();
         const { address, bonded } = device;
@@ -243,7 +252,6 @@ export class BluetoothPrinterService implements PrinterService {
     }
     
     async getConnectedPrinter(): Promise<BluetoothDevice | null> {
-        
         const connectedDevices: BluetoothDevice[] = await RNBluetoothClassic.getConnectedDevices();
         let connectedPrinter: BluetoothDevice | null = null;
         for (const connectedDevice of connectedDevices) {
@@ -253,6 +261,7 @@ export class BluetoothPrinterService implements PrinterService {
             }
         }
 
+        this.deviceConnected = connectedPrinter;        
         return connectedPrinter;
     }
 

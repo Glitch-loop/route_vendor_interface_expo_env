@@ -41,7 +41,7 @@ import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
 
 // Use cases and queries
-import { container as di_conatiner } from '@/src/infrastructure/di/container';
+import { container as di_container } from '@/src/infrastructure/di/container';
 import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
@@ -62,6 +62,7 @@ import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
 import StoreDTO from '@/src/application/dto/StoreDTO';
+import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -119,6 +120,8 @@ const salesLayout = () => {
     id_route_transaction_search_param
   } = params as typeSearchParams;
 
+
+  const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
   // const glob = useGlobalSearchParams();
 
   // // Auxiliar variables
@@ -170,7 +173,7 @@ const salesLayout = () => {
       setProductInventoryMap(productInventoryMapLocal);
 
       if (id_route_transaction_search_param !== undefined) {
-        const retrieve_route_transaction_by_id = di_conatiner.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
+        const retrieve_route_transaction_by_id = di_container.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
         const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
   
         if (routeTransactions.length > 0) {
@@ -202,7 +205,6 @@ const salesLayout = () => {
   
       }   
     }
-
   }
 
   // Handlers
@@ -230,7 +232,7 @@ const salesLayout = () => {
     that the sale is closed.
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
-    const registerNewRouteTransactionCommand = di_conatiner.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
+    const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
 
     setFinishedSale(true); // Finishing sale payment process.
 
@@ -256,8 +258,8 @@ const salesLayout = () => {
         id_store_search_param
       );
       
-      const retrieveCurrentShiftInventory = di_conatiner.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-      const retrieveDayOperationQuery = di_conatiner.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+      const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+      const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
             
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
@@ -308,7 +310,9 @@ const salesLayout = () => {
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
       
-      await printTicketBluetooth(
+      // Set up printer
+      await printerService.getConnectedPrinter();
+      await printerService.printTicket(
         getTicketSale(
           productInventoryMap,
           productDevolution,
@@ -322,7 +326,7 @@ const salesLayout = () => {
       Toast.show({
         type: 'error',
         text1:'Hubo un problema de conexión con la impresora.',
-        text2: 'No se encontró la impresora, por favor intente conectarla con el teléfono e intente nuevamente.'});
+        text2: 'Verifica que la impresora este conectada e intenta nuevamente.'});
     }
   };
 

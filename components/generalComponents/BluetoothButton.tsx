@@ -1,41 +1,29 @@
 // Libraries
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { ActivityIndicator, List, Text } from 'react-native-paper';
+import { ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-// Services
-import {
-  getPrinterConnectionStatus,
-  getBluetoothPrinterConnection,
-  disconnectPrinter,
-  ensureBluetoothPermissions
-} from '../../services/printerService';
 
 // Hooks
 // import useBLE from '@/hooks/useBLE';
 
 // Components
-import ActionDialog from '../ActionDialog';
 import Toast from 'react-native-toast-message';
-import RNBluetoothClassic, { BluetoothDevice, BluetoothDeviceEvent, BluetoothEventListener } from 'react-native-bluetooth-classic';
-
-// Interfaces
-import { PrinterService } from '@/src/core/interfaces/PrinterService';
+import { BluetoothDevice, BluetoothDeviceEvent } from 'react-native-bluetooth-classic';
 
 // Container
 import { container as di_container } from '@/src/infrastructure/di/container';
 import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
-import ListPrintersDialog from '../bluetooth/ListPrintersDialog';
+
+// UI components
+import ListPrintersDialog from '@/components/bluetooth/ListPrintersDialog';
 
 
 const BluetoothButton = () => {
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
   
-  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isBeingConnected, setIsBeingConnected] = useState<boolean>(false);
-  const [showDialog, setShowDialog] = useState<boolean>(false);
   const [showListPrintersDialog, setShowListPrintersDialog] = useState<boolean>(false);
   const [renderingComponent, setRenderingComponent] = useState<boolean>(false);
   
@@ -45,58 +33,11 @@ const BluetoothButton = () => {
   const connectedPrinterRef = useRef<BluetoothDevice | null>(null);
 
 
-  // const { 
-  //   scanForPeripherals,
-  //   requestPermissions,
-  //   allDevices
-  // }
-  // = useBLE();
-  
-  // useBLE();
-  // useEffect(() => {
-  //   // Determine the status for the first time
-  //   getPrinterConnectionStatus()
-  //   .then((response:boolean) => {
-  //     setIsConnected(response);
-  //     setRenderingComponent(false);
-  //   });
-
-  //   const intervalAction = setInterval(async () => {
-  //     const printerStatus:boolean = await getPrinterConnectionStatus();
-
-  //     if(isConnected && !printerStatus) {
-  //       Toast.show({type: 'error',
-  //         text1:'Se ha desconectado la impresora',
-  //         text2: 'Se ha desconectado al impresora.'});
-  //     }
-
-  //     setRenderingComponent(false);
-  //     setIsConnected(await getPrinterConnectionStatus());
-  //   }, 30000);
-
-  //   /* Clear action when unmount */
-  //   return () => clearInterval(intervalAction);
-  // }, []);
-
-  // useEffect(() => {
-  //   if (isBeingConnected) {
-  //     getBluetoothPrinterConnection()
-  //     .then((result:boolean) => {
-  //       setIsBeingConnected(false);
-  //       setIsConnected(result);
-  //     })
-  //     .catch(() => {
-  //       /* Somthing was wrong during printer connection*/
-  //       setIsBeingConnected(false);
-  //       setIsConnected(false);
-  //     });
-  //   }
-  // }, [isBeingConnected]);
 
   useEffect(() => {
     createListenerForDisconnectedDevice();
     initializeBluetoohComponent();
-
+    
     return () => {
       // Cleanup any active listeners on unmount
       printerService.stopDisconnectPrinterListener();
@@ -136,7 +77,6 @@ const BluetoothButton = () => {
         const current = connectedPrinterRef.current;
         if (current && current.address === address) {
           // Deterministically mark disconnected and move it back to registered
-          setIsConnected(false);
           setConnectedPrinter(null);
           getPairedPrinters(false).then((printers) => setPairedPrinters(printers));
         }
@@ -211,7 +151,6 @@ const BluetoothButton = () => {
         
         setRenderingComponent(false);
         setIsBeingConnected(false);
-        setIsConnected(true);
 
         Toast.show({type: 'success',
           text1:'Impresora conectada',

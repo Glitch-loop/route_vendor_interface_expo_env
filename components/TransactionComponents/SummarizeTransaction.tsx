@@ -44,6 +44,7 @@ import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState'
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import { getTicketSale } from '@/utils/route-transaciton/utils';
 import StoreDTO from '@/src/application/dto/StoreDTO';
+import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 
 const SummarizeTransaction = ({
@@ -91,6 +92,8 @@ const SummarizeTransaction = ({
   // States regarded to the logic of the component
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
+  const printerService = container_di.resolve<BluetoothPrinterService>(BluetoothPrinterService);
+
   // Handlers
   const handleOnPrint = async () => {
     if (productInventoryMap === undefined) {
@@ -106,17 +109,22 @@ const SummarizeTransaction = ({
       let storeToConsult:StoreDTO|undefined = undefined;
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store);
-
-      await printTicketBluetooth(
-        getTicketSale(
-          productInventoryMap,
-          productsDevolution,
-          productsReposition,
-          productsSale,
-          routeTransaction,
-          storeToConsult
-        ));
+        await printerService.getConnectedPrinter();
+        await printerService.printTicket(
+          getTicketSale(
+            productInventoryMap,
+            productsDevolution,
+            productsReposition,
+            productsSale,
+            routeTransaction,
+            storeToConsult
+          )
+        );
     } catch(error) {
+      Toast.show({
+        type: 'error',
+        text1:'Hubo un problema de conexión con la impresora.',
+        text2: 'Verifica que la impresora este conectada e intenta nuevamente.'});
       /* There are no actions */
     }
   };
