@@ -28,16 +28,16 @@ export const userEmbeddedTable = `
 export const routeDayEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_DAY} (
     id_work_day       TEXT NOT NULL UNIQUE, 
-    start_date        TEXT UNIQUE NOT NULL,
+    start_date        TEXT NOT NULL,
     end_date          TEXT,
-    start_petty_cash  NUMERIC(6,3) NOT NULL UNIQUE,
+    start_petty_cash  NUMERIC(6,3) NOT NULL,
     end_petty_cash    NUMERIC(6,3),
-    id_route          TEXT NOT NULL UNIQUE,
-    route_name        TEXT NOT NULL UNIQUE,
+    id_route          TEXT NOT NULL,
+    route_name        TEXT NOT NULL,
     description       TEXT,
-    route_status      TEXT NOT NULL UNIQUE,
-    id_day            TEXT NOT NULL UNIQUE,
-    id_route_day      TEXT NOT NULL UNIQUE
+    route_status      TEXT NOT NULL,
+    id_day            TEXT NOT NULL,
+    id_route_day      TEXT NOT NULL
   );
 `;
 
@@ -57,7 +57,10 @@ export const storesEmbeddedTable = `
     id_creator        TEXT,
     creation_date     TEXT,
     creation_context  TEXT,
-    status_store      INT
+    status_store      INT,
+    is_synced         INT NOT NULL DEFAULT 1,
+    updated_at        DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted        INT NOT NULL DEFAULT 0
   );
 `;
 
@@ -77,7 +80,7 @@ export const productsEmbeddedTable = `
 
 export const productsInventoryEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
-    id_product_inventory   TEXT NOT NULL UNIQUE,
+    id_product_inventory  TEXT NOT NULL UNIQUE,
     price_at_moment       NUMERIC(6,3) NOT NULL,
     stock                 INT NOT NULL,
     id_product            TEXT NOT NULL
@@ -101,20 +104,26 @@ export const routeTransactionsEmbeddedTable = `
     cash_received           INT NOT NULL,
     id_work_day             TEXT NOT NULL,
     id_payment_method       TEXT NOT NULL,
-    id_store                TEXT NOT NULL
+    id_store                TEXT NOT NULL,
+    is_synced               INT NOT NULL DEFAULT 0,
+    updated_at              DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted              INT NOT NULL DEFAULT 0
   );
 `;
 
 export const routeTransactionnDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} (
     id_route_transaction_description  TEXT NOT NULL UNIQUE,
-    price_at_moment                             NUMERIC(6,3) NOT NULL,
-    amount                                      INT NOT NULL,
-    created_at                                  DATETIME NOT NULL,
-    id_product_inventory                        TEXT NOT NULL,
-    id_transaction_operation_type               TEXT NOT NULL,
-    id_product                                  TEXT NOT NULL,
-    id_route_transaction                        TEXT NOT NULL
+    price_at_moment                   NUMERIC(6,3) NOT NULL,
+    amount                            INT NOT NULL,
+    created_at                        DATETIME NOT NULL,
+    id_product_inventory              TEXT NOT NULL,
+    id_transaction_operation_type     TEXT NOT NULL,
+    id_product                        TEXT NOT NULL,
+    id_route_transaction              TEXT NOT NULL,
+    is_synced                         INT NOT NULL DEFAULT 0,
+    updated_at                        DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted                        INT NOT NULL DEFAULT 0
   );
 `;
 
@@ -126,7 +135,10 @@ export const inventoryOperationsEmbeddedTable = `
     state                       INT NOT NULL,
     audit                       INT NOT NULL,
     id_inventory_operation_type TEXT NOT NULL,
-    id_work_day                 TEXT NOT NULL
+    id_work_day                 TEXT NOT NULL,
+    is_synced                   INT NOT NULL DEFAULT 0,
+    updated_at                  DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted                  INT NOT NULL DEFAULT 0
   );
 `;
 
@@ -137,7 +149,10 @@ export const productOperationDescriptionsEmbeddedTable = `
     amount                              INT NOT NULL,
     created_at                          DATETIME NOT NULL,
     id_inventory_operation              TEXT NOT NULL,
-    id_product                          TEXT NOT NULL
+    id_product                          TEXT NOT NULL,
+    is_synced                           INT NOT NULL DEFAULT 0,
+    updated_at                          DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted                          INT NOT NULL DEFAULT 0
   );   
 `;
 

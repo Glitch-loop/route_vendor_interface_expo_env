@@ -39,9 +39,10 @@ import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
-import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 
 function buildAddress(store:StoreDTO) {
@@ -187,28 +188,30 @@ const storeMenuLayout = () => {
   return (!isConsultTransaction ?
     // Main menu of store
     <SafeAreaView>
-      <View style={tw`w-full h-full flex-col justify-center items-center`}>
-        <View style={tw`w-full flex basis-1/12 my-5 flex-row justify-around items-center`}>
+      <View style={tw`w-full h-full`}>
+        <View style={tw`w-full flex basis-1/12 flex-row justify-around items-center`}>
           <MenuHeader 
           id_store={id_store_search_param}
           onGoBack={handlerGoBackToMainOperationMenu}/>
         </View>
         { consultedStore != null &&
-          <View style={tw`w-11/12 flex basis-6/12 border-solid border-2 rounded-sm`}>
-            <RouteMap
-              latitude={parseFloat(consultedStore.latitude)}
-              longitude={parseFloat(consultedStore.longitude)}
-              stores={[ consultedStore ]}
-            /> 
+          <View style={tw`w-full my-2 flex items-center justify-around`}>
+            <View style={tw`w-11/12 basis-6/12 border-solid border-2 rounded-sm`}>
+              <RouteMap
+                latitude={parseFloat(consultedStore.latitude)}
+                longitude={parseFloat(consultedStore.longitude)}
+                stores={[ consultedStore ]}
+              /> 
+            </View>
           </View>
           // :
-          // <View style={tw`w-11/12 flex justify-center items-center basis-1/2`}>
-          //   <Text> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
+          // <View style={tw`w-full flex items-center justify-center basis-6/12 rounded-sm`}>
+          //   <Text style={tw`text-black text-center`}> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
           // </View>
         }
-        <View style={tw`w-11/12 flex basis-5/12 flex-col items-start justify-start`}>
+        <View style={tw`w-11/12 mx-2 mt-2 flex flex-col basis-5/12 flex-col items-start justify-start`}>
           { consultedStore !== null &&
-            <View style={tw`flex basis-1/4 flex-row justify-around items-center`}>
+            <View style={tw`basis-1/4 flex flex-row justify-around items-center`}>
               <View style={tw`flex flex-col justify-around`}>
                 <Text style={tw`text-black text-xl`}>Dirección</Text>
                 <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
@@ -222,7 +225,7 @@ const storeMenuLayout = () => {
             </View>
           }
           { consultedStore !== null &&
-            <View style={tw`flex basis-1/4 flex-col justify-start items-start`}>
+            <View style={tw`basis-1/4 flex flex-col justify-start items-start`}>
               <Text style={tw`text-black text-xl`}>Referencia</Text>
               <Text style={tw`text-black`}>
                 { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
@@ -232,37 +235,22 @@ const storeMenuLayout = () => {
               </Text>
             </View>
           }
-          <View style={tw`flex basis-2/4 flex-row justify-center items-center`}>
+          {/* Actions band */}
+          <View style={tw`w-full basis-1/4 flex flex-row justify-around items-center`}>
             { productInventoryMap !== undefined &&
-              <View style={tw`flex basis-1/2 justify-center items-center`}>
-                <Pressable
-                  style={tw`h-14 w-11/12 border-solid border bg-blue-500 
-                    rounded flex flex-row justify-center items-center`}
-                  onPress={() => {handlerOnConsultTransactions();}}>
-                  <Text style={tw`text-center text-black`}>Transacciones de hoy</Text>
-                </Pressable>
-              </View>
+              <ProjectButton 
+                title='Transacciones de hoy'
+                onPress={() => {handlerOnConsultTransactions();}}
+                buttonVariant='primary'
+                buttonStyle={tw`basis-1/3 h-3/4 rounded flex flex-row justify-center items-center`}
+              />
             }
-            <View style={tw`flex basis-1/2 justify-center items-center`}>
-              <Pressable
-                style={tw`h-14 w-11/12 bg-green-500 rounded border-solid border flex flex-row justify-center items-center`}
-                onPress={() => {
-                  if (workDay === null) {
-                    Toast.show({type: 'error', text1:'Día de trabajo no iniciado', text2: 'No es posible iniciar una venta sin antes iniciar un día de trabajo'});
-                  } else {
-                    /*
-                    Business rule:
-                      - Once the vendor has closed his shift (end shift inventory operation),
-                        he cannot start selling again until he starts a new work day.
-                    */
-                    const { finish_date } = workDay;
-                    if (finish_date === null) handlerOnStartSale();
-                    else Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-                  }
-                }}>
-                <Text style={tw`text-center text-black`}>Iniciar venta</Text>
-              </Pressable>
-            </View>
+            <ProjectButton 
+                title='Iniciar venta'
+                onPress={() => {handlerOnStartSale();}}
+                buttonVariant='success'
+                buttonStyle={tw`basis-1/3 h-3/4 rounded flex flex-row justify-center items-center`}
+              />
           </View>
         </View>
       </View> 
