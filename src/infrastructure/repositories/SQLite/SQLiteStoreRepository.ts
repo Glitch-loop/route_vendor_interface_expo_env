@@ -4,9 +4,13 @@ import { SQLiteDatabase } from "expo-sqlite";
 
 // Interfaces
 import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
+import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
 
 // Entities
 import { Store } from "@/src/core/entities/Store";
+
+// Models
+import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
 
 // Database
 
@@ -17,8 +21,9 @@ import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSou
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
+
 @injectable()
-export class SQLiteStoreRepository implements StoreRepository {
+export class SQLiteStoreRepository implements StoreRepository, SyncStoreRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
     async insertStores(stores: Store[]): Promise<void> {
@@ -84,6 +89,39 @@ export class SQLiteStoreRepository implements StoreRepository {
 
           throw new Error("Failed to insert stores: " + error);
         }
+    }
+
+    async listPendingStoreToSync(): Promise<StoreModel[]> {
+      try {
+        await this.dataSource.initialize();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
+        const pending: StoreModel[] = [];
+        const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1;`);
+        const rows = stmt.executeSync<any>();
+        for (const row of rows) {
+          pending.push(row as StoreModel);
+        }
+        return pending;
+      } catch (error) {
+        throw new Error('Failed to list pending stores to sync: ' + error);
+      }
+    }
+
+    async markStoreAsSynced(ids: string[]): Promise<void> {
+      if (!ids || ids.length === 0) return;
+      try {
+        await this.dataSource.initialize();
+        const db: SQLiteDatabase = await this.dataSource.getClient();
+        await db.withExclusiveTransactionAsync(async (tx) => {
+          const placeholders = ids.map(() => '?').join(',');
+          await tx.runAsync(
+            `UPDATE ${EMBEDDED_TABLES.STORES} SET is_synced = 1 WHERE id_store IN (${placeholders});`,
+            ids
+          );
+        });
+      } catch (error) {
+        throw new Error('Failed to mark stores as synced: ' + error);
+      }
     }
 
     async updateStore(store: Store): Promise<void> {

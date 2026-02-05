@@ -31,7 +31,13 @@ export const TOKENS = {
     SQLiteRouteTransactionRepository: Symbol('SQLiteRouteTransactionRepository'),
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
-    
+    //Sync Repositories
+    SyncDayOperationRepository: Symbol('SyncDayOperationRepository'),
+    SyncInventoryOperationRepository: Symbol('SyncInventoryOperationRepository'),
+    SyncRouteTransactionRepository: Symbol('SyncRouteTransactionRepository'),
+    SyncStoreRepository: Symbol('SyncStoreRepository'),
+    SyncWorkdayInformationRepository: Symbol('SyncWorkdayInformationRepository'),
+
     // Services
     IDService: Symbol('IDService'),
     DateService: Symbol('DateService'),
@@ -39,4 +45,5 @@ export const TOKENS = {
     LocalDatabaseService: Symbol('LocalDatabaseService'),
     PlataformService: Symbol('PlataformService'),
     PrinterService: Symbol('PrinterService'),
+    DataReplicationService: Symbol('DataReplicationService'),
 }

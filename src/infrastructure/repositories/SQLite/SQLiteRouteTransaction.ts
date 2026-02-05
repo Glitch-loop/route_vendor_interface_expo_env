@@ -11,22 +11,23 @@ import { Store } from "@/src/core/entities/Store";
 
 // Value Objects
 import { RouteTransactionDescription } from "@/src/core/object-values/RouteTransactionDescription";
-import { PaymentMethod } from "@/src/core/object-values/PaymentMethod";
 
 // Database
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
-// Enums
-import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
-
 // DataSources
 import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
 
+// Models
+import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
+import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel';
+
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 
 @injectable()
-export class SQLiteRouteTransactionRepository implements RouteTransactionRepository {
+export class SQLiteRouteTransactionRepository implements RouteTransactionRepository, SyncRouteTransactionRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
     // private getPaymentMethodFromId(id_payment_method: string): PAYMENT_METHODS {
@@ -374,6 +375,76 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             return routeTransactionDescriptions;
         } catch (error) {
             throw new Error("Failed to retrieve route transaction descriptions by IDs: " + error);
+        }
+    }
+
+    async listPendingRouteTransactionToSync(): Promise<RouteTransactionModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const pending: RouteTransactionModel[] = [];
+            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+            const rows = stmt.executeSync<any>();
+            for (const row of rows) {
+                pending.push(row as RouteTransactionModel);
+            }
+            return pending;
+        } catch (error) {
+            throw new Error('Failed to list pending route transactions to sync: ' + error);
+        }
+    }
+
+    async listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const pending: RouteTransactionDescriptionModel[] = [];
+            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+            const rows = stmt.executeSync<any>();
+            for (const row of rows) {
+                // Ensure created_at is Date if consumers expect it
+                if (row.created_at && typeof row.created_at === 'string') {
+                    row.created_at = new Date(row.created_at);
+                }
+                pending.push(row as RouteTransactionDescriptionModel);
+            }
+            return pending;
+        } catch (error) {
+            throw new Error('Failed to list pending route transaction descriptions to sync: ' + error);
+        }
+    }
+
+    async markRouteTransactionsAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET is_synced = 1 WHERE id_route_transaction IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error('Failed to mark route transactions as synced: ' + error);
+        }
+    }
+
+    async markRouteTransactionDescriptionsAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} SET is_synced = 1 WHERE id_route_transaction_description IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error('Failed to mark route transaction descriptions as synced: ' + error);
         }
     }
 }

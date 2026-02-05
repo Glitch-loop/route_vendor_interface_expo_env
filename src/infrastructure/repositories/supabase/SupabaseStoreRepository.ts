@@ -12,10 +12,12 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SyncServerStoreRepository } from '../../persitence/interface/server-database/SyncServerStoreRepository';
+import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
 
 
 @injectable()
-export class SupabaseStoreRepository implements StoreRepository {
+export class SupabaseStoreRepository implements StoreRepository, SyncServerStoreRepository {
     constructor(@inject(TOKENS.SupabaseDataSource) private readonly dataSource: SupabaseDataSource) { }
 
     private get supabase() {
@@ -122,6 +124,37 @@ export class SupabaseStoreRepository implements StoreRepository {
             if (error) throw new Error(`Error deleting stores: ${error.message}`);
         } catch (error: any) {
             throw new Error(`Failed to delete stores: ${error.message}`);
+        }
+    }
+
+    async upsertStores(stores: StoreModel[]): Promise<void> {
+        if (!stores || stores.length === 0) return;
+        try {
+            const records = stores.map((store) => ({
+                id_store: store.id_store,
+                street: store.street,
+                ext_number: store.ext_number,
+                colony: store.colony,
+                postal_code: store.postal_code,
+                address_reference: store.address_reference,
+                store_name: store.store_name,
+                owner_name: store.owner_name,
+                cellphone: store.cellphone,
+                latitude: store.latitude,
+                longitude: store.longitude,
+                creation_date: store.creation_date,
+                status_store: store.status_store,
+                // Optional fields present in domain, include if your schema supports them
+                // id_creator: store.id_creator,
+            }));
+
+            const { error } = await this.supabase
+                .from('stores')
+                .upsert(records, { onConflict: 'id_store' });
+
+            if (error) throw new Error(`Error upserting stores: ${error.message}`);
+        } catch (error: any) {
+            throw new Error(`Failed to upsert stores: ${error.message}`);
         }
     }
 }

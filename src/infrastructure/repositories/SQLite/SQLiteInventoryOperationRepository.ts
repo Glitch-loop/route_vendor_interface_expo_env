@@ -14,12 +14,17 @@ import { InventoryOperationDescription } from '@/src/core/object-values/Inventor
 // DataSources
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
+// Models
+import InventoryOperationModel from '@/src/infrastructure/persitence/model/InventoryOperationModel';
+import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/InventoryOperationDescriptionModel';
+
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
 
 @injectable()
-export class SQLiteInventoryOperationRepository implements InventoryOperationRepository {
+export class SQLiteInventoryOperationRepository implements InventoryOperationRepository, SyncInventoryOperationRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) { }
 
     async createInventoryOperation(inventory_operation: InventoryOperation): Promise<void> {
@@ -244,6 +249,72 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
         } catch(error) {
             throw new Error('Failed to delete inventory operations: ' + error);
+        }
+    }
+
+    async listPendingInventoryOperationToSync(): Promise<InventoryOperationModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const pending: InventoryOperationModel[] = [];
+            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+            const rows = stmt.executeSync<any>();
+            for (const row of rows) {
+                pending.push(row as InventoryOperationModel);
+            }
+            return pending;
+        } catch (error) {
+            throw new Error('Failed to list pending inventory operations to sync: ' + error);
+        }
+    }
+
+    async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const pending: InventoryOperationDescriptionModel[] = [];
+            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+            const rows = stmt.executeSync<any>();
+            for (const row of rows) {
+                pending.push(row as InventoryOperationDescriptionModel);
+            }
+            return pending;
+        } catch (error) {
+            throw new Error('Failed to list pending inventory operation descriptions to sync: ' + error);
+        }
+    }
+
+    async markInventoryOperationsAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} SET is_synced = 1 WHERE id_inventory_operation IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error('Failed to mark inventory operations as synced: ' + error);
+        }
+    }
+
+    async markInventoryOperationDescriptionsAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} SET is_synced = 1 WHERE id_inventory_operation_description IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error('Failed to mark inventory operation descriptions as synced: ' + error);
         }
     }
 }

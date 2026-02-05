@@ -4,13 +4,13 @@ import { SQLiteDatabase } from 'expo-sqlite';
 
 // Interfaces
 import { ShiftOrganizationRepository } from '@/src/core/interfaces/ShiftOrganizationRepository';
+import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
 
 // Entities
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
-import { DayOperation } from '@/src/core/entities/DayOperation';
 
-// Database
-
+// Models
+import WorkDayInformationModel from '@/src/infrastructure/persitence/model/WorkdayInformationModel';
 
 // DataSources
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
@@ -20,7 +20,7 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 @injectable()
-export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepository {
+export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepository, SyncWorkdayInformationRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
     async insertWorkDay(workDay: WorkDayInformation): Promise<void> {
@@ -56,6 +56,39 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             ]);
         } catch (error) {
             throw new Error('Failed to insert work day.');
+        }
+    }
+
+    async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            const pending: WorkDayInformationModel[] = [];
+            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
+            const rows = stmt.executeSync<any>();
+            for (const row of rows) {
+                pending.push(row as WorkDayInformationModel);
+            }
+            return pending;
+        } catch (error) {
+            throw new Error('Failed to list pending workday information to sync.');
+        }
+    }
+
+    async markWorkdayInformationAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error('Failed to mark workday information as synced.');
         }
     }
 

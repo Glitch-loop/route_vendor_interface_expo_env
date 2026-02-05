@@ -17,6 +17,11 @@ import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransacti
 import { IDService } from '@/src/core/interfaces/IDService'
 import { DateService as IDateService } from '@/src/core/interfaces/DateService'
 
+// Sync interfaces
+import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
+import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
+import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
+import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
 
 // Interfaces
 import { RouteRepository } from '@/src/core/interfaces/RouteRepository'
@@ -48,8 +53,7 @@ import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
-import { BluetoothPrinterService } from '../services/BluetoothPrinterService';
-import { PrinterService } from '@/src/core/interfaces/PrinterService';
+
 
 
 // Register DataSources as SINGLETON (one instance for entire app)
@@ -105,6 +109,24 @@ container.register<ShiftOrganizationRepository>(TOKENS.SQLiteShiftOrganizationRe
 
 container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
     useClass: SQLiteStoreRepository
+});
+
+
+// =================== Implementation of repositories - Sync ====================
+container.register<SyncStoreRepository>(TOKENS.SyncStoreRepository, {
+    useClass: SQLiteStoreRepository
+});
+
+container.register<SyncWorkdayInformationRepository>(TOKENS.SyncWorkdayInformationRepository, {
+    useClass: SQLiteShiftOrganizationRepository
+});
+
+container.register<SyncRouteTransactionRepository>(TOKENS.SyncRouteTransactionRepository, {
+    useClass: SQLiteRouteTransactionRepository
+});
+
+container.register<SyncInventoryOperationRepository>(TOKENS.SyncInventoryOperationRepository, {
+    useClass: SQLiteInventoryOperationRepository
 });
 
 
