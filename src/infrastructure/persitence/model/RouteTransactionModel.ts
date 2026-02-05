@@ -1,4 +1,4 @@
-import { ReplicationDataInterface } from "../data-replication/ReplicationDataInterface";
+import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState";
 import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
 

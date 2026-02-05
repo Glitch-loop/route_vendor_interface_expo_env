@@ -1,4 +1,4 @@
-import { ReplicationDataInterface } from "../data-replication/ReplicationDataInterface";
+import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
 export default interface InventoryOperationDescriptionModel extends ReplicationDataInterface {
     id_inventory_operation_description: string;

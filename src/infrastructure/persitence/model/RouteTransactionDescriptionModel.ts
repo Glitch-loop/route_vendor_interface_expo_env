@@ -1,4 +1,4 @@
-import { ReplicationDataInterface } from "../data-replication/ReplicationDataInterface";
+import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 
 export default interface RouteTransactionDescriptionModel extends ReplicationDataInterface {

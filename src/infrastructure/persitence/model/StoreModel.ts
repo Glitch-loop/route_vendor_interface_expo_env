@@ -1,6 +1,6 @@
-import { ReplicationDataInterface } from "../data-replication/ReplicationDataInterface";
+import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
-export default interface StoreDTO extends ReplicationDataInterface {
+export default interface StoreModel extends ReplicationDataInterface {
     id_store: string,
     street: string,
     ext_number: string | null,
