@@ -9,8 +9,9 @@ import { Product } from '@/src/core/entities/Product';
 // DataSources
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource';
 
-// Tokens
+// Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
 
 @injectable()
 export class SupabaseProductRepository extends ProductRepository {
@@ -23,7 +24,7 @@ export class SupabaseProductRepository extends ProductRepository {
   async insertProduct(product: Product): Promise<void> {
     const { data, error } = await this.supabaseDataSource
       .getClient()
-      .from('products')
+      .from(SERVER_DATABASE_ENUM.PRODUCTS)
       .insert([
         {
           id_product: product.id_product,
@@ -46,7 +47,7 @@ export class SupabaseProductRepository extends ProductRepository {
   async updateProduct(product: Product): Promise<void> {
     const { data, error } = await this.supabaseDataSource
       .getClient()
-      .from('products')
+      .from(SERVER_DATABASE_ENUM.PRODUCTS)
       .update({
         product_name: product.product_name,
         barcode: product.barcode,
@@ -67,7 +68,7 @@ export class SupabaseProductRepository extends ProductRepository {
   async retrieveAllProducts(): Promise<Product[]> {
     const { data, error } = await this.supabaseDataSource
       .getClient()
-      .from('products')
+      .from(SERVER_DATABASE_ENUM.PRODUCTS)
       .select('*');
 
     if (error) {
@@ -93,7 +94,7 @@ export class SupabaseProductRepository extends ProductRepository {
   async deleteProduct(product: Product): Promise<void> {
     const { data, error } = await this.supabaseDataSource
       .getClient()
-      .from('products')
+      .from(SERVER_DATABASE_ENUM.PRODUCTS)
       .delete()
       .eq('id_product', product.id_product);
 

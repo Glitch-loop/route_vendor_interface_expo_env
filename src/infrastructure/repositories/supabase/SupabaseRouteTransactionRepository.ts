@@ -5,7 +5,7 @@ import { injectable, inject } from 'tsyringe';
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'; 
 
 // Interfaces
-import { SyncServerRouteTransactionRepository } from '../../persitence/interface/server-database/SyncServerRouteTransactionRepository';
+import { SyncServerRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository';
 
 // Models
 import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
@@ -13,7 +13,7 @@ import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/mo
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { SERVER_DATABASE_ENUM } from '../../persitence/enums/serverTablesEnum';
+import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
 
 
 @injectable()

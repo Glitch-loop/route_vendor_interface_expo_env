@@ -17,8 +17,7 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { CENTRAL_TABLES } from '../../database/central-database/centralTables';
-
+import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
 
 @injectable()
 export class SupabaseRouteRepository implements RouteRepository {
@@ -29,10 +28,9 @@ export class SupabaseRouteRepository implements RouteRepository {
   }
 
   async listRoutesByUser(user: string): Promise<Route[]> {
-    console.log('*********************Fetching routes for user:', user);
     try {
       const { data, error } = await this.supabase
-        .from(CENTRAL_TABLES.ROUTES)
+        .from(SERVER_DATABASE_ENUM.ROUTES)
         .select('*')
         .eq('id_vendor', user);
 
@@ -47,7 +45,7 @@ export class SupabaseRouteRepository implements RouteRepository {
 
   async listDays(): Promise<Day[]> {
     try {
-      const { data, error } = await this.supabase.from('days').select();
+      const { data, error } = await this.supabase.from(SERVER_DATABASE_ENUM.DAYS).select();
       if (error) throw new Error('Error fetching days');
       return data;
     } catch (error) {
@@ -58,7 +56,7 @@ export class SupabaseRouteRepository implements RouteRepository {
   async listRouteDaysByRoute(id_route: string): Promise<RouteDay[]> {
     try {
       const { data, error } = await this.supabase
-        .from(CENTRAL_TABLES.ROUTE_DAY)
+        .from(SERVER_DATABASE_ENUM.ROUTE_DAY)
         .select('*')
         .eq('id_route', id_route);
       if (error) throw new Error('Error fetching route days by route' + error.message);
@@ -71,7 +69,7 @@ export class SupabaseRouteRepository implements RouteRepository {
   async listRouteDayStoresByRoute(id_route_day: string): Promise<RouteDayStore[]> {
     try {
       const { data, error } = await this.supabase
-        .from(CENTRAL_TABLES.ROUTE_DAY_STORES)
+        .from(SERVER_DATABASE_ENUM.ROUTE_DAY_STORES)
         .select('*')
         .eq('id_route_day', id_route_day);
       if (error) throw new Error('Error fetching route day stores by route day' + error.message);
