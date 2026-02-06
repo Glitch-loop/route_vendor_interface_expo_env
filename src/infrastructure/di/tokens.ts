@@ -32,11 +32,17 @@ export const TOKENS = {
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
     //Sync Repositories
-    SyncDayOperationRepository: Symbol('SyncDayOperationRepository'),
     SyncInventoryOperationRepository: Symbol('SyncInventoryOperationRepository'),
     SyncRouteTransactionRepository: Symbol('SyncRouteTransactionRepository'),
     SyncStoreRepository: Symbol('SyncStoreRepository'),
     SyncWorkdayInformationRepository: Symbol('SyncWorkdayInformationRepository'),
+
+    // Sync Server Repositories
+    SyncServerStoreRepository: Symbol('SyncServerStoreRepository'),
+    SyncServerRouteTransactionRepository: Symbol('SyncServerRouteTransactionRepository'),
+    SyncServerInventoryOperationRepository: Symbol('SyncServerInventoryOperationRepository'),
+    SyncServerWorkdayInformationRepository: Symbol('SyncServerWorkdayInformationRepository'),
+
 
     // Services
     IDService: Symbol('IDService'),

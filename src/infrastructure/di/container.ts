@@ -31,6 +31,9 @@ import { StoreRepository } from '@/src/core/interfaces/StoreRepository'
 import { SupabaseRouteRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteRepository'
 import { SupabaseStoreRepository } from '@/src/infrastructure/repositories/supabase/SupabaseStoreRepository'
 import { SupabaseProductRepository } from '@/src/infrastructure/repositories/supabase/SupabaseProductRepository'
+import { SupabaseRouteTransactionRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteTransactionRepository'
+import { SupabaseInventoryOperationRepository } from '@/src/infrastructure/repositories/supabase/SupabaseInventoryOperationRepository'
+import { SupabaseWorkdayInformationRepository } from '@/src/infrastructure/repositories/supabase/SupabaseWorkdayInformationRepository'
 
 // Implementations - SQLite
 import { SQLiteDayOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteDayOperationRepository';
@@ -46,6 +49,7 @@ import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
 import { DateService } from '@/src/infrastructure/services/DateService'
 import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatabaseService';
 import { AndroidPlatformPermissions } from '@/src/infrastructure/services/AndroidPlataformPermissions';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 
 // Utils
@@ -64,10 +68,14 @@ container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource,
     { lifecycle: Lifecycle.Singleton }
 );
 
-// DTOs
+// =================== DTOs ====================
 container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
 
-// Services
+// =================== Services ====================
+container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
+
+container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
+
 container.register<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
     useClass: SQLiteDatabaseService
 });
@@ -76,8 +84,9 @@ container.register<PlatformPermissionsService>(TOKENS.PlataformService, {
     useClass: AndroidPlatformPermissions
 });
 
-container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
-container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
+container.register(TOKENS.DataReplicationService, {
+    useClass: DataReplicationService
+});
 
 
 // =================== Implementation of repositories - SQLite ====================
@@ -141,6 +150,20 @@ container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
 
 container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
     useClass: SupabaseProductRepository
+});
+
+// =================== Implementation of repositories - SyncServer (Supabase) ====================
+container.register(TOKENS.SyncServerStoreRepository, {
+    useClass: SupabaseStoreRepository
+});
+container.register(TOKENS.SyncServerRouteTransactionRepository, {
+    useClass: SupabaseRouteTransactionRepository
+});
+container.register(TOKENS.SyncServerInventoryOperationRepository, {
+    useClass: SupabaseInventoryOperationRepository
+});
+container.register(TOKENS.SyncServerWorkdayInformationRepository, {
+    useClass: SupabaseWorkdayInformationRepository
 });
 
 export { container }
