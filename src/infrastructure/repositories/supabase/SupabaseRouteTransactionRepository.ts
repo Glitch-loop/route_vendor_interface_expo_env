@@ -4,11 +4,16 @@ import { injectable, inject } from 'tsyringe';
 // Infrastructure
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'; 
 
-// Utils
-import { TOKENS } from '@/src/infrastructure/di/tokens';
+// Interfaces
 import { SyncServerRouteTransactionRepository } from '../../persitence/interface/server-database/SyncServerRouteTransactionRepository';
+
+// Models
 import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
 import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel';
+
+// Utils
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SERVER_DATABASE_ENUM } from '../../persitence/enums/serverTablesEnum';
 
 
 @injectable()
@@ -33,7 +38,7 @@ export class SupabaseRouteTransactionRepository implements SyncServerRouteTransa
             }));
 
             const { error } = await this.supabase
-                .from('route_transactions')
+                .from(SERVER_DATABASE_ENUM.ROUTE_TRANSACTIONS)
                 .upsert(records, { onConflict: 'id_route_transaction' });
 
             if (error) throw new Error(`Error upserting route transactions: ${error.message}`);
@@ -49,15 +54,15 @@ export class SupabaseRouteTransactionRepository implements SyncServerRouteTransa
                 id_route_transaction_description: d.id_route_transaction_description,
                 price_at_moment: d.price_at_moment,
                 amount: d.amount,
+                comission_at_moment: 0, // Bussines rule: Comission of the sale is assigned by the manager system.
                 created_at: d.created_at instanceof Date ? d.created_at.toISOString() : d.created_at,
-                id_product_inventory: d.id_product_inventory,
                 id_transaction_operation_type: d.id_transaction_operation_type,
                 id_product: d.id_product,
                 id_route_transaction: d.id_route_transaction,
             }));
 
             const { error } = await this.supabase
-                .from('route_transaction_descriptions')
+                .from(SERVER_DATABASE_ENUM.ROUTE_TRANSACTION_DESCRIPTIONS)
                 .upsert(records, { onConflict: 'id_route_transaction_description' });
 
             if (error) throw new Error(`Error upserting route transaction descriptions: ${error.message}`);

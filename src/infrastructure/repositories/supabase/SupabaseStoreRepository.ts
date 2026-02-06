@@ -6,14 +6,17 @@ import { Store } from '@/src/core/entities/Store';
 
 // Interfaces
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
+import { SyncServerStoreRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerStoreRepository';
 
 // Infrastructure
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'; 
 
+// Models
+import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
+
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { SyncServerStoreRepository } from '../../persitence/interface/server-database/SyncServerStoreRepository';
-import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
+import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
 
 
 @injectable()
@@ -45,7 +48,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
             }));
 
             const { error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .insert(storeRecords);
 
             if (error) throw new Error(`Error inserting stores: ${ error.message }`);
@@ -75,7 +78,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
             };
 
             const { error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .update(storeRecord)
                 .eq('id_store', store.id_store);
 
@@ -88,7 +91,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
     async retrieveStore(id_stores: string[]): Promise<Store[]> {
         try {
             const { data, error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .select('*')
                 .in('id_store', id_stores);
 
@@ -102,7 +105,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
     async listStores(): Promise<Store[]> {
         try {
             const { data, error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .select('*');
 
             if (error) throw new Error(`Error listing stores: ${error.message}`);
@@ -117,7 +120,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
             const storeIds = stores.map(store => store.id_store);
 
             const { error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .delete()
                 .in('id_store', storeIds);
 
@@ -131,7 +134,6 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
         if (!stores || stores.length === 0) return;
         try {
             const records = stores.map((store) => ({
-                id_store: store.id_store,
                 street: store.street,
                 ext_number: store.ext_number,
                 colony: store.colony,
@@ -143,13 +145,14 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
                 latitude: store.latitude,
                 longitude: store.longitude,
                 creation_date: store.creation_date,
+                creation_context: store.creation_context,
                 status_store: store.status_store,
-                // Optional fields present in domain, include if your schema supports them
-                // id_creator: store.id_creator,
+                id_creator: store.id_creator,
+                id_store: store.id_store,
             }));
 
             const { error } = await this.supabase
-                .from('stores')
+                .from(SERVER_DATABASE_ENUM.STORES)
                 .upsert(records, { onConflict: 'id_store' });
 
             if (error) throw new Error(`Error upserting stores: ${error.message}`);
