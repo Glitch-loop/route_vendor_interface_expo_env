@@ -34,6 +34,8 @@ export default class DataReplicationService {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
 
+            console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
+            console.log(`Pending stores to sync: ${pendingStores.length}`);
             if (pendingWorkDays.length > 0) {
                 await this.serverWorkdayRepo.upsertWorkdayInformations(pendingWorkDays as any);
                 await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(pendingWorkDays.map(w => w.id_work_day));
@@ -43,40 +45,49 @@ export default class DataReplicationService {
                 await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
             }
         } catch (error) {
+            console.error("Phase 1 error: ", error);
             // Do not mark as synced on failure; let future session retry
         }
 
         // Phase 2: Route transactions and inventory operations
         try {
-            const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
+            const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();            
+            const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
+
+            console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
+            console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
+
             if (pendingRouteTx.length > 0) {
                 await this.serverRouteTxRepo.upsertRouteTransactions(pendingRouteTx);
                 await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_route_transaction));
             }
-
-            const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
             if (pendingInvOps.length > 0) {
                 await this.serverInventoryRepo.upsertInventoryOperations(pendingInvOps);
                 await this.syncInventoryOpRepo.markInventoryOperationsAsSynced(pendingInvOps.map(o => o.id_inventory_operation));
             }
         } catch (error) {
-            // Do not mark as synced on failure; let future session retry
+            console.error("Phase 2 error: ", error);
         }
 
         // Phase 3: Descriptions
         try {
             const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
+            const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
+
+            console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
+            console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
+
             if (pendingRouteTxDescs.length > 0) {
                 await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(pendingRouteTxDescs);
                 await this.syncRouteTxRepo.markRouteTransactionDescriptionsAsSynced(pendingRouteTxDescs.map(d => d.id_route_transaction_description));
             }
 
-            const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
             if (pendingInvOpDescs.length > 0) {
                 await this.serverInventoryRepo.upsertInventoryOperationDescriptions(pendingInvOpDescs);
                 await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
             }
         } catch (error) {
+            console.error("Phase 1 error: ", error);
             // Do not mark as synced on failure; let future session retry
         }
     }

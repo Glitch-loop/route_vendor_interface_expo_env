@@ -67,6 +67,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
     }
 
     async dropDatabase(): Promise<void> { 
+        console.log("Dropping database...")
         const tablesToDelete:string[] = [
             EMBEDDED_TABLES.USER,
             EMBEDDED_TABLES.ROUTE_DAY,

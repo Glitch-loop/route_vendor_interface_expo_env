@@ -71,7 +71,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             }
             return pending;
         } catch (error) {
-            throw new Error('Failed to list pending workday information to sync.');
+            throw new Error('Failed to list pending workday information to sync: ' + error);
         }
     }
 
@@ -88,7 +88,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 );
             });
         } catch (error) {
-            throw new Error('Failed to mark workday information as synced.');
+            throw new Error('Failed to mark workday information as synced: ' + error);
         }
     }
 
@@ -101,7 +101,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 [workDay.id_work_day]
             );
         } catch (error) {
-            throw new Error('Failed to delete work day.');
+            throw new Error('Failed to delete work day: ' + error);
         }
     }
     
@@ -136,7 +136,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 workDay.id_work_day
             ]);
         } catch (error) {
-            throw new Error('Failed to update work day.');
+            throw new Error('Failed to update work day: ' + error);
         }
     }
 
@@ -165,7 +165,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             
             return workDays;
         } catch (error) {
-            throw new Error('Failed to list work days.');
+            throw new Error('Failed to list work days: ' + error);
         }
     }
 }

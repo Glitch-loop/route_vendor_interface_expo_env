@@ -45,6 +45,7 @@ import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperat
 import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '../components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 
 const routeOperationMenuLayout = () => {
@@ -132,6 +133,11 @@ const routeOperationMenuLayout = () => {
 
     const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
     
+    
+    const sycingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+    await sycingService.executeReplicationSession();
+    return
+
     const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
 
     for (const inventoryOperation of productDevolutionOperations) {
@@ -167,7 +173,6 @@ const routeOperationMenuLayout = () => {
 
       
       const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
-      
 
       await finishShiftDayUseCase.execute();
 

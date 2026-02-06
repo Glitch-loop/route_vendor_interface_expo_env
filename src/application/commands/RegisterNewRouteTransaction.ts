@@ -10,6 +10,7 @@ import { DayOperation } from '@/src/core/entities/DayOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { Store } from '@/src/core/entities/Store';
+import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
 // Interfaces
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -22,17 +23,18 @@ import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 // Object values
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
+// DTOs & Mapper
+import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+
+// Aggregates
+import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
+
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
-import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
-import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
-import WorkDayInformationDTO from '../dto/WorkdayInformationDTO';
-import RouteTransactionDTO from '../dto/RouteTransactionDTO';
-import { MapperDTO } from '../mappers/MapperDTO';
-import { Route } from 'expo-router';
-import RouteTransactionDescriptionDTO from '../dto/RouteTransactionDescriptionDTO';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
 @injectable()
 export default class RegisterNewRouteTransaction {

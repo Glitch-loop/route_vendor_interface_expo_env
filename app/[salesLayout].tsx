@@ -110,18 +110,6 @@ const salesLayout = () => {
 
 
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
-  // const glob = useGlobalSearchParams();
-
-  // // Auxiliar variables
-  // // Getting information from parameters
-  // let initialProductDevolution:IProductInventory[] 
-  // = getInitialInventoryParametersFromRoute(glob.information, 'initialProductDevolution');
-
-  // let initialProductResposition:IProductInventory[]
-  //   = getInitialInventoryParametersFromRoute(glob.information, 'initialProductReposition');
-
-  // let initialSaleProduct:IProductInventory[]
-  //   = getInitialInventoryParametersFromRoute(glob.information, 'initialProductSale');
 
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
@@ -238,6 +226,7 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
+      console.log("Registering route transaction")
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
@@ -246,7 +235,9 @@ const salesLayout = () => {
         id_store_search_param
       );
       
+      console.log("Retrieve current shift")
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+      console.log("Retrieve operations day")
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
             
       const newInventory = await retrieveCurrentShiftInventory.execute();
@@ -262,10 +253,11 @@ const salesLayout = () => {
             
         setResultSaleState(true);
       } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1:'Hubo un problema durante el registro de la venta',
-        text2: 'Hubo un problema durante el registro de la venta, porfavor, intente nuevamente.'});
+        console.error("Error during registering route transaction: ", error);
+        Toast.show({
+          type: 'error',
+          text1:'Hubo un problema durante el registro de la venta',
+          text2: 'Hubo un problema durante el registro de la venta, porfavor, intente nuevamente.'});
         
         setResultSaleState(false);
     }

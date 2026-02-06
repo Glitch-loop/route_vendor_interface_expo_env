@@ -75,7 +75,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
         const inventory: ProductInventory[] = [];
         try {
             await this.dataSource.initialize();
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
             const result = statement.executeSync<any>();
             const rows = result.getAllSync();
@@ -101,7 +101,7 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
     async deleteInventory(products: ProductInventory[]): Promise<void> {
         try { 
             await this.dataSource.initialize();
-            const db: SQLiteDatabase = this.dataSource.getClient();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const product of products) {
                     await tx.runAsync(`
