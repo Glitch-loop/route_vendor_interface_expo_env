@@ -63,6 +63,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
+            console.log(db)
             const pending: WorkDayInformationModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();

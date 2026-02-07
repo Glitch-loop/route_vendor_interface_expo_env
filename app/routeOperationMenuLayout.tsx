@@ -46,6 +46,7 @@ import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '../components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+import UserDTO from '@/src/application/dto/UserDTO';
 
 
 const routeOperationMenuLayout = () => {
@@ -135,7 +136,14 @@ const routeOperationMenuLayout = () => {
     
     
     const sycingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-    await sycingService.executeReplicationSession();
+    const userSession:UserDTO = {
+      id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
+      cellphone: '',
+      name: '',
+      password: '',
+      status: 1
+    }
+    await sycingService.executeReplicationSession(userSession);
     return
 
     const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);

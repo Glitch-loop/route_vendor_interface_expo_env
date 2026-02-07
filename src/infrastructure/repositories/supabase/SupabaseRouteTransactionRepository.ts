@@ -14,6 +14,7 @@ import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/mo
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 
 @injectable()
@@ -27,16 +28,17 @@ export class SupabaseRouteTransactionRepository implements SyncServerRouteTransa
     async upsertRouteTransactions(transactions: RouteTransactionModel[]): Promise<void> {
         if (!transactions || transactions.length === 0) return;
         try {
+            console.log("Upserting route transactions to server database: ", transactions);
             const records = transactions.map((t) => ({
                 id_route_transaction: t.id_route_transaction,
                 date: t.date,
-                state: t.state,
+                state: t.state === ROUTE_TRANSACTION_STATE.ACTIVE ? 1 : 0, // Assuming the server expects an integer for state
                 cash_received: t.cash_received,
                 id_work_day: t.id_work_day,
-                id_payment_method: t.payment_method,
+                id_payment_method: t.id_payment_method,
                 id_store: t.id_store,
             }));
-
+            console.log("Mapped route transactions for upsert: ", records);
             const { error } = await this.supabase
                 .from(SERVER_DATABASE_ENUM.ROUTE_TRANSACTIONS)
                 .upsert(records, { onConflict: 'id_route_transaction' });
@@ -56,7 +58,7 @@ export class SupabaseRouteTransactionRepository implements SyncServerRouteTransa
                 amount: d.amount,
                 comission_at_moment: 0, // Bussines rule: Comission of the sale is assigned by the manager system.
                 created_at: d.created_at instanceof Date ? d.created_at.toISOString() : d.created_at,
-                id_transaction_operation_type: d.id_transaction_operation_type,
+                id_route_transaction_operation_type: d.id_transaction_operation_type,
                 id_product: d.id_product,
                 id_route_transaction: d.id_route_transaction,
             }));

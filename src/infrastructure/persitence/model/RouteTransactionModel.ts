@@ -9,5 +9,5 @@ export default interface RouteTransactionModel extends ReplicationDataInterface 
     cash_received: number,
     id_work_day: string,
     id_store: string,
-    payment_method: PAYMENT_METHODS,
+    id_payment_method: PAYMENT_METHODS,
 }

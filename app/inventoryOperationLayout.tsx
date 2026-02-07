@@ -44,19 +44,6 @@ import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { getTitleDayOperation } from '@/utils/day-operation/utils'; 
 import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
 
-// Definitions
-const settingOperationDescriptions:any = {
-  showErrorMessage: true,
-  toastTitleError: 'Error durante la consulta de la operación de inventario',
-  toastMessageError: 'Ha habido un error durante la consulta, no se ha podido recuperar parte de las operaciones de inventario, por favor intente nuevamente',
-};
-const settingAllInventoryOperations:any = {
-  showErrorMessage: true,
-  toastTitleError:'Error al mostrar inventario final',
-  toastMessageError: 'Ha habido un error durante la consulta de las operaciones de inventario del dia, por favor intente nuevamente',
-};
-
-
 // Use cases
 import ListAllProductOfCompany from '@/src/application/queries/ListAllProductOfCompany';
 
@@ -86,6 +73,9 @@ import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/
 import CancelInventoryOperationUseCase from '@/src/application/commands/CancelInventoryOperationUseCase';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/RegisterFinalShiftInventoryUseCase';
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
 
 // Auxiliar functions
@@ -197,6 +187,10 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
+    const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
+    await sqliteDataSource.initialize();
+  
+    // Initializing local database
     const getProductOfCompany = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  

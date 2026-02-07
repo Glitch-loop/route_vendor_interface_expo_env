@@ -36,7 +36,7 @@ export class SupabaseWorkdayInformationRepository implements SyncServerWorkdayIn
                 id_route: info.id_route,
                 id_route_day: info.id_route_day,
                 id_vendor: info.id_vendor,
-                id_comission: null, // Business rule: This field is assigned by the manager's system
+                id_commission: null, // Business rule: This field is assigned by the manager's system
                 comment: null
             }));
 

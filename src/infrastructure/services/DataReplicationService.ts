@@ -10,6 +10,9 @@ import { SyncServerStoreRepository } from "../persitence/interface/server-databa
 import { SyncServerWorkdayInformationRepository } from "../persitence/interface/server-database/SyncServerWorkdayInformationRepository";
 import { SyncServerRouteTransactionRepository } from "../persitence/interface/server-database/SyncServerRouteTransactionRepository";
 import { SyncServerInventoryOperationRepository } from "../persitence/interface/server-database/SyncServerInventoryOperationRepository";
+import UserDTO from "@/src/application/dto/UserDTO";
+import WorkDayInformationModel from "../persitence/model/WorkdayInformationModel";
+import UserModel from "../persitence/model/UserModel";
 
 
 @injectable()
@@ -28,16 +31,18 @@ export default class DataReplicationService {
         @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
     ) { }   
     
-    async executeReplicationSession(): Promise<void> {
+    async executeReplicationSession(userSession: UserDTO): Promise<void> {
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
 
+            const workDaysWithUser:(WorkDayInformationModel&UserModel)[] = pendingWorkDays.map(wd => ({ ...wd, ...userSession as UserModel }));
+
             console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
             console.log(`Pending stores to sync: ${pendingStores.length}`);
             if (pendingWorkDays.length > 0) {
-                await this.serverWorkdayRepo.upsertWorkdayInformations(pendingWorkDays as any);
+                await this.serverWorkdayRepo.upsertWorkdayInformations(workDaysWithUser);
                 await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(pendingWorkDays.map(w => w.id_work_day));
             }
             if (pendingStores.length > 0) {
@@ -87,7 +92,7 @@ export default class DataReplicationService {
                 await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
             }
         } catch (error) {
-            console.error("Phase 1 error: ", error);
+            console.error("Phase 3 error: ", error);
             // Do not mark as synced on failure; let future session retry
         }
     }
