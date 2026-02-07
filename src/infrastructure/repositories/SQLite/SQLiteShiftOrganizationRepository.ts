@@ -55,7 +55,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 workDay.id_route_day
             ]);
         } catch (error) {
-            throw new Error('Failed to insert work day.');
+            throw new Error('Failed to insert work day: ' + error);
         }
     }
 

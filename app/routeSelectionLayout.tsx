@@ -51,6 +51,7 @@ const routeSelectionLayout = () => {
   // Redux
   const dispatch: AppDispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
+  const workday = useSelector((state: RootState) => state.workDayInformation);
 
   // Routing
   const router:Router = useRouter();
@@ -62,11 +63,24 @@ const routeSelectionLayout = () => {
   const [routeDaySelected, setRouteDaySelected] = useState<RouteDayDTO|undefined>(undefined);
   const [routeSelected, setRouteSelected] = useState<RouteDTO|undefined>(undefined);
 
-  useEffect(() => { 
-    startSession() 
+  useEffect(() => {
+    determineFlowStartSession();
   }, []);
 
+  
+
   // Auxiliar functions
+  const determineFlowStartSession = async () => {
+    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
+    if (workday === null && user !== null) {
+      const { id_vendor } = user;
+      const routes = await getAllRoutesByUserQuery.execute(id_vendor)
+      setVendorRoutes(routes);
+    } else {
+      router.replace('/routeOperationMenuLayout');
+    }
+  }
+
   const holdRouteSelected = (routeDaySelected: RouteDayDTO, route: RouteDTO) => {
     /*
       This screen is part of the start shift process of the vendor.
@@ -89,45 +103,6 @@ const routeSelectionLayout = () => {
     router.push('/selectionRouteOperationLayout');
   };
 
-  const startSession = async () => {
-    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
-    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
-
-    try {
-      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
-
-      
-      if (workDayInformation !== null) { // A work day exists
-        const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
-        const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
-        const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
-        const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
-
-        dispatch(setWorkDayInformation(workDayInformation));
-        dispatch(setProductInventory(productInventory));
-        dispatch(setDayOperations(dayOperations));
-        dispatch(setStores(stores));
-        dispatch(setProducts(products));
-        
-        router.push('/routeOperationMenuLayout');
-
-      } else { // It is a new 'work' day.
-        const routes = await getAllRoutesByUserQuery.execute('b6665f54-37de-4991-a7c4-283599bb0658')
-        setVendorRoutes(routes);
-      }
-    } catch (error) {
-      console.error(error);
-      Toast.show({type: 'error',
-        text1:'Error durante la inicialización de la aplicación.',
-        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
-      });
-    }
-
-  }
 
   //Handlers
   const handleSelectRoute = (routeDay: RouteDayDTO) => {
@@ -174,7 +149,7 @@ const routeSelectionLayout = () => {
   };
 
   const onRefresh = () => {
-    startSession();
+    // startSession();
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);

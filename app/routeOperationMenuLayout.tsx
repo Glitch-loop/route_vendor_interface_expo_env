@@ -134,17 +134,6 @@ const routeOperationMenuLayout = () => {
 
     const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
     
-    
-    const sycingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-    const userSession:UserDTO = {
-      id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
-      cellphone: '',
-      name: '',
-      password: '',
-      status: 1
-    }
-    await sycingService.executeReplicationSession(userSession);
-    return
 
     const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
 
@@ -179,10 +168,22 @@ const routeOperationMenuLayout = () => {
         text1:'Sincronizando con base de datos, por favor espere',
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
-      
+      const sycingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+      const userSession:UserDTO = {
+        id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
+        cellphone: '',
+        name: '',
+        password: '',
+        status: 1
+      }
+      await sycingService.executeReplicationSession(userSession);
+    
+    
       const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
 
       await finishShiftDayUseCase.execute();
+
+
 
       // Clean redux states
       dispatch(clearDayOperations());

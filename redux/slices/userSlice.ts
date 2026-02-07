@@ -1,20 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IUser } from '../../interfaces/interfaces';
-
-const initialState: IUser = {
-  id_vendor: '',
-  cellphone: '',
-  name: '',
-  password: '',
-  status: 0,
-};
-
+import UserDTO from '@/src/application/dto/UserDTO';
 
 const userSlice = createSlice({
   name: 'user',
-  initialState,
+  initialState: null as UserDTO | null,
   reducers: {
-    setUser: (state, action: PayloadAction<IUser>) => {
+    setUser: (state, action: PayloadAction<UserDTO>) => {
       return {
         id_vendor: action.payload.id_vendor,
         name:      action.payload.name,
@@ -24,13 +15,7 @@ const userSlice = createSlice({
       };
     },
     logoutUser: (state, action: PayloadAction<null>) => {
-      return {
-        id_vendor: '',
-        name:      '',
-        cellphone: '',
-        password:  '',
-        status:    1,
-      }
+      return null;
     }
   },
 });
