@@ -1,13 +1,16 @@
+// Libraries
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import tw from 'twrnc';
-
-
 import { useRouter, Router } from 'expo-router';
+
+// Redux
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
-import { logoutUser } from '../redux/slices/userSlice'
-import ProjectButton from './shared-components/ProjectButton';
+import { AppDispatch, RootState } from '@/redux/store';
+import { logoutUser } from '@/redux/slices/userSlice'
+
+// UI components
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 
 const MainMenuHeader = () => {
