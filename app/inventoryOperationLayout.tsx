@@ -14,7 +14,7 @@ import { setStores } from '@/redux/slices/storesSlice';
 import { setProducts } from '@/redux/slices/productSlice';
 
 // Components
-import RouteHeader from '../components/RouteHeader';
+import RouteHeader from '@/components/shared-components/RouteHeader';
 import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperation';
 import VendorConfirmation from '../components/VendorConfirmation';
 import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryOperationVisualization';
@@ -35,7 +35,7 @@ import TableCashReception from '../components/InventoryComponents/TableCashRecep
 import { calculateNewInventoryAfterAnInventoryOperation, initialMXNCurrencyState, mergeInventories } from '../utils/inventoryOperations';
 
 
-import ActionDialog from '../components/shared-components/ActionDialog';
+import ActionDialog from '@/components/shared-components/ActionDialog';
 
 // Enums
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';

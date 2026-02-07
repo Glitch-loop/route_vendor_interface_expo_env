@@ -4,12 +4,12 @@ import { Router, useRouter } from 'expo-router';
 import { Pressable, View, Text } from 'react-native';
 import tw from 'twrnc';
 
-// Components
-import RouteHeader from '@/components/RouteHeader';
-import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
-
 // UI
+import RouteHeader from '@/components/shared-components/RouteHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// Utils
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 const selectionRouteOperationLayout = () => {
   //Router

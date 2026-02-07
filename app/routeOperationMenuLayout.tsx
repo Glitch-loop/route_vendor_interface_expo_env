@@ -43,7 +43,7 @@ import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseC
 // Utils
 import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
 import { maintainUserTable } from '../services/authenticationService';
-import ActionDialog from '../components/shared-components/ActionDialog';
+import ActionDialog from '@/components/shared-components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 import UserDTO from '@/src/application/dto/UserDTO';
