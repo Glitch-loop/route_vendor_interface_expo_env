@@ -1,6 +1,6 @@
 // Libraries
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import tw from 'twrnc';
 
 // Components
@@ -30,17 +30,19 @@ const RouteCard = (
         <View style={tw`flex basis-2/12 flex-col items-center`}>
           <Text style={tw`text-black text-lg text-center`}>{itemOrder}</Text>
         </View>
-        { description ?
-          <View style={tw`flex basis-8/12 flex-col justify-start`}>
-            <Text style={tw`text-black text-lg`} numberOfLines={1} ellipsizeMode="head">
-              {capitalizeFirstLetterOfEachWord(itemName)}
-            </Text>
-            <Text style={tw`text-black text-xs`}>{capitalizeFirstLetterOfEachWord(description)}</Text>
-          </View> :
-          <View style={tw`flex basis-8/12 flex-col justify-start`}>
-            <Text style={tw`text-black text-lg`}>{capitalizeFirstLetterOfEachWord(itemName)}</Text>
+        <View style={tw`basis-8/12`}>
+          <View style={tw`flex flex-col justify-center items-start`}>
+            <ScrollView
+              showsHorizontalScrollIndicator={true}
+              persistentScrollbar={true}
+              horizontal={true}>
+                  <View style={tw`my-2`}>
+                    <Text style={tw`text-black text-lg`}>{capitalizeFirstLetterOfEachWord(itemName)}</Text>
+                    { description && <Text style={tw`text-black text-xs`}>{capitalizeFirstLetterOfEachWord(description)}</Text> } 
+                  </View>
+              </ScrollView>
           </View>
-        }
+        </View>
         {/* <View style={tw`flex basis-1/6 flex-col justify-center`}>
           {totalValue &&
             <Text style={tw`text-black text-lg`}>
