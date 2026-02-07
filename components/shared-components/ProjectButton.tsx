@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, Text, ViewStyle, StyleProp } from 'react-native';
 import tw from 'twrnc';
 
-type ButtonVariant = 'primary' | 'success' | 'warning' | 'indigo' | 'danger' | 'neutral';
+type ButtonVariant = 'primary' | 'success' | 'warning' | 'indigo' | 'purple' | 'danger' | 'neutral';
 
 interface ButtonProps {
   title: string;
@@ -18,6 +18,7 @@ const variantClasses: Record<ButtonVariant, { normal: string; pressed: string; t
   success: { normal: 'bg-green-500', pressed: 'bg-green-600', text: 'text-black' },
   warning: { normal: 'bg-orange-500', pressed: 'bg-orange-600', text: 'text-black' },
   indigo: { normal: 'bg-indigo-400', pressed: 'bg-indigo-500', text: 'text-black' },
+  purple: { normal: 'bg-indigo-300', pressed: 'bg-indigo-500', text: 'text-black' },
   danger: { normal: 'bg-red-600', pressed: 'bg-red-700', text: 'text-black' },
   neutral: { normal: 'bg-gray-300', pressed: 'bg-gray-400', text: 'text-black' },
 };

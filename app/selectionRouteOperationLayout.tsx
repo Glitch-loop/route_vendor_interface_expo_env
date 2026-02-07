@@ -1,7 +1,7 @@
 // Libraries
 import React from 'react';
 import { Router, useRouter } from 'expo-router';
-import { Pressable, View, Text } from 'react-native';
+import { View } from 'react-native';
 import tw from 'twrnc';
 
 // UI
@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Utils
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 const selectionRouteOperationLayout = () => {
   //Router
@@ -32,18 +33,20 @@ const selectionRouteOperationLayout = () => {
             onGoBack={handlerGoBack}/>
         </View>
         <View style={tw`w-full h-full flex flex-row items-center justify-center`}>
-          <Pressable
-          style={tw`bg-indigo-300 mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
-          onPress={() => handlerGoToInventory()}>
-            <Text style={tw`text-2xl text-center text-white`}>
-              Auto registro de inventario.
-            </Text>
-          </Pressable>
-          <Pressable style={tw`bg-indigo-200 w-52 h-44 rounded-full flex flex-row justify-center items-center max-w-44`}>
-            <Text style={tw`text-2xl text-center text-white`}>
-              Registro de inventario por administrador.
-            </Text>
-          </Pressable>
+          <ProjectButton 
+            title={'Auto registro de inventario'}
+            onPress={handlerGoToInventory}
+            buttonVariant={'indigo'}
+            textStyle='text-2xl text-center text-white'
+            buttonStyle={tw`mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
+          />
+          <ProjectButton 
+            title={'Registro de inventario por administrador.'}
+            onPress={() => {}}
+            buttonVariant={'purple'}
+            textStyle='text-2xl text-center text-white'
+            buttonStyle={tw`mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
+          />
         </View>
       </View>
     </SafeAreaView>
