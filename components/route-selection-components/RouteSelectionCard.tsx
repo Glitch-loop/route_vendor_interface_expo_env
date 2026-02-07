@@ -4,6 +4,9 @@ import { View, Text, Pressable } from 'react-native';
 import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+// UI Components
+import GoButton from '@/components/shared-components/GoButton';
+
 // DTOs
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 
@@ -28,29 +31,24 @@ const RouteSelectionCard = ({
     return (
       <View style={
         tw`my-2 rounded w-11/12 h-auto 
-          flex flex-row justify-center items-center text-white
+          flex flex-row justify-between items-center text-white
           ${todayTurn ? 'bg-green-700' : 'bg-blue-500'}`
         }>
-        <View style={tw`flex flex-row basis-2/6 justify-start items-center ml-2`}>
-          <View style={tw`w-full flex flex flex-col items-start justify-start`}>
+        <View style={tw`flex flex-row justify-start items-center`}>
+          <View style={tw`flex flex flex-col items-start justify-start ml-2`}>
             <Text style={tw`text-white text-xl`}>{routeName}</Text>
             <Text style={tw`text-white text-xl`}>{day}</Text>
           </View>
         </View>
-        <View style={tw`flex flex-row basis-3/6 justify-start`}>
+        {/* <View style={tw`flex flex-row basis-3/6 justify-start`}>
           <Text style={tw`text-white text-base`}>
             {description}
           </Text>
-        </View>
-        <View style={tw`flex flex-row basis-1/6 justify-end`}>
-          <View style={tw`mr-2`}>
-            <Pressable
-            style={tw`bg-blue-700 px-4 py-3 rounded-full`}
-            onPress={() => { onSelectCard(routeDay); }}
-            >
-              <Icon name="chevron-right" style={tw`text-base text-center`} color="#fff" />
-            </Pressable>
-          </View>
+        </View> */}
+        <View style={tw`flex flex-row justify-end items-center mr-2`}>
+          <GoButton
+            iconName='chevron-right'
+            onPressButton={() => { onSelectCard(routeDay); }}/>
         </View>
       </View>
     );

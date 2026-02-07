@@ -14,8 +14,8 @@ import { setRoute } from '@/redux/slices/routeSlice';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setStores } from '@/redux/slices/storesSlice';
 
-// Components
-import RouteSelectionCard from '@/components/RouteSelectionComponents/RouteSelectionCard';
+// UI Components
+import RouteSelectionCard from '@/components/route-selection-components/RouteSelectionCard';
 import MainMenuHeader from '@/components/MainMenuHeader';
 import ActionDialog from '@/components/ActionDialog';
 
