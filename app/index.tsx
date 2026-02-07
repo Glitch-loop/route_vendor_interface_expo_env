@@ -165,8 +165,8 @@ export default function Index() {
 
     dispatch(setUser({
       id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
-      cellphone: '',
-      name: '',
+      cellphone: '3221488795',
+      name: 'Renet de Jesús Pérez Gómez de renteria abdulasis',
       password: '',
       status: 1
     }))
