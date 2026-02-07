@@ -43,8 +43,6 @@ const RouteHeader = ({onGoBack}:{onGoBack:any}) => {
   if (workdayInformation !== null) {
     DAYS_ARRAY.find((day) => day.id_day === workdayInformation.id_day)?.day_name
   } else if (routeDaySelected !== null) {
-    console.log("Day selected: ", routeDaySelected.id_day)
-
     dayName = DAYS_ARRAY.find((day) => day.id_day === routeDaySelected.id_day)?.day_name || '';
   } else {
     dayName = '';

@@ -18,7 +18,7 @@ export function timestamp_format() {
 }
 
 export function format_date_to_UI_format(date: Date | string) {
-  return dayjs(date).format('DD-MM-YY HH:mm:ss');
+  return dayjs(date).format('DD-MM-YY HH:mm a');
 }
 
 export function current_day_name() {
