@@ -13,7 +13,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import TableProduct from '@/components/SalesLayout/TableProduct';
 import SaleSummarize from '@/components/SalesLayout/SaleSummarize';
-import ConfirmationBand from '@/components/ConfirmationBand';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import ResultSale from '@/components/ResultSale';
 import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
 import PaymentProcess from '@/components/SalesLayout/PaymentProcess';

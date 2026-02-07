@@ -4,7 +4,7 @@ import { View, Text, TextInput } from 'react-native';
 import tw from 'twrnc';
 
 // Components
-import ConfirmationBand from './ConfirmationBand';
+import ConfirmationBand from './shared-components/ConfirmationBand';
 import Toast from 'react-native-toast-message';
 
 /*

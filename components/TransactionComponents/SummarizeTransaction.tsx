@@ -16,8 +16,8 @@ import SectionTitle from '@/components/SalesLayout/SectionTitle';
 import SummarizeFormat from '@/components/TransactionComponents/SummarizeFormat';
 import TotalsSummarize from '@/components/SalesLayout/TotalsSummarize';
 import DangerButton from '@/components/generalComponents/DangerButton';
-import ActionDialog from '@/components/ActionDialog';
-import ConfirmationBand from '@/components/ConfirmationBand';
+import ActionDialog from '@/components/shared-components/ActionDialog';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 
 // UI - components
 import Toast from 'react-native-toast-message';

@@ -5,7 +5,7 @@ import tw from 'twrnc';
 import { Dialog, Portal } from 'react-native-paper';
 
 // Components
-import ConfirmationBand from './ConfirmationBand';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';;
 
 
 const ActionDialog = (

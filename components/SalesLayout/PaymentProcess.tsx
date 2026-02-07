@@ -12,7 +12,7 @@ import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 // Components
 import PaymentMenu from './PaymentMenu';
 import PaymentMethod from './PaymentMethod';
-import ActionDialog from '../ActionDialog';
+import ActionDialog from '@/components/shared-components/ActionDialog';
 
 const PaymentProcess = ({
   transactionIdentifier,

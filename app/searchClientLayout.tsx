@@ -27,7 +27,7 @@ import { createDayOperationConcept } from '@/controllers/DayOperationController'
 // Components
 import RouteMap from '@/components/RouteMap';
 import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
-import ConfirmationBand from '@/components/ConfirmationBand';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import RouteHeader from '@/components/RouteHeader';
 import Toast from 'react-native-toast-message';
 

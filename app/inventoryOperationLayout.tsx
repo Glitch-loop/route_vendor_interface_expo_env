@@ -35,7 +35,7 @@ import TableCashReception from '../components/InventoryComponents/TableCashRecep
 import { calculateNewInventoryAfterAnInventoryOperation, initialMXNCurrencyState, mergeInventories } from '../utils/inventoryOperations';
 
 
-import ActionDialog from '../components/ActionDialog';
+import ActionDialog from '../components/shared-components/ActionDialog';
 
 // Enums
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
