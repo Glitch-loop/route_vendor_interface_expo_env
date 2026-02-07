@@ -14,7 +14,7 @@ import {
 // Components
 // import RouteMap from '../components/RouteMap';
 import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
-import MenuHeader from '../components/generalComponents/MenuHeader';
+import MenuHeader from '../components/shared-components/MenuHeader';
 import Toast from 'react-native-toast-message';
 import RouteMap from '@/components/RouteMap';
 
@@ -189,10 +189,10 @@ const storeMenuLayout = () => {
     // Main menu of store
     <SafeAreaView>
       <View style={tw`w-full h-full`}>
-        <View style={tw`w-full flex basis-1/12 flex-row justify-around items-center`}>
+        <View style={tw`w-full flex basis-1/12 flex-row justify-center items-center`}>
           <MenuHeader 
-          id_store={id_store_search_param}
-          onGoBack={handlerGoBackToMainOperationMenu}/>
+            id_store={id_store_search_param}
+            onGoBack={handlerGoBackToMainOperationMenu}/>
         </View>
         { consultedStore != null &&
           <View style={tw`w-full my-2 flex items-center justify-around`}>
@@ -209,31 +209,27 @@ const storeMenuLayout = () => {
           //   <Text style={tw`text-black text-center`}> No es posible mostrar el mapa debido a falta de información sobre la tienda</Text>
           // </View>
         }
-        <View style={tw`w-11/12 mx-2 mt-2 flex flex-col basis-5/12 flex-col items-start justify-start`}>
-          { consultedStore !== null &&
-            <View style={tw`basis-1/4 flex flex-row justify-around items-center`}>
-              <View style={tw`flex flex-col justify-around`}>
+        <View style={tw`w-11/12 mx-2 mt-2 flex flex-col basis-5/12 flex-col items-center justify-start`}>
+          { consultedStore !== null && 
+          <View style={tw`w-11/12 mx-2 basis-2/4 flex flex-col justify-center items-center`}>
+            <ScrollView
+              persistentScrollbar={true}
+              showsVerticalScrollIndicator={true}>
+              <View style={tw`my-3 flex flex-col justify-start items-start`}>
                 <Text style={tw`text-black text-xl`}>Dirección</Text>
                 <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
               </View>
-              {/* <View style={tw`flex flex-col basis-1/2 justify-around`}>
-                <Text style={[tw`text-black text-xl`, { lineHeight: 20! }]}>
-                  Información del cliente
+              <View style={tw`flex flex-col justify-start items-start`}>
+                <Text style={tw`text-black text-xl`}>Referencia</Text>
+                <Text style={tw`text-black`}>
+                  { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
+                    'No disponible' :
+                    capitalizeFirstLetter(consultedStore.address_reference)
+                  }
                 </Text>
-                <Text style={tw`text-black`}> {capitalizeFirstLetterOfEachWord(displayingClientInformation(store))} </Text>
-              </View> */}
-            </View>
-          }
-          { consultedStore !== null &&
-            <View style={tw`basis-1/4 flex flex-col justify-start items-start`}>
-              <Text style={tw`text-black text-xl`}>Referencia</Text>
-              <Text style={tw`text-black`}>
-                { consultedStore.address_reference === '' || consultedStore.address_reference === null ?
-                  'No disponible' :
-                  capitalizeFirstLetter(consultedStore.address_reference)
-                }
-              </Text>
-            </View>
+              </View>
+          </ScrollView>
+          </View>
           }
           {/* Actions band */}
           <View style={tw`w-full basis-1/4 flex flex-row justify-around items-center`}>

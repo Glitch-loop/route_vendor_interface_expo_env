@@ -244,7 +244,8 @@ const BluetoothButton = () => {
       }
       <Pressable
         style={({pressed}) => [
-          tw`bg-blue-700 py-6 px-6 rounded-full`,
+          // py-6 px-6
+          tw`bg-blue-700 w-12 h-12 rounded-full`,
           pressed ? tw`bg-blue-800` : tw`bg-blue-600`,
         ]}
         onPress={handleOnAccessBleMenu}>
@@ -252,9 +253,10 @@ const BluetoothButton = () => {
           style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
       </Pressable>
       { isBeingConnected || renderingComponent ?
-        <ActivityIndicator style={tw`absolute top-0 right-8`}/> :
+        <ActivityIndicator style={tw`absolute top-0 right-10`}/> :
         <View
-          style={tw`absolute top-0 right-8 ${connectedPrinter !== null ? 'bg-green-500' : 'bg-red-700'} py-3 px-3 
+          // py-3 px-3
+          style={tw`absolute top-0 right-10 ${connectedPrinter !== null ? 'bg-green-500' : 'bg-red-700'}  w-5 h-5
           rounded-full`}/>
       }
     </View>

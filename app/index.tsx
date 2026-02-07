@@ -76,62 +76,11 @@ async function appInitialization() {
   // Initializing local database
   const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
   try {
-  // await sqliteDatabaseService.dropDatabase();
-  await sqliteDatabaseService.createDatabase();
+    await sqliteDatabaseService.dropDatabase();
+    await sqliteDatabaseService.createDatabase();
   } catch (error) {
     console.log("Error during database initialization: ", error);
   }
-  // await sqliteDatabaseService.cleanDatabase();
-
-
-  // console.log("Get client: ", sqliteDataSource.getClient())
-
-  // Initializing SQLite database
-  // const dataSource = new SQLiteDataSource()
-  // await dataSource.initialize();
-  // const localDatabaseService = new SQLiteDatabaseService(dataSource);
-  
-
-  // Check all registered tokens
-  // console.log("\n📦 Checking DI Container Registrations:");
-  // Object.entries(TOKENS).forEach(([name, token]) => {
-  //   const isRegistered = container.isRegistered(token);
-  //   if (isRegistered) {
-  //     console.log(`  ✅ ${name} - REGISTERED`);
-  //   } else {
-  //     console.log(`  ❌ ${name} - NOT REGISTERED`);
-  //   }
-  // });
-  // console.log("\n");
-
-
-
-  // About container
-  // const sqliteDatabaseService = container.resolve(SQLiteDatabaseService);
-
-  console.log("Database created successfully");
-
-//   try {
-
-//     // Dropping database
-//     //console.log("deleting database")
-//     //await dropEmbeddedDatabase()
-
-//     //await dropUsersEmbeddedTable()
-//     // Creating database
-//     //console.log("creating database")
-//     await createEmbeddedDatabase();
-
-//     //await createBackgroundSyncProcess();
-//     // Verifying permissions
-//     // Connecting to the printer
-//     //await getPrinterBluetoothConnection();
-
-//     // Geolocalization permissions
-//     // await requestGeolocalizationPermissionsProcess();
-//   } catch (error) {
-//     console.log('Error: ', error);
-//   }
 }
 
 // const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -147,7 +96,6 @@ export default function Index() {
 
   useEffect(() => {
     // Initializing database
-    // appInitialization();
     startSession()
     console.log("Getting current location")
     // console.log(getCurrentUserLocation())
@@ -156,6 +104,8 @@ export default function Index() {
 
 
   const startSession = async () => {
+
+    await appInitialization();
     const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
     const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
     const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);

@@ -24,7 +24,7 @@ import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '
 
 // UI
 import RouteCard from '@/components/route-operation-menu/RouteCard';
-import MenuHeader from '@/components/generalComponents/MenuHeader';
+import MenuHeader from '@/components/shared-components/MenuHeader';
 import TypeOperationItem from '@/components/TypeOperationItem';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';

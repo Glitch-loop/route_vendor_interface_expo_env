@@ -17,7 +17,7 @@ import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import ResultSale from '@/components/ResultSale';
 import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
 import PaymentProcess from '@/components/SalesLayout/PaymentProcess';
-import MenuHeader from '@/components/generalComponents/MenuHeader';
+import MenuHeader from '@/components/shared-components/MenuHeader';
 import ActionButton from '@/components/SalesLayout/ActionButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -462,9 +462,12 @@ const salesLayout = () => {
                 paymentProcess          = { startPaymentProcess }
                 onCancelPaymentProcess  = { setStartPaymentProcess }
                 onPaySale               = {(receivedCash:number, paymnetMethod:PAYMENT_METHODS) => handlePaySale(receivedCash, paymnetMethod)}/>
-            <View style={tw`w-full flex flex-1 flex-col items-center`}>
+            <View style={tw`w-full flex flex-1 flex-col items-center justify-center`}>
               <View style={tw`my-3 w-full flex flex-row justify-center items-center`}>
-                <MenuHeader onGoBack={handleOnGoBack}/>
+                <MenuHeader 
+                  id_store={id_store_search_param}
+                  onGoBack={handleOnGoBack}
+                  />
               </View>
               <View style={tw`w-full flex flex-row`}>
                 <TableProduct
