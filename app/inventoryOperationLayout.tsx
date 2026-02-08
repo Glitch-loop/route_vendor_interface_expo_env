@@ -32,7 +32,7 @@ import {
 
  // Utils
 import TableCashReception from '../components/InventoryComponents/TableCashReception';
-import { calculateNewInventoryAfterAnInventoryOperation, initialMXNCurrencyState, mergeInventories } from '../utils/inventoryOperations';
+import { initialMXNCurrencyState, } from '../utils/inventoryOperations';
 
 
 import ActionDialog from '@/components/shared-components/ActionDialog';
@@ -76,6 +76,10 @@ import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/Regis
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
+import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
+import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
 
 
 // Auxiliar functions
@@ -187,6 +191,7 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
+    console.log("ID TYPE OF OPERATION: ", id_type_of_operation_search_param);
     const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
     await sqliteDataSource.initialize();
   
@@ -195,7 +200,10 @@ const inventoryOperationLayout = () => {
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  
     const determineIfInventoryOperationCancelableUseCase = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
-    
+    const listInventoryOperationsQuery = di_container.resolve<ListAllInventoryOperationsQuery>(ListAllInventoryOperationsQuery);
+    const listAllRouteTransactionsQuery = di_container.resolve<ListAllRouteTransactionsQuery>(ListAllRouteTransactionsQuery);
+
+
     const products: ProductDTO[] = await getProductOfCompany.execute();
     
     let inventoryOperationToConsult:InventoryOperationDTO[] = [];
@@ -266,13 +274,22 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        console.log("Final shift inventory descriptions: ", inventory_operation_descriptions);
+        console.log("Retrieving all route transactions")
+        const allRouteTransactions:RouteTransactionDTO[] = await listAllRouteTransactionsQuery.execute()
+        console.log("Retrieving all inventory operations")
+        const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
+        
+        const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
+        const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);
+        console.log("ALL ROUTE TRANSACTIONS: ", startInventoryOperationDescriptions);
+        console.log("ALL ROUTE TRANSACTIONS: ", restockInventoryOperationsDescriptions);
+
         setAvailableProducts(products);
-        setInitialShiftInventory([])
-        setRestockInventories([]);
+        setInitialShiftInventory(startInventoryOperationDescriptions[0])
+        setRestockInventories(restockInventoryOperationsDescriptions);
         setFinalShiftInventory(inventory_operation_descriptions);
-        setProductRepositionTransactions([]);
-        setProductSoldTransactions([]);
+        setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allRouteTransactions, DAY_OPERATIONS.product_reposition));
+        setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allRouteTransactions, DAY_OPERATIONS.sales));
 
         setInventoryWithdrawal(true);
         setInventoryOutflow(true);

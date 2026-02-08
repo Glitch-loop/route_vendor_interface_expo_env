@@ -257,7 +257,6 @@ const routeOperationMenuLayout = () => {
           <View style={tw`my-5`}>
             <MenuHeader
               showGoBackButton={false}
-              showStoreName={false}
               showPrinterButton={true}
               onGoBack={() => {}}/>
           </View>

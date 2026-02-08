@@ -184,44 +184,33 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             await this.dataSource.initialize();
             
             const transactions:RouteTransaction[] = [];
-            const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
 
             // Retrieve all route transaction descriptions
-            const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
-
             const db: SQLiteDatabase = this.dataSource.getClient();
             
             // Retrieve all route transactions
             const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
             const resultTransactions = transactionsStatement.executeSync<any>();
 
-            // Group descriptions by their route transaction ID
-            for (const transactionDescription of resultRouteTransactionDescriptions) {
-                const descriptions = routeTransactionDescriptions.get(transactionDescription.id_route_transaction) || [];
-                descriptions.push(transactionDescription);
-                routeTransactionDescriptions.set(transactionDescription.id_route_transaction, descriptions);
-            }
-
             // Map descriptions to their respective transactions
-            for (const transaction of resultTransactions) {
-                const id_route_transaction:string = transaction[0];
+            for (const transaction of resultTransactions) {                
+                const id_route_transaction:string = transaction['id_route_transaction'];
                 
-                const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
+                const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.retrieveRouteTransactionDescriptionsByIds([ id_route_transaction ]);
                 
                 transactions.push(
                     new RouteTransaction(
-                        transaction[0],
-                        transaction[1],
-                        transaction[2],
-                        transaction[3],
-                        transaction[4],
-                        transaction[5],
-                        transaction[6],
-                        descriptions
+                        transaction['id_route_transaction'],
+                        new Date(transaction['date']),
+                        transaction['state'],
+                        transaction['cash_received'],
+                        transaction['id_work_day'],
+                        transaction['id_store'],
+                        transaction['id_payment_method'],
+                        resultRouteTransactionDescriptions
                     )
                 );
             }
-
             return transactions;
         } catch (error) {
             throw new Error("Failed to list route transactions: " + error);

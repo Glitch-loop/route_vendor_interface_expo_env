@@ -69,6 +69,7 @@ import { setUser } from '@/redux/slices/userSlice';
 
 
 async function appInitialization() {
+  console.log("Initializing local database...");
   // Initializing datasource
   const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
   await sqliteDataSource.initialize();
@@ -76,7 +77,9 @@ async function appInitialization() {
   // Initializing local database
   const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
   try {
-    await sqliteDatabaseService.dropDatabase();
+    // console.log("Dropping database")
+    // await sqliteDatabaseService.dropDatabase();
+    console.log("Creating database")
     await sqliteDatabaseService.createDatabase();
   } catch (error) {
     console.log("Error during database initialization: ", error);
@@ -106,6 +109,8 @@ export default function Index() {
   const startSession = async () => {
 
     await appInitialization();
+    
+    
     const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
     const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
     const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
@@ -113,6 +118,7 @@ export default function Index() {
     const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
     const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
 
+    console.log("Setting user in redux state for user");
     dispatch(setUser({
       id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
       cellphone: '3221488795',
