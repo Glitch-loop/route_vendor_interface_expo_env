@@ -96,22 +96,14 @@ const TableInventoryOperationVisualization = (
           <DataTable style={tw`w-1/3`}>
             <DataTable.Header>
               <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                <View style={tw`${viewTagHeaderTableStyle}`}>
-                  <Text style={tw`${textHeaderTableStyle}`}>
-                    Producto
-                  </Text>
-                </View>
+                  <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
               </DataTable.Title>
             </DataTable.Header>
             { availableProductsStored.map((product) => {
               return (
                 <DataTable.Row key={product.id_product} style={tw`${rowTableStyle}`}>
                   <DataTable.Cell style={tw`${cellTableStyle}`}>
-                    <View style={tw`${viewTagRowTableStyle}`}>
-                      <Text style={tw`${textRowTableStyle}`}>
-                        {product.product_name}
-                      </Text>
-                    </View>
+                      <Text style={tw`${textRowTableStyle}`}>{product.product_name}</Text>
                   </DataTable.Cell>
                 </DataTable.Row>
               );})
@@ -124,87 +116,51 @@ const TableInventoryOperationVisualization = (
               <DataTable.Header>
                 { initialInventory.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Inventario inicial
-                      </Text>
-                    </View>
+                      <Text style={tw`${textHeaderTableStyle}`}>Inventario inicial</Text>
                   </DataTable.Title>
                 }
                 { restockInventories.length > 0 &&
                   restockInventories.map((currentInventory, index) => {
                     return (
                       <DataTable.Title key={index} style={tw`${headerTitleTableStyle}`}>
-                        <View style={tw`${viewTagHeaderTableStyle}`}>
-                          <Text style={tw`${textHeaderTableStyle}`}>
-                            Re-stock
-                          </Text>
-                        </View>
+                        <Text style={tw`${textHeaderTableStyle}`}>Re-stock</Text>
                       </DataTable.Title>
                     );
                   })
                 }
                 { inventoryWithdrawal &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
-                        Salida total
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Salida total</Text>
                   </DataTable.Title>
                 }
                 { soldOperations.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Venta
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle}`}>Venta</Text>
                   </DataTable.Title>
                 }
                 { repositionsOperations.length > 0 &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Cambio
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle}`}>Cambio</Text>
                   </DataTable.Title>
                 }
                 { inventoryOutflow &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
-                        Total vendido y cambiado
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Total vendido y cambiado</Text>
                   </DataTable.Title>
                 }
                 { finalOperation &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
-                        Inventario final
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle}`}>Inventario final</Text>
                   </DataTable.Title>
                 }
                 { returnedInventory.length > 0 &&
                     <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                      <View style={tw`${viewTagHeaderTableStyle}`}>
-                        <Text style={tw`${textHeaderTableStyle}`}>
-                          Inventario físico
-                        </Text>
-                      </View>
+                      <Text style={tw`${textHeaderTableStyle}`}>Inventario físico</Text>
                   </DataTable.Title>
                 }
                 { issueInventory &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>
-                        Problema con inventario
-                      </Text>
-                    </View>
+                    <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Problema con inventario</Text>
                   </DataTable.Title>
                 }
               </DataTable.Header>

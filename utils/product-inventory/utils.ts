@@ -35,12 +35,15 @@ export function getInventoryOperationDescriptionsOfActiveInventoryOperationsByTy
         const inventoryOperationDescriptionOfCurrentOperation: InventoryOperationDescriptionDTO[] = [];
         const { inventory_operation_descriptions, state, id_inventory_operation_type } = inventoryOperation;
         if (state === 1 && id_inventory_operation_type === idInventoryOperationDescription) {
+            console.log("Number of descriptions in db: ", inventory_operation_descriptions.length)
+            console.log("This is a type")
             for (const description of inventory_operation_descriptions) {
                 inventoryOperationDescriptionOfCurrentOperation.push(description);
             }
+            console.log("Number of descriptions: ", inventoryOperationDescriptionOfCurrentOperation.length)
             inventoryOperationDescriptions.push(inventoryOperationDescriptionOfCurrentOperation);
         }
     }
-
+    // console.log("final of function: ", inventoryOperationDescriptions)
     return inventoryOperationDescriptions;
 }

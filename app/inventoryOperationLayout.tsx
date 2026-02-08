@@ -279,10 +279,15 @@ const inventoryOperationLayout = () => {
         console.log("Retrieving all inventory operations")
         const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
         
+        // console.log("ALL INVENTORY OPERATIONS: ", allInventoryOperations);
+        console.log("Extracting start shift inventory ++++++++++++++++++++")
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
+        console.log("Extracting restock shift inventory ---------------------------")
         const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);
-        console.log("ALL ROUTE TRANSACTIONS: ", startInventoryOperationDescriptions);
-        console.log("ALL ROUTE TRANSACTIONS: ", restockInventoryOperationsDescriptions);
+        
+        
+        // console.log("ALL start inventory operation: ", startInventoryOperationDescriptions);
+        // console.log("ALL start restock inventory operation: ", restockInventoryOperationsDescriptions);
 
         setAvailableProducts(products);
         setInitialShiftInventory(startInventoryOperationDescriptions[0])

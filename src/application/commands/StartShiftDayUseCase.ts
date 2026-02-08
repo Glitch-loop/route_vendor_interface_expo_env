@@ -151,7 +151,7 @@ export default class StartWorkDayUseCase {
             new Date(this.dateService.getCurrentTimestamp())
         );
 
-        console.log("Stores to attend today: ", stores);
+
         // Insert clients to attend as day operations.
         for (const store of stores) {
             const { id_store } = store;

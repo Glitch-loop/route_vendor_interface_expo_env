@@ -57,7 +57,6 @@ export default class RegisterNewRouteTransaction {
         cashReceived: number,
         id_store: string
     ):Promise<void> {
-        console.log("Register transaction PAYMENT METHOD: ", paymentMethod);
         const { id_work_day } = workDayInformation;
         
         const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();

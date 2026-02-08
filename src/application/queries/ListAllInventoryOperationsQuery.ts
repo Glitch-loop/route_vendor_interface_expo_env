@@ -27,6 +27,7 @@ export default class ListAllInventoryOperationsQuery {
 
   async execute(): Promise<InventoryOperationDTO[]> {
     const inventories: InventoryOperation[] = await this.inventoryOpRepo.listInventoryOperations();
+    inventories.forEach((op) => console.log("num desc op: ", op.inventory_operation_descriptions.length, " - op id op type: ", op.id_inventory_operation_type));
     return inventories.map((pi) => this.mapperDTO.toDTO(pi));
   }
 }

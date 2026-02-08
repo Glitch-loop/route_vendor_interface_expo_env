@@ -65,6 +65,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
                 // Insert InventoryOperationDescriptions
                 for (const desc of inventory_operation.inventory_operation_descriptions) {
+                    console.log("Inserting description: ");
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
                             (id_inventory_operation_description,
@@ -152,6 +153,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
     }
 
     async listInventoryOperations(): Promise<InventoryOperation[]> {
+        const inventoryOperationsTemp:InventoryOperation[] = [];
         const inventoryOperations:InventoryOperation[] = [];
 
         try {
@@ -161,8 +163,9 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
             const result = statement.executeSync<InventoryOperation>();
             
+            // Retrieve inventory operations
             for(let row of result) {
-                const newInventoryOperation = new InventoryOperation(
+                const inventoryOperation = new InventoryOperation(
                     row.id_inventory_operation,
                     row.sign_confirmation,
                     new Date(row.date),
@@ -170,11 +173,28 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                     row.audit,
                     row.id_inventory_operation_type,
                     row.id_work_day,
-                    await this.retrieveInventoryOperationDescription(inventoryOperations) // Descriptions will be filled later
+                    [] // Descriptions will be filled later
                 )
-                inventoryOperations.push(newInventoryOperation);
+                inventoryOperationsTemp.push(inventoryOperation);
             }
             
+
+            // Retrieve descriptions for each inventory operation and fill them in the corresponding operation
+            for (const operation of inventoryOperationsTemp) {
+                const inventoryOperation = new InventoryOperation(
+                    operation.id_inventory_operation,
+                    operation.sign_confirmation,
+                    operation.date,
+                    operation.state,
+                    operation.audit,
+                    operation.id_inventory_operation_type,
+                    operation.id_work_day,
+                    await this.retrieveInventoryOperationDescription([operation])
+                )
+                inventoryOperations.push(inventoryOperation);
+            }
+
+
             return inventoryOperations;
         } catch (error) {
             throw new Error('Failed to list inventory operations: ' + error);
@@ -214,6 +234,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
     async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
         try {
+            console.log("EXTRACTING INFORMATION")
             await this.dataSource.initialize();
             const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
             
@@ -225,6 +246,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const result = statement.executeSync<InventoryOperationDescription>();
 
             for(let row of result) {
+                console.log("Description row from db: ", row);
                 inventoryOperationsDescriptions.push(row);
             }
 
