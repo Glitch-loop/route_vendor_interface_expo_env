@@ -187,6 +187,7 @@ const TableInventoryOperation = (
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfFinalColumn(id_type_of_operation) }</Text>
                 </DataTable.Title>
               </DataTable.Header>
+              
               {/* Body section*/}
               { orderedAvailableProducts.length > 0 &&
                 orderedAvailableProducts.map((product) => {

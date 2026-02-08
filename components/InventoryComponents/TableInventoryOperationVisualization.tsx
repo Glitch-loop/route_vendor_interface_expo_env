@@ -115,51 +115,51 @@ const TableInventoryOperationVisualization = (
               {/* Header section */}
               <DataTable.Header>
                 { initialInventory.length > 0 &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-32`}>
                       <Text style={tw`${textHeaderTableStyle}`}>Inventario inicial</Text>
                   </DataTable.Title>
                 }
                 { restockInventories.length > 0 &&
                   restockInventories.map((currentInventory, index) => {
                     return (
-                      <DataTable.Title key={index} style={tw`${headerTitleTableStyle}`}>
+                      <DataTable.Title key={index} style={tw`${headerTitleTableStyle} w-24`}>
                         <Text style={tw`${textHeaderTableStyle}`}>Re-stock</Text>
                       </DataTable.Title>
                     );
                   })
                 }
                 { inventoryWithdrawal &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-28`}>
                     <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Salida total</Text>
                   </DataTable.Title>
                 }
                 { soldOperations.length > 0 &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-24`}>
                     <Text style={tw`${textHeaderTableStyle}`}>Venta</Text>
                   </DataTable.Title>
                 }
                 { repositionsOperations.length > 0 &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-24`}>
                     <Text style={tw`${textHeaderTableStyle}`}>Cambio</Text>
                   </DataTable.Title>
                 }
                 { inventoryOutflow &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                    <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Total vendido y cambiado</Text>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}  w-48`}>
+                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Total vendido y cambiado</Text>
                   </DataTable.Title>
                 }
                 { finalOperation &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-32`}>
                     <Text style={tw`${textHeaderTableStyle}`}>Inventario final</Text>
                   </DataTable.Title>
                 }
                 { returnedInventory.length > 0 &&
-                    <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                    <DataTable.Title style={tw`${headerTitleTableStyle} w-32`}>
                       <Text style={tw`${textHeaderTableStyle}`}>Inventario físico</Text>
                   </DataTable.Title>
                 }
                 { issueInventory &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle}  w-48`}>
                     <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Problema con inventario</Text>
                   </DataTable.Title>
                 }
@@ -221,46 +221,29 @@ const TableInventoryOperationVisualization = (
                   return (
                     <DataTable.Row style={tw`${rowTableStyle}`}
                     key={product.id_product}>
-                      {/* This field is never empty since it is necessary anytime */}
-                      {/* Product (product identification) */}
-                      {/* Suggested inventory */}
                       { suggestedInventory.length > 0 &&
                         <DataTable.Cell style={tw`${suggestedAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
-                          <View style={tw`${viewTagRowTableStyle}`}>
-                            <Text style={tw`${textRowTableStyle}`}>
-                              {suggestedAmount}
-                            </Text>
-                          </View>
+                            <Text style={tw`${textRowTableStyle}`}>{suggestedAmount}</Text>
                         </DataTable.Cell>
                       }
-                      {/* Initial inventory */}
                       { initialInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${initialInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
-                          <View style={tw`${viewTagRowTableStyle}`}>
-                            <Text style={tw`${textRowTableStyle}`}>
-                              {initialInventoryOperationAmount}
-                            </Text>
-                          </View>
+                        <DataTable.Cell style={tw`${initialInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
+                          <Text style={tw`${textRowTableStyle}`}>{initialInventoryOperationAmount}</Text>
                       </DataTable.Cell>
 
                       }
-                      {/* Restock of product */}
                       { restockInventoryOperationAmount.length > 0 &&
                         restockInventoryOperationAmount.map((productAmount, index) => {
                           return (
-                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
-                              <View style={tw`${viewTagRowTableStyle}`}>
-                                <Text style={tw`${textRowTableStyle}`}>
-                                  {productAmount}
-                                </Text>
-                              </View>
+                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-24`}>
+                              <Text style={tw`${textRowTableStyle}`}>{productAmount}</Text>
                             </DataTable.Cell>
                           );
                         })
                       }
-                      {/* Inflow product */}
+
                       { inventoryWithdrawal === true &&
-                        <DataTable.Cell style={tw`${withdrawalAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${withdrawalAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-28`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {withdrawalAmount}
@@ -268,9 +251,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Product sold */}
+
                       { soldOperations.length > 0 &&
-                        <DataTable.Cell style={tw`${soldInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${soldInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-24`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {soldInventoryOperationAmount}
@@ -278,9 +261,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Product reposition */}
+
                       { repositionsOperations.length > 0 &&
-                        <DataTable.Cell style={tw`${repositionInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${repositionInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-24`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {repositionInventoryOperationAmount}
@@ -288,9 +271,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Outflow product */}
+
                       { inventoryOutflow === true &&
-                        <DataTable.Cell style={tw`${inventoryOutflowAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${inventoryOutflowAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}  w-48`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {inventoryOutflowAmount}
@@ -298,9 +281,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Final inventory */}
+
                       { finalOperation === true &&
-                        <DataTable.Cell style={tw`${finalOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${finalOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {finalOperationAmount}
@@ -308,9 +291,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Returned inventory */}
+
                       { returnedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${returnedInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${returnedInventoryOperationAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {returnedInventoryOperationAmount}
@@ -318,10 +301,9 @@ const TableInventoryOperationVisualization = (
                           </View>
                         </DataTable.Cell>
                       }
-                      {/* Inventory problem */}
-                      { issueInventory === true &&
-                        <DataTable.Cell style={tw`${cellTableStyle} 
-                          ${inventoryIssueAmount === 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+
+                       { issueInventory === true &&
+                        <DataTable.Cell style={tw`${cellTableStyle} w-48 ${inventoryIssueAmount === 0 ? 'bg-green-500' : 'bg-red-500'}`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {inventoryIssueAmount}
