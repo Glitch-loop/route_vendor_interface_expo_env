@@ -61,6 +61,7 @@ export const storesEmbeddedTable = `
     creation_date     TEXT,
     creation_context  TEXT,
     status_store      INT,
+    is_new            INT NOT NULL DEFAULT 0,
     is_synced         INT NOT NULL DEFAULT 1,
     updated_at        DATETIME NOT NULL DEFAULT (datetime('now')),
     is_deleted        INT NOT NULL DEFAULT 0

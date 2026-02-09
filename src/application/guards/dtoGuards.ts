@@ -2,6 +2,7 @@ import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO';
@@ -134,5 +135,23 @@ export function isDayOperationDTO(dto: any): dto is DayOperationDTO {
         'id_item' in dto &&
         'operation_type' in dto &&
         'created_at' in dto
+    );
+}
+
+export function isStoreDTO(dto: any): dto is StoreDTO {
+    return (
+        dto && typeof dto === 'object' &&
+        'id_store' in dto &&
+        'street' in dto &&
+        'ext_number' in dto &&
+        'colony' in dto &&
+        'postal_code' in dto &&
+        'address_reference' in dto &&
+        'store_name' in dto &&
+        'latitude' in dto &&
+        'longitude' in dto &&
+        'creation_date' in dto &&
+        'status_store' in dto &&
+        'is_new' in dto
     );
 }

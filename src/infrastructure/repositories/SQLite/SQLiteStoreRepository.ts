@@ -48,7 +48,8 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         id_creator,
                         creation_date,
                         creation_context,
-                        status_store
+                        status_store,
+                        is_new
                         } = store;
                     await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (
                         id_store, 
@@ -65,7 +66,8 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         id_creator, 
                         creation_date, 
                         creation_context,
-                        status_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                        status_store,
+                        is_new) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                     [
                         id_store,
                         street,
@@ -82,6 +84,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         creation_date,
                         creation_context,
                         status_store,
+                        is_new
                     ]); 
                 }
             });
@@ -145,6 +148,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             creation_date,
             creation_context,
             status_store,
+            is_new,
         } = store;
 
         await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.STORES} SET 
@@ -179,6 +183,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                 creation_context,
                 status_store,
                 id_store,
+                is_new
             ]);
         });
         } catch(error) {

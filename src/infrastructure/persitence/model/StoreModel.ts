@@ -16,4 +16,5 @@ export default interface StoreModel extends ReplicationDataInterface {
     creation_date: string,
     creation_context: string,
     status_store: number,
+    is_new: number
 }

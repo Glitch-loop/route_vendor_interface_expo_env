@@ -31,8 +31,9 @@ import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
 // dto guards
 import { 
     isProductDTO,
+    isStoreDTO,
     isInventoryOperationDTO,
-     isInventoryOperationDescriptionDTO,
+    isInventoryOperationDescriptionDTO,
     isWorkDayDTO,
     isRouteDTO,
     isRouteDayDTO,
@@ -117,9 +118,8 @@ export class MapperDTO {
         throw new Error('Unknown entity type');
   }
 
-    // Unified DTO -> Entity mapping
-
     toEntity(dto: ProductDTO): Product;
+    toEntity(dto: StoreDTO): Store;
     toEntity(dto: InventoryOperationDTO): InventoryOperation;
     toEntity(dto: InventoryOperationDescriptionDTO): InventoryOperationDescription;
     toEntity(dto: WorkDayInformationDTO): WorkDayInformation;
@@ -127,8 +127,9 @@ export class MapperDTO {
     toEntity(dto: RouteDayDTO): RouteDay;
     toEntity(dto: RouteTransactionDTO): RouteTransaction;
     toEntity(dto: RouteTransactionDescriptionDTO): RouteTransactionDescription;
-    toEntity(dto: ProductDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO | DayOperationDTO | RouteTransactionDTO | RouteTransactionDescriptionDTO): Product | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay | DayOperation | RouteTransaction | RouteTransactionDescription {
+    toEntity(dto: ProductDTO | StoreDTO | InventoryOperationDTO | InventoryOperationDescriptionDTO | WorkDayInformationDTO | RouteDTO | RouteDayDTO | DayOperationDTO | RouteTransactionDTO | RouteTransactionDescriptionDTO): Product | Store | InventoryOperation | InventoryOperationDescription | WorkDayInformation | Route | RouteDay | DayOperation | RouteTransaction | RouteTransactionDescription {
         if (isProductDTO(dto)) return this.productDTOToEntity(dto);
+        if (isStoreDTO(dto)) return this.storeDTOToEntity(dto);
         if (isInventoryOperationDTO(dto)) return this.inventoryOperationDTOToEntity(dto);
         if (isInventoryOperationDescriptionDTO(dto)) return this.inventoryProductDescriptionDTOToEntity(dto);
         if (isWorkDayDTO(dto)) return this.workDayDTOToEntity(dto);
@@ -213,6 +214,7 @@ export class MapperDTO {
             longitude: entity.longitude,
             creation_date: entity.creation_date,
             status_store: entity.status_store,
+            is_new: entity.is_new
         };
     }
 
@@ -315,6 +317,28 @@ export class MapperDTO {
             dto.price,
             dto.product_status,
             dto.order_to_show
+        );
+    }
+
+    // StoreDTO -> Store (domain)
+    private storeDTOToEntity(dto: StoreDTO): Store {
+        return new Store(
+            dto.id_store,
+            dto.street,
+            dto.ext_number ?? null,
+            dto.colony,
+            dto.postal_code,
+            dto.address_reference ?? null,
+            dto.store_name ?? null,
+            null,
+            null,
+            dto.latitude,
+            dto.longitude,
+            '',
+            dto.creation_date,
+            '',
+            dto.status_store,
+            dto.is_new ?? 0
         );
     }
 
