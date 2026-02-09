@@ -184,6 +184,14 @@ export class OperationDayAggregate {
 
     }
 
+    determineCurrentOperation(): DayOperation | null {
+        const indexCurrentOperation:number = this.determineIndexCurrentOperation();
+
+        if (indexCurrentOperation === -1 || this.dayOperations === null || this.routeTransactions === null) return null;
+
+        return this.dayOperations[indexCurrentOperation];
+    }
+
     private insertOperationDayNextToCurrentOperation(newDayOperation: DayOperation): void {
         if (!this.dayOperations) {
             // That means there is no current operation, so we just add the new one.

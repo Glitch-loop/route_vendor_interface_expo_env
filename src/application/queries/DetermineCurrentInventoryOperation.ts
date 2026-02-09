@@ -28,27 +28,21 @@ export default class DetermineCurrentInventoryOperation {
   ) {}
 
   async execute(): Promise<DayOperationDTO | null> {
+      
     // Retrieve all day operations and route transactions for the current day
     const dayOperations: DayOperation[] = await this.dayOpRepo.listDayOperations();
     const routeTransactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactions();
+    
+    const dayOperationsAggregator: OperationDayAggregate = new OperationDayAggregate(dayOperations, routeTransactions);
 
     if (!dayOperations || dayOperations.length === 0) {
       return null;
     }
 
-    // Create an aggregate to determine the current operation
-    const operationAggregate = new OperationDayAggregate(dayOperations, routeTransactions);
-
     // Get all day operations from the aggregate
-    const dayOpsFromAggregate = operationAggregate.getDayOperations();
+    const currentOperation: DayOperation | null = dayOperationsAggregator.determineCurrentOperation()
     
-    if (!dayOpsFromAggregate || dayOpsFromAggregate.length === 0) {
-      return null;
-    }
-
-    // The current operation is the last one in the array
-    const currentOperation = dayOpsFromAggregate[dayOpsFromAggregate.length - 1];
-
-    return this.mapperDTO.toDTO(currentOperation);
+    if (currentOperation === null) return null;
+    else return this.mapperDTO.toDTO(currentOperation);
   }
 }
