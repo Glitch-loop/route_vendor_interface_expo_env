@@ -141,7 +141,7 @@ const storeMenuLayout = () => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => { router.replace('/routeOperationMenuLayout') };
 
-  const handlerGoBackToStoreMenu = () => { router.push(`/storeMenuLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
+  const handlerGoBackToStoreMenu = () => { router.replace(`/storeMenuLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
   const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
