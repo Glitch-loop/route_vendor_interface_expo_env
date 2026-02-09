@@ -4,6 +4,7 @@ import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } fro
 import tw from 'twrnc';
 import { router } from 'expo-router';
 import { LocationObject } from 'expo-location';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,16 +31,18 @@ import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSugg
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import RouteHeader from '@/components/shared-components/RouteHeader';
 import Toast from 'react-native-toast-message';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import { ActivityIndicator } from 'react-native-paper';
 
 
-function findStoresAround(userLocation:LocationObject|null, stores:(IStore&IStoreStatusDay)[], kmAround:number):IStore[] {
-    let storesToShow:IStore[] = [];
-    if (userLocation) {
+function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|null, kmAround:number):StoreDTO[] {
+    let storesToShow:StoreDTO[] = [];
+    if (userLocation !== null && stores !== null) {
         storesToShow = stores.filter((store) => {
             let isAround:boolean = false;
             const distance:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
-                parseFloat(store.longuitude),
+                parseFloat(store.longitude),
                 userLocation.coords.latitude,
                 userLocation.coords.longitude
             );
@@ -66,36 +69,62 @@ const searchClientLayout = () => {
     const stores = useSelector((state: RootState) => state.stores);
     const dispatch:AppDispatch = useDispatch();
 
-    const [storesToShow, setStoresToShow] = useState<IStore[]>([]);
+    // States
+    const [storesToShow, setStoresToShow] = useState<StoreDTO[]>([]);
     const [mAround, setmAround] = useState<number>(300);
-    const [selectedClient, setSelectedClient] = useState<IStore|undefined>() ;
-
-    const [selectedItems, setSelectedItems] = useState<IStore[]>([]);
+    const [selectedClient, setSelectedClient] = useState<StoreDTO|undefined>();
+    const [selectedItems, setSelectedItems] = useState<StoreDTO[]>([]);
+    const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
+    const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
 
     useEffect(() => {
-        getCurrentUserLocation()
-        .then((userLocation:LocationObject|null) => {
-            setStoresToShow(findStoresAround(userLocation, stores, mAround));
-        })
-        .catch(() => setStoresToShow([]));
-    }, []);
+        loadUserLocationAndStores();
+    }, [stores]);
+
+    const loadUserLocationAndStores = async () => {
+        try {
+            setIsLoadingLocation(true);
+            const location = await getCurrentUserLocation();
+            setUserLocation(location);
+            
+            if (location && stores) {
+                const nearbyStores = findStoresAround(location, stores, mAround);
+                setStoresToShow(nearbyStores);
+            }
+        } catch (error) {
+            console.log('Error loading location:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error al obtener ubicación',
+                text2: 'No se pudo obtener tu ubicación actual'
+            });
+            setStoresToShow(stores || []);
+        } finally {
+            setIsLoadingLocation(false);
+        }
+    }
 
     // Hanlder
     const handlerGoBack = () => {
         router.replace('/routeOperationMenuLayout');
     }
 
-    const handlerOnSelectItem = (selectedItem:IStore) => {
-        const currnetItems:IStore[] = selectedItems.map((item:IStore) => { return item });
+    const handlerOnSelectItem = (selectedItem:StoreDTO) => {
+        const currnetItems:StoreDTO[] = selectedItems.map((item:StoreDTO) => { return item });
         setSelectedItems(
             [
                 ...currnetItems,
                 { ...selectedItem }
             ]
-        )
+        );
 
         setSelectedClient(selectedItem);
-        setStoresToShow((prev) => { return [...prev, selectedItem]})
+        
+        // Add to stores to show if not already there
+        const isAlreadyInList = storesToShow.some(store => store.id_store === selectedItem.id_store);
+        if (!isAlreadyInList) {
+            setStoresToShow((prev) => [...prev, selectedItem]);
+        }
     } 
 
     const handlerAcceptClient = ():void => {
@@ -118,53 +147,65 @@ const searchClientLayout = () => {
     }
 
     return (
-        <KeyboardAvoidingView
-        enabled={false}
-        style={{ flex: 1 }}>
-            {/* style={tw`w-full flex flex-col`} */}
-            <ScrollView contentContainerStyle={{ flex: 1 }}>
-                <View style={tw`w-full flex-1 items-center`}>
-                    <View style={tw`flex basis-1/12`}>
-                        <RouteHeader onGoBack={() => {handlerGoBack()}}/>
-                    </View>
-                    <View style={tw`relative basis-1/12 w-full flex flex-row justify-center items-center my-2`}>
-                        <View style={tw`absolute w-full flex items-center`}>
-                            <SearchBarWithSuggestions 
-                                catalog={stores}
-                                selectedCatalog={selectedItems}
-                                fieldToSearch={'store_name'}
-                                keyField={'id_store'}
-                                onSelectHandler={handlerOnSelectItem}
+        <SafeAreaView style={tw`flex-1`}>
+            <View style={tw`w-full h-full flex flex-col`}>
+                {/* Header */}
+                <View style={tw`w-full flex flex-row justify-center items-center py-2`}>
+                    <RouteHeader onGoBack={handlerGoBack}/>
+                </View>
+
+                {/* Search Bar */}
+                <View style={tw`w-full flex flex-row justify-center items-center px-4 py-2`}>
+                    <SearchBarWithSuggestions 
+                        catalog={stores || []}
+                        selectedCatalog={selectedItems}
+                        fieldToSearch={'store_name'}
+                        keyField={'id_store'}
+                        onSelectHandler={handlerOnSelectItem}
+                    />
+                </View>
+
+                {/* Map Container */}
+                <View style={tw`flex-1 px-4 py-2`}>
+                    {isLoadingLocation ? (
+                        <View style={tw`w-full h-full flex justify-center items-center border-2 border-gray-300 rounded-lg bg-gray-100`}>
+                            <ActivityIndicator size="large" />
+                            <Text style={tw`mt-2 text-gray-600`}>Cargando ubicación...</Text>
+                        </View>
+                    ) : (
+                        <View style={tw`w-full h-full border-2 border-gray-300 rounded-lg overflow-hidden`}>
+                            <RouteMap 
+                                latitude={userLocation?.coords.latitude || 20.66020491403627}
+                                longitude={userLocation?.coords.longitude || -105.23041097690118}
+                                stores={storesToShow}
+                                onClick={setSelectedClient}
                             />
                         </View>
-                    </View>
-                    <View style={tw`w-11/12 flex basis-7/12 border-solid border-2 rounded-sm`}>
-                        <RouteMap 
-                            latitude={20.66020491403627}
-                            longitude={-105.23041097690118}
-                            stores={storesToShow} 
-                            onClick={setSelectedClient}/> 
-                    </View>
-                    <View style={tw`w-11/12 flex basis-1/12 justify-center items-center`}>
-                        <Text style={tw`text-lg`}>Cliente seleccionado</Text>
-                        <Text style={tw`text-lg font-bold`}>
-                            {
-                                selectedClient ? capitalizeFirstLetterOfEachWord(selectedClient.store_name) : 
-                                    'No se ha seleccionado ningún cliente.'
-                            }
-                        </Text>
-                    </View>
-                    <View style={tw`mt-3 w-full basis-2/12 flex flex-row justify-between`}>
-                        <ConfirmationBand 
-                            textOnAccept='Iniciar venta'
-                            textOnCancel='Volver a menu'
-                            handleOnAccept={() => {handlerAcceptClient();}}
-                            handleOnCancel={() => {handlerGoBack();}}
-                        />
-                    </View>
+                    )}
                 </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+
+                {/* Selected Client Info */}
+                <View style={tw`w-full px-4 py-3 flex flex-col justify-center items-center`}>
+                    <Text style={tw`text-base text-gray-600`}>Cliente seleccionado</Text>
+                    <Text style={tw`text-lg font-bold text-black text-center`}>
+                        {selectedClient 
+                            ? capitalizeFirstLetterOfEachWord(selectedClient.store_name || 'Sin nombre') 
+                            : 'No se ha seleccionado ningún cliente.'
+                        }
+                    </Text>
+                </View>
+
+                {/* Confirmation Band */}
+                <View style={tw`w-full px-4 py-2`}>
+                    <ConfirmationBand 
+                        textOnAccept='Iniciar venta'
+                        textOnCancel='Volver a menú'
+                        handleOnAccept={handlerAcceptClient}
+                        handleOnCancel={handlerGoBack}
+                    />
+                </View>
+            </View>
+        </SafeAreaView>
     )
 }
 

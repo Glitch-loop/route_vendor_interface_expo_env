@@ -17,8 +17,8 @@ export class OperationDayAggregate {
             this.dayOperations = null;
             this.initialDayOperations = null;
         } else {
-            this.dayOperations = [ ...dayOperations ];
-            this.initialDayOperations = [ ...dayOperations ];
+            this.dayOperations = [ ...dayOperations ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            this.initialDayOperations = [ ...dayOperations ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         }
     }
 
