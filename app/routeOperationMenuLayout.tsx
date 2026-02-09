@@ -42,7 +42,7 @@ import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 
 // Utils
-import { getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
+import { determinePositionOrderToAttendOfStoreToAttend, getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
 import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
@@ -295,8 +295,7 @@ const routeOperationMenuLayout = () => {
                 let style = '';
                 let isClientOperation = true; /*true = client, false = inventory operation*/
                 let isPrintableOperation = true;
-                const { id_day_operation, id_item, operation_type, created_at } = dayOperation;
-
+                const { id_day_operation, id_item, operation_type } = dayOperation;
 
                 // Inventory operations type
                 style = getStyleDayOperationForMenuOperation(operation_type, false);
@@ -316,8 +315,10 @@ const routeOperationMenuLayout = () => {
                 ) {
                   isClientOperation = true;
                   isPrintableOperation = true;
-                  
-                  itemOrder = '0'
+                    
+                  itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperationsReduxState]).toString();
+                  console.log(itemOrder);
+
                   totalValue = '';
                   if (stores === null) {
                     itemName = 'Nombre cliente desconocido.';
