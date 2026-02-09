@@ -185,6 +185,7 @@ export class OperationDayAggregate {
     }
 
     determineCurrentOperation(): DayOperation | null {
+        console.log("+++++++++++++++++++++++++++++++");
         const indexCurrentOperation:number = this.determineIndexCurrentOperation();
 
         if (indexCurrentOperation === -1 || this.dayOperations === null || this.routeTransactions === null) return null;
@@ -230,15 +231,18 @@ export class OperationDayAggregate {
                 this.routeTransactions
                     .forEach((routeTransaction: RouteTransaction) => { routeTransactionsMap.set(routeTransaction.id_store, routeTransaction); });
             }
-    
+            console.log("Traversing day operations")
             // Traverse day operations to determine which "ROUTE_CLIENT_ATTENTION" operation is the current one.
             for (let i = 0; i < this.dayOperations.length; i++) {
                 const dayOperation: DayOperation = this.dayOperations[i];
-    
+                const { id_item, id_day_operation } = dayOperation;
+                
                 if (dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
+                    console.log("Day operation id item: ", id_item , " - id day operation: ", id_day_operation);
                     // Check if there is a route transaction associated to this client (store).
-                    if (!routeTransactionsMap.has(dayOperation.id_item)) {
+                    if (!routeTransactionsMap.has(id_item)) {
                         // No route transaction associated, so this is the current operation.
+                        console.log("Current operation found: ", dayOperation);
                         indexCurrentOperationDay = i;
                         break;
                     }

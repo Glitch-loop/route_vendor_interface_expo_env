@@ -196,7 +196,6 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
-    console.log("ID TYPE OF OPERATION: ", id_type_of_operation_search_param);
     const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
     await sqliteDataSource.initialize();
   
@@ -236,7 +235,7 @@ const inventoryOperationLayout = () => {
         return;
       }
     }
-    console.log("FINAL INVENTORY");
+
     // Validations for consult inventory operation
     if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) {
       if (inventoryOperationToConsult.length === 0) {
@@ -280,21 +279,11 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        console.log("Retrieving all route transactions")
         const allRouteTransactions:RouteTransactionDTO[] = await listAllRouteTransactionsQuery.execute()
-        console.log("Retrieving all inventory operations")
         const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
-        
-        // console.log("ALL INVENTORY OPERATIONS: ", allInventoryOperations);
-        console.log("Extracting start shift inventory ++++++++++++++++++++")
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
-        console.log("Extracting restock shift inventory ---------------------------")
         const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);
         
-        
-        // console.log("ALL start inventory operation: ", startInventoryOperationDescriptions);
-        // console.log("ALL start restock inventory operation: ", restockInventoryOperationsDescriptions);
-
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
 
         setAvailableProducts(products);

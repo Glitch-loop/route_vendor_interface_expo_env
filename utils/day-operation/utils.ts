@@ -93,7 +93,6 @@ export function getStyleDayOperationForMenuOperation(inventory_operation_type: s
 export function determinePositionOrderToAttendOfStoreToAttend(id_item_to_determine: string, dayOperations: DayOperationDTO[]): number {
     let numberToAttend = 0;
     const orderedDayOperations = dayOperations.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    orderedDayOperations.forEach(dayOperation => console.log("day operation: ", dayOperation.id_day_operation, "id_item: ", dayOperation.id_item, "operation_type: ", dayOperation.operation_type));
     for (const dayOperation of orderedDayOperations) {
         const { id_day_operation, operation_type } = dayOperation;
 
