@@ -114,7 +114,9 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                     audit = ?,
                     state = ?, 
                     id_inventory_operation_type = ?, 
-                    id_work_day = ?
+                    id_work_day = ?,
+                    is_synced = ?,
+                    updated_at = ?,
                     WHERE id_inventory_operation = ?;`, 
                 [
                     sign_confirmation,
@@ -123,6 +125,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                     state,
                     id_inventory_operation_type,
                     id_work_day,
+                    0, // Mark as not synced
+                    new Date().toISOString(),
                     id_inventory_operation,
                 ]);
 

@@ -80,6 +80,8 @@ import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRout
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
 import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 
 // Auxiliar functions
@@ -150,6 +152,7 @@ const inventoryOperationLayout = () => {
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
+  const storesRedux = useSelector((state: RootState) => state.stores);
 
   // Routing
   const router:Router = useRouter();
@@ -176,6 +179,8 @@ const inventoryOperationLayout = () => {
   const [finalOperation, setFinalOperation] = useState<boolean>(false);
   const [issueInventory, setIssueInventory] = useState<boolean>(false);
   const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
+  const [routeTransactions, setRouteTransactions] = useState<RouteTransactionDTO[]>([]);
+  const [storesToConsult, setStoresToConsult] = useState<StoreDTO[]>([]);
 
   // States related to UI logic
   const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -202,6 +207,7 @@ const inventoryOperationLayout = () => {
     const determineIfInventoryOperationCancelableUseCase = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
     const listInventoryOperationsQuery = di_container.resolve<ListAllInventoryOperationsQuery>(ListAllInventoryOperationsQuery);
     const listAllRouteTransactionsQuery = di_container.resolve<ListAllRouteTransactionsQuery>(ListAllRouteTransactionsQuery);
+    const listRegisteredStoresQuery = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
 
 
     const products: ProductDTO[] = await getProductOfCompany.execute();
@@ -289,12 +295,17 @@ const inventoryOperationLayout = () => {
         // console.log("ALL start inventory operation: ", startInventoryOperationDescriptions);
         // console.log("ALL start restock inventory operation: ", restockInventoryOperationsDescriptions);
 
+        const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
+
         setAvailableProducts(products);
         setInitialShiftInventory(startInventoryOperationDescriptions[0])
         setRestockInventories(restockInventoryOperationsDescriptions);
         setFinalShiftInventory(inventory_operation_descriptions);
-        setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allRouteTransactions, DAY_OPERATIONS.product_reposition));
-        setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allRouteTransactions, DAY_OPERATIONS.sales));
+        setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_reposition));
+        setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sales));
+
+        setRouteTransactions(allActiveRouteTransactions);
+        setStoresToConsult(await listRegisteredStoresQuery.execute());        
 
         setInventoryWithdrawal(true);
         setInventoryOutflow(true);
@@ -779,31 +790,31 @@ const inventoryOperationLayout = () => {
             { (inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && inventoryOperationToConsult.state === 1) &&
               <View style={tw`flex basis-auto w-full mt-3`}>
                 <Text style={tw`w-full text-center text-black text-2xl`}>
-                  Producto vendido por tienda
+                  Devuelto por tienda
                 </Text>
                 <TableRouteTransactionProductVisualization
                     availableProducts               = {availableProducts}
-                    stores                          = {[]}
-                    routeTransactions               = {[]}
-                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
-                    calculateTotalOfProduct         = {true}/>
-                <Text style={tw`w-full text-center text-black text-2xl`}>
-                  Producto vendido por tienda
-                </Text>
-                <TableRouteTransactionProductVisualization
-                    availableProducts               = {availableProducts}
-                    stores                          = {[]}
-                    routeTransactions               = {[]}
-                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                    stores                          = {storesToConsult}
+                    routeTransactions               = {routeTransactions}
+                    idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_devolution }
                     calculateTotalOfProduct         = {true}/>
                 <Text style={tw`w-full text-center text-black text-2xl`}>
                   Reposición de producto por tienda
                 </Text>
+                <TableRouteTransactionProductVisualization
+                    availableProducts               = {availableProducts}
+                    stores                          = {storesToConsult}
+                    routeTransactions               = {routeTransactions}
+                    idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_reposition }
+                    calculateTotalOfProduct         = {true}/>
+                <Text style={tw`w-full text-center text-black text-2xl`}>
+                  Producto vendido por tienda
+                </Text>
                   <TableRouteTransactionProductVisualization
                     availableProducts               = {availableProducts}
-                    stores                          = {[]}
-                    routeTransactions               = {[]}
-                    idInventoryOperationTypeToShow  = { id_type_of_operation_search_param }
+                    stores                          = {storesToConsult}
+                    routeTransactions               = {routeTransactions}
+                    idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sales }
                     calculateTotalOfProduct         = {true}/>
               </View>
             }

@@ -41,6 +41,8 @@ export default class DataReplicationService {
 
             console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
             console.log(`Pending stores to sync: ${pendingStores.length}`);
+
+            console.log("Pending work day: ", pendingWorkDays)
             if (pendingWorkDays.length > 0) {
                 await this.serverWorkdayRepo.upsertWorkdayInformations(workDaysWithUser);
                 await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(pendingWorkDays.map(w => w.id_work_day));

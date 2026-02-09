@@ -176,8 +176,8 @@ const routeOperationMenuLayout = () => {
         password: '',
         status: 1
       }
-      await sycingService.executeReplicationSession(userSession);
-    
+
+      await sycingService.executeReplicationSession(userSession);    
     
       const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
 

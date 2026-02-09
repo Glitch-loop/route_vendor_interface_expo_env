@@ -31,9 +31,9 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (
                     id_work_day,
                     start_date,
-                    end_date,
+                    finish_date,
                     start_petty_cash,
-                    end_petty_cash,
+                    final_petty_cash,
                     id_route,
                     route_name,
                     description,
@@ -70,6 +70,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             for (const row of rows) {
                 pending.push(row as WorkDayInformationModel);
             }
+
             return pending;
         } catch (error) {
             throw new Error('Failed to list pending workday information to sync: ' + error);
@@ -113,15 +114,17 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             db.runSync(`
                 UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET
                     start_date = ?,
-                    end_date = ?,
+                    finish_date = ?,
                     start_petty_cash = ?,
-                    end_petty_cash = ?,
+                    final_petty_cash = ?,
                     id_route = ?,
                     route_name = ?,
                     description = ?,
                     route_status = ?,
                     id_day = ?,
-                    id_route_day = ?
+                    id_route_day = ?,
+                    is_synced = ?,
+                    updated_at = ?     
                 WHERE id_work_day = ?;
             `, [
                 workDay.start_date.toISOString(),
@@ -134,6 +137,8 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 workDay.route_status,
                 workDay.id_day,
                 workDay.id_route_day,
+                0, // Mark as not synced
+                new Date().toISOString(),
                 workDay.id_work_day
             ]);
         } catch (error) {
@@ -152,9 +157,9 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 workDays.push(new WorkDayInformation(
                     row.id_work_day,
                     new Date(row.start_date),
-                    row.end_date ? new Date(row.end_date) : null,
+                    row.finish_date ? new Date(row.finish_date) : null,
                     row.start_petty_cash,
-                    row.end_petty_cash,
+                    row.final_petty_cash,
                     row.id_route,
                     row.route_name,
                     row.description,

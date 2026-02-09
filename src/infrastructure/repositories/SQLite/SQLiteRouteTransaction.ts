@@ -144,7 +144,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             state = ?, 
             id_work_day = ?, 
             id_payment_method = ?, 
-            id_store = ?
+            id_store = ?,
+            is_synced = ?,
+            updated_at = ?
             WHERE id_route_transaction = ?;
             `,
             [
@@ -153,6 +155,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 id_work_day,
                 payment_method,
                 id_store,
+                0, // Mark as not synced
+                new Date().toISOString(),
                 id_route_transaction,
             ]);
         });

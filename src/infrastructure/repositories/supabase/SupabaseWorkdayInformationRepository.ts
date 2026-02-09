@@ -27,6 +27,7 @@ export class SupabaseWorkdayInformationRepository implements SyncServerWorkdayIn
     async upsertWorkdayInformations(informations: (WorkDayInformationModel & UserModel)[], ): Promise<void> {
         if (!informations || informations.length === 0) return;
         try {
+            console.log("Information to upsert: ", informations)
             const records = informations.map((info) => ({
                 id_work_day: info.id_work_day,
                 start_date: info.start_date,
@@ -39,7 +40,7 @@ export class SupabaseWorkdayInformationRepository implements SyncServerWorkdayIn
                 id_commission: null, // Business rule: This field is assigned by the manager's system
                 comment: null
             }));
-
+            console.log("Upserting workday information to server: ", records);
             const { error } = await this.supabase
                 .from(SERVER_DATABASE_ENUM.WORK_DAYS)
                 .upsert(records, { onConflict: 'id_work_day' });

@@ -23,6 +23,7 @@ import {
   textRowTableStyle,
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
@@ -62,33 +63,36 @@ const TableRouteTransactionProductVisualization = (
 
   const mapConsolidatedByConcept = new Map<string, Map<string, consolidatedInformation>>(); //Map <id_store, Map<id_product, consolidatedInformation>>
 
+
   // Consolidate amounts by store and product across all transaction descriptions
   for (const routeTransaction of routeTransactions) {
-    const { id_store, transaction_description } = routeTransaction;
+    const { id_store, transaction_description, state } = routeTransaction;
+
+    if (state === ROUTE_TRANSACTION_STATE.CANCELLED) continue; // Skip cancelled transactions
 
     if (!mapConsolidatedByConcept.has(id_store)) {
       mapConsolidatedByConcept.set(id_store, new Map<string, consolidatedInformation>());
     }
 
     const productMap = mapConsolidatedByConcept.get(id_store)!;
-
     for (const description of transaction_description) {
       const { id_product, amount, id_transaction_operation_type } = description;
-
-      if (id_transaction_operation_type !== idInventoryOperationTypeToShow) continue;
-
-      if (!productMap.has(id_product)) productMap.set(id_product, { amount: 0 });
       
-      const prevInformation:consolidatedInformation|undefined = productMap.get(id_product)
-      if (prevInformation) {
+      if (id_transaction_operation_type === idInventoryOperationTypeToShow) {
+        if (!productMap.has(id_product)) {
+          productMap.set(id_product, { amount: 0 });
+        }
+        
+        const prevInformation = productMap.get(id_product)!;
         prevInformation.amount += amount;
-        productMap.set(id_product, prevInformation);
       }
     }
-
-    mapConsolidatedByConcept.set(id_store, productMap);    
+    mapConsolidatedByConcept.set(id_store, productMap);
   }
 
+  console.log("mapConsolidatedByConcept: ", mapConsolidatedByConcept);
+
+  
   return (
     <View style={tw`w-full flex flex-row`}>
       {(sortedAvailableProducts.length > 0) ?
@@ -144,7 +148,7 @@ const TableRouteTransactionProductVisualization = (
                 { calculateTotalOfProduct &&
                   <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`${textHeaderTableStyle}`}>
+                      <Text style={tw`max-w-28 ${textHeaderTableStyle}`}>
                         Total
                       </Text>
                     </View>
