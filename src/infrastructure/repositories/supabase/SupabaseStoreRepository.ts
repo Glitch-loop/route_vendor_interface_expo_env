@@ -96,7 +96,30 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
                 .in('id_store', id_stores);
 
             if (error) throw new Error(`Error retrieving stores: ${error.message}`);
-            return data || [];
+            const stores: Store[] = [];
+            for (const store of data || []) {
+                stores.push(
+                    new Store(
+                        store.id_store,
+                        store.street,
+                        store.ext_number ?? null,
+                        store.colony,
+                        store.postal_code,
+                        store.address_reference ?? null,
+                        store.store_name ?? null,
+                        store.owner_name ?? null,
+                        store.cellphone ?? null,
+                        store.latitude,
+                        store.longitude,
+                        store.id_creator ?? '',
+                        store.creation_date,
+                        store.creation_context ?? '',
+                        store.status_store,
+                        store.is_new ?? 0
+                    )
+                );
+            }
+            return stores;
         } catch (error: any) {
             throw new Error(`Failed to retrieve stores: ${error.message}`);
         }
@@ -109,7 +132,30 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
                 .select('*');
 
             if (error) throw new Error(`Error listing stores: ${error.message}`);
-            return data || [];
+            const stores: Store[] = [];
+            for (const store of data || []) {
+                stores.push(
+                    new Store(
+                        store.id_store,
+                        store.street,
+                        store.ext_number ?? null,
+                        store.colony,
+                        store.postal_code,
+                        store.address_reference ?? null,
+                        store.store_name ?? null,
+                        store.owner_name ?? null,
+                        store.cellphone ?? null,
+                        store.latitude,
+                        store.longitude,
+                        store.id_creator ?? '',
+                        store.creation_date,
+                        store.creation_context ?? '',
+                        store.status_store,
+                        store.is_new ?? 0
+                    )
+                );
+            }
+            return stores;
         } catch (error: any) {
             throw new Error(`Failed to list stores: ${error.message}`);
         }
