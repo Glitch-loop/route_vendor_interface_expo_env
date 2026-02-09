@@ -6,6 +6,7 @@ export class DayOperation {
     public readonly id_day_operation: string,
     public readonly id_item: string,
     public readonly operation_type: DAY_OPERATIONS,
-    public readonly created_at: Date
+    public readonly created_at: Date,
+    public readonly id_dependency: string | null
   ) {}
 }

@@ -11,6 +11,8 @@ const dayOperationsSlice = createSlice({
         id_item: operation.id_item,
         operation_type: operation.operation_type,
         created_at: operation.created_at,
+        id_dependency: operation.id_dependency,
+
       }));
     },
     clearDayOperations: (state) => {

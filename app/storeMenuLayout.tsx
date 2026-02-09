@@ -74,13 +74,15 @@ const INITIAL_REGION = {
 
 type typeSearchParams = {
   id_store_search_param: string;
+  id_day_operation_dependent_search_param: string;
 }
 
 const storeMenuLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const { 
-    id_store_search_param
+    id_store_search_param,
+    id_day_operation_dependent_search_param
   } = params as typeSearchParams;
 
   //Defining redux context
@@ -141,7 +143,7 @@ const storeMenuLayout = () => {
 
   const handlerGoBackToStoreMenu = () => { setIsConsultTransaction(false); };
 
-  const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}`); };
+  const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
   const handlerOnConsultTransactions = async() => {
     

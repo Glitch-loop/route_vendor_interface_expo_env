@@ -35,7 +35,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idClient,
             DAY_OPERATIONS.route_client_attention,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.dayOperations.push(newDayOperation);
@@ -53,7 +54,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idClient,
             DAY_OPERATIONS.attention_out_of_route,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -70,7 +72,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idClient,
             DAY_OPERATIONS.new_client_registration,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -80,12 +83,13 @@ export class OperationDayAggregate {
         /*TODO: First, Implement the manager application before this*/
     }
     
-    registerRouteTransaction(idDayOperation: string, idRouteTransaction: string, createdAt: Date): void {
+    registerRouteTransaction(idDayOperation: string, idRouteTransaction: string, createdAt: Date, idDayOperationDependent: string): void {
         const newDayOperation = new DayOperation(
             idDayOperation,
             idRouteTransaction,
             DAY_OPERATIONS.route_transaction,
-            createdAt
+            createdAt,
+            idDayOperationDependent // This is the id of the day operation that represents a store or client on which is going to be registered the route transaction.
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -96,7 +100,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idRouteTransaction,
             DAY_OPERATIONS.cancel_route_transaction,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -107,7 +112,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.start_shift_inventory,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -118,7 +124,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.restock_inventory,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -129,7 +136,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.product_devolution_inventory,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -140,7 +148,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.end_shift_inventory,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -151,7 +160,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.consult_inventory,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -162,7 +172,8 @@ export class OperationDayAggregate {
             idDayOperation,
             idInventoryOperation,
             DAY_OPERATIONS.cancel_inventory_operation,
-            createdAt
+            createdAt,
+            ''
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);   
@@ -185,7 +196,6 @@ export class OperationDayAggregate {
     }
 
     determineCurrentOperation(): DayOperation | null {
-        console.log("+++++++++++++++++++++++++++++++");
         const indexCurrentOperation:number = this.determineIndexCurrentOperation();
 
         if (indexCurrentOperation === -1 || this.dayOperations === null || this.routeTransactions === null) return null;

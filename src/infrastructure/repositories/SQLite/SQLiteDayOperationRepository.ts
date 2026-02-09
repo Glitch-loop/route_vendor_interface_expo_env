@@ -30,13 +30,14 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
                 for (const dayOperation of day_operations) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS}
-                            (id_day_operation, id_item, operation_type, created_at)
-                            VALUES (?, ?, ?, ?);
+                            (id_day_operation, id_item, operation_type, created_at, id_dependency)
+                            VALUES (?, ?, ?, ?, ?);
                     `, [
                         dayOperation.id_day_operation,
                         dayOperation.id_item,
                         dayOperation.operation_type,
-                        dayOperation.created_at.toISOString()
+                        dayOperation.created_at.toISOString(),
+                        dayOperation.id_dependency
                     ]);
                 }
             });
@@ -52,7 +53,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
             
             await db.runAsync(`
                 UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS}
-                    SET id_item = ?, operation_type = ?, created_at = ?
+                    SET id_item = ?, operation_type = ?, created_at = ?, id_dependency = ?
                     WHERE id_day_operation = ?;
             `, [
                 day_operation.id_item,
@@ -79,7 +80,8 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
                     row.id_day_operation,
                     row.id_item,
                     row.operation_type,
-                    new Date(row.created_at)
+                    new Date(row.created_at),
+                    row.id_dependency
                 )
             );
         } catch (error) {

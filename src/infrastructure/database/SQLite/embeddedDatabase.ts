@@ -97,7 +97,7 @@ export const dayOperationsEmbeddedTable = `
     id_item             TEXT NOT NULL,
     operation_type      TEXT NOT NULL,
     created_at          DATETIME NOT NULL,
-    
+    id_dependency       TEXT
   );
 `;
 
