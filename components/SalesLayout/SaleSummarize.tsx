@@ -79,6 +79,7 @@ const SaleSummarize = ({
     productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
   }) => {
 
+    console.log("productsDevolution: ", productsDevolution.length);
     /*
       At least for this component, the matriz is going to work like this:
       [[saleProduct][repositionProduct]]
@@ -112,6 +113,8 @@ const SaleSummarize = ({
           const { id_product_inventory } = product;
           
           if (productInventoryMap.has(id_product_inventory)) {
+            // TODO: BUG Since there is not product inventory record for the product devolution, it is not showing the product in the summarize, this should be fixed in the future, but for now, we are going to show only the product that have a record in the product inventory, which means that they were sold at least once. This is a edge case that is not common, since usually the product devolution is made for products that were sold, but it is important to take it into account.
+            console.log("Product devolution in product inventory map: ")
             const inventoryProduct = productInventoryMap.get(id_product_inventory)!;
 
             const { product_name, price_at_moment } = inventoryProduct;

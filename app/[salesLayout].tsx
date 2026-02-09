@@ -319,6 +319,8 @@ const salesLayout = () => {
 
   // TODO provide validation for the product devolutuon, if there is not product devolution, then delete product reposition
   const handlerSetProductDevolution = (declaredProductDevolution: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
+    // console.log("Product devolution: ", declaredProductDevolution)
+    // console.log("Item: ", item)
     if (declaredProductDevolution.length > 0) {
       /* That means that there is product devolution */
     } else {
@@ -327,9 +329,10 @@ const salesLayout = () => {
     }
 
     if (item === null) {
-      setProductSale(declaredProductDevolution);
+      console.log("Item is null")
+      setProductDevolution(declaredProductDevolution);
     } else {
-
+      console.log("Normal case")
     const {id_product, price_at_moment, id_product_inventory} = item;
     
     const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
@@ -343,7 +346,10 @@ const salesLayout = () => {
         id_product_inventory: id_product_inventory,
     };
 
-      setProductDevolution(pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
+
+    // console.log("newRouteTransactionDescription: ", newRouteTransactionDescription)
+    console.log("Before pushProductToCommitList: ", pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
+    setProductDevolution(pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
     }
 
   }

@@ -121,11 +121,22 @@ export default class StartWorkDayUseCase {
         const newInventoryOperation: InventoryOperation = inventoryOperationAggregate.getInventoryOperation();
         const inventoryDescriptions: InventoryOperationDescription[] = newInventoryOperation.inventory_operation_descriptions;
 
-        for (const description of inventoryDescriptions) { 
-            const { id_product, price_at_moment, amount } = description;
+        // Insert products if there is an inventory description take the amount of the inventory description as stock, otherwise insert producto with stock 0.
+        for (const product of productToRegister) { 
+            let amount = 0;
+            const { id_product, price } = product;
+            // const { id_product, price_at_moment, amount } = description;
+            const inventoryDescription:InventoryOperationDescription|undefined = inventoryDescriptions.find(description => description.id_product === id_product);
+
+            if (inventoryDescription) {
+                amount = inventoryDescription.amount;
+            } else {
+                amount = 0;
+            }
+
             productInventoryAggregate.insertProductToInventory(
                 this.idService.generateID(),
-                price_at_moment,
+                price,
                 amount,
                 id_product
             )
