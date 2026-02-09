@@ -37,6 +37,7 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 // Use cases and queries
 import { container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
+import DetermineCurrentInventoryOperation from '@/src/application/queries/DetermineCurrentInventoryOperation';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 
@@ -64,6 +65,7 @@ const routeOperationMenuLayout = () => {
   // States for logic of the layout
   const [isDayWorkClosed, setIsDayWorkClosed] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
 
   useEffect(() => {
     setUpOperationMenu();
@@ -95,6 +97,19 @@ const routeOperationMenuLayout = () => {
     const { finish_date } = workdayInformationReduxState;
     if (finish_date === null) setIsDayWorkClosed(false); // User might make operations
     else setIsDayWorkClosed(true); // User cannot make more operations
+
+    // Determine current inventory operation
+    loadCurrentInventoryOperation();
+  }
+
+  const loadCurrentInventoryOperation = async ():Promise<void> => {
+    try {
+      const determineCurrentQuery = di_container.resolve<DetermineCurrentInventoryOperation>(DetermineCurrentInventoryOperation);
+      const currentOp = await determineCurrentQuery.execute();
+      setCurrentInventoryOperation(currentOp);
+    } catch (error) {
+      console.log("Error loading current inventory operation: ", error);
+    }
   }
 
   // Handlers

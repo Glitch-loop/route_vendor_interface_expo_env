@@ -81,9 +81,13 @@ const PaymentMenu = ({
       {/* Section for cash method */}
       { paymentMethod === PAYMENT_METHODS.CASH && calculateChange(total, cashReceived) > 0 &&
         <View style={tw`flex flex-row justify-end items-center my-1`}>
-          <Text style={tw`mr-3 text-black text-xl text-right flex flex-row basis-1/2 justify-end`}>
-            Cambio { total > 0 ? '(a entregar)' : '(a recibir)'}:
-          </Text>
+          <View style={tw`mr-3 text-black text-xl text-right flex flex-row basis-1/2 justify-end`}>
+            <Text 
+              
+              style={tw`text-black text-xl text-right flex flex-row justify-end`}>
+              Cambio { total > 0 ? '(a entregar)' : '(a recibir)'}:
+            </Text>
+          </View>
           <Text style={tw`text-black text-xl text-left flex flex-row basis-1/2`}>
             ${ calculateChange(total, cashReceived) }
           </Text>
