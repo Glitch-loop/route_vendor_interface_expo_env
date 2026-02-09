@@ -135,9 +135,12 @@ const TableRouteTransactionProductVisualization = (
                 { stores.map((store) => {
                     const { store_name, id_store } = store;
                     return (
-                      <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle}`}>
+                      <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle} w-32`}>
                         <View style={tw`${viewTagHeaderTableStyle}`}>
-                          <Text style={tw`${textHeaderTableStyle}`}>
+                          <Text 
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={tw`${textHeaderTableStyle}`}>
                             {store_name}
                           </Text>
                         </View>
@@ -146,9 +149,12 @@ const TableRouteTransactionProductVisualization = (
                   })
                 }
                 { calculateTotalOfProduct &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-28`}>
                     <View style={tw`${viewTagHeaderTableStyle}`}>
-                      <Text style={tw`max-w-28 ${textHeaderTableStyle}`}>
+                      <Text 
+                          ellipsizeMode='tail'
+                          numberOfLines={1}
+                          style={tw` ${textHeaderTableStyle}`}>
                         Total
                       </Text>
                     </View>
@@ -198,9 +204,10 @@ const TableRouteTransactionProductVisualization = (
                           } 
 
                           return (
-                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
                               <View style={tw`${viewTagRowTableStyle}`}>
-                                <Text style={tw`${textRowTableStyle}`}>
+                                <Text 
+                                  style={tw`${textRowTableStyle}`}>
                                   {productAmount}
                                 </Text>
                               </View>
@@ -210,7 +217,7 @@ const TableRouteTransactionProductVisualization = (
                       }
                       {/* Inflow product */}
                       { calculateTotalOfProduct === true &&
-                        <DataTable.Cell style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-24`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {totalOfProduct}
