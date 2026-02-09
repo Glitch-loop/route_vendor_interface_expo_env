@@ -106,6 +106,7 @@ const routeOperationMenuLayout = () => {
     try {
       const determineCurrentQuery = di_container.resolve<DetermineCurrentInventoryOperation>(DetermineCurrentInventoryOperation);
       const currentOp = await determineCurrentQuery.execute();
+      console.log("Current operation: ", currentOp)
       setCurrentInventoryOperation(currentOp);
     } catch (error) {
       console.log("Error loading current inventory operation: ", error);
@@ -276,7 +277,7 @@ const routeOperationMenuLayout = () => {
               onGoBack={() => {}}/>
           </View>
           <View style={tw`w-full flex flex-row justify-center`}>
-            <View style={tw`w-11/12 flex flex-row justify-start`}>
+            <View style={tw`w-11/12 flex flex-row`}>
               <TypeOperationItem />
             </View>
           </View>
@@ -298,7 +299,7 @@ const routeOperationMenuLayout = () => {
 
 
                 // Inventory operations type
-                style = getStyleDayOperationForMenuOperation(operation_type);
+                style = getStyleDayOperationForMenuOperation(operation_type, false);
                 
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
                   ||  operation_type === DAY_OPERATIONS.restock_inventory
@@ -335,6 +336,14 @@ const routeOperationMenuLayout = () => {
                   }
                 } else { // Other operations
                   isPrintableOperation = false;
+                }
+
+                if(currentInventoryOperation !== null) {
+                  if (id_day_operation === currentInventoryOperation.id_day_operation) {
+                    console.log("Current inventory operation identified");
+                    style = getStyleDayOperationForMenuOperation(operation_type, true);
+                  }
+
                 }
 
                 if (isPrintableOperation) {

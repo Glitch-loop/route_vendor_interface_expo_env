@@ -49,7 +49,7 @@ export function getTitleDayOperationForMenuOperation(inventory_operation_type: s
 }
 
 
-export function getStyleDayOperationForMenuOperation(inventory_operation_type: string): string { 
+export function getStyleDayOperationForMenuOperation(inventory_operation_type: string, isCurrentOperation: boolean): string { 
     let style: string = "";
     switch (inventory_operation_type) {
         case DAY_OPERATIONS.start_shift_inventory:
@@ -83,8 +83,9 @@ export function getStyleDayOperationForMenuOperation(inventory_operation_type: s
         case DAY_OPERATIONS.route_client_attention:
             style = 'my-2 bg-amber-300 rounded w-11/12 h-16 flex flex-row justify-center items-center text-white';
             break;
-        
-
     }
+
+    if (isCurrentOperation) style = 'my-2 bg-indigo-300 rounded w-11/12 h-16 flex flex-row justify-center items-center text-white'
+
     return style;
 }
