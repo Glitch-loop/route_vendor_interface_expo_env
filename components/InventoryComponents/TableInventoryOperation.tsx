@@ -170,20 +170,20 @@ const TableInventoryOperation = (
             <DataTable style={tw`w-auto`}>
               <DataTable.Header>
                 { suggestedInventory.length > 0 &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`${headerTitleTableStyle} w-40`}>
                         <Text style={tw`${textHeaderTableStyle}`}>Sugerido</Text>
                   </DataTable.Title>
                 }
                 { currentInventory.length > 0 &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                  <DataTable.Title style={tw`w-40 ${headerTitleTableStyle}`}>
                       <Text style={tw`${textHeaderTableStyle}`}>Inventario Actual</Text>
                   </DataTable.Title>
                 }
                 {/* This field is never empty since it is the reason of this component (inventory operation) */}
-                <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+                <DataTable.Title style={tw`${headerTitleTableStyle} w-40`}>
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfInputColumn(id_type_of_operation) }</Text>
                 </DataTable.Title>
-                <DataTable.Title style={tw`${headerTitleTableStyle}`} >
+                <DataTable.Title style={tw`${headerTitleTableStyle} w-40`} >
                   <Text style={tw`${textHeaderTableStyle}`} >{ determineHeaderOfFinalColumn(id_type_of_operation) }</Text>
                 </DataTable.Title>
               </DataTable.Header>
@@ -219,23 +219,23 @@ const TableInventoryOperation = (
                   return (
                     <DataTable.Row key={product.id_product}>
                       { suggestedInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${suggestedAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                        <DataTable.Cell style={tw`${suggestedAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-40`}>
                           <Text style={tw`text-black ${textRowTableStyle}`}>{suggestedAmount}</Text>
                         </DataTable.Cell>
                       }
                       { currentInventory.length > 0 &&
-                        <DataTable.Cell style={tw`${currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
-                          <Text style={tw`text-black ${textRowTableStyle}`}>{currentInventoryAmount}</Text>
+                        <DataTable.Cell style={tw`${currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-40 `}>
+                          <Text style={tw`text-black${textRowTableStyle}`}>{currentInventoryAmount}</Text>
                         </DataTable.Cell>
                       }
-                      <DataTable.Cell style={tw`${cellTableStyle}`}>
+                      <DataTable.Cell style={tw`${cellTableStyle} w-40`}>
                         <View style={tw`w-8/12`}>
                           <AutomatedCorrectionNumberInput
                             amount={amount}
                             onChangeAmount={handlerChangeInventory}/>
                         </View>
                       </DataTable.Cell>
-                      <DataTable.Cell style={tw`${amount + currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle}`}>
+                      <DataTable.Cell style={tw`${amount + currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-40`}>
                         <Text style={tw`text-black ${textRowTableStyle}`}>{ amount + currentInventoryAmount }</Text>
                       </DataTable.Cell>
                     </DataTable.Row>
