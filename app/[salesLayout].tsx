@@ -226,7 +226,6 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
-      console.log("Registering route transaction")
       await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
@@ -235,9 +234,7 @@ const salesLayout = () => {
         id_store_search_param
       );
       
-      console.log("Retrieve current shift")
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-      console.log("Retrieve operations day")
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
             
       const newInventory = await retrieveCurrentShiftInventory.execute();
@@ -319,8 +316,6 @@ const salesLayout = () => {
 
   // TODO provide validation for the product devolutuon, if there is not product devolution, then delete product reposition
   const handlerSetProductDevolution = (declaredProductDevolution: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
-    // console.log("Product devolution: ", declaredProductDevolution)
-    // console.log("Item: ", item)
     if (declaredProductDevolution.length > 0) {
       /* That means that there is product devolution */
     } else {
@@ -329,10 +324,8 @@ const salesLayout = () => {
     }
 
     if (item === null) {
-      console.log("Item is null")
       setProductDevolution(declaredProductDevolution);
     } else {
-      console.log("Normal case")
     const {id_product, price_at_moment, id_product_inventory} = item;
     
     const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
@@ -346,9 +339,6 @@ const salesLayout = () => {
         id_product_inventory: id_product_inventory,
     };
 
-
-    // console.log("newRouteTransactionDescription: ", newRouteTransactionDescription)
-    console.log("Before pushProductToCommitList: ", pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
     setProductDevolution(pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
     }
 

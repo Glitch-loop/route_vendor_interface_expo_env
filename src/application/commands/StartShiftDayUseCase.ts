@@ -164,8 +164,15 @@ export default class StartWorkDayUseCase {
 
 
         // Insert clients to attend as day operations.
-        for (const store of stores) {
+        
+        console.log("Making registration of attend clients day operations for stores");
+        let aux = 0
+
+        const orderedStores = stores.sort((a, b) => a.position_in_route - b.position_in_route);
+        for (const store of orderedStores) {
             const { id_store } = store;
+            aux++;
+            console.log("Registering attend client day operation for store: ", id_store, " - ", aux);
             dayOperationAggregate.registerAttendTodaysClient(
                 this.idService.generateID(),
                 id_store,
