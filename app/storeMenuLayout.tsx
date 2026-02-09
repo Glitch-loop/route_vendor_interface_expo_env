@@ -141,29 +141,13 @@ const storeMenuLayout = () => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => { router.replace('/routeOperationMenuLayout') };
 
-  const handlerGoBackToStoreMenu = () => { setIsConsultTransaction(false); };
+  const handlerGoBackToStoreMenu = () => { router.push(`/storeMenuLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
   const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
   const handlerOnConsultTransactions = async() => {
     
     try {
-      // Variables used throughout the logic of the handler
-      const arrTransactions:RouteTransactionDTO[] = [];
-      const mapTransactionOperations = new Map<string, IRouteTransactionOperation[]>();
-      const mapTransactionOperationDescriptions = new Map<string, IRouteTransactionOperationDescription[]>();
-
-      const settingRouteTransactionByStore:any = {
-        showErrorMessage: true,
-        toastTitleError: 'Error durante la consulta de las transacciones de la tienda.',
-        toastMessageError: 'Ha habido un error durante la consulta, no se ha podido recuperar la información, por favor intente nuevamente',
-      };
-      const settingTransactionsOperation:any = {
-        showErrorMessage: true,
-        toastTitleError: 'Error durante la consulta de las operaciones de las trasnsacciones.',
-        toastMessageError: 'Ha habido un error durante la consulta, no se ha podido recuperar la información, por favor intente nuevamente',
-      };
-
       /* Getting all the transaciton of the store of today. */
       if (consultedStore === undefined || consultedStore === null) {
         Toast.show({type: 'error',
