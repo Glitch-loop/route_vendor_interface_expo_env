@@ -227,9 +227,8 @@ export class OperationDayAggregate {
             const routeTransactionsMap: Map<string, RouteTransaction> = new Map<string, RouteTransaction>();
     
             if (this.routeTransactions) {
-                this.routeTransactions.forEach((routeTransaction: RouteTransaction) => {
-                    routeTransactionsMap.set(routeTransaction.id_store, routeTransaction);
-                });
+                this.routeTransactions
+                    .forEach((routeTransaction: RouteTransaction) => { routeTransactionsMap.set(routeTransaction.id_store, routeTransaction); });
             }
     
             // Traverse day operations to determine which "ROUTE_CLIENT_ATTENTION" operation is the current one.
@@ -241,6 +240,7 @@ export class OperationDayAggregate {
                     if (!routeTransactionsMap.has(dayOperation.id_item)) {
                         // No route transaction associated, so this is the current operation.
                         indexCurrentOperationDay = i;
+                        break;
                     }
                 }
             }

@@ -317,7 +317,6 @@ const routeOperationMenuLayout = () => {
                   isPrintableOperation = true;
                     
                   itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperationsReduxState]).toString();
-                  console.log(itemOrder);
 
                   totalValue = '';
                   if (stores === null) {

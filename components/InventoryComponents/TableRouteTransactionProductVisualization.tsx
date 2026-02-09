@@ -90,7 +90,6 @@ const TableRouteTransactionProductVisualization = (
     mapConsolidatedByConcept.set(id_store, productMap);
   }
 
-  console.log("mapConsolidatedByConcept: ", mapConsolidatedByConcept);
 
   
   return (
