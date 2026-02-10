@@ -51,7 +51,7 @@ export default class CancelInventoryOperationUseCase {
 
     // Build aggregates
     const inventoryAgg = new InventoryOperationAggregate(inventoryOperation);
-    const dayAgg = new OperationDayAggregate(dayOperations, null);
+    const dayAgg = new OperationDayAggregate(dayOperations);
     const inventoryAggProducts = new ProductInventoryAggregate(currentInventory);
 
     console.log('Cancelling inventory operation:', id_inventory_operation);

@@ -61,7 +61,7 @@ export default class RegisterFinalShiftInventoryUseCase {
 
         const shiftORganizationAggregate: ShiftOrganizationAggregate = new ShiftOrganizationAggregate(workdayInformation);
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(null, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(null);
         
         // Finish work day.
         shiftORganizationAggregate.finishWorkDay(

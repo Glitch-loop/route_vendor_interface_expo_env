@@ -59,7 +59,7 @@ export default class RegisterRestockOfProductUseCase {
 
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
         
         // Create inventory operation

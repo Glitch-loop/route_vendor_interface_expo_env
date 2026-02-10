@@ -51,7 +51,7 @@ export default class RegisterProductDevolutionUseCase {
         const dayOperations:DayOperation[] = await this.localDayOperationRepo.listDayOperations();
 
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
 
         // Create inventory operation

@@ -48,7 +48,7 @@ export default class CancelRouteTransaction {
 
         const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(routeTransaction)
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
         // Cancelling route transaction.
         routeTransactionAggregate.cancelRouteTransaction();
