@@ -74,7 +74,7 @@ export default class StartWorkDayUseCase {
         const shiftORganizationAggregate: ShiftOrganizationAggregate = new ShiftOrganizationAggregate(null);
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate([]);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(null, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(null);
 
         const { id_route, route_name, description, route_status } = routeSelected;
         const { id_day, id_route_day} = routeDaySelected;

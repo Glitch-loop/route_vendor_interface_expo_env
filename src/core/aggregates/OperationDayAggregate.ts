@@ -6,12 +6,10 @@ import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 
 export class OperationDayAggregate {
-    private routeTransactions: RouteTransaction[] | null;
     private dayOperations: DayOperation[] | null;
     private initialDayOperations: DayOperation[] | null;
 
-    constructor(dayOperations: DayOperation[] | null, routeTransactions: RouteTransaction[] | null) {
-        this.routeTransactions = routeTransactions;
+    constructor(dayOperations: DayOperation[] | null) {
 
         if (dayOperations === null) {
             this.dayOperations = null;
@@ -36,7 +34,7 @@ export class OperationDayAggregate {
             idClient,
             DAY_OPERATIONS.route_client_attention,
             createdAt,
-            ''
+            null
         );
 
         this.dayOperations.push(newDayOperation);
@@ -55,7 +53,7 @@ export class OperationDayAggregate {
             idClient,
             DAY_OPERATIONS.attention_out_of_route,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -73,7 +71,7 @@ export class OperationDayAggregate {
             idClient,
             DAY_OPERATIONS.new_client_registration,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -101,7 +99,7 @@ export class OperationDayAggregate {
             idRouteTransaction,
             DAY_OPERATIONS.cancel_route_transaction,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -113,7 +111,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.start_shift_inventory,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -125,7 +123,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.restock_inventory,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -137,7 +135,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.product_devolution_inventory,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -149,7 +147,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.end_shift_inventory,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -161,7 +159,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.consult_inventory,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
@@ -173,7 +171,7 @@ export class OperationDayAggregate {
             idInventoryOperation,
             DAY_OPERATIONS.cancel_inventory_operation,
             createdAt,
-            ''
+            null
         );
 
         this.insertOperationDayNextToCurrentOperation(newDayOperation);   
@@ -198,7 +196,7 @@ export class OperationDayAggregate {
     determineCurrentOperation(): DayOperation | null {
         const indexCurrentOperation:number = this.determineIndexCurrentOperation();
 
-        if (indexCurrentOperation === -1 || this.dayOperations === null || this.routeTransactions === null) return null;
+        if (indexCurrentOperation === -1 || this.dayOperations === null) return null;
 
         return this.dayOperations[indexCurrentOperation];
     }
@@ -228,31 +226,45 @@ export class OperationDayAggregate {
                 - "ROUTE_CLIENT_ATTENTION" refers to the clients that are part of the route for the day.
                 - The statement on which we can identify the current operation is:
                     - Day operation with type "ROUTE_CLIENT_ATTENTION".
-                    - First "ROUTE_CLIENT_ATTENTION" with no "ROUTE_TRANSACTION" associated.
+                    - First "ROUTE_CLIENT_ATTENTION" with no dependent operations.
         */
         let indexCurrentOperationDay:number = -1
 
         if (!this.dayOperations) { indexCurrentOperationDay = -1; } // No operations registered. 
         else {
-            // Convert array to map.
-            const routeTransactionsMap: Map<string, RouteTransaction> = new Map<string, RouteTransaction>();
-    
-            if (this.routeTransactions) {
-                this.routeTransactions
-                    .forEach((routeTransaction: RouteTransaction) => { routeTransactionsMap.set(routeTransaction.id_store, routeTransaction); });
+            const dayOperationOrdered = this.dayOperations.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+            // Build a map of dependent operations: key = id_day_operation (the operation being depended on), value = array of operations that depend on it
+            const dependentOperations: Map<string, string[]> = new Map<string, string[]>();
+            
+            for (const dayOperation of dayOperationOrdered) {
+                if (dayOperation.id_dependency !== null && dayOperation.id_dependency !== '') {
+                    console.log("There is a dependency")
+                    // This operation depends on another operation
+                    const dependents = dependentOperations.get(dayOperation.id_dependency) || [];
+                    dependents.push(dayOperation.id_day_operation); // It has the id of the store....
+                    dependentOperations.set(dayOperation.id_dependency, dependents);
+                }
             }
+            console.log("+++++++++++++++++++++++++++++++++")
+            console.log("Dependent operations map: ", dependentOperations);
+
+            dayOperationOrdered.forEach(dayOperation => {
+                console.log("Day operation: ", dayOperation.id_day_operation, "- type of operation: ", dayOperation.operation_type, " - id dependency: ", dayOperation.id_dependency);
+            });
             console.log("Traversing day operations")
             // Traverse day operations to determine which "ROUTE_CLIENT_ATTENTION" operation is the current one.
-            for (let i = 0; i < this.dayOperations.length; i++) {
-                const dayOperation: DayOperation = this.dayOperations[i];
+            for (let i = 0; i < dayOperationOrdered.length; i++) {
+                const dayOperation: DayOperation = dayOperationOrdered[i];
                 const { id_item, id_day_operation } = dayOperation;
                 
                 if (dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
                     console.log("Day operation id item: ", id_item , " - id day operation: ", id_day_operation);
-                    // Check if there is a route transaction associated to this client (store).
-                    if (!routeTransactionsMap.has(id_item)) {
-                        // No route transaction associated, so this is the current operation.
-                        console.log("Current operation found: ", dayOperation);
+                    // Check if there are any operations that depend on this operation.
+                    if (!dependentOperations.has(id_day_operation)) {
+                        // No dependent operations, so this is the current operation.
+                        console.log("Day operation id item: ", id_item , " - id day operation: ", id_day_operation, "+++++++++++");
+                        console.log("Current operation found");
                         indexCurrentOperationDay = i;
                         break;
                     }
@@ -261,7 +273,7 @@ export class OperationDayAggregate {
 
             // If after traversing all day operations, no current operation is found, that means the last operation is the current one.
             if (indexCurrentOperationDay === -1) {
-                if (this.dayOperations.length > 0) indexCurrentOperationDay = this.dayOperations.length - 1;
+                if (dayOperationOrdered.length > 0) indexCurrentOperationDay = dayOperationOrdered.length - 1;
                 else indexCurrentOperationDay = 0;
             }
         }

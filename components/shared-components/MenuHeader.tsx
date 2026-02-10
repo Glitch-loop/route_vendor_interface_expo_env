@@ -57,7 +57,7 @@ const MenuHeader = ({
           horizontal={true}>
           { id_store === undefined ?
             <View style={tw`flex flex-col items-start justify-center`}>
-              <Text style={tw`text-2xl text-black text-start align-middle`}>{ capitalizeFirstLetter(routeName) }</Text>
+              <Text style={tw`text-2xl text-black align-middle`}>{ capitalizeFirstLetter(routeName) }</Text>
             </View>
             :
             <View style={tw`flex flex-col items-start justify-center`}>

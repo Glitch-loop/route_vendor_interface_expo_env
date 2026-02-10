@@ -114,7 +114,7 @@ const routeOperationMenuLayout = () => {
   }
 
   // Handlers
-  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_search_param=${dayOperation.id_item}&id_day_operation_dependent_search_param=${dayOperation.id_item}`); };
+  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_search_param=${dayOperation.id_item}&id_day_operation_dependent_search_param=${dayOperation.id_day_operation}`); };
 
   const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
 

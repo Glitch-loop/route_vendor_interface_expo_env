@@ -22,7 +22,6 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 @injectable()
 export default class DetermineCurrentInventoryOperation {
   constructor(
-    @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly routeTxRepo: RouteTransactionRepository,
     @inject(TOKENS.SQLiteDayOperationRepository) private readonly dayOpRepo: DayOperationRepository,
     private readonly mapperDTO: MapperDTO,
   ) {}
@@ -30,10 +29,8 @@ export default class DetermineCurrentInventoryOperation {
   async execute(): Promise<DayOperationDTO | null> {
       
     // Retrieve all day operations and route transactions for the current day
-    const dayOperations: DayOperation[] = await this.dayOpRepo.listDayOperations();
-    const routeTransactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactions();
-    
-    const dayOperationsAggregator: OperationDayAggregate = new OperationDayAggregate(dayOperations, routeTransactions);
+    const dayOperations: DayOperation[] = await this.dayOpRepo.listDayOperations();    
+    const dayOperationsAggregator: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
     if (!dayOperations || dayOperations.length === 0) {
       return null;
