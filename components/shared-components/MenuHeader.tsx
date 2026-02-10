@@ -61,8 +61,8 @@ const MenuHeader = ({
             </View>
             :
             <View style={tw`flex flex-col items-start justify-center`}>
-              <Text style={tw`text-lg font-bold text-black text-start align-middle`}>{ capitalizeFirstLetterOfEachWord(storeName) }</Text>    
-              <Text style={tw`text-base text-black text-start align-middle`}>{ capitalizeFirstLetter(routeName) }</Text>
+              <Text style={tw`text-lg font-bold text-black align-middle`}>{ capitalizeFirstLetterOfEachWord(storeName) }</Text>    
+              <Text style={tw`text-base text-black align-middle`}>{ capitalizeFirstLetter(routeName) }</Text>
             </View>
           }
         </ScrollView>

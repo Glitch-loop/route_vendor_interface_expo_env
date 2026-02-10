@@ -239,32 +239,22 @@ export class OperationDayAggregate {
             
             for (const dayOperation of dayOperationOrdered) {
                 if (dayOperation.id_dependency !== null && dayOperation.id_dependency !== '') {
-                    console.log("There is a dependency")
                     // This operation depends on another operation
                     const dependents = dependentOperations.get(dayOperation.id_dependency) || [];
                     dependents.push(dayOperation.id_day_operation); // It has the id of the store....
                     dependentOperations.set(dayOperation.id_dependency, dependents);
                 }
             }
-            console.log("+++++++++++++++++++++++++++++++++")
-            console.log("Dependent operations map: ", dependentOperations);
 
-            dayOperationOrdered.forEach(dayOperation => {
-                console.log("Day operation: ", dayOperation.id_day_operation, "- type of operation: ", dayOperation.operation_type, " - id dependency: ", dayOperation.id_dependency);
-            });
-            console.log("Traversing day operations")
             // Traverse day operations to determine which "ROUTE_CLIENT_ATTENTION" operation is the current one.
             for (let i = 0; i < dayOperationOrdered.length; i++) {
                 const dayOperation: DayOperation = dayOperationOrdered[i];
                 const { id_item, id_day_operation } = dayOperation;
                 
                 if (dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
-                    console.log("Day operation id item: ", id_item , " - id day operation: ", id_day_operation);
                     // Check if there are any operations that depend on this operation.
                     if (!dependentOperations.has(id_day_operation)) {
                         // No dependent operations, so this is the current operation.
-                        console.log("Day operation id item: ", id_item , " - id day operation: ", id_day_operation, "+++++++++++");
-                        console.log("Current operation found");
                         indexCurrentOperationDay = i;
                         break;
                     }
