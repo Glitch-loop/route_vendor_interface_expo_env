@@ -73,7 +73,7 @@ export default class RegisterNewRouteTransaction {
 
         const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
         const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations, null);
+        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
         // Create route transaction
         routeTransactionAggregate.createRouteTransaction(

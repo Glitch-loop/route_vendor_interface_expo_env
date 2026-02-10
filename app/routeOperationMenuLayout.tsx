@@ -87,12 +87,10 @@ const routeOperationMenuLayout = () => {
 
     return () => backHandler.remove();
 
-  }, [isDayWorkClosed, routeDay]);
+  }, [isDayWorkClosed, routeDay, workdayInformationReduxState]);
 
   const setUpOperationMenu = ():void => {
-    console.log("Workday: ", workdayInformationReduxState)
     if (workdayInformationReduxState === null) {
-      Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Intenta reiniciar la aplicación'});
       return;
     }
     const { finish_date } = workdayInformationReduxState;
