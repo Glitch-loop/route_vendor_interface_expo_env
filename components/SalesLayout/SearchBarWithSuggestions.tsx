@@ -73,13 +73,13 @@ const SearchBarWithSuggestions = ({
   };
 
   return (
-    <View style={tw`w-11/12 h-full flex flex-col`}>
-      <View style={tw`w-full`}>
+    <View style={tw`h-16 w-11/12 flex flex-col`}>
+      <View style={tw`h-full w-full`}>
         <Provider>
           <Searchbar
             clearIcon={() => {return '';}}
             icon={() => <MaterialIcons name="search" size={24} color="gray" />}
-            style={tw`border border-solid text-xl`}
+            style={tw`h-full border border-solid text-xl`}
             placeholder="Search"
             onChangeText={onChangeSearch}
             value={searchQuery}
@@ -87,14 +87,18 @@ const SearchBarWithSuggestions = ({
         </Provider>
       </View>
       {filteredData.length > 0 &&
-        <View style={tw`absolute top-13 z-20 w-full bg-gray-100 flex flex-1 flex-row justify-center items-center max-h-56`}>
+        <View style={tw`absolute top-11 z-20 w-full rounded border-solid border-l border-r border-b flex flex-1 flex-row justify-center items-center max-h-56`}>
           {/* Display suggestions */}
           <ScrollView nestedScrollEnabled={true} className='flex flex-1 w-full justify-center items-center'>
             {filteredData.length > 0 && (
               filteredData.map(item => (
                 <Pressable
                   key={item[keyField]}
-                  style={tw`p-3 border border-0 border-b-2 border-solid`}
+                  style={({pressed}) => [
+                    tw`p-3 border border-0 border-b-2 border-solid`,
+                    pressed ? tw`bg-purple-200` : tw`bg-purple-50`,
+                  ]}
+                  // style={tw`p-3 border border-0 border-b-2 border-solid`}
                   onPress={() => onSelectItem(item)}>
                   <Text style={tw`text-xl text-center`}>
                     {capitalizeFirstLetterOfEachWord(item[fieldToSearch])}
