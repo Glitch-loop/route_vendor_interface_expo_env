@@ -1,20 +1,13 @@
 // Librarires
+
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { StyleSheet, Text } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, CameraZoomRange, Region, Camera, Callout, LatLng } from 'react-native-maps';
 import tw from 'twrnc';
-
-// Services
-// import {
-//   getCurrentLocation,
-// } from '../services/geolocationService';
-
-import { ICoordinates, IStore } from '../interfaces/interfaces';
-import { Button } from 'react-native';
+import { IStoreRouteMap } from '../interfaces/interfaces';
 import { View } from 'react-native';
-import { LocaleDirContext } from '@react-navigation/native';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
-import StoreDTO from '@/src/application/dto/StoreDTO';
+import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 const styles = StyleSheet.create({
   container: {
@@ -50,68 +43,122 @@ const INITIAL_REGION = {
   longitude: -105.2190063835951,
   latitudeDelta: 0.0922,
   longitudeDelta: 0.0421,
-  zoom: 5
+  
 }
 
-const markers:any[] = [
-  {
-    latitude: 20.641640381312676,
-    longitude: -105.2190063835951,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-    zoom: 0.5
-  }
-]
- 
+const INITIAL_LOCATION_CAMERA:Camera = {
+  center: INITIAL_REGION,
+  heading: 0,
+  pitch: 0,
+  zoom: 18
+}
+
 const RouteMap = ({
-  latitude, 
-  longitude,
+  initialCoordinates,
+  selectedStore,
   stores,
   onClick
 }:{
-  latitude:number, 
-  longitude:number,
-  stores:StoreDTO[],
-  onClick?:(store:StoreDTO) => void
+  initialCoordinates?:LatLng
+  selectedStore?:IStoreRouteMap,
+  stores:(IStoreRouteMap)[],
+  onClick?:(store:IStoreRouteMap) => void
 }) => {
   const mapRef = useRef<MapView|null>(null);
 
-  const [location, setLocation] = useState(
-    {
-      latitude: 20.641640381312676,
-      longitude: -105.2190063835951,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    });
+  const [location, setLocation] = useState<Camera>(INITIAL_LOCATION_CAMERA);
+  
+  
+  const [locationToFocus, setLocationToFocus] = useState<Camera|undefined>(undefined);
+  const [locations, setLocations] =useState<IStoreRouteMap[]>([])
 
-  const [locations, setLocations] =useState<any[]>([])
+  const [initialLocation, setInitialLocation] = useState<Region|undefined>(undefined);
+  
+  // Hooks
+  const userCurrentLocation = useCurrentLocation();
 
-  const handlerGetStorePosition = () => {
-    setLocation(    {
-      latitude: latitude,
-      longitude: longitude,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    })
-    setLocations([
-      {
-        latitude: latitude,
-        longitude: longitude,
-        latitudeDelta: 2,
-        longitudeDelta: 2,
+  useEffect(() => {
+    setUpMap();
+  }, [initialCoordinates]);
+
+  useEffect(() => {
+    if (selectedStore !== undefined && mapRef !== null) {
+        const { latitude, longitude } = selectedStore;
+        const newCamera: Camera = {
+        center: {
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+        },
+        heading: 0,
+        pitch: 0,
+        zoom: 18
       }
-    ])
+
+      if (mapRef.current !== null) {
+        mapRef.current.animateCamera(newCamera, { duration: 1000 });
+      }
+    }
+   }, [selectedStore])
+
+  // Auxiliar
+   const setUpMap = async () => {
+      // const userLocation: LocationObject | null = await userCurrentLocation.getCurrentUserLocation();
+      if(initialCoordinates) {
+        const { latitude, longitude } = initialCoordinates;
+        setInitialLocation({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        })
+        // const newCamera: Camera = {
+        //   center: {
+        //       latitude: latitude,
+        //       longitude: longitude,
+        //   },
+        //   heading: 0,
+        //   pitch: 0,
+        //   zoom: 15
+        // }
+
+        // if (mapRef.current !== null) {
+        //   mapRef.current.animateCamera(newCamera, { duration: 1000 });
+        // }
+      }
+   }
+
+  // Handlers
+  const handleGoToLocation = () => {
+    if (mapRef.current !== null) {
+      const newCamera: Camera = {
+        center: {
+            latitude: 20.641640381312676,
+            longitude: -105.2190063835951,
+        },
+        heading: 0,
+        pitch: 0,
+        zoom: 18
+      }
+
+      mapRef.current.animateCamera(newCamera, { duration: 0 });
+    }
   }
 
   return (
     <View style={styles.mapContainer}>
       <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={INITIAL_REGION} // Initial perspective of the map
-        showsUserLocation={true}  // Show the user's current location
-        showsMyLocationButton={true}  // Button to return to user's location
-        ref={mapRef}
+      ref={mapRef}
+      // camera={initialCoordinates}
+      region={initialLocation}
+      provider={PROVIDER_GOOGLE}
+      style={styles.map}
+      showsUserLocation={true}  // Show the user's current location
+      showsMyLocationButton={true}  // Button to return to user's location
+      onPress={(data) => {
+        handleGoToLocation();
+        console.log(data.nativeEvent.coordinate) 
+      }}
+      // region={location}
         >
         {/* Add a marker at the user's current position */}
         {/* <Marker 
@@ -123,10 +170,15 @@ const RouteMap = ({
         { stores.map((store) => {
           return (
             <Marker
-            key={store.id_store}
+              key={store.id_store}
+              pinColor={tw.color(store.tw_color)}
               title={capitalizeFirstLetterOfEachWord(store.store_name)}
               onPress={() => { if (onClick) onClick(store) }}
-              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longitude) }}/>
+              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longitude) }}>
+                <Callout>
+                  <Text>Hello world</Text>
+                </Callout>
+            </Marker>
           )
         })
         }

@@ -1,3 +1,9 @@
+import StoreDTO from "@/src/application/dto/StoreDTO";
+
+export interface IStoreRouteMap extends StoreDTO {
+  tw_color: string;
+  route_status_store: string;
+}
 
 export interface IDay {
   id_day: string;

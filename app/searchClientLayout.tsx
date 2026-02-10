@@ -15,12 +15,13 @@ import { setCurrentOperation } from '@/redux/slices/currentOperationSlice';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 // Interfaces
-import { IDayOperation, IStore, IStoreStatusDay } from '@/interfaces/interfaces';
+import { IDayOperation, IStore, IStoreStatusDay, IStoreRouteMap } from '@/interfaces/interfaces';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 // Utils
 import { distanceBetweenTwoPoints } from '@/utils/routesFunctions';
-import DAYS_OPERATIONS from '@/lib/day_operations';
+// import DAYS_OPERATIONS from '@/lib/day_operations';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 // Controllers
 import { createDayOperationConcept } from '@/controllers/DayOperationController';
@@ -33,6 +34,9 @@ import RouteHeader from '@/components/shared-components/RouteHeader';
 import Toast from 'react-native-toast-message';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ActivityIndicator } from 'react-native-paper';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import { getRouteStatusStore, getStoreStatusColor } from '@/utils/day-operation/utils';
+import DAYS from '@/lib/days';
 
 
 function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|null, kmAround:number):StoreDTO[] {
@@ -62,24 +66,123 @@ function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|nu
     return storesToShow;
 }
 
+function findColorForEachStore(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
+    const storeRouteMap: IStoreRouteMap[] = [];
+    const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
+    dayOperations.forEach((dayOperation) => {
+        dayOperationMap.set(dayOperation.id_item, dayOperation);
+    });
+
+    stores.forEach((store) => {
+        const dayOperation = dayOperationMap.get(store.id_store);
+        let color = '';
+        let status = '';
+        if (dayOperation) {
+            const { operation_type } = dayOperation;
+            console.log("Day operation id: ", operation_type)
+            color = getStoreStatusColor(operation_type);
+            status = getRouteStatusStore(operation_type);
+
+            
+        } else {
+            color = getStoreStatusColor(undefined);
+            status = getRouteStatusStore(undefined);
+        }
+
+        console.log("Color: ", color)
+        storeRouteMap.push({
+            ...store,
+            tw_color: color,
+            route_status_store: status
+        });
+    })
+
+    return storeRouteMap;
+}
+
+function mergeStoresToDisplay(storesWithStatus: IStoreRouteMap[], storesAround: IStoreRouteMap[], selectedStore: IStoreRouteMap|undefined): IStoreRouteMap[] {
+    // Keep only nearby stores that already have a status (i.e., exist in storesWithStatus)
+    const idsWithStatus = new Set(storesWithStatus.map(s => s.id_store));
+    let nerbywithStatus: IStoreRouteMap[] = []
+    if (selectedStore === undefined) {
+        nerbywithStatus = storesAround.filter(s => !idsWithStatus.has(s.id_store));
+    } else {
+        nerbywithStatus = storesAround.filter(s => !idsWithStatus.has(s.id_store) && s.id_store !== selectedStore.id_store);
+    }
+    return [...storesWithStatus, ...nerbywithStatus];
+}
+
 const searchClientLayout = () => {
     const { getCurrentUserLocation } = useCurrentLocation();
     
     // Redux
-    const stores = useSelector((state: RootState) => state.stores);
+    const storesRedux = useSelector((state: RootState) => state.stores);
+    const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
     const dispatch:AppDispatch = useDispatch();
 
     // States
-    const [storesToShow, setStoresToShow] = useState<StoreDTO[]>([]);
-    const [mAround, setmAround] = useState<number>(300);
-    const [selectedClient, setSelectedClient] = useState<StoreDTO|undefined>();
-    const [selectedItems, setSelectedItems] = useState<StoreDTO[]>([]);
-    const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
     const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
+    
+    const [storesToShow, setStoresToShow] = useState<IStoreRouteMap[]>([]);
+    const [storesWithStatus, setStoresWithStatus] = useState<IStoreRouteMap[]>([]);
+    const [mAround, setmAround] = useState<number>(300);
+    const [selectedClient, setSelectedClient] = useState<IStoreRouteMap|undefined>();
+    const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
+    
+    // States for the search bar
+    const [selectedItems, setSelectedItems] = useState<IStoreRouteMap[]>([]);
 
     useEffect(() => {
-        loadUserLocationAndStores();
-    }, [stores]);
+        setUpSearchClientLayout();
+        // loadUserLocationAndStores();
+    }, [storesRedux, dayOperationsRedux]);
+
+    const setUpSearchClientLayout = async() => {
+        const location = await getCurrentUserLocation();
+        setUserLocation(location);
+
+        if (dayOperationsRedux !== null && storesRedux !== null) { 
+            const dayOperations: DayOperationDTO[] = [...dayOperationsRedux];
+            const idStoresWithDayOperation: Map<string, DayOperationDTO> = new Map<string, DayOperationDTO>();
+            const storeWithRouteDay: IStoreRouteMap[] = [];
+
+            // Get stores that alredy has day operations (today's client, clients attended out of route, etc) and set them in the state to show in the map
+            dayOperations.forEach((dayOperation) => {
+                const { operation_type, id_item } = dayOperation;    
+                if (operation_type === DAY_OPERATIONS.attend_client_petition
+                ||  operation_type === DAY_OPERATIONS.attention_out_of_route 
+                ||  operation_type === DAY_OPERATIONS.new_client_registration
+                ||  operation_type === DAY_OPERATIONS.route_client_attention) {
+                    idStoresWithDayOperation.set(id_item, dayOperation); // In theory, there are only stores
+                }
+            });
+
+            storesRedux.forEach((store) => {
+                const { id_store } = store;
+                const dayOperationForStore = idStoresWithDayOperation.get(id_store);       
+
+                if (dayOperationForStore !== undefined) {
+                    const { operation_type } = dayOperationForStore;
+                    storeWithRouteDay.push({
+                        ...store,
+                        tw_color: getStoreStatusColor(operation_type),
+                        route_status_store: getRouteStatusStore(operation_type)
+                    });
+                }
+            });
+            
+            setStoresWithStatus(storeWithRouteDay);
+
+
+            if (location) {
+                // Get stores that are around the user
+                const nearbyStores = findStoresAround(userLocation, [ ...storesRedux ], mAround);
+                const storesWithColors = findColorForEachStore(nearbyStores, dayOperationsRedux);
+                // mergeStoresToDisplay(storeWithRouteDay, storesWithColors, undefined)
+                setStoresToShow([]);
+            }
+        }
+    }
 
     const loadUserLocationAndStores = async () => {
         try {
@@ -87,9 +190,10 @@ const searchClientLayout = () => {
             const location = await getCurrentUserLocation();
             setUserLocation(location);
             
-            if (location && stores) {
-                const nearbyStores = findStoresAround(location, stores, mAround);
-                setStoresToShow(nearbyStores);
+            if (location && storesRedux && dayOperationsRedux) {
+                const nearbyStores = findStoresAround(location, [ ...storesRedux ], mAround);
+                const storesWithColors = findColorForEachStore(nearbyStores, dayOperationsRedux);
+                setStoresToShow(storesWithColors);
             }
         } catch (error) {
             console.log('Error loading location:', error);
@@ -98,19 +202,17 @@ const searchClientLayout = () => {
                 text1: 'Error al obtener ubicación',
                 text2: 'No se pudo obtener tu ubicación actual'
             });
-            setStoresToShow(stores || []);
+            setStoresToShow([]);
         } finally {
             setIsLoadingLocation(false);
         }
     }
 
     // Hanlder
-    const handlerGoBack = () => {
-        router.replace('/routeOperationMenuLayout');
-    }
+    const handlerGoBack = () => { router.replace('/routeOperationMenuLayout'); }
 
-    const handlerOnSelectItem = (selectedItem:StoreDTO) => {
-        const currnetItems:StoreDTO[] = selectedItems.map((item:StoreDTO) => { return item });
+    const handlerOnSelectItem = (selectedItem:IStoreRouteMap) => {
+        const currnetItems:IStoreRouteMap[] = selectedItems.map((item:IStoreRouteMap) => { return item });
         setSelectedItems(
             [
                 ...currnetItems,
@@ -157,7 +259,7 @@ const searchClientLayout = () => {
                 {/* Search Bar */}
                 <View style={tw`w-full flex flex-row justify-center items-center px-4 py-2`}>
                     <SearchBarWithSuggestions 
-                        catalog={stores || []}
+                        catalog={storesToShow || []}
                         selectedCatalog={selectedItems}
                         fieldToSearch={'store_name'}
                         keyField={'id_store'}
@@ -167,7 +269,7 @@ const searchClientLayout = () => {
 
                 {/* Map Container */}
                 <View style={tw`flex-1 px-4 py-2`}>
-                    {isLoadingLocation ? (
+                    {userLocation === null ? (
                         <View style={tw`w-full h-full flex justify-center items-center border-2 border-gray-300 rounded-lg bg-gray-100`}>
                             <ActivityIndicator size="large" />
                             <Text style={tw`mt-2 text-gray-600`}>Cargando ubicación...</Text>
@@ -175,8 +277,11 @@ const searchClientLayout = () => {
                     ) : (
                         <View style={tw`w-full h-full border-2 border-gray-300 rounded-lg overflow-hidden`}>
                             <RouteMap 
-                                latitude={userLocation?.coords.latitude || 20.66020491403627}
-                                longitude={userLocation?.coords.longitude || -105.23041097690118}
+                                initialCoordinates={{ 
+                                    latitude: userLocation?.coords.latitude || 20.66020491403627, 
+                                    longitude: userLocation?.coords.longitude || -105.23041097690118 
+                                }}
+                                selectedStore={selectedClient}
                                 stores={storesToShow}
                                 onClick={setSelectedClient}
                             />
