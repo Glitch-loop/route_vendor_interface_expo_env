@@ -78,6 +78,7 @@ const RouteMap = ({
 }) => {
   const mapRef = useRef<MapView|null>(null);
   const markerRef = useRef(null);
+  const selectedLocationMarkerRef = useRef(null);
 
   const [initialLocation, setInitialLocation] = useState<Region|undefined>(undefined);
   const [selectedLocation, setSelectedLocation] = useState<LatLng|undefined>(undefined);
@@ -105,10 +106,9 @@ const RouteMap = ({
         mapRef.current.animateCamera(newCamera, { duration: 1000 });
       }
     }
-   }, [selectedStore])
 
-   useEffect(() => {
-       if (selectedLocation && markerRef.current !== null) {
+    if (selectedStore && markerRef.current !== null) {
+      console.log(markerRef.current)
       // @ts-ignore
       console.log("showing callout")
       setTimeout(() => {
@@ -116,8 +116,18 @@ const RouteMap = ({
         markerRef.current?.showCallout?.();
       }, 100);
     }
+   }, [selectedStore])
+
+   useEffect(() => {
+    if (selectedLocation && selectedLocationMarkerRef.current !== null) {
+      // @ts-ignore
+      console.log("showing callout")
+      setTimeout(() => {
+        // @ts-ignore
+        selectedLocationMarkerRef.current?.showCallout?.();
+      }, 100);
+    }
     }, [selectedLocation])
- 
     
    
    
@@ -170,45 +180,44 @@ const RouteMap = ({
 
   return (
     <View style={styles.mapContainer}>
-      
+      <MapView
+        ref={mapRef}
+        // camera={initialCoordinates}
+        region={initialLocation}
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        onPress={(data) => { handleLocationSelected(data.nativeEvent.coordinate); }}>
+          { selectedLocation &&
+          <Marker  
+              ref={selectedLocationMarkerRef}
+              key={Date.now()} // Unique key to force re-render when location changes
+              pinColor={tw.color('bg-blue-400')}
+              title={`Buscar al rededor de esta ubicación`}
+              description="Presiona nuevamente para deseleccionar"
+              onPress={() => { handleDeselectLocation(); }}
+              coordinate={selectedLocation} />
+          }
 
-    <MapView
-      ref={mapRef}
-      // camera={initialCoordinates}
-      region={initialLocation}
-      provider={PROVIDER_GOOGLE}
-      style={styles.map}
-      showsUserLocation={true}
-      showsMyLocationButton={true}
-      onPress={(data) => { handleLocationSelected(data.nativeEvent.coordinate); }}>
-        { selectedLocation &&
-        <Marker  
-            ref={markerRef}            
-            key={Date.now()} // Unique key to force re-render when location changes
-            pinColor={tw.color('bg-blue-400')}
-            title={`Buscar al rededor de esta ubicación`}
-            description="Presiona nuevamente para deseleccionar"
-            onPress={() => { handleDeselectLocation(); }}
-            coordinate={selectedLocation} />
-        }
+          { stores.map((store) => {
+            let marker_color = '';
+            const { store_name, latitude, longitude, tw_color, route_status_store } = store;
+            marker_color = tw_color;
 
-        { stores.map((store) => {
-          let marker_color = '';
-          const { store_name, latitude, longitude, tw_color, route_status_store } = store;
-          marker_color = tw_color;
-
-          return (
-            <Marker
-              key={store.id_store}
-              pinColor={tw.color(marker_color)}
-              title={`${ capitalizeFirstLetterOfEachWord(store_name) } - ${ route_status_store}`}
-              description={getAddressOfStore(store)}
-              onPress={() => { handleSelectStore(store) }}
-              coordinate={{ latitude: parseFloat(latitude), longitude: parseFloat(longitude) }} />
-          )
-        })
-        }
-    </MapView>
+            return (
+              <Marker
+                ref={markerRef}
+                key={store.id_store}
+                pinColor={tw.color(marker_color)}
+                title={`${ capitalizeFirstLetterOfEachWord(store_name) } - ${ route_status_store}`}
+                description={getAddressOfStore(store)}
+                onPress={() => { handleSelectStore(store) }}
+                coordinate={{ latitude: parseFloat(latitude), longitude: parseFloat(longitude) }} />
+            )
+          })
+          }
+      </MapView>
     </View>
   );
 };
