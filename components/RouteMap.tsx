@@ -8,6 +8,7 @@ import { IStoreRouteMap } from '../interfaces/interfaces';
 import { View } from 'react-native';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
+import { getAddressOfStore } from '@/utils/stores/utils';
 
 const styles = StyleSheet.create({
   container: {
@@ -35,7 +36,16 @@ const styles = StyleSheet.create({
   },
   marker: {
     backgroundColor: '#18181a'
-  }
+  },
+  calloutContainer: {
+    width: 150, // Set a fixed width for consistent rendering
+    padding: 10,
+  },
+  calloutTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
 });
 
 const INITIAL_REGION = {
@@ -65,17 +75,10 @@ const RouteMap = ({
   onClick?:(store:IStoreRouteMap) => void
 }) => {
   const mapRef = useRef<MapView|null>(null);
-
-  const [location, setLocation] = useState<Camera>(INITIAL_LOCATION_CAMERA);
-  
-  
-  const [locationToFocus, setLocationToFocus] = useState<Camera|undefined>(undefined);
-  const [locations, setLocations] =useState<IStoreRouteMap[]>([])
+  const markerRef = useRef(null);
 
   const [initialLocation, setInitialLocation] = useState<Region|undefined>(undefined);
-  
-  // Hooks
-  const userCurrentLocation = useCurrentLocation();
+  const [locationSelected, setSelectedLocation] = useState<IStoreRouteMap|undefined>(undefined);
 
   useEffect(() => {
     setUpMap();
@@ -91,14 +94,24 @@ const RouteMap = ({
         },
         heading: 0,
         pitch: 0,
-        zoom: 18
+        zoom: 16
       }
 
       if (mapRef.current !== null) {
         mapRef.current.animateCamera(newCamera, { duration: 1000 });
       }
+
+
+    }
+
+    if (markerRef.current !== null) {
+      // @ts-ignore
+      console.log("foricing show callout")
+      markerRef.current.showCallout();
     }
    }, [selectedStore])
+
+   
 
   // Auxiliar
    const setUpMap = async () => {
@@ -128,20 +141,10 @@ const RouteMap = ({
    }
 
   // Handlers
-  const handleGoToLocation = () => {
-    if (mapRef.current !== null) {
-      const newCamera: Camera = {
-        center: {
-            latitude: 20.641640381312676,
-            longitude: -105.2190063835951,
-        },
-        heading: 0,
-        pitch: 0,
-        zoom: 18
-      }
+  const handleSelectStore = (store: IStoreRouteMap) => {
+    if (onClick) onClick(store);
+    setSelectedLocation(store);
 
-      mapRef.current.animateCamera(newCamera, { duration: 0 });
-    }
   }
 
   return (
@@ -152,33 +155,41 @@ const RouteMap = ({
       region={initialLocation}
       provider={PROVIDER_GOOGLE}
       style={styles.map}
-      showsUserLocation={true}  // Show the user's current location
-      showsMyLocationButton={true}  // Button to return to user's location
+      showsUserLocation={true}
+      showsMyLocationButton={true}
       onPress={(data) => {
-        handleGoToLocation();
+        // handleGoToLocation();
         console.log(data.nativeEvent.coordinate) 
-      }}
-      // region={location}
-        >
-        {/* Add a marker at the user's current position */}
-        {/* <Marker 
-          style={styles.marker}
-          pinColor='#18181a'
-          title='hola mundo'
-        coordinate={{ latitude: latitude, longitude: longitude }}/> */}
+      }}>
+        { selectedStore &&
+        <Marker  
+            ref={markerRef}            
+            key={selectedStore.id_store}
+            pinColor={"bg-blue-900"}
+            title={`${ capitalizeFirstLetterOfEachWord(selectedStore.store_name) } - ${ selectedStore.route_status_store}`}
+            description={getAddressOfStore(selectedStore)}
+            onPress={() => { handleSelectStore(selectedStore) }}
+            coordinate={{ latitude: parseFloat(selectedStore.latitude), longitude: parseFloat(selectedStore.longitude) }} />
+        }
 
         { stores.map((store) => {
+          let marker_color = '';
+          const { store_name, latitude, longitude, tw_color, route_status_store } = store;
+          marker_color = tw_color;
+          if (selectedStore !== undefined) {
+            if (store.id_store === selectedStore.id_store) {
+              console.log('Selected store in map')
+              return null
+            }
+          }
           return (
             <Marker
               key={store.id_store}
-              pinColor={tw.color(store.tw_color)}
-              title={capitalizeFirstLetterOfEachWord(store.store_name)}
-              onPress={() => { if (onClick) onClick(store) }}
-              coordinate={{ latitude: parseFloat(store.latitude), longitude: parseFloat(store.longitude) }}>
-                <Callout>
-                  <Text>Hello world</Text>
-                </Callout>
-            </Marker>
+              pinColor={tw.color(marker_color)}
+              title={`${ capitalizeFirstLetterOfEachWord(store_name) } - ${ route_status_store}`}
+              description={getAddressOfStore(store)}
+              onPress={() => { handleSelectStore(store) }}
+              coordinate={{ latitude: parseFloat(latitude), longitude: parseFloat(longitude) }} />
           )
         })
         }

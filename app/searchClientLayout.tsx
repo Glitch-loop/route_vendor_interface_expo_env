@@ -31,13 +31,15 @@ import RouteMap from '@/components/RouteMap';
 import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import RouteHeader from '@/components/shared-components/RouteHeader';
+import RangeButtonSelection from '@/components/search-client/RangeButtonSelection';
 import Toast from 'react-native-toast-message';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ActivityIndicator } from 'react-native-paper';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import { getRouteStatusStore, getStoreStatusColor } from '@/utils/day-operation/utils';
 import DAYS from '@/lib/days';
-
+import ProjectButton from '@/components/shared-components/ProjectButton';
+import { getAddressOfStore } from '@/utils/stores/utils';
 
 function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|null, kmAround:number):StoreDTO[] {
     let storesToShow:StoreDTO[] = [];
@@ -51,7 +53,7 @@ function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|nu
                 userLocation.coords.longitude
             );
 
-            if (distance <= kmAround / 10000) {
+            if (distance <= kmAround / 1000) {
                 isAround= true;
             } else {
                 isAround = false;
@@ -66,7 +68,7 @@ function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|nu
     return storesToShow;
 }
 
-function findColorForEachStore(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
+function convertRouteDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
     const storeRouteMap: IStoreRouteMap[] = [];
     const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
     dayOperations.forEach((dayOperation) => {
@@ -103,13 +105,51 @@ function findColorForEachStore(stores: StoreDTO[], dayOperations: DayOperationDT
 function mergeStoresToDisplay(storesWithStatus: IStoreRouteMap[], storesAround: IStoreRouteMap[], selectedStore: IStoreRouteMap|undefined): IStoreRouteMap[] {
     // Keep only nearby stores that already have a status (i.e., exist in storesWithStatus)
     const idsWithStatus = new Set(storesWithStatus.map(s => s.id_store));
-    let nerbywithStatus: IStoreRouteMap[] = []
+    let nerbywithStatus: IStoreRouteMap[] = [];
+    let storesWithStatusWithoutSelectedStore: IStoreRouteMap[] = []; // User can select a store that is in stores around but also in stores with status.
+    let storesToReturn: IStoreRouteMap[] = [];
+
     if (selectedStore === undefined) {
         nerbywithStatus = storesAround.filter(s => !idsWithStatus.has(s.id_store));
+        storesWithStatusWithoutSelectedStore = [...storesWithStatus];
+        storesToReturn = [...storesWithStatusWithoutSelectedStore, ...nerbywithStatus];
     } else {
         nerbywithStatus = storesAround.filter(s => !idsWithStatus.has(s.id_store) && s.id_store !== selectedStore.id_store);
+        storesWithStatusWithoutSelectedStore = storesWithStatus.filter(s => s.id_store !== selectedStore.id_store);
+        storesToReturn = [...storesWithStatusWithoutSelectedStore, ...nerbywithStatus, selectedStore];
     }
-    return [...storesWithStatus, ...nerbywithStatus];
+    return storesToReturn;
+}
+
+function validatorCriteriaByStoreNameForSearchBar(query: string, item: IStoreRouteMap):boolean {
+    const { store_name } = item;
+    let result = false;
+    if (store_name === undefined || store_name === null) {
+        result = false;
+    } else {
+        result = store_name.toLowerCase().includes(query.toLowerCase());
+    }
+    return result;
+}
+
+function criteriaForSelectedItemsByStoreNameForSearchBar(item: IStoreRouteMap, selectedItems: IStoreRouteMap[]):boolean {
+    return selectedItems.some(selectedItem => selectedItem.store_name === item.store_name);
+}
+
+
+function validatorCriteriaByStoreAddressForSearchBar(query: string, item: IStoreRouteMap):boolean {
+    const store_address = getAddressOfStore(item);
+    let result = false;
+    if (store_address === undefined || store_address === null) {
+        result = false;
+    } else {
+        result = store_address.toLowerCase().includes(query.toLowerCase());
+    }
+    return result;
+}
+
+function criteriaForSelectedItemsByStoreAddressForSearchBar(item: IStoreRouteMap, selectedItems: IStoreRouteMap[]):boolean {
+    return selectedItems.some(selectedItem => getAddressOfStore(selectedItem) === getAddressOfStore(item));
 }
 
 const searchClientLayout = () => {
@@ -124,13 +164,19 @@ const searchClientLayout = () => {
     const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
     
     const [storesToShow, setStoresToShow] = useState<IStoreRouteMap[]>([]);
+    const [allStoresCatalog, setAllStoresCatalog] = useState<IStoreRouteMap[]>([]);
+    
     const [storesWithStatus, setStoresWithStatus] = useState<IStoreRouteMap[]>([]);
-    const [mAround, setmAround] = useState<number>(300);
     const [selectedClient, setSelectedClient] = useState<IStoreRouteMap|undefined>();
+    const [storesAround, setStoresAround] = useState<IStoreRouteMap[]>([]);
+    
+    const [mAround, setmAround] = useState<number>(300);
     const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
     
     // States for the search bar
     const [selectedItems, setSelectedItems] = useState<IStoreRouteMap[]>([]);
+    const [isSearchByAddress, setIsSearchByAddress] = useState<boolean>(true);
+
 
     useEffect(() => {
         setUpSearchClientLayout();
@@ -141,7 +187,12 @@ const searchClientLayout = () => {
         const location = await getCurrentUserLocation();
         setUserLocation(location);
 
-        if (dayOperationsRedux !== null && storesRedux !== null) { 
+        if (dayOperationsRedux !== null && storesRedux !== null) {
+            // Get catalog of stores.
+            const allStores:IStoreRouteMap[] =convertRouteDTOToIStoreRouteMap([...storesRedux], [...dayOperationsRedux]);
+            setAllStoresCatalog(allStores);
+
+
             const dayOperations: DayOperationDTO[] = [...dayOperationsRedux];
             const idStoresWithDayOperation: Map<string, DayOperationDTO> = new Map<string, DayOperationDTO>();
             const storeWithRouteDay: IStoreRouteMap[] = [];
@@ -157,17 +208,12 @@ const searchClientLayout = () => {
                 }
             });
 
-            storesRedux.forEach((store) => {
+            allStores.forEach((store) => {
                 const { id_store } = store;
                 const dayOperationForStore = idStoresWithDayOperation.get(id_store);       
 
                 if (dayOperationForStore !== undefined) {
-                    const { operation_type } = dayOperationForStore;
-                    storeWithRouteDay.push({
-                        ...store,
-                        tw_color: getStoreStatusColor(operation_type),
-                        route_status_store: getRouteStatusStore(operation_type)
-                    });
+                    storeWithRouteDay.push(store);
                 }
             });
             
@@ -176,64 +222,65 @@ const searchClientLayout = () => {
 
             if (location) {
                 // Get stores that are around the user
-                const nearbyStores = findStoresAround(userLocation, [ ...storesRedux ], mAround);
-                const storesWithColors = findColorForEachStore(nearbyStores, dayOperationsRedux);
-                // mergeStoresToDisplay(storeWithRouteDay, storesWithColors, undefined)
-                setStoresToShow([]);
+                const nearbyStores = findStoresAround(userLocation, [ ...allStores ], mAround);
+                const storesWithColors = convertRouteDTOToIStoreRouteMap(nearbyStores, [...dayOperationsRedux]);
+                setStoresAround(storesWithColors);
+                setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, storesWithColors, undefined));
             }
         }
     }
 
-    const loadUserLocationAndStores = async () => {
-        try {
-            setIsLoadingLocation(true);
-            const location = await getCurrentUserLocation();
-            setUserLocation(location);
-            
-            if (location && storesRedux && dayOperationsRedux) {
-                const nearbyStores = findStoresAround(location, [ ...storesRedux ], mAround);
-                const storesWithColors = findColorForEachStore(nearbyStores, dayOperationsRedux);
-                setStoresToShow(storesWithColors);
-            }
-        } catch (error) {
-            console.log('Error loading location:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error al obtener ubicación',
-                text2: 'No se pudo obtener tu ubicación actual'
-            });
-            setStoresToShow([]);
-        } finally {
-            setIsLoadingLocation(false);
-        }
-    }
-
-    // Hanlder
+    // Handlers
     const handlerGoBack = () => { router.replace('/routeOperationMenuLayout'); }
 
-    const handlerOnSelectItem = (selectedItem:IStoreRouteMap) => {
-        const currnetItems:IStoreRouteMap[] = selectedItems.map((item:IStoreRouteMap) => { return item });
-        setSelectedItems(
-            [
-                ...currnetItems,
-                { ...selectedItem }
-            ]
-        );
+    const handlerRangeChange = (newRange: number) => {
+        setmAround(newRange);
+        
+        // Update stores around with new range
+        if (userLocation && allStoresCatalog.length > 0 && dayOperationsRedux) {
+            const nearbyStores = findStoresAround(userLocation, [...allStoresCatalog], newRange);
+            const storesWithColors = convertRouteDTOToIStoreRouteMap(nearbyStores, [...dayOperationsRedux]);
+            setStoresAround(storesWithColors);
+            setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesWithColors, selectedClient));
+        }
+    }
 
+    const handlerOnSelectItem = (selectedItem:IStoreRouteMap) => {
+        if (selectedClient === undefined) {
+            setSelectedItems(
+                [
+                    ...selectedItems,
+                    { ...selectedItem }
+                ]
+            );
+
+            storesToShow.filter((store) => store.id_store !== selectedItem.id_store);
+        } else {
+            const currentsItems:IStoreRouteMap[] = selectedItems.filter((item) => item.id_store !== selectedClient?.id_store) // Remove previously selected item if exists
+            setSelectedItems(
+                [
+                    ...currentsItems,
+                    { ...selectedItem }
+                ]
+            );
+            storesToShow.filter((store) => store.id_store !== selectedClient.id_store && store.id_store !== selectedItem.id_store);
+        }
+        setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesAround, { ...selectedItem }))
         setSelectedClient(selectedItem);
         
         // Add to stores to show if not already there
-        const isAlreadyInList = storesToShow.some(store => store.id_store === selectedItem.id_store);
-        if (!isAlreadyInList) {
-            setStoresToShow((prev) => [...prev, selectedItem]);
-        }
+        
+        // const isAlreadyInList = storesToShow.some(store => store.id_store === selectedItem.id_store);
+        // if (!isAlreadyInList) {
+        //     setStoresToShow((prev) => [...prev, selectedItem]);
+        // }
     } 
 
     const handlerAcceptClient = ():void => {
         if (selectedClient) {
             const dayOperation:IDayOperation = createDayOperationConcept(
                 selectedClient.id_store, 
-                DAYS_OPERATIONS.sales,
+                DAY_OPERATIONS.sales,
                 0,
                 0
             )
@@ -259,11 +306,43 @@ const searchClientLayout = () => {
                 {/* Search Bar */}
                 <View style={tw`w-full flex flex-row justify-center items-center px-4 py-2`}>
                     <SearchBarWithSuggestions 
-                        catalog={storesToShow || []}
+                        catalog={allStoresCatalog || []}
                         selectedCatalog={selectedItems}
                         fieldToSearch={'store_name'}
                         keyField={'id_store'}
                         onSelectHandler={handlerOnSelectItem}
+                        criteriaForValidQuery={
+                            isSearchByAddress ? validatorCriteriaByStoreAddressForSearchBar :
+                            validatorCriteriaByStoreNameForSearchBar}
+                        criteriaForSelectedItems={
+                            isSearchByAddress ? criteriaForSelectedItemsByStoreAddressForSearchBar :
+                            criteriaForSelectedItemsByStoreNameForSearchBar}
+                    />
+                </View>
+
+                <View style={tw`w-full flex flex-row justify-between items-center px-4 py-2 mb-2`}>
+                    <ProjectButton
+                        title={'Buscar por nombre'}
+                        onPress={() => {setIsSearchByAddress(false)}}
+                        buttonVariant={'primary'}
+                        buttonStyle={tw`self-center p-2 py-4 rounded`}                        
+                        disabled={!isSearchByAddress}/>
+                    <ProjectButton
+                        title={'Buscar por dirección'}
+                        onPress={() => {setIsSearchByAddress(true)}}
+                        buttonVariant={'primary'}
+                        buttonStyle={tw`self-center p-2 py-4 rounded`}
+                        disabled={isSearchByAddress}/>
+                </View>
+                <Text style={tw`text-center mb-2`}>Buscando por: 
+                    <Text style={tw`font-bold`}>{isSearchByAddress ? ' Dirección de tienda' : ' Nombre de tienda'}</Text>
+                </Text>
+
+                {/* Range Selection */}
+                <View style={tw`w-full px-4 py-2`}>
+                    <RangeButtonSelection
+                        value={mAround}
+                        onValueChange={handlerRangeChange}
                     />
                 </View>
 
