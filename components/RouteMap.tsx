@@ -1,7 +1,7 @@
 // Librarires
 
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, Pressable } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, CameraZoomRange, Region, Camera, Callout, LatLng } from 'react-native-maps';
 import tw from 'twrnc';
 import { IStoreRouteMap } from '../interfaces/interfaces';
@@ -64,21 +64,25 @@ const INITIAL_LOCATION_CAMERA:Camera = {
 }
 
 const RouteMap = ({
+  stores,
   initialCoordinates,
   selectedStore,
-  stores,
-  onClick
+  onClick,
+  onSelectLocation
 }:{
+  stores:(IStoreRouteMap)[],
   initialCoordinates?:LatLng
   selectedStore?:IStoreRouteMap,
-  stores:(IStoreRouteMap)[],
   onClick?:(store:IStoreRouteMap) => void
+  onSelectLocation?:(coordinates:LatLng|undefined) => void
 }) => {
   const mapRef = useRef<MapView|null>(null);
   const markerRef = useRef(null);
 
   const [initialLocation, setInitialLocation] = useState<Region|undefined>(undefined);
-  const [locationSelected, setSelectedLocation] = useState<IStoreRouteMap|undefined>(undefined);
+  const [selectedLocation, setSelectedLocation] = useState<LatLng|undefined>(undefined);
+  
+
 
   useEffect(() => {
     setUpMap();
@@ -100,19 +104,23 @@ const RouteMap = ({
       if (mapRef.current !== null) {
         mapRef.current.animateCamera(newCamera, { duration: 1000 });
       }
-
-
-    }
-
-    if (markerRef.current !== null) {
-      // @ts-ignore
-      console.log("foricing show callout")
-      markerRef.current.showCallout();
     }
    }, [selectedStore])
 
+   useEffect(() => {
+       if (selectedLocation && markerRef.current !== null) {
+      // @ts-ignore
+      console.log("showing callout")
+      setTimeout(() => {
+        // @ts-ignore
+        markerRef.current?.showCallout?.();
+      }, 100);
+    }
+    }, [selectedLocation])
+ 
+    
    
-
+   
   // Auxiliar
    const setUpMap = async () => {
       // const userLocation: LocationObject | null = await userCurrentLocation.getCurrentUserLocation();
@@ -143,13 +151,28 @@ const RouteMap = ({
   // Handlers
   const handleSelectStore = (store: IStoreRouteMap) => {
     if (onClick) onClick(store);
-    setSelectedLocation(store);
+  }
 
+  const handleLocationSelected = (coordinates: LatLng) => {
+     setSelectedLocation(coordinates);
+      if (onSelectLocation) onSelectLocation(coordinates);
+     // Automatically show callout after a small delay to ensure marker is rendered
+     setTimeout(() => {
+       // @ts-ignore
+       markerRef.current?.showCallout?.();
+     }, 100);
+  }
+
+  const handleDeselectLocation = () => {
+    setSelectedLocation(undefined);
+    if (onSelectLocation) onSelectLocation(undefined);
   }
 
   return (
     <View style={styles.mapContainer}>
-      <MapView
+      
+
+    <MapView
       ref={mapRef}
       // camera={initialCoordinates}
       region={initialLocation}
@@ -157,31 +180,23 @@ const RouteMap = ({
       style={styles.map}
       showsUserLocation={true}
       showsMyLocationButton={true}
-      onPress={(data) => {
-        // handleGoToLocation();
-        console.log(data.nativeEvent.coordinate) 
-      }}>
-        { selectedStore &&
+      onPress={(data) => { handleLocationSelected(data.nativeEvent.coordinate); }}>
+        { selectedLocation &&
         <Marker  
             ref={markerRef}            
-            key={selectedStore.id_store}
-            pinColor={"bg-blue-900"}
-            title={`${ capitalizeFirstLetterOfEachWord(selectedStore.store_name) } - ${ selectedStore.route_status_store}`}
-            description={getAddressOfStore(selectedStore)}
-            onPress={() => { handleSelectStore(selectedStore) }}
-            coordinate={{ latitude: parseFloat(selectedStore.latitude), longitude: parseFloat(selectedStore.longitude) }} />
+            key={Date.now()} // Unique key to force re-render when location changes
+            pinColor={tw.color('bg-blue-400')}
+            title={`Buscar al rededor de esta ubicación`}
+            description="Presiona nuevamente para deseleccionar"
+            onPress={() => { handleDeselectLocation(); }}
+            coordinate={selectedLocation} />
         }
 
         { stores.map((store) => {
           let marker_color = '';
           const { store_name, latitude, longitude, tw_color, route_status_store } = store;
           marker_color = tw_color;
-          if (selectedStore !== undefined) {
-            if (store.id_store === selectedStore.id_store) {
-              console.log('Selected store in map')
-              return null
-            }
-          }
+
           return (
             <Marker
               key={store.id_store}
@@ -193,7 +208,7 @@ const RouteMap = ({
           )
         })
         }
-      </MapView>
+    </MapView>
     </View>
   );
 };
