@@ -19,7 +19,7 @@ import { IDayOperation, IStore, IStoreStatusDay, IStoreRouteMap } from '@/interf
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 // Utils
-import { distanceBetweenTwoPoints } from '@/utils/routesFunctions';
+import { distanceBetweenTwoPoints } from '@/utils/stores/utils';
 // import DAYS_OPERATIONS from '@/lib/day_operations';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
@@ -41,26 +41,28 @@ import DAYS from '@/lib/days';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 import { getAddressOfStore } from '@/utils/stores/utils';
 
-function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|null, kmAround:number):StoreDTO[] {
+function findStoresAround(userLocation:LocationObject|null, stores:StoreDTO[]|null, metersAround:number):StoreDTO[] {
     let storesToShow:StoreDTO[] = [];
+
+    console.log("All stores: ", stores?.length)
     if (userLocation !== null && stores !== null) {
+        const kmRange = metersAround / 1000; // Convert meters to kilometers
+        
+        console.log("RANGE: ", kmRange)
         storesToShow = stores.filter((store) => {
-            let isAround:boolean = false;
-            const distance:number = distanceBetweenTwoPoints(
+            // distanceBetweenTwoPoints returns distance in kilometers
+            const distanceInKm:number = distanceBetweenTwoPoints(
                 parseFloat(store.latitude),
                 parseFloat(store.longitude),
                 userLocation.coords.latitude,
                 userLocation.coords.longitude
             );
 
-            if (distance <= kmAround / 1000) {
-                isAround= true;
-            } else {
-                isAround = false;
-            }
-
-            return isAround;
-        })
+            console.log(`Distance to store ${store.store_name}: ${distanceInKm.toFixed(2)}`);
+            return distanceInKm <= kmRange;
+        });
+        
+        console.log(`Found ${storesToShow.length} stores within ${metersAround}m (${kmRange}km)`);
     } else {
         storesToShow = [];
     }
@@ -81,7 +83,6 @@ function convertRouteDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayO
         let status = '';
         if (dayOperation) {
             const { operation_type } = dayOperation;
-            console.log("Day operation id: ", operation_type)
             color = getStoreStatusColor(operation_type);
             status = getRouteStatusStore(operation_type);
 
@@ -91,7 +92,6 @@ function convertRouteDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayO
             status = getRouteStatusStore(undefined);
         }
 
-        console.log("Color: ", color)
         storeRouteMap.push({
             ...store,
             tw_color: color,
@@ -186,6 +186,7 @@ const searchClientLayout = () => {
     const setUpSearchClientLayout = async() => {
         const location = await getCurrentUserLocation();
         setUserLocation(location);
+        setIsLoadingLocation(location === null);
 
         if (dayOperationsRedux !== null && storesRedux !== null) {
             // Get catalog of stores.
@@ -222,7 +223,7 @@ const searchClientLayout = () => {
 
             if (location) {
                 // Get stores that are around the user
-                const nearbyStores = findStoresAround(userLocation, [ ...allStores ], mAround);
+                const nearbyStores = findStoresAround(location, [ ...allStores ], mAround);
                 const storesWithColors = convertRouteDTOToIStoreRouteMap(nearbyStores, [...dayOperationsRedux]);
                 setStoresAround(storesWithColors);
                 setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, storesWithColors, undefined));
@@ -234,6 +235,7 @@ const searchClientLayout = () => {
     const handlerGoBack = () => { router.replace('/routeOperationMenuLayout'); }
 
     const handlerRangeChange = (newRange: number) => {
+        console.log(`Changing search range to ${newRange}m`);
         setmAround(newRange);
         
         // Update stores around with new range
@@ -241,7 +243,23 @@ const searchClientLayout = () => {
             const nearbyStores = findStoresAround(userLocation, [...allStoresCatalog], newRange);
             const storesWithColors = convertRouteDTOToIStoreRouteMap(nearbyStores, [...dayOperationsRedux]);
             setStoresAround(storesWithColors);
-            setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesWithColors, selectedClient));
+            
+            // Check if selected client is still within range
+            if (selectedClient) {
+                const isSelectedClientInRange = nearbyStores.some(
+                    store => store.id_store === selectedClient.id_store
+                );
+                
+                if (!isSelectedClientInRange) {
+                    console.log('Selected client is now outside the search range');
+                    // Keep the selected client visible even if outside range
+                    setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesWithColors, selectedClient));
+                } else {
+                    setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesWithColors, selectedClient));
+                }
+            } else {
+                setStoresToShow(mergeStoresToDisplay(storesWithStatus, storesWithColors, undefined));
+            }
         }
     }
 
@@ -344,6 +362,9 @@ const searchClientLayout = () => {
                         value={mAround}
                         onValueChange={handlerRangeChange}
                     />
+                    <Text style={tw`text-center text-sm text-gray-600 mt-2`}>
+                        {storesAround.length} tienda{storesAround.length !== 1 ? 's' : ''} encontrada{storesAround.length !== 1 ? 's' : ''} en el rango
+                    </Text>
                 </View>
 
                 {/* Map Container */}
@@ -369,7 +390,7 @@ const searchClientLayout = () => {
                 </View>
 
                 {/* Selected Client Info */}
-                <View style={tw`w-full px-4 py-3 flex flex-col justify-center items-center`}>
+                <View style={tw`w-full px-4 py-2 flex flex-col justify-center items-center`}>
                     <Text style={tw`text-base text-gray-600`}>Cliente seleccionado</Text>
                     <Text style={tw`text-lg font-bold text-black text-center`}>
                         {selectedClient 
