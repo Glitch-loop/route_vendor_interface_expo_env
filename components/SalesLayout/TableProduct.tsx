@@ -66,11 +66,6 @@ function createCatalog(avialableProducts:ProductDTO[], productsInventory:Product
     const productDetails = avialableProducts.find(prod => prod.id_product === productInventory.id_product);
 
     if (productDetails === undefined) continue;
-
-
-
-
-
   }
 
   return catalog;
@@ -84,6 +79,17 @@ function converCatalogToMap(catalog: (ProductDTO&ProductInventoryDTO)[]): Map<st
 
   return catalogMap;
 }
+
+
+function validatorCriteriaByProductInventoryForSearchBar(query: string, item: ProductInventoryDTO&ProductDTO):boolean {
+  const { product_name } = item;
+    return product_name.toLowerCase().includes(query.toLowerCase());
+}
+
+function criteriaForSelectedItemsByProductInventoryForSearchBar(item: ProductInventoryDTO&ProductDTO, selectedItems: (ProductInventoryDTO&ProductDTO)[]):boolean {
+    return selectedItems.some(selectedItem => selectedItem.product_name === item.product_name);
+}
+
 
 const TableProduct = ({
     avialableProducts,
@@ -177,6 +183,8 @@ const TableProduct = ({
           fieldToSearch   = { 'product_name' }
           keyField        = { 'id_product_inventory' }
           onSelectHandler = { onSelectAnItem }
+          criteriaForValidQuery = { validatorCriteriaByProductInventoryForSearchBar }
+          criteriaForSelectedItems = { criteriaForSelectedItemsByProductInventoryForSearchBar }
           />
       </View>
       <HeaderProduct />

@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { setCurrentOperation } from '@/redux/slices/currentOperationSlice';
 
 // Hooks
 import useCurrentLocation from '@/hooks/useCurrentLocation';
@@ -136,7 +135,6 @@ function validatorCriteriaByStoreNameForSearchBar(query: string, item: IStoreRou
 function criteriaForSelectedItemsByStoreNameForSearchBar(item: IStoreRouteMap, selectedItems: IStoreRouteMap[]):boolean {
     return selectedItems.some(selectedItem => selectedItem.store_name === item.store_name);
 }
-
 
 function validatorCriteriaByStoreAddressForSearchBar(query: string, item: IStoreRouteMap):boolean {
     const store_address = getAddressOfStore(item);
@@ -312,15 +310,31 @@ const searchClientLayout = () => {
     } 
 
     const handlerAcceptClient = ():void => {
+        if (dayOperationsRedux === null) {
+            Toast.show({
+                type:  'info',
+                text1: 'Ha ocurrido un error inesperado.',
+                text2: 'Porfavor reinicia la aplicación.'
+            });
+            return;
+        }
+
         if (selectedClient) {
-            const dayOperation:IDayOperation = createDayOperationConcept(
-                selectedClient.id_store, 
-                DAY_OPERATIONS.sales,
-                0,
-                0
-            )
-            dispatch(setCurrentOperation(dayOperation));
-            router.push('/salesLayout');
+            const { id_store } = selectedClient;
+            const dayOperation:DayOperationDTO|undefined = dayOperationsRedux.find((dayOperation) => {
+                return dayOperation.id_item === id_store 
+                && (dayOperation.operation_type === DAY_OPERATIONS.attend_client_petition
+                ||  dayOperation.operation_type === DAY_OPERATIONS.new_client_registration
+                ||  dayOperation.operation_type === DAY_OPERATIONS.route_client_attention
+                );
+            });
+
+            if(dayOperation) {
+                const { id_day_operation } = dayOperation;
+                router.push(`/salesLayout?id_store_search_param=${id_store}&id_day_operation_dependent_search_param=${id_day_operation}`);
+            } else {
+                router.push(`/salesLayout?id_store_search_param=${id_store}&is_selling_out_of_route=1`);
+            }
         } else {
             Toast.show({
                 type:  'info',

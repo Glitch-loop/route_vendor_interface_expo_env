@@ -99,6 +99,7 @@ type typeSearchParams = {
   id_store_search_param: string;
   id_day_operation_dependent_search_param?: string;
   id_route_transaction_search_param?: string;
+  is_selling_out_of_route?: string;
 }
 
 const salesLayout = () => {
@@ -107,7 +108,8 @@ const salesLayout = () => {
   const {
     id_store_search_param,
     id_day_operation_dependent_search_param,
-    id_route_transaction_search_param
+    id_route_transaction_search_param,
+    is_selling_out_of_route
   } = params as typeSearchParams;
 
   console.log("OP day dependent: ", id_day_operation_dependent_search_param)
@@ -214,7 +216,7 @@ const salesLayout = () => {
 
     setFinishedSale(true); // Finishing sale payment process.
 
-    if (workDayInformation === null || id_store_search_param === undefined || id_day_operation_dependent_search_param === undefined) {
+    if (workDayInformation === null || id_store_search_param === undefined && (id_day_operation_dependent_search_param === undefined || is_selling_out_of_route === undefined)) {
       Toast.show({
         type: 'error',
         text1:'Error interno',
@@ -222,20 +224,26 @@ const salesLayout = () => {
       return;
     }
 
+
     Toast.show({
       type: 'info',
       text1:'Comenzando proceso para registrar la venta',
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
-      await registerNewRouteTransactionCommand.execute(
-        [...productDevolution, ...productReposition, ...productSale],
-        workDayInformation!,
-        paymentMethod,
-        receivedCash,
-        id_store_search_param,
-        id_day_operation_dependent_search_param
-      );
+      if (is_selling_out_of_route === '1') {
+        // Todo: Implement route transaction for client out the route.
+        
+      } else if(id_day_operation_dependent_search_param !== undefined) {
+        await registerNewRouteTransactionCommand.execute(
+          [...productDevolution, ...productReposition, ...productSale],
+          workDayInformation!,
+          paymentMethod,
+          receivedCash,
+          id_store_search_param,
+          id_day_operation_dependent_search_param
+        );
+      }
       
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
