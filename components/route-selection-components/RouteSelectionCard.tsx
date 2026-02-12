@@ -1,17 +1,13 @@
 // Libraries
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import tw from 'twrnc';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 // UI Components
 import GoButton from '@/components/shared-components/GoButton';
 
 // DTOs
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
-
-// Utils
-import { IRoute, ICompleteRouteDay } from '../../interfaces/interfaces';
 
 const RouteSelectionCard = ({
     routeName,
