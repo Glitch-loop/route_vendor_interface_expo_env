@@ -32,7 +32,6 @@ export default class VisitClientOutOfRouteUseCase {
     ) { }
 
     async execute(id_store: string):Promise<DayOperationDTO|null> {
-        console.log("Visit client out of route use case. Store id: ", id_store)
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
         const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
         const mapper: MapperDTO = new MapperDTO();
