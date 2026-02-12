@@ -18,7 +18,7 @@ import { IDayOperation, IStore, IStoreStatusDay, IStoreRouteMap } from '@/interf
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 // Utils
-import { distanceBetweenTwoPoints } from '@/utils/stores/utils';
+import { convertStoreDTOToIStoreRouteMap, distanceBetweenTwoPoints } from '@/utils/stores/utils';
 // import DAYS_OPERATIONS from '@/lib/day_operations';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
@@ -70,37 +70,7 @@ function findStoresAround(pivotLocation:LocationObjectCoords|LatLng|null, stores
     return storesToShow;
 }
 
-function convertRouteDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
-    const storeRouteMap: IStoreRouteMap[] = [];
-    const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
-    dayOperations.forEach((dayOperation) => {
-        dayOperationMap.set(dayOperation.id_item, dayOperation);
-    });
 
-    stores.forEach((store) => {
-        const dayOperation = dayOperationMap.get(store.id_store);
-        let color = '';
-        let status = '';
-        if (dayOperation) {
-            const { operation_type } = dayOperation;
-            color = getStoreStatusColor(operation_type);
-            status = getRouteStatusStore(operation_type);
-
-            
-        } else {
-            color = getStoreStatusColor(undefined);
-            status = getRouteStatusStore(undefined);
-        }
-
-        storeRouteMap.push({
-            ...store,
-            tw_color: color,
-            route_status_store: status
-        });
-    })
-
-    return storeRouteMap;
-}
 
 function mergeStoresToDisplay(storesWithStatus: IStoreRouteMap[], storesAround: IStoreRouteMap[], selectedStore: IStoreRouteMap|undefined): IStoreRouteMap[] {
     // Keep only nearby stores that already have a status (i.e., exist in storesWithStatus)
@@ -192,7 +162,7 @@ const searchClientLayout = () => {
 
         if (dayOperationsRedux !== null && storesRedux !== null) {
             // Get catalog of stores.
-            const allStores:IStoreRouteMap[] = convertRouteDTOToIStoreRouteMap([...storesRedux], [...dayOperationsRedux]);
+            const allStores:IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap([...storesRedux], [...dayOperationsRedux]);
             setAllStoresCatalog(allStores);
 
 

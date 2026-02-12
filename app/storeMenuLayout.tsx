@@ -9,6 +9,7 @@ import {
   IRouteTransactionOperation,
   IRouteTransactionOperationDescription,
   IStore,
+  IStoreRouteMap,
 } from '../interfaces/interfaces';
 
 // Components
@@ -36,6 +37,7 @@ import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRou
 // Utils
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 
+
 import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
@@ -44,25 +46,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 
-
-function buildAddress(store:StoreDTO) {
-  let address = '';
-
-  if (store.street !== ''){
-    address = address + store.street + ' ';
-  }
-
-  if (store.ext_number !== ''){
-    address = address + '#' + store.ext_number + '';
-  }
-
-  if (store.colony !== ''){
-    address = address + ', ' + store.colony;
-  }
-
-  return address;
-}
-
+import { getAddressOfStore } from '@/utils/stores/utils';
+import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
 
 const INITIAL_REGION = {
   latitude: 20.641640381312676,
@@ -89,6 +74,7 @@ const storeMenuLayout = () => {
   const dispatch: AppDispatch = useDispatch();
   const stores = useSelector((state: RootState) => state.stores);
   const workDay = useSelector((state: RootState) => state.workDayInformation);
+  const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
   const availableProductsReduxState = useSelector((state: RootState) => state.products);
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
 
@@ -106,7 +92,7 @@ const storeMenuLayout = () => {
     setRouteTransactionOperationDescriptions,
   ] = useState<Map<string, IRouteTransactionOperationDescription[]>>(new Map());
 
-  const [consultedStore, setConsultedStore] = useState<StoreDTO|null>(null)
+  const [consultedStore, setConsultedStore] = useState<IStoreRouteMap|null>(null)
 
 
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
@@ -126,10 +112,10 @@ const storeMenuLayout = () => {
     
     const foundStore:StoreDTO|undefined = allStores.find(storeItem => storeItem.id_store === id_store_search_param);
 
-    if (foundStore === undefined) {
+    if (foundStore === undefined || dayOperationsReduxState === null) {
       setConsultedStore(null);
     } else {
-      setConsultedStore(foundStore);
+      setConsultedStore(convertStoreDTOToIStoreRouteMap([foundStore], [...dayOperationsReduxState]).pop()!)
     }
 
     if (availableProductsReduxState !== null && productsInventoryReduxState !== null) {
@@ -184,9 +170,11 @@ const storeMenuLayout = () => {
           <View style={tw`w-full my-2 flex items-center justify-around`}>
             <View style={tw`w-11/12 basis-6/12 border-solid border-2 rounded-sm`}>
               <RouteMap
-                latitude={parseFloat(consultedStore.latitude)}
-                longitude={parseFloat(consultedStore.longitude)}
                 stores={[ consultedStore ]}
+                initialCoordinates={{ 
+                    latitude: parseFloat(consultedStore.latitude) || 20.66020491403627, 
+                    longitude: parseFloat(consultedStore.longitude) || -105.23041097690118 
+                }}
               /> 
             </View>
           </View>
@@ -203,7 +191,7 @@ const storeMenuLayout = () => {
               showsVerticalScrollIndicator={true}>
               <View style={tw`my-3 flex flex-col justify-start items-start`}>
                 <Text style={tw`text-black text-xl`}>Dirección</Text>
-                <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(buildAddress(consultedStore))}</Text>
+                <Text style={tw`text-black`}>{capitalizeFirstLetterOfEachWord(getAddressOfStore(consultedStore))}</Text>
               </View>
               <View style={tw`flex flex-col justify-start items-start`}>
                 <Text style={tw`text-black text-xl`}>Referencia</Text>

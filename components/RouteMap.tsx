@@ -164,8 +164,9 @@ const RouteMap = ({
   }
 
   const handleLocationSelected = (coordinates: LatLng) => {
-     setSelectedLocation(coordinates);
-      if (onSelectLocation) onSelectLocation(coordinates);
+     if (onSelectLocation === undefined) return;    
+      setSelectedLocation(coordinates);
+      onSelectLocation(coordinates);
      // Automatically show callout after a small delay to ensure marker is rendered
      setTimeout(() => {
        // @ts-ignore

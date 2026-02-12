@@ -1,4 +1,12 @@
+// Interfaces
+import { IStoreRouteMap } from "@/interfaces/interfaces";
+
+// DTOs
+import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 import StoreDTO from "@/src/application/dto/StoreDTO";
+
+// Utils
+import { getRouteStatusStore, getStoreStatusColor } from "@/utils/day-operation/utils";
 
 
 export function getAddressOfStore(store: StoreDTO): string {
@@ -26,4 +34,37 @@ export function distanceBetweenTwoPoints(lat1: number, lon1: number, lat2: numbe
   const distance = R * c; // Distance in kilometers
   
   return distance;
+}
+
+
+export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
+    const storeRouteMap: IStoreRouteMap[] = [];
+    const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
+    dayOperations.forEach((dayOperation) => {
+        dayOperationMap.set(dayOperation.id_item, dayOperation);
+    });
+
+    stores.forEach((store) => {
+        const dayOperation = dayOperationMap.get(store.id_store);
+        let color = '';
+        let status = '';
+        if (dayOperation) {
+            const { operation_type } = dayOperation;
+            color = getStoreStatusColor(operation_type);
+            status = getRouteStatusStore(operation_type);
+
+            
+        } else {
+            color = getStoreStatusColor(undefined);
+            status = getRouteStatusStore(undefined);
+        }
+
+        storeRouteMap.push({
+            ...store,
+            tw_color: color,
+            route_status_store: status
+        });
+    })
+
+    return storeRouteMap;
 }
