@@ -22,7 +22,7 @@ import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatab
 import { Provider } from "react-redux";
 import store from "@/redux/store";
 import { PaperProvider } from "react-native-paper";
-import ToastMessage from "@/components/generalComponents/ToastMessage";
+import ToastMessage from "@/components/notifications/ToastMessage";
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 

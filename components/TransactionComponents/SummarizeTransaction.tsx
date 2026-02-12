@@ -15,7 +15,7 @@ import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import SectionTitle from '@/components/sale-layout/SectionTitle';
 import SummarizeFormat from '@/components/TransactionComponents/SummarizeFormat';
 import TotalsSummarize from '@/components/sale-layout/TotalsSummarize';
-import DangerButton from '@/components/generalComponents/DangerButton';
+import DangerButton from '@/components/shared-components/DangerButton';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 

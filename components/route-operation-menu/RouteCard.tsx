@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import tw from 'twrnc';
 
-// Components
+// UI Components
 import GoButton from '@/components/shared-components/GoButton';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 

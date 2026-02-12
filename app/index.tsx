@@ -25,7 +25,7 @@ import {
 import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatabaseService';
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { PaperProvider } from 'react-native-paper';
-import ToastMessage from '@/components/generalComponents/ToastMessage';
+import ToastMessage from '@/components/notifications/ToastMessage';
 import Toast from 'react-native-toast-message';
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 

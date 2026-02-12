@@ -15,7 +15,6 @@ import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/
 
 // DTOs
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 
 const MenuHeader = ({
