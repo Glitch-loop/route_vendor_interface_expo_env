@@ -193,24 +193,23 @@ const SummarizeTransaction = ({
   const handleOnCancelShowDialog = () => { setShowDialog(false); };
 
   return (
-    <View style={tw`w-full flex flex-row justify-center pt-7`}>
+    <View style={tw`w-full flex flex-row justify-center`}>
       <ActionDialog
         visible={showDialog}
         onAcceptDialog={() => {handleOnCancelASale();}}
         onDeclinedialog={() => {handleOnCancelShowDialog();}}>
           <Text style={tw`text-black text-xl text-center`}>¿Estas seguro de cancelar la venta?</Text>
       </ActionDialog>
-      <View style={tw`w-full flex flex-row justify-center pt-7`}>
-        { currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE &&
-          <View style={tw`absolute -top-0 -right-3 z-10 mr-3 mb-6`}>
-            <DangerButton
-              iconName={'trash'}
-              onPressButton={() => {handleOnShowDialog();}}/>
-          </View>
-        }
-        <View style={tw`w-11/12 
-          ${currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE ? 'bg-amber-300' : 'bg-amber-200'} 
+      <View style={tw`w-full flex flex-row justify-center my-3`}>
+        <View style={tw`w-11/12 ${currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE ? 'bg-amber-300' : 'bg-amber-200'} 
           border p-2 flex flex-col justify-center items-center rounded-md`}>
+          { currentTransaction.state === ROUTE_TRANSACTION_STATE.ACTIVE &&
+            <View style={tw`absolute -top-3 -right-3 z-10`}>
+              <DangerButton
+                iconName={'trash'}
+                onPressButton={() => {handleOnShowDialog();}}/>
+            </View>
+          }
           <View style={tw`w-full flex flex-col`}>
             <SectionTitle
               title={`Transacción`}
