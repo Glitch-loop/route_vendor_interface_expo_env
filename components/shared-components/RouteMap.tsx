@@ -110,7 +110,6 @@ const RouteMap = ({
     }
 
     if (selectedStore !== undefined && markerRefs.current !== null) {
-      // console.log(markerRef.current)
       // @ts-ignore
       const { id_store } = selectedStore;
       setTimeout(() => {
@@ -172,7 +171,7 @@ const RouteMap = ({
      // Automatically show callout after a small delay to ensure marker is rendered
      setTimeout(() => {
        // @ts-ignore
-       markerRef.current?.showCallout?.();
+       selectedLocationMarkerRef.current?.showCallout?.();
      }, 100);
   }
 
