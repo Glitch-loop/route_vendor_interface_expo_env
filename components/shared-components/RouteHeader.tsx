@@ -5,7 +5,6 @@ import tw from 'twrnc';
 
 // Utils
 import { format_date_to_UI_format } from '../../utils/date/momentFormat';
-import DAYS from '../../lib/days';
 import { capitalizeFirstLetter } from '../../utils/generalFunctions';
 
 // Redux context
@@ -59,8 +58,7 @@ const RouteHeader = ({onGoBack}:{onGoBack:any}) => {
       <Text style={tw`text-xl text-black`}>|</Text>
       <View style={tw`flex flex-col`}>
         <Text style={tw`text-base text-black text-center`}>{format_date_to_UI_format(startDate)}</Text>
-        <Text style={tw`text-base text-black text-center`}>{capitalizeFirstLetter(dayName)}</Text>
-        
+        <Text style={tw`text-base text-black text-center`}>{capitalizeFirstLetter(dayName)}</Text>    
       </View>
       <BluetoothButton />
     </View>

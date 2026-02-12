@@ -70,9 +70,10 @@ const CardProduct = ({
       </View>
       <View style={tw`flex flex-row basis-4/12 justify-around items-center`}>
         <ActionButton
-          style={'bg-red-600'}
+          colorStyle={'bg-red-400'}
+          colorPressedStyle={'bg-red-500'}
           onClick={handleOnMinusOne}>
-          <Icon name="minus" style={tw`text-base text-center`} color="#000"/>
+          <Icon name="minus" style={tw`text-base text-center `} color="#000"/>
         </ActionButton>
         <View style={tw`w-14`}>
           <AutomatedCorrectionNumberInput
@@ -81,7 +82,8 @@ const CardProduct = ({
           />
         </View>
         <ActionButton
-          style={'bg-blue-700'}
+          colorStyle={'bg-blue-400'}
+          colorPressedStyle={'bg-blue-500'}
           onClick={handleOnPlusOne}>
           <Icon name="plus" style={tw`text-base text-center`} color="#000"/>
         </ActionButton>
@@ -93,7 +95,10 @@ const CardProduct = ({
         <View>
           <Pressable
             onPress={() => { handleOnDeleteItem(); }}
-            style={tw`bg-red-400 p-2 rounded-full`}>
+            style={({pressed}) => [
+              tw`h-8 w-8 flex justify-center items-center rounded-full`,
+              pressed ? tw`bg-red-500` : tw`bg-red-400`,
+            ]}>
             <Icon name={'remove'} style={tw`text-white`}/>
           </Pressable>
         </View>
