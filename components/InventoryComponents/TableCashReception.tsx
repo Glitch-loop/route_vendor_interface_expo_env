@@ -6,7 +6,7 @@ import { DataTable } from 'react-native-paper';
 
 // Interfaces
 import { ICurrency } from '../../interfaces/interfaces';
-import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
+import AutomatedCorrectionNumberInput from '../shared-components/AutomatedCorrectionInput';
 import { headerTitleTableStyle, textHeaderTableStyle } from '@/utils/inventoryOperationTableStyles';
 
 

@@ -4,11 +4,11 @@ import { View } from 'react-native';
 import tw from 'twrnc';
 
 // UI Components
-import CardProduct from '@/components/SalesLayout/CardProduct';
-import SectionTitle from '@/components/SalesLayout/SectionTitle';
-import SubtotalLine from '@/components/SalesLayout/SubtotalLine';
-import HeaderProduct from '@/components/SalesLayout/HeaderProduct';
-import SearchBarWithSuggestions from '@/components/SalesLayout/SearchBarWithSuggestions';
+import CardProduct from '@/components/sale-layout/CardProduct';
+import SectionTitle from '@/components/sale-layout/SectionTitle';
+import SubtotalLine from '@/components/sale-layout/SubtotalLine';
+import HeaderProduct from '@/components/sale-layout/HeaderProduct';
+import SearchBarWithSuggestions from '@/components/sale-layout/SearchBarWithSuggestions';
 
 // DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';

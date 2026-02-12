@@ -8,7 +8,7 @@ import tw from 'twrnc';
 import { getProductDevolutionBalanceWithoutNegativeNumber } from '@/utils/route-transaciton/utils';
 
 // Components
-import SubtotalLine from '../SalesLayout/SubtotalLine';
+import SubtotalLine from '../sale-layout/SubtotalLine';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';

@@ -5,7 +5,7 @@ import { DataTable, ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 
 // Interfaces
-import AutomatedCorrectionNumberInput from '@/components/generalComponents/AutomatedCorrectionInput';;
+import AutomatedCorrectionNumberInput from '@/components/shared-components/AutomatedCorrectionInput';;
 
 // Styles
 import {
@@ -225,7 +225,7 @@ const TableInventoryOperation = (
                       }
                       { currentInventory.length > 0 &&
                         <DataTable.Cell style={tw`${currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-40 `}>
-                          <Text style={tw`text-black${textRowTableStyle}`}>{currentInventoryAmount}</Text>
+                          <Text style={tw`text-black ${textRowTableStyle}`}>{currentInventoryAmount}</Text>
                         </DataTable.Cell>
                       }
                       <DataTable.Cell style={tw`${cellTableStyle} w-40`}>

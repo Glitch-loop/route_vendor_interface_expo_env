@@ -2,16 +2,12 @@
 import React, { useState } from 'react';
 import { ToastAndroid } from 'react-native';
 
-// Interfaces
-import { IPaymentMethod } from '../../interfaces/interfaces';
-
 // Utils
-// import PAYMENT_METHODS from '../../utils/paymentMethod';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
-// Components
-import PaymentMenu from './PaymentMenu';
-import PaymentMethod from './PaymentMethod';
+// UI Components
+import PaymentMenu from '@/components/sale-layout/PaymentMenu';
+import PaymentMethod from '@/components/sale-layout/PaymentMethod';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 
 const PaymentProcess = ({

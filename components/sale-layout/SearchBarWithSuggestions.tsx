@@ -1,11 +1,18 @@
+// Libraries
 import React, { useState } from 'react';
 import { View, Pressable, Text, ScrollView } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 import tw from 'twrnc';
+
+// UI components
 import { Provider } from 'react-native-paper';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+
+// Guards
 import { isProductDTO, isStoreDTO } from '@/src/application/guards/dtoGuards';
+
+// Utils
+import { capitalizeFirstLetter } from '@/utils/string/utils';
 import { getAddressOfStore } from '@/utils/stores/utils';
 
 /*

@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 
 // DTOs
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
-
-// UI
-import { View, Text, Pressable } from 'react-native';
 import tw from 'twrnc';
+
+// UI components
+import { View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ActionButton from './ActionButton';
-import AutomatedCorrectionNumberInput from '../generalComponents/AutomatedCorrectionInput';
+import ActionButton from '@/components/sale-layout/ActionButton';
+import AutomatedCorrectionNumberInput from '@/components/shared-components/AutomatedCorrectionInput';
 
 const CardProduct = ({
     productName,

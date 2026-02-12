@@ -1,6 +1,9 @@
+// Libraries
 import React from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
+
+// UI components
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';;
 

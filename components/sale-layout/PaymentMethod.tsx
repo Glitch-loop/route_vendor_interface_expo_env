@@ -5,12 +5,7 @@ import { RadioButton } from 'react-native-paper';
 import tw from 'twrnc';
 
 // Utils
-import { IPaymentMethod } from '../../interfaces/interfaces';
-
-// Utils
-// import PAYMENT_METHODS from '../../utils/paymentMethod';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { getNamePaymentMethodById } from '@/utils/route-transaciton/utils';
 
 

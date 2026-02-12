@@ -121,7 +121,6 @@ const storeMenuLayout = () => {
     if (availableProductsReduxState !== null && productsInventoryReduxState !== null) {
       setProductInventoryMap(createMapProductInventoryWithProduct(productsInventoryReduxState, availableProductsReduxState));
     }
-
   }
 
   // handlers

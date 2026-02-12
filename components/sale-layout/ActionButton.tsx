@@ -1,9 +1,7 @@
-
-
+// Libraries
 import React from 'react';
 import { Text, Pressable } from 'react-native';
 import tw from 'twrnc';
-
 
 const ActionButton = ({
   children,
