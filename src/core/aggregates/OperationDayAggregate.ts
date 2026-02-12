@@ -56,7 +56,33 @@ export class OperationDayAggregate {
             null
         );
 
-        this.insertOperationDayNextToCurrentOperation(newDayOperation);
+        if (this.dayOperations === null) {
+            throw new Error("Error registering client attention out-of-route. There are no operations registered for the day.");
+        } else {
+            const isclientAttention = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idClient === id_item && operation_type === DAY_OPERATIONS.route_client_attention;
+            });
+            const isAttendClientPetition = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idClient === id_item && operation_type === DAY_OPERATIONS.attend_client_petition
+            });
+            const isNewClientRegistration = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idClient === id_item && operation_type === DAY_OPERATIONS.new_client_registration;
+            });
+            const isClientRegisteredAsAttentionOutOfRoute = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idClient === id_item && operation_type === DAY_OPERATIONS.attention_out_of_route;
+            });
+
+            if (isclientAttention) throw new Error("The client is part of today's route, so it cannot be registered as out-of-route attention.");
+            else if (isAttendClientPetition) throw new Error("The client was registered as attend client petition, so it cannot be registered as out-of-route attention.");
+            else if (isNewClientRegistration) throw new Error("The client was registered as new client registration, so it cannot be registered as out-of-route attention.");
+            else if (isClientRegisteredAsAttentionOutOfRoute) throw new Error("This client was already registered as attended out-of-route, so it cannot be registered again as out-of-route attention.");
+            else this.insertOperationDayNextToCurrentOperation(newDayOperation);
+        }
+    
     }
     
     registerCreateNewClient(idDayOperation: string, idClient: string, createdAt: Date): void {

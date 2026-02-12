@@ -4,6 +4,7 @@ import { injectable, inject } from 'tsyringe'
 // Aggregates
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';
 import { ProductInventoryAggregate } from '@/src/core/aggregates/ProductInventoryAggregate';
+import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
 
 // Entitties
 import { DayOperation } from '@/src/core/entities/DayOperation';
@@ -27,9 +28,6 @@ import { RouteTransactionDescription } from '@/src/core/object-values/RouteTrans
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-
-// Aggregates
-import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
@@ -56,7 +54,7 @@ export default class RegisterNewRouteTransaction {
         paymentMethod: PAYMENT_METHODS,
         cashReceived: number,
         id_store: string,
-        id_day_operation_dependent: string
+        id_day_operation_dependent: string,
     ):Promise<void> {
         const { id_work_day } = workDayInformation;
         

@@ -51,6 +51,8 @@ import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
+import VisitClientOutOfRouteUseCase from '@/src/application/commands/VisitClientOutOfRouteUseCase';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -213,6 +215,7 @@ const salesLayout = () => {
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
+    const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
 
     setFinishedSale(true); // Finishing sale payment process.
 
@@ -231,19 +234,34 @@ const salesLayout = () => {
       text2: 'Iniciando proceso para registrar la venta'});
     
     try {
+      let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
         // Todo: Implement route transaction for client out the route.
-        
+        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param);
+        if (visitedClientOutOfRoute !== null) {
+          const { id_day_operation } = visitedClientOutOfRoute;
+          id_day_operation_dependent = id_day_operation;
+        }
       } else if(id_day_operation_dependent_search_param !== undefined) {
-        await registerNewRouteTransactionCommand.execute(
-          [...productDevolution, ...productReposition, ...productSale],
-          workDayInformation!,
-          paymentMethod,
-          receivedCash,
-          id_store_search_param,
-          id_day_operation_dependent_search_param
-        );
+        id_day_operation_dependent = id_day_operation_dependent_search_param;
       }
+
+      if (id_day_operation_dependent === null) {
+         Toast.show({
+          type: 'error',
+          text1:'Error interno',
+          text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
+        return;
+      }
+
+      await registerNewRouteTransactionCommand.execute(
+        [...productDevolution, ...productReposition, ...productSale],
+        workDayInformation!,
+        paymentMethod,
+        receivedCash,
+        id_store_search_param,
+        id_day_operation_dependent
+      );
       
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
