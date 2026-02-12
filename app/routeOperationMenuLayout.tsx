@@ -313,8 +313,10 @@ const routeOperationMenuLayout = () => {
                 ) {
                   isClientOperation = true;
                   isPrintableOperation = true;
-                    
-                  itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperationsReduxState]).toString();
+                  
+                  if (operation_type === DAY_OPERATIONS.route_client_attention) {
+                    itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperationsReduxState]).toString();
+                  }
 
                   totalValue = '';
                   if (stores === null) {
