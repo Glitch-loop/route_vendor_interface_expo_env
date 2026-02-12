@@ -13,13 +13,15 @@ function initializeState(total:number, paymentMethod: PAYMENT_METHODS) {
   if (paymentMethod === PAYMENT_METHODS.CASH) {
     // Cash method
     result = 0;
-  } else if (paymentMethod === PAYMENT_METHODS.TRANSFER) {
-    // Transference
-    result = total;
   } else {
     // By default is cash method
     result = 0;
   }
+
+  // else if (paymentMethod === PAYMENT_METHODS.TRANSFER) {
+  //   // Transference
+  //   result = total;
+  // }
 
   return result;
 }
@@ -94,7 +96,7 @@ const PaymentMenu = ({
         </View>
       }
       {/* Section for transference */}
-      { paymentMethod === PAYMENT_METHODS.TRANSFER &&
+      {/* { paymentMethod === PAYMENT_METHODS.TRANSFER &&
         <View style={tw`flex flex-row justify-end my-1`}>
           <Text style={tw`mr-3 text-black text-xl text-right flex flex-row basis-1/2 justify-end`}>
             Referencia:
@@ -102,8 +104,8 @@ const PaymentMenu = ({
           <Text style={tw`text-black text-xl text-left flex flex-row basis-1/2`}>
           { getTransactionIdentifier(transactionIdentifier) }
           </Text>
-      </View>
-      }
+        </View> 
+      } */}
     </View>
   );
 };

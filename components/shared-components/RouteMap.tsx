@@ -1,13 +1,15 @@
 // Librarires
-
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, Pressable } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, CameraZoomRange, Region, Camera, Callout, LatLng } from 'react-native-maps';
+import { StyleSheet } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region, Camera, LatLng } from 'react-native-maps';
 import tw from 'twrnc';
-import { IStoreRouteMap } from '../../interfaces/interfaces';
+
+// Interfaces
+import { IStoreRouteMap } from '@/interfaces/interfaces';
 import { View } from 'react-native';
-import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
-import useCurrentLocation from '@/hooks/useCurrentLocation';
+
+// Utils 
+import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 import { getAddressOfStore } from '@/utils/stores/utils';
 
 const styles = StyleSheet.create({

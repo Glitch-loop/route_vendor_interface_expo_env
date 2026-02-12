@@ -56,12 +56,13 @@ const PaymentProcess = ({
       } else {
         ToastAndroid.show(messageToShow, 1500);
       }
-    } else if (paymnetMethod === PAYMENT_METHODS.TRANSFER){
-      // Transference method
-      /* Since transference is a digital method, the vendor doesn't recieve cash, so
-      according with the flow of the application, cashReceived should be zero. */
-      await onPaySale(cashReceived, paymnetMethod);
     }
+    //  else if (paymnetMethod === PAYMENT_METHODS.TRANSFER){
+    //   // Transference method
+    //   /* Since transference is a digital method, the vendor doesn't recieve cash, so
+    //   according with the flow of the application, cashReceived should be zero. */
+    //   await onPaySale(cashReceived, paymnetMethod);
+    // }
   };
 
   const handlerDeclineDialog = () => {
