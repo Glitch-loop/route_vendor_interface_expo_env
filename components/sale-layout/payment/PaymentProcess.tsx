@@ -6,8 +6,8 @@ import { ToastAndroid } from 'react-native';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 
 // UI Components
-import PaymentMenu from '@/components/sale-layout/PaymentMenu';
-import PaymentMethod from '@/components/sale-layout/PaymentMethod';
+import PaymentMenu from '@/components/sale-layout/payment/PaymentMenu';
+import PaymentMethod from '@/components/sale-layout/payment/PaymentMethod';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 
 const PaymentProcess = ({

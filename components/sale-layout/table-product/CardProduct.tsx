@@ -8,7 +8,7 @@ import tw from 'twrnc';
 // UI components
 import { View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ActionButton from '@/components/sale-layout/ActionButton';
+import ActionButton from '@/components/sale-layout/table-product/ActionButton';
 import AutomatedCorrectionNumberInput from '@/components/shared-components/AutomatedCorrectionInput';
 
 const CardProduct = ({

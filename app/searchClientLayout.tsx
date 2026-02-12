@@ -27,7 +27,7 @@ import { createDayOperationConcept } from '@/controllers/DayOperationController'
 
 // UI - Components
 import RouteMap from '@/components/RouteMap';
-import SearchBarWithSuggestions from '@/components/sale-layout/SearchBarWithSuggestions';
+import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import RouteHeader from '@/components/shared-components/RouteHeader';
 import RangeButtonSelection from '@/components/search-client/RangeButtonSelection';
