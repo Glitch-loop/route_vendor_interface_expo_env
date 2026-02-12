@@ -6,7 +6,7 @@ import tw from 'twrnc';
 
 // Components
 import MenuHeader from '@/components/shared-components/MenuHeader';
-import RouteMap from '@/components/RouteMap';
+import RouteMap from '@/components/shared-components/RouteMap';
 
 export default function CreateNewClientLayout() {
   return (

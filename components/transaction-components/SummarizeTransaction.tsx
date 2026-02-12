@@ -13,7 +13,7 @@ import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 
 // Components
 import SectionTitle from '@/components/sale-layout/SectionTitle';
-import SummarizeFormat from '@/components/TransactionComponents/SummarizeFormat';
+import SummarizeFormat from '@/components/transaction-components/SummarizeFormat';
 import TotalsSummarize from '@/components/sale-layout/TotalsSummarize';
 import DangerButton from '@/components/shared-components/DangerButton';
 import ActionDialog from '@/components/shared-components/ActionDialog';

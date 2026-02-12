@@ -14,10 +14,10 @@ import {
 
 // Components
 // import RouteMap from '../components/RouteMap';
-import SummarizeTransaction from '../components/TransactionComponents/SummarizeTransaction';
+import SummarizeTransaction from '../components/transaction-components/SummarizeTransaction';
 import MenuHeader from '../components/shared-components/MenuHeader';
 import Toast from 'react-native-toast-message';
-import RouteMap from '@/components/RouteMap';
+import RouteMap from '@/components/shared-components/RouteMap';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';

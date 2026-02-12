@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, Pressable } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, CameraZoomRange, Region, Camera, Callout, LatLng } from 'react-native-maps';
 import tw from 'twrnc';
-import { IStoreRouteMap } from '../interfaces/interfaces';
+import { IStoreRouteMap } from '../../interfaces/interfaces';
 import { View } from 'react-native';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
