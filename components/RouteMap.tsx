@@ -77,7 +77,7 @@ const RouteMap = ({
   onSelectLocation?:(coordinates:LatLng|undefined) => void
 }) => {
   const mapRef = useRef<MapView|null>(null);
-  const markerRef = useRef(null);
+  const markerRefs = useRef<Record<string, any|null>>({});
   const selectedLocationMarkerRef = useRef(null);
 
   const [initialLocation, setInitialLocation] = useState<Region|undefined>(undefined);
@@ -91,7 +91,7 @@ const RouteMap = ({
 
   useEffect(() => {
     if (selectedStore !== undefined && mapRef !== null) {
-        const { latitude, longitude } = selectedStore;
+        const { id_store, latitude, longitude } = selectedStore;
         const newCamera: Camera = {
         center: {
             latitude: parseFloat(latitude),
@@ -107,13 +107,13 @@ const RouteMap = ({
       }
     }
 
-    if (selectedStore && markerRef.current !== null) {
-      console.log(markerRef.current)
+    if (selectedStore !== undefined && markerRefs.current !== null) {
+      // console.log(markerRef.current)
       // @ts-ignore
-      console.log("showing callout")
+      const { id_store } = selectedStore;
       setTimeout(() => {
         // @ts-ignore
-        markerRef.current?.showCallout?.();
+        markerRefs.current[id_store]?.showCallout?.();
       }, 100);
     }
    }, [selectedStore])
@@ -202,13 +202,13 @@ const RouteMap = ({
 
           { stores.map((store) => {
             let marker_color = '';
-            const { store_name, latitude, longitude, tw_color, route_status_store } = store;
+            const { id_store, store_name, latitude, longitude, tw_color, route_status_store } = store;
             marker_color = tw_color;
 
             return (
               <Marker
-                ref={markerRef}
-                key={store.id_store}
+                ref={((ref) => { markerRefs.current[id_store] = ref; })}
+                key={id_store}
                 pinColor={tw.color(marker_color)}
                 title={`${ capitalizeFirstLetterOfEachWord(store_name) } - ${ route_status_store}`}
                 description={getAddressOfStore(store)}
