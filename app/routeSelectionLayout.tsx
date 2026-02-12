@@ -16,7 +16,7 @@ import { setStores } from '@/redux/slices/storesSlice';
 
 // UI Components
 import RouteSelectionCard from '@/components/route-selection-components/RouteSelectionCard';
-import MainMenuHeader from '@/components/MainMenuHeader';
+import MainMenuHeader from '@/components/route-selection-components/MainMenuHeader';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 
 // Use case - queries

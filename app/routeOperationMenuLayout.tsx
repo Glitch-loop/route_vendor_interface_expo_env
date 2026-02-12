@@ -22,10 +22,10 @@ import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 // Services
 import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
 
-// UI
+// UI components
 import RouteCard from '@/components/route-operation-menu/RouteCard';
 import MenuHeader from '@/components/shared-components/MenuHeader';
-import TypeOperationItem from '@/components/TypeOperationItem';
+import TypeOperationItem from '@/components/route-operation-menu/TypeOperationItem';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import ProjectButton from '@/components/shared-components/ProjectButton';

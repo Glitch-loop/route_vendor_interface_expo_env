@@ -15,10 +15,10 @@ import { setProducts } from '@/redux/slices/productSlice';
 
 // Components
 import RouteHeader from '@/components/shared-components/RouteHeader';
-import TableInventoryOperations from '../components/InventoryComponents/TableInventoryOperation';
-import VendorConfirmation from '../components/VendorConfirmation';
-import TableInventoryVisualization from '../components/InventoryComponents/TableInventoryOperationVisualization';
-import TableRouteTransactionProductVisualization from '../components/InventoryComponents/TableRouteTransactionProductVisualization';
+import TableInventoryOperations from '../components/inventory-components/TableInventoryOperation';
+import VendorConfirmation from '../components/inventory-components/VendorConfirmation';
+import TableInventoryVisualization from '../components/inventory-components/TableInventoryOperationVisualization';
+import TableRouteTransactionProductVisualization from '../components/inventory-components/TableRouteTransactionProductVisualization';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 // UI
@@ -31,7 +31,7 @@ import {
  } from '../interfaces/interfaces';
 
  // Utils
-import TableCashReception from '../components/InventoryComponents/TableCashReception';
+import TableCashReception from '../components/inventory-components/TableCashReception';
 import { initialMXNCurrencyState, } from '../utils/inventoryOperations';
 
 
