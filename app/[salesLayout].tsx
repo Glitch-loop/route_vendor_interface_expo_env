@@ -22,6 +22,7 @@ import PaymentProcess from '@/components/sale-layout/payment/PaymentProcess';
 import MenuHeader from '@/components/shared-components/MenuHeader';
 import ActionButton from '@/components/sale-layout/table-product/ActionButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // Mapper and DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
@@ -542,9 +543,11 @@ const salesLayout = () => {
               </View>
             </View>
             <View style={tw`w-full flex flex-row justify-center my-3`}>
-              <ActionButton style='h-14 max-w-32 bg-blue-500' onClick={() => { handlePrintTicket() }}>
-                <Text>Imprimir ticket</Text>
-              </ActionButton>
+              <ProjectButton
+                title={'Imprimir ticket'}
+                onPress={() => { handlePrintTicket() }}
+                buttonVariant={'primary'}
+                buttonStyle={tw`h-14 max-w-32 rounded flex flex-row basis-1/2  justify-center items-center`}/>
             </View>
             <ConfirmationBand
               textOnAccept    = { 'Continuar' }
