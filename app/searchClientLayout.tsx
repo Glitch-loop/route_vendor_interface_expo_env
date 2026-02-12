@@ -326,6 +326,7 @@ const searchClientLayout = () => {
                 && (dayOperation.operation_type === DAY_OPERATIONS.attend_client_petition
                 ||  dayOperation.operation_type === DAY_OPERATIONS.new_client_registration
                 ||  dayOperation.operation_type === DAY_OPERATIONS.route_client_attention
+                ||  dayOperation.operation_type === DAY_OPERATIONS.attention_out_of_route
                 );
             });
 

@@ -105,7 +105,6 @@ const routeOperationMenuLayout = () => {
     try {
       const determineCurrentQuery = di_container.resolve<DetermineCurrentInventoryOperation>(DetermineCurrentInventoryOperation);
       const currentOp = await determineCurrentQuery.execute();
-      console.log("Current operation: ", currentOp)
       setCurrentInventoryOperation(currentOp);
     } catch (error) {
       console.log("Error loading current inventory operation: ", error);
@@ -369,7 +368,7 @@ const routeOperationMenuLayout = () => {
         {/* Actions menu */}
         <View style={tw`w-full absolute bottom-0 left-0 right-0 bg-amber-300 p-4 flex flex-row justify-center items-center`}>
             <ProjectButton
-              title={'Restock de producto'}
+              title={'Crear nuevo cliente'}
               onPress={() => {
                 if (isDayWorkClosed) Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
                 else {
