@@ -118,6 +118,8 @@ const routeOperationMenuLayout = () => {
 
   const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
 
+  const createNewClient = ():void => { router.push('/createNewClientLayout'); };
+
   const onFinishInventory = async ():Promise<void> => {
     /*
       When finishing the inventory, there are two 'movements' that are needed to be done:
@@ -374,7 +376,7 @@ const routeOperationMenuLayout = () => {
               onPress={() => {
                 if (isDayWorkClosed) Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
                 else {
-                  // createNewClient();
+                  createNewClient();
                 }
               }}
               buttonVariant='success'

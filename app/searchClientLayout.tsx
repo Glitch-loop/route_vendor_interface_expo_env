@@ -7,23 +7,24 @@ import { LocationObject, LocationObjectCoords } from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Redux context
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../redux/store';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 // Hooks
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 // Interfaces
-import { IDayOperation, IStore, IStoreStatusDay, IStoreRouteMap } from '@/interfaces/interfaces';
+import { IStoreRouteMap } from '@/interfaces/interfaces';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
+import { LatLng } from 'react-native-maps';
+
+// DTOs
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 // Utils
-import { convertStoreDTOToIStoreRouteMap, distanceBetweenTwoPoints } from '@/utils/stores/utils';
-// import DAYS_OPERATIONS from '@/lib/day_operations';
+import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-
-// Controllers
-import { createDayOperationConcept } from '@/controllers/DayOperationController';
+import { getAddressOfStore } from '@/utils/stores/utils';
 
 // UI - Components
 import RouteMap from '@/components/shared-components/RouteMap';
@@ -32,43 +33,8 @@ import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import RouteHeader from '@/components/shared-components/RouteHeader';
 import RangeButtonSelection from '@/components/search-client/RangeButtonSelection';
 import Toast from 'react-native-toast-message';
-import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ActivityIndicator } from 'react-native-paper';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
-import { getRouteStatusStore, getStoreStatusColor } from '@/utils/day-operation/utils';
-import DAYS from '@/lib/days';
 import ProjectButton from '@/components/shared-components/ProjectButton';
-import { getAddressOfStore } from '@/utils/stores/utils';
-import { LatLng } from 'react-native-maps';
-
-function findStoresAround(pivotLocation:LocationObjectCoords|LatLng|null, stores:IStoreRouteMap[]|null, metersAround:number):IStoreRouteMap[] {
-    let storesToShow:IStoreRouteMap[] = [];
-
-    console.log("All stores: ", stores?.length)
-    if (pivotLocation !== null && stores !== null) {
-        const kmRange = metersAround / 1000; // Convert meters to kilometers
-        
-        console.log("RANGE: ", kmRange)
-        storesToShow = stores.filter((store) => {
-            // distanceBetweenTwoPoints returns distance in kilometers
-            const distanceInKm:number = distanceBetweenTwoPoints(
-                parseFloat(store.latitude),
-                parseFloat(store.longitude),
-                pivotLocation.latitude,
-                pivotLocation.longitude
-            );
-
-            console.log(`Distance to store ${store.store_name}: ${distanceInKm.toFixed(2)}`);
-            return distanceInKm <= kmRange;
-        });
-        
-        console.log(`Found ${storesToShow.length} stores within ${metersAround}m (${kmRange}km)`);
-    } else {
-        storesToShow = [];
-    }
-
-    return storesToShow;
-}
 
 
 
@@ -127,11 +93,8 @@ const searchClientLayout = () => {
     // Redux
     const storesRedux = useSelector((state: RootState) => state.stores);
     const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
-    const dispatch:AppDispatch = useDispatch();
 
     // States
-    const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
-    
     const [storesToShow, setStoresToShow] = useState<IStoreRouteMap[]>([]);
     const [allStoresCatalog, setAllStoresCatalog] = useState<IStoreRouteMap[]>([]);
     
@@ -158,7 +121,6 @@ const searchClientLayout = () => {
     const setUpSearchClientLayout = async() => {
         const location = await getCurrentUserLocation();
         setUserLocation(location);
-        setIsLoadingLocation(location === null);
 
         if (dayOperationsRedux !== null && storesRedux !== null) {
             // Get catalog of stores.

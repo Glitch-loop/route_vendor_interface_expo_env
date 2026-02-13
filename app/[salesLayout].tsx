@@ -1,6 +1,6 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Pressable, Text } from 'react-native';
+import { View, ScrollView, Text, KeyboardAvoidingView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
@@ -465,7 +465,12 @@ const salesLayout = () => {
 
   return (
     finishedSale === false ?
-      <SafeAreaView>
+      <SafeAreaView style={tw`flex-1`}>
+        <KeyboardAvoidingView 
+          style={tw`flex-1`} 
+          behavior='padding' 
+          keyboardVerticalOffset={10}
+          >
         {
           productInventoryMap === undefined ?
           <View style={tw`w-full h-full flex flex-1 justify-center items-center`}>
@@ -557,6 +562,7 @@ const salesLayout = () => {
             <View style={tw`flex flex-row mt-10`} />
           </ScrollView> 
         }
+        </KeyboardAvoidingView>
       </SafeAreaView>
       :
       <SafeAreaView>

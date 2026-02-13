@@ -7,6 +7,8 @@ import StoreDTO from "@/src/application/dto/StoreDTO";
 
 // Utils
 import { getRouteStatusStore, getStoreStatusColor } from "@/utils/day-operation/utils";
+import { LocationObjectCoords } from "expo-location";
+import { LatLng } from "react-native-maps";
 
 
 export function getAddressOfStore(store: StoreDTO): string {
@@ -35,7 +37,6 @@ export function distanceBetweenTwoPoints(lat1: number, lon1: number, lat2: numbe
   
   return distance;
 }
-
 
 export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
     const storeRouteMap: IStoreRouteMap[] = [];
@@ -67,4 +68,29 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
     })
 
     return storeRouteMap;
+}
+
+export function findStoresAround(pivotLocation:LocationObjectCoords|LatLng|null, stores:IStoreRouteMap[]|null, metersAround:number):IStoreRouteMap[] {
+    let storesToShow:IStoreRouteMap[] = [];
+
+    if (pivotLocation !== null && stores !== null) {
+        const kmRange = metersAround / 1000; // Convert meters to kilometers
+        
+        storesToShow = stores.filter((store) => {
+            // distanceBetweenTwoPoints returns distance in kilometers
+            const distanceInKm:number = distanceBetweenTwoPoints(
+                parseFloat(store.latitude),
+                parseFloat(store.longitude),
+                pivotLocation.latitude,
+                pivotLocation.longitude
+            );
+
+            return distanceInKm <= kmRange;
+        });
+        
+    } else {
+        storesToShow = [];
+    }
+
+    return storesToShow;
 }
