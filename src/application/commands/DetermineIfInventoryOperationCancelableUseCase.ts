@@ -63,14 +63,17 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
             isCancelable = false;
         } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) { 
             isCancelable = true;
-        } else if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
+        } else if (
+            // id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory ||  // At least for this release, start shift inventory will not be cancelable, because of the complexity to implement the logic to determine if there are route transactions or inventory operations after this operation.
+            id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
             if (index === dayOperations.length -1 ) {
                 isCancelable = true;
             } else {
                 for (let i = index + 1; i < dayOperations.length; i++) {
                     const currentDayOperation = dayOperations[i];
                     const currentDayOperationType = currentDayOperation.operation_type;
-    
+                    
+                    // If there an inventory operation before, then the inventory operation cannot be cancelled. 
                     if (currentDayOperationType === DAY_OPERATIONS.route_transaction ||
                         currentDayOperationType === DAY_OPERATIONS.restock_inventory ||
                         currentDayOperationType === DAY_OPERATIONS.start_shift_inventory ||
