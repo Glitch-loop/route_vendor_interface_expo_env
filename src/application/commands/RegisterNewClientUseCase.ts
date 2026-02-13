@@ -60,9 +60,10 @@ export class RegisterNewClientUseCase {
         const operationDayAggregate = new OperationDayAggregate(dayOperations);
 
         // Register new client
+        console.log("Obtaining current location for new client registration...")
         const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
-
-        if (coordinates === null) throw new Error('Location cannot be ob|tained. Client registration requires location data.');
+        console.log("Coordinates obtained:", coordinates);
+        if (coordinates === null) throw new Error('Location cannot be obtained. Client registration requires location data.');
 
         const { latitude, longitude } = coordinates;
 

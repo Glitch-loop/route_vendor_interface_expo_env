@@ -1,6 +1,6 @@
 // Libraries
 import { inject, injectable } from "tsyringe";
-import * as Location from 'expo-location'
+import { getCurrentPositionAsync, LocationObject, hasServicesEnabledAsync, requestForegroundPermissionsAsync } from "expo-location";
 import { PermissionsAndroid } from "react-native";
 
 // Interfaces
@@ -15,38 +15,18 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 @injectable()
 export class GpsService implements LocationService {
-
     constructor(
         @inject(TOKENS.PlataformService) private readonly platformPermissionsService: PlatformPermissionsService
     ) { }
 
     async getCurrentLocation(): Promise<Coordinates | null> {
         await this.setGPSServiceEnvironment();
+        
+        const currentLocation:LocationObject = await getCurrentPositionAsync();
+        const { coords } = currentLocation;
+        const { latitude, longitude } = coords;
 
-        if (!navigator.geolocation) {
-            return null;
-        }
-
-        return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const coordinates: Coordinates = new Coordinates(
-                        position.coords.latitude,
-                        position.coords.longitude
-                    );
-                    resolve(coordinates);
-                },
-                (error) => {
-                    console.error('Error getting current location:', error);
-                    resolve(null);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 10000
-                }
-            );
-        });
+        return new Coordinates(latitude, longitude);
     }
 
     private async areLocationPermissionsGranted(): Promise<boolean> {
@@ -67,6 +47,8 @@ export class GpsService implements LocationService {
     }
 
     private async requestLocationPermissions(): Promise<boolean> {
+        await requestForegroundPermissionsAsync();
+
         const permissionsToRequest = [
             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
             PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
@@ -76,7 +58,7 @@ export class GpsService implements LocationService {
     }
 
     private async isLocationServiceEnabled(): Promise<boolean> {
-        return await Location.hasServicesEnabledAsync();
+        return await hasServicesEnabledAsync();
     }
 
     private async setGPSServiceEnvironment(): Promise<void> {

@@ -49,12 +49,12 @@ export default function CreateNewClientLayout() {
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
   const [nearStores, setNearStores] = useState<IStoreRouteMap[]>([]);
   const [formData, setFormData] = useState<NewClientFormData>({
-    store_name: '',
-    street: '',
-    ext_number: '',
-    colony: '',
-    postal_code: '',
-    address_reference: ''
+    store_name: 'a',
+    street: 'a',
+    ext_number: 'a',
+    colony: 'a',
+    postal_code: 'a',
+    address_reference: 'a'
   });
 
 
@@ -147,6 +147,8 @@ export default function CreateNewClientLayout() {
 
     const registerNewClientUseCase = container.resolve<RegisterNewClientUseCase>(RegisterNewClientUseCase)
 
+    
+
     try {
       const dayOperation:DayOperationDTO = await registerNewClientUseCase.execute(
         store_name,
@@ -158,12 +160,21 @@ export default function CreateNewClientLayout() {
         { ...userSessionReduxState }
       )
   
-      Toast.show({type: 'success', text1: 'Cliente registrado', text2: 'El cliente se ha registrado correctamente'});
+      Toast.show({
+        type: 'success', 
+        text1: 'Cliente registrado', 
+        text2: 'El cliente se ha registrado correctamente'
+      });
       
       const { id_day_operation, id_item } = dayOperation;
       router.push(`/salesLayout?id_store_search_param=${id_item}&id_day_operation_dependent_search_param=${id_day_operation}`);
     } catch (error) {
-      Toast.show({type: 'error', text1: 'Error', text2: 'Ha ocurrido un error al registrar el cliente'});
+      console.error("Error registering new client: ", error);
+      Toast.show({
+        type: 'error', 
+        text1: 'Problemas al registrar el nuevo cliente.', 
+        text2: 'Ha ocurrido un error al registrar el cliente'
+      });
     }
   }
 
