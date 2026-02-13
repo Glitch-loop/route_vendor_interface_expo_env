@@ -1,6 +1,6 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -8,16 +8,16 @@ import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   IRouteTransactionOperation,
   IRouteTransactionOperationDescription,
-  IStore,
   IStoreRouteMap,
-} from '../interfaces/interfaces';
+} from '@/interfaces/interfaces';
 
 // Components
-// import RouteMap from '../components/RouteMap';
-import SummarizeTransaction from '../components/transaction-components/SummarizeTransaction';
-import MenuHeader from '../components/shared-components/MenuHeader';
 import Toast from 'react-native-toast-message';
+import SummarizeTransaction from '@/components/transaction-components/SummarizeTransaction';
+import MenuHeader from '@/components/shared-components/MenuHeader';
 import RouteMap from '@/components/shared-components/RouteMap';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,6 +29,7 @@ import { container as conatiner_di } from '@/src/infrastructure/di/container';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 
 // Use cases
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
@@ -36,26 +37,9 @@ import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRou
 
 // Utils
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
-
-
-import MapView, { Marker, OverlayAnimated, PROVIDER_GOOGLE } from 'react-native-maps';
-import useCurrentLocation from '@/hooks/useCurrentLocation';
-
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
-import ProjectButton from '@/components/shared-components/ProjectButton';
-
 import { getAddressOfStore } from '@/utils/stores/utils';
 import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
-
-const INITIAL_REGION = {
-  latitude: 20.641640381312676,
-  longitude: -105.2190063835951,
-  latitudeDelta: 0.0922,
-  longitudeDelta: 0.0421,
-  zoom: 5
-}
 
 type typeSearchParams = {
   id_store_search_param: string;
@@ -86,16 +70,8 @@ const storeMenuLayout = () => {
   // Defining state
   const [isConsultTransaction, setIsConsultTransaction]             = useState<boolean>(false);
   const [routeTransactions, setRouteTransactions]                   = useState<RouteTransactionDTO[]>([]);
-  const [routeTransactionOperations, setRouteTransactionOperations] = useState<Map<string, IRouteTransactionOperation[]>>(new Map());
-  const [
-    routeTransactionOperationDescriptions,
-    setRouteTransactionOperationDescriptions,
-  ] = useState<Map<string, IRouteTransactionOperationDescription[]>>(new Map());
-
-  const [consultedStore, setConsultedStore] = useState<IStoreRouteMap|null>(null)
-
-
-  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
+  const [consultedStore, setConsultedStore]                         = useState<IStoreRouteMap|null>(null);
+  const [productInventoryMap, setProductInventoryMap]               = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
 
   useEffect(() => {
     // Definig only-read variables
@@ -128,7 +104,17 @@ const storeMenuLayout = () => {
 
   const handlerGoBackToStoreMenu = () => { router.replace(`/storeMenuLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
 
-  const handlerOnStartSale = () => { router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
+  const handlerOnStartSale = () => { 
+      if (workDay === null) {
+        Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
+        return;
+      }
+  
+      const { finish_date } = workDay;
+  
+    if (finish_date !== null) Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+    else router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); 
+  };
 
   const handlerOnConsultTransactions = async() => {
     

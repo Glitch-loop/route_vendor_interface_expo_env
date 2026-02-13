@@ -125,7 +125,7 @@ const SummarizeTransaction = ({
     }
   };
 
-  const handleOnCancelASale = async () => { // TODO: Synchronization with central database
+  const handleOnCancelASale = async () => {
     const { id_route_transaction, state } = currentTransaction;
     if (state === ROUTE_TRANSACTION_STATE.CANCELLED) {
       Toast.show({type: 'info',
@@ -265,7 +265,7 @@ const SummarizeTransaction = ({
                 textOnAccept={'Iniciar venta apartir de esta'}
                 textOnCancel={'Imprimr'}
                 handleOnAccept={() => { handleOnStartASale(); }}
-                handleOnCancel={() => {handleOnPrint();}}
+                handleOnCancel={() => { handleOnPrint(); }}
                 styleOnCancel={'bg-blue-500'}
                 />
             </View>
