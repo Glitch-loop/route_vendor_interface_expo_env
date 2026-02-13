@@ -78,7 +78,6 @@ const SaleSummarize = ({
     productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
   }) => {
 
-    console.log("productsDevolution: ", productsDevolution.length);
     /*
       At least for this component, the matriz is going to work like this:
       [[saleProduct][repositionProduct]]

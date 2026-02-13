@@ -342,7 +342,6 @@ const routeOperationMenuLayout = () => {
 
                 if(currentInventoryOperation !== null) {
                   if (id_day_operation === currentInventoryOperation.id_day_operation) {
-                    console.log("Current inventory operation identified");
                     style = getStyleDayOperationForMenuOperation(operation_type, true);
                   }
 

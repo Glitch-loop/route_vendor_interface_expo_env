@@ -114,7 +114,6 @@ const salesLayout = () => {
     is_selling_out_of_route
   } = params as typeSearchParams;
 
-  console.log("OP day dependent: ", id_day_operation_dependent_search_param)
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
 
   // Redux context definitions
