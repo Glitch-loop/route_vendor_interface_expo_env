@@ -59,7 +59,6 @@ export class BluetoothPrinterService implements PrinterService {
         if (await this.isCommunicationMeanEnabled() === false) {
             if (!await RNBluetoothClassic.requestBluetoothEnabled()) throw new Error("Bluetooth is not enabled.");
         }
-
     }
 
     async connectToPrinter(): Promise<void> {

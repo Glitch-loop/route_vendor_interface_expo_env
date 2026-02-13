@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 // Libraries
-import { container, DependencyContainer, instanceCachingFactory, Lifecycle } from 'tsyringe'
+import { container, Lifecycle } from 'tsyringe'
 
 // DataSources
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'
@@ -16,6 +16,7 @@ import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganiza
 import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository'
 import { IDService } from '@/src/core/interfaces/IDService'
 import { DateService as IDateService } from '@/src/core/interfaces/DateService'
+import { LocationService } from '@/src/core/interfaces/LocationService'
 
 // Sync interfaces
 import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
@@ -49,6 +50,7 @@ import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
 import { DateService } from '@/src/infrastructure/services/DateService'
 import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatabaseService';
 import { AndroidPlatformPermissions } from '@/src/infrastructure/services/AndroidPlataformPermissions';
+import { GpsService } from '@/src/infrastructure/services/GPSService';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 
@@ -82,6 +84,10 @@ container.register<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
 
 container.register<PlatformPermissionsService>(TOKENS.PlataformService, {
     useClass: AndroidPlatformPermissions
+});
+
+container.register<LocationService>(TOKENS.LocationService, {
+    useClass: GpsService
 });
 
 container.register(TOKENS.DataReplicationService, {

@@ -23,6 +23,15 @@ import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 
+interface NewClientFormData {
+  store_name: string;
+  street: string;
+  ext_number: string;
+  colony: string;
+  postal_code: string;
+  address_reference: string;
+}
+
 export default function CreateNewClientLayout() {
   // Hooks
   const router: Router = useRouter();
@@ -35,7 +44,15 @@ export default function CreateNewClientLayout() {
   // States
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
   const [nearStores, setNearStores] = useState<IStoreRouteMap[]>([]);
-  
+  const [formData, setFormData] = useState<NewClientFormData>({
+    store_name: '',
+    street: '',
+    ext_number: '',
+    colony: '',
+    postal_code: '',
+    address_reference: ''
+  });
+
 
   useEffect(() => {
     setUpCreateNewClientLayout();
@@ -73,7 +90,53 @@ export default function CreateNewClientLayout() {
   const handleGoBack = (): void => {
     console.log("Going back to route operation menu")
     router.replace('/routeOperationMenuLayout');
-    
+  }
+
+  const handleFormChange = (field: keyof NewClientFormData, value: string): void => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }
+
+  const handleOnRegisterNewClient = (): void => {
+    // Validate required fields
+    if (!formData.store_name.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El nombre de la tienda es obligatorio'});
+      return;
+    }
+    if (!formData.street.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'La calle es obligatoria'});
+      return;
+    }
+    if (!formData.ext_number.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El número exterior es obligatorio'});
+      return;
+    }
+    if (!formData.colony.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'La colonia es obligatoria'});
+      return;
+    }
+    if (!formData.postal_code.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El código postal es obligatorio'});
+      return;
+    }
+
+    if (!userLocation) {
+      Toast.show({type: 'error', text1: 'Ubicación requerida', text2: 'No se pudo obtener la ubicación'});
+      return;
+    }
+
+    // Create StoreDTO from form data
+    const newStoreData = {
+      ...formData,
+      latitude: userLocation.latitude.toString(),
+      longitude: userLocation.longitude.toString(),
+    };
+
+    console.log('New store data:', newStoreData);
+    // TODO: Call use case to create new client
+    Toast.show({type: 'success', text1: 'Cliente registrado', text2: 'El cliente se ha registrado correctamente'});
   }
 
   return (
@@ -85,8 +148,7 @@ export default function CreateNewClientLayout() {
       {/* Header */}
       <View style={tw`w-full flex flex-row justify-center items-center py-2`}>
         <MenuHeader 
-          onGoBack={handleGoBack}
-        />
+          onGoBack={handleGoBack}/>
       </View>
       <ScrollView contentContainerStyle={tw`pb-8`}>
         {/* Map section: show near clients */}
@@ -107,61 +169,79 @@ export default function CreateNewClientLayout() {
               </View>
             )}
         </View>
-
-        {/* Campo de búsqueda de dirección (consulta a Google Maps) */}
-        <View style={tw`px-4 mt-4`}>
-          <Text style={tw`text-base font-semibold text-gray-800`}>Buscar dirección</Text>
-          <TextInput
-            placeholder="Escribe una dirección para buscar..."
-            style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2 text-gray-900`}
-          />
-        </View>
-
-        {/* Formulario: un campo por cada atributo de StoreDTO (sin latitud/longitud) */}
-        <View style={tw`px-4 mt-6`}>
+        <View style={tw`px-4 mt-7`}>
           <Text style={tw`text-lg font-bold text-gray-900`}>Nuevo cliente</Text>
 
           {/* store_name */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Nombre de la tienda</Text>
-            <TextInput placeholder="Nombre del negocio" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="Nombre del negocio" 
+              value={formData.store_name}
+              onChangeText={(text) => handleFormChange('store_name', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
           {/* street */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Calle</Text>
-            <TextInput placeholder="Nombre de la calle" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="Nombre de la calle" 
+              value={formData.street}
+              onChangeText={(text) => handleFormChange('street', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
           {/* ext_number */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Número exterior</Text>
-            <TextInput placeholder="p. ej., 123" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="p. ej., 123" 
+              value={formData.ext_number}
+              onChangeText={(text) => handleFormChange('ext_number', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
           {/* colony */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Colonia</Text>
-            <TextInput placeholder="Colonia / barrio" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="Colonia" 
+              value={formData.colony}
+              onChangeText={(text) => handleFormChange('colony', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
           {/* postal_code */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Código postal</Text>
-            <TextInput placeholder="p. ej., 12345" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="p. ej., 12345" 
+              value={formData.postal_code}
+              onChangeText={(text) => handleFormChange('postal_code', text)}
+              keyboardType="numeric"
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
           {/* address_reference */}
-          <View style={tw`mt-4`}>
+          {/* Optional fields */}
+          <Text style={tw`mt-5 text-base font-bold text-gray-900`}>Campos opcionales</Text>
+          <View style={tw`mt-2`}>
             <Text style={tw`text-sm text-gray-700`}>Referencia de la dirección</Text>
-            <TextInput placeholder="Referencias o indicaciones adicionales" style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            <TextInput 
+              placeholder="Referencias o indicaciones adicionales" 
+              value={formData.address_reference}
+              onChangeText={(text) => handleFormChange('address_reference', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} 
+              multiline={true}
+              textAlignVertical='top'
+              numberOfLines={7}/>
           </View>
         </View>
         <View style={tw`w-full h-12 mt-5 flex flex-row justify-center items-center`}>
           <ProjectButton 
             title='Crear cliente y continuar con venta'
-            // onPress={() => {handlerOnStartSale();}}
-            onPress={() => {}}
+            onPress={handleOnRegisterNewClient}
             buttonVariant='success'
             buttonStyle={tw`h-14 rounded flex flex-row basis-1/2  justify-center items-center `}/>
         </View>

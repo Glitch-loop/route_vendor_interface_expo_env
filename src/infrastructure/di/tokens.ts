@@ -51,5 +51,6 @@ export const TOKENS = {
     LocalDatabaseService: Symbol('LocalDatabaseService'),
     PlataformService: Symbol('PlataformService'),
     PrinterService: Symbol('PrinterService'),
+    LocationService: Symbol('LocationService'),
     DataReplicationService: Symbol('DataReplicationService'),
 }
