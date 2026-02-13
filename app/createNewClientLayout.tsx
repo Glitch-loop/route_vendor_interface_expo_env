@@ -6,13 +6,17 @@ import tw from 'twrnc';
 import { Router, useRouter }  from 'expo-router';
 
 // Redux
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setStores } from '@/redux/slices/storesSlice';
 
 // Components
 import MenuHeader from '@/components/shared-components/MenuHeader';
 import RouteMap from '@/components/shared-components/RouteMap';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
+
+// Interfaces
 import { LocationObject, LocationObjectCoords } from 'expo-location';
 import { LatLng } from 'react-native-maps';
 
@@ -22,9 +26,11 @@ import { IStoreRouteMap } from '@/interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import ProjectButton from '@/components/shared-components/ProjectButton';
-import { container } from 'tsyringe';
+import { container as di_container } from 'tsyringe';
 import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 
 interface NewClientFormData {
   store_name: string;
@@ -41,6 +47,8 @@ export default function CreateNewClientLayout() {
   const userLocationHook = useCurrentLocation();
   
   // Redux
+  const dispatch: AppDispatch = useDispatch();  
+
   const storesRedux = useSelector((state: RootState) => state.stores);
   const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
@@ -145,9 +153,9 @@ export default function CreateNewClientLayout() {
 
     const { store_name, street, ext_number, colony, postal_code, address_reference } = newStoreData;
 
-    const registerNewClientUseCase = container.resolve<RegisterNewClientUseCase>(RegisterNewClientUseCase)
-
-    
+    const registerNewClientUseCase = di_container.resolve<RegisterNewClientUseCase>(RegisterNewClientUseCase)
+    const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const retrieveRegisteredStores = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
 
     try {
       const dayOperation:DayOperationDTO = await registerNewClientUseCase.execute(
@@ -159,7 +167,10 @@ export default function CreateNewClientLayout() {
         address_reference,
         { ...userSessionReduxState }
       )
-  
+
+      dispatch(setDayOperations(await retrieveDayOperationQuery.execute()));
+      dispatch(setStores(await retrieveRegisteredStores.execute()));
+
       Toast.show({
         type: 'success', 
         text1: 'Cliente registrado', 

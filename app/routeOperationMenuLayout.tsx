@@ -299,7 +299,6 @@ const routeOperationMenuLayout = () => {
 
                 // Inventory operations type
                 style = getStyleDayOperationForMenuOperation(operation_type, false);
-                
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
                   ||  operation_type === DAY_OPERATIONS.restock_inventory
                   ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
