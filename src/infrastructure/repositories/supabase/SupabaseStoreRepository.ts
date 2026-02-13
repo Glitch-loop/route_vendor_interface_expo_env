@@ -196,7 +196,7 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
                 id_creator: store.id_creator,
                 id_store: store.id_store,
             }));
-
+            console.log("Store: ", records)
             const { error } = await this.supabase
                 .from(SERVER_DATABASE_ENUM.STORES)
                 .upsert(records, { onConflict: 'id_store' });

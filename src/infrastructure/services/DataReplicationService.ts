@@ -36,7 +36,7 @@ export default class DataReplicationService {
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
-
+            console.log("Pending stores: ", pendingStores)
             const workDaysWithUser:(WorkDayInformationModel&UserModel)[] = pendingWorkDays.map(wd => ({ ...wd, ...userSession as UserModel }));
 
             console.log(`Pending work days to sync: ${pendingWorkDays.length}`);

@@ -81,7 +81,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         latitude,
                         longitude,
                         id_creator,
-                        creation_date,
+                        new Date(creation_date).toISOString(),
                         creation_context,
                         status_store,
                         is_new
@@ -99,7 +99,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
         await this.dataSource.initialize();
         const db: SQLiteDatabase = await this.dataSource.getClient();
         const pending: StoreModel[] = [];
-        const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1;`);
+        const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1 OR is_new = 1;`);
         const rows = stmt.executeSync<any>();
         for (const row of rows) {
           pending.push(row as StoreModel);
@@ -179,7 +179,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                 latitude,
                 longitude,
                 id_creator,
-                creation_date,
+                new Date(creation_date).toISOString(),
                 creation_context,
                 status_store,
                 id_store,

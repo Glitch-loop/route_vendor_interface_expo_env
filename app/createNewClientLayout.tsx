@@ -57,12 +57,12 @@ export default function CreateNewClientLayout() {
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
   const [nearStores, setNearStores] = useState<IStoreRouteMap[]>([]);
   const [formData, setFormData] = useState<NewClientFormData>({
-    store_name: 'a',
-    street: 'a',
-    ext_number: 'a',
-    colony: 'a',
-    postal_code: 'a',
-    address_reference: 'a'
+    store_name: '',
+    street: '',
+    ext_number: '',
+    colony: '',
+    postal_code: '',
+    address_reference: ''
   });
 
 
