@@ -121,9 +121,9 @@ function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
     if (state === 0) text = '';
     else {
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-        text = `Dinero llevado al inicio de la ruta: ${workdayInformation.start_petty_cash}`;
+        text = `Dinero llevado al inicio de la ruta: $${workdayInformation.start_petty_cash}`;
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        text += ` Dinero regresado al final de la ruta: ${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
+        text += ` Dinero regresado al final de la ruta: $${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
       } else {
         text = '';
       }
@@ -501,7 +501,6 @@ const inventoryOperationLayout = () => {
  
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.error("Error during start shift inventory registration: ", error);
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -648,7 +647,6 @@ const inventoryOperationLayout = () => {
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.error(error);
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error, intente nuevamente.',
@@ -699,7 +697,6 @@ const inventoryOperationLayout = () => {
         text2: 'La operación de inventario ha sido cancelada correctamente.',
       });
     } catch (error) {
-      console.error(error);
       Toast.show({
         type: 'error',
         text1: 'Error al cancelar la operación de inventario.',
@@ -842,7 +839,7 @@ const inventoryOperationLayout = () => {
             </View>
           }
           {/* Total amount of petty cash */}
-          { id_inventory_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
+          { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
             <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
               <Text style={tw`text-black text-lg`}>
                 { determineTextOfCashInventoryVisualization(inventoryOperationToConsult, workDayInformation) }

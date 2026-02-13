@@ -238,7 +238,6 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
     async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
         try {
-            console.log("EXTRACTING INFORMATION")
             await this.dataSource.initialize();
             const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
             
@@ -250,7 +249,6 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const result = statement.executeSync<InventoryOperationDescription>();
 
             for(let row of result) {
-                console.log("Description row from db: ", row);
                 inventoryOperationsDescriptions.push(row);
             }
 
