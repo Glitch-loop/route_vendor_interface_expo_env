@@ -21,7 +21,7 @@ export class StoreClientAggregate {
         latitude: string,
         longitude: string,
         id_creator: string,
-        creation_date: string,
+        creation_date: Date,
         creation_context: string,
     ) {
         if (!this.storeClient) this.storeClient = [];

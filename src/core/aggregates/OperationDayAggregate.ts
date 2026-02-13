@@ -56,33 +56,8 @@ export class OperationDayAggregate {
             null
         );
 
-        if (this.dayOperations === null) {
-            throw new Error("Error registering client attention out-of-route. There are no operations registered for the day.");
-        } else {
-            const isclientAttention = this.dayOperations.some((dayOp) => {
-                const { id_item, operation_type} = dayOp;
-                return idClient === id_item && operation_type === DAY_OPERATIONS.route_client_attention;
-            });
-            const isAttendClientPetition = this.dayOperations.some((dayOp) => {
-                const { id_item, operation_type} = dayOp;
-                return idClient === id_item && operation_type === DAY_OPERATIONS.attend_client_petition
-            });
-            const isNewClientRegistration = this.dayOperations.some((dayOp) => {
-                const { id_item, operation_type} = dayOp;
-                return idClient === id_item && operation_type === DAY_OPERATIONS.new_client_registration;
-            });
-            const isClientRegisteredAsAttentionOutOfRoute = this.dayOperations.some((dayOp) => {
-                const { id_item, operation_type} = dayOp;
-                return idClient === id_item && operation_type === DAY_OPERATIONS.attention_out_of_route;
-            });
-
-            if (isclientAttention) throw new Error("The client is part of today's route, so it cannot be registered as out-of-route attention.");
-            else if (isAttendClientPetition) throw new Error("The client was registered as attend client petition, so it cannot be registered as out-of-route attention.");
-            else if (isNewClientRegistration) throw new Error("The client was registered as new client registration, so it cannot be registered as out-of-route attention.");
-            else if (isClientRegisteredAsAttentionOutOfRoute) throw new Error("This client was already registered as attended out-of-route, so it cannot be registered again as out-of-route attention.");
-            else this.insertOperationDayNextToCurrentOperation(newDayOperation);
-        }
-    
+        this.verifyIdItemIsNotBeingRepeatedForClientOperations(idClient);
+        this.insertOperationDayNextToCurrentOperation(newDayOperation);    
     }
     
     registerCreateNewClient(idDayOperation: string, idClient: string, createdAt: Date): void {
@@ -92,14 +67,17 @@ export class OperationDayAggregate {
                 - This operations is registered when the route vendor gets a new client.
                 - The way of how this is added to the day operation list is by pushing next to the current operation.
         */
-        const newDayOperation = new DayOperation(
-            idDayOperation,
-            idClient,
-            DAY_OPERATIONS.new_client_registration,
-            createdAt,
-            null
-        );
 
+       
+       const newDayOperation = new DayOperation(
+           idDayOperation,
+           idClient,
+           DAY_OPERATIONS.new_client_registration,
+           createdAt,
+           null
+        );
+        
+        this.verifyIdItemIsNotBeingRepeatedForClientOperations(idClient);
         this.insertOperationDayNextToCurrentOperation(newDayOperation);
      }
     
@@ -295,5 +273,33 @@ export class OperationDayAggregate {
         }
 
         return indexCurrentOperationDay;
+    }
+
+    private verifyIdItemIsNotBeingRepeatedForClientOperations(idItem: string): void {
+        if (this.dayOperations === null) {
+            throw new Error("There are no operations registered for the day. So the operation cannot be registered.");
+        } else {
+            const isclientAttention = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idItem === id_item && operation_type === DAY_OPERATIONS.route_client_attention;
+            });
+            const isAttendClientPetition = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idItem === id_item && operation_type === DAY_OPERATIONS.attend_client_petition
+            });
+            const isNewClientRegistration = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idItem === id_item && operation_type === DAY_OPERATIONS.new_client_registration;
+            });
+            const isClientRegisteredAsAttentionOutOfRoute = this.dayOperations.some((dayOp) => {
+                const { id_item, operation_type} = dayOp;
+                return idItem === id_item && operation_type === DAY_OPERATIONS.attention_out_of_route;
+            });
+
+            if (isclientAttention) throw new Error("The client you try to register is part of today's route.");
+            else if (isAttendClientPetition) throw new Error("The client you try to register was registered as attend client petition.");
+            else if (isNewClientRegistration) throw new Error("The client you try to register was registered as new client registration.");
+            else if (isClientRegisteredAsAttentionOutOfRoute) throw new Error("The client you try to register was already registered as attended out-of-route.");
+        }
     }
 }

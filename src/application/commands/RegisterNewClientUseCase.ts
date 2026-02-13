@@ -5,45 +5,108 @@ import { inject, injectable } from "tsyringe";
 import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 
 // Entites
-import { Store } from "@/src/core/entities/Store";
+import { DayOperation } from "@/src/core/entities/DayOperation";
 
 // Object values
+import { Coordinates } from "@/src/core/object-values/Coordinates";
+
+// DTOs
+import { MapperDTO } from "@/src/application/mappers/MapperDTO";
+import UserDTO from "@/src/application/dto/UserDTO";
+import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
+
+// Interfaces
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { LocationService } from "@/src/core/interfaces/LocationService";
+import { IDService } from "@/src/core/interfaces/IDService";
+import { DateService } from "@/src/core/interfaces/DateService";
+
+// Aggregates
+import { StoreClientAggregate } from "@/src/core/aggregates/StoreClientAggregate";
+import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
 
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
-import { StoreClientAggregate } from "@/src/core/aggregates/StoreClientAggregate";
-import { DateService } from "@/src/infrastructure/services/DateService";
-import { IDService } from "@/src/core/interfaces/IDService";
-import { LocationService } from "@/src/core/interfaces/LocationService";
+import { cleanStringToStoreInDatabase } from "@/utils/string/utils";
 
 @injectable()
 export class RegisterNewClientUseCase {
     constructor(
-        @inject(TOKENS.StoreRepository) private repo: StoreRepository,
+        @inject(TOKENS.SQLiteStoreRepository) private storeRepository: StoreRepository,
+        @inject(TOKENS.SQLiteDayOperationRepository) private dayOperationRepository: DayOperationRepository,
 
         // Services
         @inject(TOKENS.IDService) private readonly idService: IDService,
         @inject(TOKENS.DateService) private readonly dateService: DateService,
         @inject(TOKENS.LocationService) private readonly locationService: LocationService,
-
+        private mapperDTO: MapperDTO
     ) { }
 
     async execute(
-        store_name: string,
-        store_street: string,
-        store_exterior_number: string,
-        store_colony: string,
-        store_postal_code: string,
-        store_address_reference: string,
-    ): Promise<void> {
+        storeName: string,
+        storeStreet: string,
+        storeExteriorNumber: string,
+        storeColony: string,
+        storePostalCode: string,
+        storeAddressReference: string,
+        useSession: UserDTO
+    ): Promise<DayOperationDTO> {
+        const { id_vendor} = useSession;
+
+        const dayOperations: DayOperation[] = await this.dayOperationRepository.listDayOperations();
+
         const storeAggregate = new StoreClientAggregate(null);
+        const operationDayAggregate = new OperationDayAggregate(dayOperations);
+
+        // Register new client
+        const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
+
+        if (coordinates === null) throw new Error('Location cannot be ob|tained. Client registration requires location data.');
+
+        const { latitude, longitude } = coordinates;
 
         storeAggregate.registerNewClient(
             this.idService.generateID(),
-            store_street,
+            cleanStringToStoreInDatabase(storeStreet),
+            cleanStringToStoreInDatabase(storeExteriorNumber),
+            cleanStringToStoreInDatabase(storeColony),
+            cleanStringToStoreInDatabase(storePostalCode),
+            cleanStringToStoreInDatabase(storeAddressReference),
+            cleanStringToStoreInDatabase(storeName),
+            '',
+            '',
+            latitude.toString(),
+            longitude.toString(),
+            id_vendor,
+            new Date(this.dateService.getCurrentTimestamp()),
+            'ruta',
         )
 
-        await this.repo.insertStores(store)
+        const newStore = storeAggregate.getStoreClients().pop();
+
+        if (!newStore) throw new Error("Error registering new client. Please try again.");
+
+        const { id_store } = newStore;
+
+        operationDayAggregate.registerCreateNewClient(
+            this.idService.generateID(),
+            id_store,
+            new Date(this.dateService.getCurrentTimestamp())
+        )
+
+        const newDayOperations: DayOperation[]|null = operationDayAggregate.getNewDayOperations();
+
+        if (newDayOperations === null) throw new Error("Error registering new client. Please try again.");
+
+        const newClientDayOperation: DayOperation | undefined = newDayOperations.pop();
+
+        if (!newClientDayOperation) throw new Error("Error registering new client. Please try again.");
+
+        // Persist all changes
+        await this.storeRepository.insertStores([ newStore ]);
+        await this.dayOperationRepository.insertDayOperations([ newClientDayOperation ]);
+
+        return this.mapperDTO.toDTO(newClientDayOperation);
     }
 }

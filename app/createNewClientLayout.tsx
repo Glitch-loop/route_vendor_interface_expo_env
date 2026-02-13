@@ -22,6 +22,9 @@ import { IStoreRouteMap } from '@/interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import { container } from 'tsyringe';
+import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 interface NewClientFormData {
   store_name: string;
@@ -40,6 +43,7 @@ export default function CreateNewClientLayout() {
   // Redux
   const storesRedux = useSelector((state: RootState) => state.stores);
   const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
+  const userSessionReduxState = useSelector((state: RootState) => state.user);
 
   // States
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
@@ -99,7 +103,14 @@ export default function CreateNewClientLayout() {
     }));
   }
 
-  const handleOnRegisterNewClient = (): void => {
+
+  const handleOnRegisterNewClient = async (): Promise<void> => {
+    // Validate user session
+    if (userSessionReduxState === null) {
+      Toast.show({type: 'error', text1: 'Ha habido un error.', text2: 'Tu sesión ha expirado, por favor inicia sesión nuevamente.'});
+      return;
+    }
+
     // Validate required fields
     if (!formData.store_name.trim()) {
       Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El nombre de la tienda es obligatorio'});
@@ -128,15 +139,32 @@ export default function CreateNewClientLayout() {
     }
 
     // Create StoreDTO from form data
-    const newStoreData = {
-      ...formData,
-      latitude: userLocation.latitude.toString(),
-      longitude: userLocation.longitude.toString(),
+    const newStoreData:NewClientFormData = {
+      ...formData
     };
 
-    console.log('New store data:', newStoreData);
-    // TODO: Call use case to create new client
-    Toast.show({type: 'success', text1: 'Cliente registrado', text2: 'El cliente se ha registrado correctamente'});
+    const { store_name, street, ext_number, colony, postal_code, address_reference } = newStoreData;
+
+    const registerNewClientUseCase = container.resolve<RegisterNewClientUseCase>(RegisterNewClientUseCase)
+
+    try {
+      const dayOperation:DayOperationDTO = await registerNewClientUseCase.execute(
+        store_name,
+        street,
+        ext_number,
+        colony,
+        postal_code,
+        address_reference,
+        { ...userSessionReduxState }
+      )
+  
+      Toast.show({type: 'success', text1: 'Cliente registrado', text2: 'El cliente se ha registrado correctamente'});
+      
+      const { id_day_operation, id_item } = dayOperation;
+      router.push(`/salesLayout?id_store_search_param=${id_item}&id_day_operation_dependent_search_param=${id_day_operation}`);
+    } catch (error) {
+      Toast.show({type: 'error', text1: 'Error', text2: 'Ha ocurrido un error al registrar el cliente'});
+    }
   }
 
   return (

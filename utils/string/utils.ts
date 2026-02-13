@@ -22,3 +22,7 @@ export function capitalizeFirstLetterOfEachWord(input: string|undefined|null): s
     return sentence;
   }
 }
+
+export function cleanStringToStoreInDatabase(input: string): string {
+  return input.trim().toLowerCase();
+}
