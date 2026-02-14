@@ -55,6 +55,36 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 import UserDTO from '@/src/application/dto/UserDTO';
 
 
+// Auxiliar functions
+const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
+  const productDevolutionOperationIds:string[] = [];
+  let isProductDevolutionDone:boolean = false;
+
+
+  // Verify if there is already an 'active' product devolution inventory.
+  for (const dayOperation of dayOperations) { 
+    if(dayOperation.operation_type === operation_type) {
+      const { id_item } = dayOperation;
+      productDevolutionOperationIds.push(id_item);
+    }
+  }
+
+  const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
+  
+
+  const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
+
+  for (const inventoryOperation of productDevolutionOperations) {
+    const { state } = inventoryOperation;
+    if (state === 1) {
+      isProductDevolutionDone = true;
+      break;
+    }
+  }
+
+  return isProductDevolutionDone;
+}
+
 const routeOperationMenuLayout = () => {
   // Redux (context definitions)
   const dispatch:AppDispatch = useDispatch();
@@ -134,6 +164,7 @@ const routeOperationMenuLayout = () => {
 
   const createNewClient = ():void => { router.push('/createNewClientLayout'); };
 
+
   const onFinishInventory = async ():Promise<void> => {
     /*
       When finishing the inventory, there are two 'movements' that are needed to be done:
@@ -146,36 +177,36 @@ const routeOperationMenuLayout = () => {
       in this case, it's needed to determine if it already exists a produdct devolution inventory and if it is, then pass directly to the final inventory.
     */
 
-    let isProductDevolutionDone:boolean = false;
-    const productDevolutionOperationIds:string[] = [];
+    // let isProductDevolutionDone:boolean = false;
+    // const productDevolutionOperationIds:string[] = [];
 
     if (dayOperationsReduxState === null) {
       Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Reinicia la aplicación'});
       return;
     }
 
-    // Verify if there is alreadu an 'active' product devolution inventory.
-    for (const dayOperation of dayOperationsReduxState) { 
-      if(dayOperation.operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-        const { id_item } = dayOperation;
-        productDevolutionOperationIds.push(id_item);
-      }
-    }
+    // // Verify if there is alreadu an 'active' product devolution inventory.
+    // for (const dayOperation of dayOperationsReduxState) { 
+    //   if(dayOperation.operation_type === DAY_OPERATIONS.product_devolution_inventory) {
+    //     const { id_item } = dayOperation;
+    //     productDevolutionOperationIds.push(id_item);
+    //   }
+    // }
 
-    const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
+    // const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
     
 
-    const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
+    // const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
 
-    for (const inventoryOperation of productDevolutionOperations) {
-      const { state } = inventoryOperation;
-      if (state === 1) {
-        isProductDevolutionDone = true;
-        break;
-      }
-    }
+    // for (const inventoryOperation of productDevolutionOperations) {
+    //   const { state } = inventoryOperation;
+    //   if (state === 1) {
+    //     isProductDevolutionDone = true;
+    //     break;
+    //   }
+    // }
 
-    if (isProductDevolutionDone) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+    if (await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
     else router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}`);
   };
 
@@ -183,6 +214,28 @@ const routeOperationMenuLayout = () => {
   const finishWorkDay = async ():Promise<void> => {
     try {
       console.log("Finishing day")
+      if (dayOperationsReduxState === null) {
+        Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Reinicia la aplicación'});
+        return;
+      }
+      // Last validation for inventory operations
+      if (!await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) {
+        Toast.show({
+          type: 'info', 
+            text1:'No se puede finalizar el día sin un inventario de devolución de productos', 
+            text2: 'crea el inventario de devolución de productos primero.'});
+        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}`);
+        return;
+        }
+      if (!await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.end_shift_inventory)) {
+        Toast.show({
+          type: 'info', 
+            text1:'No se puede finalizar el día sin un inventario final.', 
+            text2: 'crea el inventario final primero.'});
+        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        return;
+      }      
+
       const isConnected = await deviceHasInternetConnection();      
       if (!isConnected) {
         Toast.show({

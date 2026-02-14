@@ -82,6 +82,7 @@ import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOpe
 import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 
 // Auxiliar functions
@@ -105,32 +106,61 @@ function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
   return text;
 }
 
-  function determineComponentForInventoryCancelation(inventoryOperation: InventoryOperationDTO):JSX.Element {
+function determineComponentForInventoryCancelation(inventoryOperation: InventoryOperationDTO):JSX.Element {
+  const { state } = inventoryOperation;
+  if (state === 1) {
+    return <View/>;
+  } else {
+    return <Text style={tw`text-center text-black text-base`}> Operación cancelada</Text>
+  }
+}
+
+function determineTextOfCashInventoryVisualization(inventoryOperation: InventoryOperationDTO, workdayInformation: WorkDayInformationDTO):string {
+  const { state, id_inventory_operation_type } = inventoryOperation;
+  let text:string = '';
+
+  if (state === 0) text = '';
+  else {
+    if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
+      text = `Dinero llevado al inicio de la ruta: $${workdayInformation.start_petty_cash}`;
+    } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
+      text += ` Dinero regresado al final de la ruta: $${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
+    } else {
+      text = '';
+    }
+  }
+
+  return text;
+}
+
+const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
+  const productDevolutionOperationIds:string[] = [];
+  let isProductDevolutionDone:boolean = false;
+
+
+  // Verify if there is already an 'active' product devolution inventory.
+  for (const dayOperation of dayOperations) { 
+    if(dayOperation.operation_type === operation_type) {
+      const { id_item } = dayOperation;
+      productDevolutionOperationIds.push(id_item);
+    }
+  }
+
+  const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
+  
+
+  const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
+
+  for (const inventoryOperation of productDevolutionOperations) {
     const { state } = inventoryOperation;
     if (state === 1) {
-      return <View/>;
-    } else {
-      return <Text style={tw`text-center text-black text-base`}> Operación cancelada</Text>
+      isProductDevolutionDone = true;
+      break;
     }
   }
 
-  function determineTextOfCashInventoryVisualization(inventoryOperation: InventoryOperationDTO, workdayInformation: WorkDayInformationDTO):string {
-    const { state, id_inventory_operation_type } = inventoryOperation;
-    let text:string = '';
-
-    if (state === 0) text = '';
-    else {
-      if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-        text = `Dinero llevado al inicio de la ruta: $${workdayInformation.start_petty_cash}`;
-      } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-        text += ` Dinero regresado al final de la ruta: $${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
-      } else {
-        text = '';
-      }
-    }
-
-    return text;
-  }
+  return isProductDevolutionDone;
+}
 
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
@@ -438,8 +468,6 @@ const inventoryOperationLayout = () => {
       
 
       // Use cases - commands
-
-
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
         
         if (route === null || routeDay === null) {
@@ -585,11 +613,19 @@ const inventoryOperationLayout = () => {
                 text1: 'Se ha registrado la merma de producto exitosamente.',
                 text2: '',
           });
-          // TODO: Update redux
           /*
             According with business rules, after registering a product devolution, the user registers the final shift inventory
           */
+         if (await doesAnActiveOperationTypeExist(currentDayOperationsResult, DAY_OPERATIONS.end_shift_inventory)) {
+          Toast.show({
+            type: 'info',
+            text1: 'Redirigiendo a menu principal.',
+            text2: 'Se ha detectado que existe un inventario final activo.',
+          });
+          router.replace('/routeOperationMenuLayout');
+         } else {
           router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+         }
         } catch (error) {
           Toast.show({
             type: 'error',

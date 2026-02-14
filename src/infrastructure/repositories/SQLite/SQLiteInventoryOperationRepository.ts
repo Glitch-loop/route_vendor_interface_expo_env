@@ -107,7 +107,6 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
-                console.log("UPDATE Inventory operation")
                 await tx.runAsync(`
                     UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
                     sign_confirmation = ?, 
@@ -133,7 +132,6 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
                 // Update InventoryOperationDescriptions
                 // For simplicity, delete all and re-insert
-                console.log("UPDATE INVENTORY OPERATION DESCRIPTIONS")
                 await tx.runAsync(`
                     DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;
                 `, [id_inventory_operation]);
