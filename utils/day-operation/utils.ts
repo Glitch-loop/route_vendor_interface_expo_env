@@ -76,7 +76,7 @@ export function getDayOperationColor(dayOperation: DayOperationDTO|undefined, de
         let day_operation_type: DAY_OPERATIONS = operation_type;
     
         if (day_operation_type === undefined) return 'bg-red-300';
-    
+
         switch (day_operation_type) {
             case DAY_OPERATIONS.start_shift_inventory:
             case DAY_OPERATIONS.restock_inventory:
@@ -184,7 +184,8 @@ export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]
 
     // Sorting all operations except route client attention, and adding route client attention in the right place.
     for (const currentDayOperation of dayOperationsWithoutTodaysClients) {
-        const { id_day_operation, id_dependency, operation_type } = currentDayOperation;
+        const { id_dependency, operation_type } = currentDayOperation;
+
         if (
             operation_type === DAY_OPERATIONS.start_shift_inventory
             || operation_type === DAY_OPERATIONS.restock_inventory
