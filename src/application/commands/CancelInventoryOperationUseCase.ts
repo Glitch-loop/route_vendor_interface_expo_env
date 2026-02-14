@@ -39,7 +39,7 @@ export default class CancelInventoryOperationUseCase {
   async execute(id_inventory_operation: string): Promise<void> {
     // Load required state
     const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
-    
+    console.log("Inventory operation to cancel: ", inventoryOperation)
     if (!inventoryOperation) throw new Error('The inventory operation to cancel does not exist.');
 
     const { inventory_operation_descriptions, id_inventory_operation_type, state } = inventoryOperation;
@@ -84,8 +84,11 @@ export default class CancelInventoryOperationUseCase {
     const updatedProducts: ProductInventory[] = modifiedInventory;
     const newDayOps: DayOperation[] | null = dayAgg.getNewDayOperations();
 
+    console.log("Update inventory operation: ", cancelledOperation)
     await this.localInventoryOperationRepo.updateInventoryOperation(cancelledOperation);
+    console.log("Update product")
     if (updatedProducts.length > 0) await this.localProductInventoryRepo.updateInventory(updatedProducts);
+    console.log("Update day ops")
     if (newDayOps && newDayOps.length > 0) await this.localDayOperationRepo.insertDayOperations(newDayOps);
   }
 }

@@ -52,8 +52,10 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
             await db.runAsync(`
-                UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS}
-                    SET id_item = ?, operation_type = ?, created_at = ?, id_dependency = ?
+                UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS} SET 
+                    id_item = ?, 
+                    operation_type = ?, 
+                    created_at = ?, id_dependency = ?
                     WHERE id_day_operation = ?;
             `, [
                 day_operation.id_item,

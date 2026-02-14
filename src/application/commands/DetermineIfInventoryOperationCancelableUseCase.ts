@@ -45,6 +45,7 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
 
     async execute(id_inventory_operation: string): Promise<boolean> {
         let isCancelable: boolean = false
+        console.log("Determine if cancelable")
         const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
         if (!inventoryOperation) return false;
         
@@ -58,9 +59,11 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
 
         if (index === -1) return false;
 
-        
-        if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution) {
-            isCancelable = false;
+        console.log("Inventory operation type: ", id_inventory_operation_type);
+        console.log("PRODUCT DEVOLUTION: ", DAY_OPERATIONS.product_devolution_inventory);
+        if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
+            console.log("Product devolution inventory operation is cancelable");
+            isCancelable = true;
         } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) { 
             isCancelable = true;
         } else if (
@@ -90,6 +93,7 @@ export default class DetermineIfInventoryOperationCancelableUseCase {
         } else {
             isCancelable = false;   
         }
+
         return isCancelable;
     }
 }

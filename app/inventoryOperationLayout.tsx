@@ -719,6 +719,7 @@ const inventoryOperationLayout = () => {
         text2: 'La operación de inventario ha sido cancelada correctamente.',
       });
     } catch (error) {
+      console.log(error)
       Toast.show({
         type: 'error',
         text1: 'Error al cancelar la operación de inventario.',
