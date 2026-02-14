@@ -742,18 +742,25 @@ const inventoryOperationLayout = () => {
 
   const handleInventoryOperationCancelationProcess = (): void => { setShowDialog(true); }
 
-
   const handleInventoryOperationCancelationConfirmation = async (): Promise<void> => {
     setShowDialog(false);
     const cancelInventoryOperationUseCase = container.resolve<CancelInventoryOperationUseCase>(CancelInventoryOperationUseCase); 
+    const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const determineIfInventoryIsCancelableUseCase  = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
     
     try {
       await cancelInventoryOperationUseCase.execute(id_inventory_operation_search_param!);
+      setIsInventoryCancelable(await determineIfInventoryIsCancelableUseCase.execute(id_inventory_operation_search_param!));
+      dispatch(setProductInventory(await retrieveCurrentShiftInventoryQuery.execute()));
+      dispatch(setDayOperations(await retrieveCurrentDayOperationsQuery.execute()));
       Toast.show({
         type: 'success',
         text1: 'Operación de inventario cancelada con éxito.',
         text2: 'La operación de inventario ha sido cancelada correctamente.',
       });
+
+      
     } catch (error) {
       console.log(error)
       Toast.show({
@@ -808,7 +815,7 @@ const inventoryOperationLayout = () => {
               <Text style={tw`text-center text-black text-2xl`}>
                 { getTitleDayOperation(id_type_of_operation_search_param) }
               </Text>
-              { inventoryOperationToConsult !== null && determineComponentForInventoryCancelation(inventoryOperationToConsult)}
+            { inventoryOperationToConsult !== null && determineComponentForInventoryCancelation(inventoryOperationToConsult)}
             </View>
             { (isInventoryCancelable && id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) &&
               <Pressable
