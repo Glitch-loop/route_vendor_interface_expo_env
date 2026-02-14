@@ -676,8 +676,30 @@ const inventoryOperationLayout = () => {
     if (inventoryOperationToConsult !== null) {
       const { id_inventory_operation } = inventoryOperationToConsult;
       const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
+      const listAllInventoryOperationsQuery = di_container.resolve<ListAllInventoryOperationsQuery>(ListAllInventoryOperationsQuery);
       const typeOfOperationToStart: DAY_OPERATIONS = await determineNextOperationToStart.execute()
       
+      if (typeOfOperationToStart === DAY_OPERATIONS.end_shift_inventory) {
+        const inventoryOperations = await listAllInventoryOperationsQuery.execute()
+
+        const isfinalInventory = inventoryOperations.some((invOp) => {
+          const { id_inventory_operation_type, state } = invOp;
+
+          if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && state === 1) {
+            return true;
+          }
+        });
+
+          if (isfinalInventory) {
+            Toast.show({
+              type: 'error',
+              text1: 'No se puede iniciar el inventario final.',
+              text2: 'Ya existe un inventario final registrado para este día, por lo tanto no se puede iniciar otro.',
+            });
+            return;
+          }
+        }
+
       router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
     }
   }
