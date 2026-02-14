@@ -228,7 +228,8 @@ const BluetoothButton = () => {
   }
 
   return (
-    <View>
+    <View
+      style={tw`w-10 h-10 flex justify-center items-center`}>
       { showListPrintersDialog &&
       <ListPrintersDialog
         connectedPrinter={connectedPrinter}
@@ -253,10 +254,10 @@ const BluetoothButton = () => {
           style={tw`absolute inset-0 top-3 text-base text-center`} color="#fff" />
       </Pressable>
       { isBeingConnected || renderingComponent ?
-        <ActivityIndicator style={tw`absolute top-0 right-10`}/> :
+        <ActivityIndicator style={tw`absolute top-0 right-11`}/> :
         <View
           // py-3 px-3
-          style={tw`absolute top-0 right-10 ${connectedPrinter !== null ? 'bg-green-500' : 'bg-red-700'}  w-5 h-5
+          style={tw`absolute -top-1 right-7 ${connectedPrinter !== null ? 'bg-green-500' : 'bg-red-700'}  w-5 h-5
           rounded-full`}/>
       }
     </View>

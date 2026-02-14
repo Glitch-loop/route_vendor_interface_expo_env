@@ -1,7 +1,24 @@
 import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
+import InventoryOperationDTO from "@/src/application/dto/InventoryOperationDTO";
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 
-export function getTitleDayOperation(inventory_operation_type: string): string {
+
+export function getTitleDayOperation(inventory_operation_type: string, inventory_to_consult: InventoryOperationDTO|undefined|null): string {
+    let title = "";
+    if (inventory_operation_type === DAY_OPERATIONS.consult_inventory) {
+        if (inventory_to_consult) {
+            const { id_inventory_operation_type } = inventory_to_consult;
+            title = "Consulta de inventario - " + getNameDayOperation(id_inventory_operation_type);
+        } else {
+            title = "Consulta de inventario";
+        }
+    } else {
+        title = getNameDayOperation(inventory_operation_type);
+    }  
+    return title;
+}
+
+export function getNameDayOperation(inventory_operation_type: string,): string {
     let title: string = "";
     switch (inventory_operation_type) {
         case DAY_OPERATIONS.start_shift_inventory:
