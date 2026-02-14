@@ -811,7 +811,7 @@ const inventoryOperationLayout = () => {
 
           {/* Inventory operation section. */}
           <View style={tw`mt-3 w-full flex flex-row items-center justify-center`}>
-            <View style={tw`flex flex-col items-center justify-center`}>
+            <View style={tw`basis-2/3 flex flex-col items-center justify-center`}>
               <Text style={
                 id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
                 tw`text-center text-black text-xl` :

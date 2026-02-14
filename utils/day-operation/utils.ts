@@ -8,7 +8,7 @@ export function getTitleDayOperation(inventory_operation_type: string, inventory
     if (inventory_operation_type === DAY_OPERATIONS.consult_inventory) {
         if (inventory_to_consult) {
             const { id_inventory_operation_type } = inventory_to_consult;
-            title = "Consulta de inventario - " + getNameDayOperation(id_inventory_operation_type);
+            title = "Consulta de inventario\n" + getNameDayOperation(id_inventory_operation_type);
         } else {
             title = "Consulta de inventario";
         }
