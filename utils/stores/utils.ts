@@ -6,7 +6,7 @@ import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 import StoreDTO from "@/src/application/dto/StoreDTO";
 
 // Utils
-import { getRouteStatusStore, getStoreStatusColor } from "@/utils/day-operation/utils";
+import { createDayOperationDependencyMap, getDayOperationColor, getRouteStatusStore } from "@/utils/day-operation/utils";
 import { LocationObjectCoords } from "expo-location";
 import { LatLng } from "react-native-maps";
 
@@ -41,6 +41,7 @@ export function distanceBetweenTwoPoints(lat1: number, lon1: number, lat2: numbe
 export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperations: DayOperationDTO[]) : IStoreRouteMap[] {
     const storeRouteMap: IStoreRouteMap[] = [];
     const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
+    const dependencyMap = createDayOperationDependencyMap(dayOperations);
     dayOperations.forEach((dayOperation) => {
         dayOperationMap.set(dayOperation.id_item, dayOperation);
     });
@@ -51,12 +52,10 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
         let status = '';
         if (dayOperation) {
             const { operation_type } = dayOperation;
-            color = getStoreStatusColor(operation_type);
-            status = getRouteStatusStore(operation_type);
-
-            
+            color = getDayOperationColor(dayOperation, dependencyMap, false);
+            status = getRouteStatusStore(operation_type);            
         } else {
-            color = getStoreStatusColor(undefined);
+            color = getDayOperationColor(undefined, dependencyMap, false);
             status = getRouteStatusStore(undefined);
         }
 

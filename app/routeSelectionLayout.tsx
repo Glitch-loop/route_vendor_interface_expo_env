@@ -64,6 +64,7 @@ const routeSelectionLayout = () => {
   const [routeSelected, setRouteSelected] = useState<RouteDTO|undefined>(undefined);
 
   useEffect(() => {
+    console.log("routeSelectionLayout.tsx")
     determineFlowStartSession();
   }, []);
 

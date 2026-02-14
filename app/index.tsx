@@ -99,10 +99,8 @@ export default function Index() {
 
   useEffect(() => {
     // Initializing database
+    console.log("index.tsx")
     startSession()
-    console.log("Getting current location")
-    // console.log(getCurrentUserLocation())
-
   },[]);
 
 

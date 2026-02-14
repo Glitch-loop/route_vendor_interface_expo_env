@@ -42,7 +42,12 @@ import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 
 // Utils
-import { determinePositionOrderToAttendOfStoreToAttend, getStyleDayOperationForMenuOperation, getTitleDayOperationForMenuOperation } from '@/utils/day-operation/utils';
+import { 
+  determinePositionOrderToAttendOfStoreToAttend, 
+  getTitleDayOperationForMenuOperation,
+  createDayOperationDependencyMap,
+  getDayOperationColor
+} from '@/utils/day-operation/utils';
 import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
@@ -66,6 +71,7 @@ const routeOperationMenuLayout = () => {
   const [isDayWorkClosed, setIsDayWorkClosed] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
+  const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
 
   useEffect(() => {
     setUpOperationMenu();
@@ -90,6 +96,11 @@ const routeOperationMenuLayout = () => {
   }, [isDayWorkClosed, routeDay, workdayInformationReduxState]);
 
   const setUpOperationMenu = ():void => {
+    if (dayOperationsReduxState !== null) {
+      setDayOperationDependencyMap(createDayOperationDependencyMap([...dayOperationsReduxState]));
+    }
+
+
     if (workdayInformationReduxState === null) {
       return;
     }
@@ -99,6 +110,9 @@ const routeOperationMenuLayout = () => {
 
     // Determine current inventory operation
     loadCurrentInventoryOperation();
+
+    // Creating map of day operation dependencies
+
   }
 
   const loadCurrentInventoryOperation = async ():Promise<void> => {
@@ -292,13 +306,16 @@ const routeOperationMenuLayout = () => {
                 let itemName = '';
                 let description = '';
                 let totalValue = '';
-                let style = '';
+                let cardColor = '';
                 let isClientOperation = true; /*true = client, false = inventory operation*/
                 let isPrintableOperation = true;
                 const { id_day_operation, id_item, operation_type } = dayOperation;
 
+
+                
+
                 // Inventory operations type
-                style = getStyleDayOperationForMenuOperation(operation_type, false);
+                cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, false);
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
                   ||  operation_type === DAY_OPERATIONS.restock_inventory
                   ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
@@ -341,7 +358,7 @@ const routeOperationMenuLayout = () => {
 
                 if(currentInventoryOperation !== null) {
                   if (id_day_operation === currentInventoryOperation.id_day_operation) {
-                    style = getStyleDayOperationForMenuOperation(operation_type, true);
+                    cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, true);
                   }
 
                 }
@@ -354,7 +371,7 @@ const routeOperationMenuLayout = () => {
                       itemName={itemName}
                       description={description}
                       totalValue={totalValue}
-                      style={style}
+                      style={`my-2 ${cardColor} rounded w-11/12 h-16 flex flex-row justify-center items-center text-white`}
                       onSelectItem={ isClientOperation ?
                         () => { onSelectStore(dayOperation); } :
                         () => { onSelectInventoryOperation(dayOperation); }}/>
