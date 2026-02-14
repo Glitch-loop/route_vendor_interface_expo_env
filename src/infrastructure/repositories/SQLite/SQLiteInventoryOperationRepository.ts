@@ -188,7 +188,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 const inventoryOperation = new InventoryOperation(
                     operation.id_inventory_operation,
                     operation.sign_confirmation,
-                    operation.date,
+                    new Date(operation.date),
                     operation.state,
                     operation.audit,
                     operation.id_inventory_operation_type,
@@ -207,7 +207,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
     async retrieveInventoryOperations(id_inventory_operation: string[]): Promise<InventoryOperation[]> {
         const inventoryOperations: InventoryOperation[] = [];
-        
+        const inventoryOperationsTemp:InventoryOperation[] = [];
+
         try {
             await this.dataSource.initialize();
             const db:SQLiteDatabase = this.dataSource.getClient();
@@ -224,10 +225,25 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                     row.audit,
                     row.id_inventory_operation_type,
                     row.id_work_day,
-                    await this.retrieveInventoryOperationDescription(inventoryOperations) // Descriptions will be filled later
+                    [] // Descriptions will be filled later
                 )
 
-                inventoryOperations.push(newInventoryOperation);
+                inventoryOperationsTemp.push(newInventoryOperation);
+
+            }
+            
+            for (const operation of inventoryOperationsTemp) {
+                const inventoryOperation = new InventoryOperation(
+                    operation.id_inventory_operation,
+                    operation.sign_confirmation,
+                    new Date(operation.date),
+                    operation.state,
+                    operation.audit,
+                    operation.id_inventory_operation_type,
+                    operation.id_work_day,
+                    await this.retrieveInventoryOperationDescription([operation])
+                )
+                inventoryOperations.push(inventoryOperation);
             }
 
             return inventoryOperations;
@@ -249,7 +265,15 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
             const result = statement.executeSync<InventoryOperationDescription>();
 
             for(let row of result) {
-                inventoryOperationsDescriptions.push(row);
+                const description = new InventoryOperationDescription(
+                    row.id_inventory_operation_description,
+                    row.price_at_moment,
+                    row.amount,
+                    new Date(row.created_at),
+                    row.id_inventory_operation,
+                    row.id_product
+                )
+                inventoryOperationsDescriptions.push(description);
             }
 
             return inventoryOperationsDescriptions;
