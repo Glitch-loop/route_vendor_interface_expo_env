@@ -386,7 +386,7 @@ const routeOperationMenuLayout = () => {
                   isPrintableOperation = true;
                   
                   if (operation_type === DAY_OPERATIONS.route_client_attention) {
-                    itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperationsReduxState]).toString();
+                    itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperations]).toString();
                   }
 
                   totalValue = '';
