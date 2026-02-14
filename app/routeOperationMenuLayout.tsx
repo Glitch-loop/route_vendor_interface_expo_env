@@ -46,7 +46,8 @@ import {
   determinePositionOrderToAttendOfStoreToAttend, 
   getTitleDayOperationForMenuOperation,
   createDayOperationDependencyMap,
-  getDayOperationColor
+  getDayOperationColor,
+  orderDayOperationsForDisplaying
 } from '@/utils/day-operation/utils';
 import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '@/components/shared-components/ActionDialog';
@@ -102,6 +103,7 @@ const routeOperationMenuLayout = () => {
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
   const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
+  const [dayOperations, setDayOperations] = useState<DayOperationDTO[]|null>(null);
 
   useEffect(() => {
     setUpOperationMenu();
@@ -128,12 +130,13 @@ const routeOperationMenuLayout = () => {
   const setUpOperationMenu = ():void => {
     if (dayOperationsReduxState !== null) {
       setDayOperationDependencyMap(createDayOperationDependencyMap([...dayOperationsReduxState]));
+      setDayOperations(orderDayOperationsForDisplaying([...dayOperationsReduxState]));
     }
-
 
     if (workdayInformationReduxState === null) {
       return;
     }
+
     const { finish_date } = workdayInformationReduxState;
     if (finish_date === null) setIsDayWorkClosed(false); // User might make operations
     else setIsDayWorkClosed(true); // User cannot make more operations
@@ -349,12 +352,12 @@ const routeOperationMenuLayout = () => {
             </View>
           </View>
           {/* List of day operations */}
-          { dayOperationsReduxState === null ?
+          { dayOperations === null ?
             <View style={tw`h-64 flex flex-col justify-center items-center`}>
               <ActivityIndicator size={'large'} />
             </View> :
             <View style={tw`w-full h-full flex flex-col items-center`}>
-              {dayOperationsReduxState.map(dayOperation => {
+              {dayOperations.map(dayOperation => {
                 let itemOrder = '';
                 let itemName = '';
                 let description = '';
@@ -363,9 +366,6 @@ const routeOperationMenuLayout = () => {
                 let isClientOperation = true; /*true = client, false = inventory operation*/
                 let isPrintableOperation = true;
                 const { id_day_operation, id_item, operation_type } = dayOperation;
-
-
-                
 
                 // Inventory operations type
                 cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, false);
