@@ -75,7 +75,6 @@ import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/RegisterFinalShiftInventoryUseCase';
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
-import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';

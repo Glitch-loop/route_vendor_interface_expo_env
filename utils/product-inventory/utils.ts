@@ -29,21 +29,17 @@ export function getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOpera
 export function getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(inventoryOperations: InventoryOperationDTO[], idInventoryOperationDescription: DAY_OPERATIONS): InventoryOperationDescriptionDTO[][] {
     const inventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = [];
 
-    const inventoryOperationOrderedByDate = inventoryOperations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const inventoryOperationOrderedByDate = inventoryOperations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Order in ascending order. Earlier dates first
 
     for (const inventoryOperation of inventoryOperationOrderedByDate) {
         const inventoryOperationDescriptionOfCurrentOperation: InventoryOperationDescriptionDTO[] = [];
         const { inventory_operation_descriptions, state, id_inventory_operation_type } = inventoryOperation;
         if (state === 1 && id_inventory_operation_type === idInventoryOperationDescription) {
-            console.log("Number of descriptions in db: ", inventory_operation_descriptions.length)
-            console.log("This is a type")
             for (const description of inventory_operation_descriptions) {
                 inventoryOperationDescriptionOfCurrentOperation.push(description);
             }
-            console.log("Number of descriptions: ", inventoryOperationDescriptionOfCurrentOperation.length)
             inventoryOperationDescriptions.push(inventoryOperationDescriptionOfCurrentOperation);
         }
     }
-    // console.log("final of function: ", inventoryOperationDescriptions)
     return inventoryOperationDescriptions;
 }
