@@ -27,7 +27,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import { convertArrayOfInterfacesToMapOfInterfaces } from '@/utils/interface/utils';
+import { convertArrayOfInterfacesToMapOfArraysOfInterfaces, convertArrayOfInterfacesToMapOfInterfaces } from '@/utils/interface/utils';
 
 
 /*
@@ -76,15 +76,17 @@ const TableInventoryOperationVisualization = (
   
   const restockInventoriesMaps: Map<string, InventoryOperationDescriptionDTO>[] = [];
   restockInventories.forEach((restockInventory:InventoryOperationDescriptionDTO[]) => {
-    const currentMapRestockInventory: Map<string, InventoryOperationDescriptionDTO>
-      = convertArrayOfInterfacesToMapOfInterfaces('id_product', restockInventory);
+    const currentMapRestockInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', restockInventory);
     restockInventoriesMaps.push(currentMapRestockInventory);
   });
   
   const mapReturnedInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', returnedInventory);
+  console.log("soldOperations+++++++++++++++++++++");
+  soldOperations.forEach((operation) => { console.log("operation: ", operation.id_product, " - amount: ", operation.amount); });
+  const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', soldOperations);
+  const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', repositionsOperations);
 
-  const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', soldOperations);
-  const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', repositionsOperations);
+
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -201,8 +203,8 @@ const TableInventoryOperationVisualization = (
                   suggestedAmount                     = mapSuggestedInventory.has(id_product) ? mapSuggestedInventory.get(id_product)!.stock : 0;
                   initialInventoryOperationAmount     = mapInitialInventory.has(id_product) ? mapInitialInventory.get(id_product)!.amount : 0;
                   returnedInventoryOperationAmount    = mapReturnedInventory.has(id_product) ? mapReturnedInventory.get(id_product)!.amount : 0;
-                  soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.amount : 0;
-                  repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.amount : 0;
+                  soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
+                  repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
                   
               
                   restockInventoriesMaps.forEach((mapRestockInventory:Map<string, InventoryOperationDescriptionDTO>) => {

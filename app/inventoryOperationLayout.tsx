@@ -772,8 +772,6 @@ const inventoryOperationLayout = () => {
 
   const handleCancelInventoryOperationCancelationProcess = (): void => { setShowDialog(false); }  
 
-
-
   return (
     <SafeAreaView style={tw`flex-1`}>
       <KeyboardAvoidingView 
