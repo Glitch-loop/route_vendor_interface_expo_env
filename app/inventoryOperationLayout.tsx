@@ -82,6 +82,7 @@ import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllIn
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 
 // Auxiliar functions
@@ -182,6 +183,7 @@ const inventoryOperationLayout = () => {
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
   const dayOperationReduxState = useSelector((state: RootState) => state.dayOperations);
+  const userSessionReduxState = useSelector((state: RootState) => state.user);
 
     
 
@@ -709,6 +711,12 @@ const inventoryOperationLayout = () => {
       } else {
         /* Do nothing */
       }
+
+      // Syncing with central database
+      if (userSessionReduxState !== null) {
+        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+        syncingService.executeReplicationSession(userSessionReduxState);
+      }
   }
 
   const handlerOnVendorCancelation = () => {
@@ -775,6 +783,13 @@ const inventoryOperationLayout = () => {
         text1: 'Operación de inventario cancelada con éxito.',
         text2: 'La operación de inventario ha sido cancelada correctamente.',
       });
+
+      // Syncing with central database
+      if (userSessionReduxState !== null) {
+        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+        syncingService.executeReplicationSession(userSessionReduxState);
+      }
+
       router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
     } catch (error) {
       Toast.show({

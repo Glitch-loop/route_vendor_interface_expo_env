@@ -1,4 +1,5 @@
 // Libraries
+import { container as di_container } from 'tsyringe';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,26 +12,33 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setStores } from '@/redux/slices/storesSlice';
 
-// Components
-import MenuHeader from '@/components/shared-components/MenuHeader';
-import RouteMap from '@/components/shared-components/RouteMap';
-import useCurrentLocation from '@/hooks/useCurrentLocation';
-
 // Interfaces
 import { LocationObject, LocationObjectCoords } from 'expo-location';
 import { LatLng } from 'react-native-maps';
+
+// Service
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+
+// Use cases
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
+
+// DTOs
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+
+// UI components
+import MenuHeader from '@/components/shared-components/MenuHeader';
+import RouteMap from '@/components/shared-components/RouteMap';
+import useCurrentLocation from '@/hooks/useCurrentLocation';
+import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // Utils
 import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import { IStoreRouteMap } from '@/interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
-import ProjectButton from '@/components/shared-components/ProjectButton';
-import { container as di_container } from 'tsyringe';
-import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
-import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+
 
 interface NewClientFormData {
   store_name: string;
@@ -178,6 +186,11 @@ export default function CreateNewClientLayout() {
       });
       
       const { id_day_operation, id_item } = dayOperation;
+
+      // Syncing with central database
+      const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+      syncingService.executeReplicationSession(userSessionReduxState);
+
       router.push(`/salesLayout?id_store_search_param=${id_item}&id_day_operation_dependent_search_param=${id_day_operation}`);
     } catch (error) {
       console.error("Error registering new client: ", error);

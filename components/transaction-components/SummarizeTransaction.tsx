@@ -33,14 +33,17 @@ import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+
+// Services
+import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // Utils
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import { getTicketSale } from '@/utils/route-transaciton/utils';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 
 const SummarizeTransaction = ({
@@ -57,7 +60,7 @@ const SummarizeTransaction = ({
   const dispatch: AppDispatch = useDispatch();
   const productInventory = useSelector((state: RootState) => state.productsInventory);
   const stores = useSelector((state: RootState) => state.stores);
-  const vendor = useSelector((state: RootState) => state.user);
+  const userSessionReduxState = useSelector((state: RootState) => state.user);
   const shiftWorkDay = useSelector((state: RootState) => state.workDayInformation);
 
   /*
@@ -161,6 +164,12 @@ const SummarizeTransaction = ({
         Toast.show({type: 'success',
           text1:'Transacción cancelada exitosamente.',
           text2: 'Se ha cancelado la transacción exitosamente.'});
+
+        // Syncing with central database
+        if (userSessionReduxState !== null) {
+          const syncingService = container_di.resolve<DataReplicationService>(DataReplicationService);
+          syncingService.executeReplicationSession(userSessionReduxState);
+        }
 
       } catch (error) {
         Toast.show({type: 'error',

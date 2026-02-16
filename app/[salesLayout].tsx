@@ -53,6 +53,7 @@ import {
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -122,6 +123,7 @@ const salesLayout = () => {
   const availableProducts     = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
   const stores                = useSelector((state: RootState) => state.stores);
+  const userSessionReduxState = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
 
@@ -275,7 +277,13 @@ const salesLayout = () => {
         type: 'success',
         text1:'Se ha registrado la venta satisfactoriamente.',
         text2: 'Se ha registrado la venta satisfactoriamente.'});
-            
+        
+      // Syncing with central database
+      if (userSessionReduxState !== null) {
+        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+        syncingService.executeReplicationSession(userSessionReduxState);
+      }
+
         setResultSaleState(true);
       } catch (error) {
         console.error("Error during registering route transaction: ", error);
