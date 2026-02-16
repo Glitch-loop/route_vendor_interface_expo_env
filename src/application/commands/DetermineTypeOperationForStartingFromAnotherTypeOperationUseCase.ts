@@ -46,15 +46,15 @@ export default class DetermineTypeOperationForStartingFromAnotherTypeOperationUs
     async execute(): Promise<DAY_OPERATIONS> {        
         let typeOperationToStart: DAY_OPERATIONS = DAY_OPERATIONS.start_shift_inventory;
         const dayOperations = await this.localDayOperationRepo.listDayOperations();
-        const stattShiftInventoryIds:string[]  =  [];
+        const startShiftInventoryIds:string[]  =  [];
+        const endShiftOrProductDevolutionInventoryIds:string[]  =  [];
 
-        
         for (const dayOp of dayOperations) {
             const { operation_type, id_item } = dayOp;
             if (operation_type === DAY_OPERATIONS.end_shift_inventory 
             || operation_type === DAY_OPERATIONS.product_devolution_inventory) {
+                endShiftOrProductDevolutionInventoryIds.push(id_item);
                 typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
-                break;
             } else if (
                 operation_type === DAY_OPERATIONS.restock_inventory
                 || operation_type === DAY_OPERATIONS.route_transaction) {
@@ -62,13 +62,30 @@ export default class DetermineTypeOperationForStartingFromAnotherTypeOperationUs
             }
 
             if (operation_type === DAY_OPERATIONS.start_shift_inventory) {
-                stattShiftInventoryIds.push( id_item );
+                startShiftInventoryIds.push( id_item );
+            }
+        }
+
+        // Verify if there is a product devolution before end shift inventory.
+        if (typeOperationToStart === DAY_OPERATIONS.end_shift_inventory && startShiftInventoryIds.length > 0) { 
+            const inventoryOperations = await this.localInventoryOperationRepo.retrieveInventoryOperations(endShiftOrProductDevolutionInventoryIds);
+            
+            const isProductDevolutionActive:boolean = inventoryOperations.some(invOp => {
+                const { id_inventory_operation_type, state } = invOp;
+                if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory && state === 1) return true;
+                 else return false;
+            });
+
+            if(isProductDevolutionActive) {
+                typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
+            } else {
+                typeOperationToStart = DAY_OPERATIONS.product_devolution_inventory;
             }
         }
 
         // Verify if the others start shift inventories are cancelled.
-        if (typeOperationToStart === DAY_OPERATIONS.start_shift_inventory && stattShiftInventoryIds.length > 0) { 
-            const inventoryOperations = await this.localInventoryOperationRepo.retrieveInventoryOperations(stattShiftInventoryIds);
+        if (typeOperationToStart === DAY_OPERATIONS.start_shift_inventory && startShiftInventoryIds.length > 0) { 
+            const inventoryOperations = await this.localInventoryOperationRepo.retrieveInventoryOperations(startShiftInventoryIds);
 
             for (const invOp of inventoryOperations) {
                 const { state } = invOp;

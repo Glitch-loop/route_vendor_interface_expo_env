@@ -83,12 +83,8 @@ const TableInventoryOperationVisualization = (
   });
   
   const mapReturnedInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', returnedInventory);
-  console.log("soldOperations+++++++++++++++++++++");
-  soldOperations.forEach((operation) => { console.log("operation: ", operation.id_product, " - amount: ", operation.amount); });
   const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', soldOperations);
   const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', repositionsOperations);
-
-
 
   return (
     <View style={tw`w-full flex flex-row`}>

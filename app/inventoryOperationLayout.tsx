@@ -730,7 +730,7 @@ const inventoryOperationLayout = () => {
       const determineNextOperationToStart = di_container.resolve<DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase>(DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase);
       const listAllInventoryOperationsQuery = di_container.resolve<ListAllInventoryOperationsQuery>(ListAllInventoryOperationsQuery);
       const typeOfOperationToStart: DAY_OPERATIONS = await determineNextOperationToStart.execute()
-      
+
       if (typeOfOperationToStart === DAY_OPERATIONS.end_shift_inventory) {
         const inventoryOperations = await listAllInventoryOperationsQuery.execute()
 
@@ -777,7 +777,6 @@ const inventoryOperationLayout = () => {
       });
       router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
     } catch (error) {
-      console.log(error)
       Toast.show({
         type: 'error',
         text1: 'Error al cancelar la operación de inventario.',
