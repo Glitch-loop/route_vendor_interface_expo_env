@@ -22,6 +22,8 @@ import {
   viewTagRowTableStyle,
   textRowTableStyle,
   cellTableStyleWithAmountOfProduct,
+  determineRowStyle,
+  determineHeaderStyle,
 } from '../../utils/inventoryOperationTableStyles';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
@@ -140,41 +142,44 @@ const TableRouteTransactionProductVisualization = (
               {/* Header section */}
               <DataTable.Header>
                 {/* Set title of columns */}
-                { stores.map((store) => {
+                { stores.map((store, index) => {
                     const { store_name, id_store } = store;
                     console.log(`TITLE - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                     return (
-                      // <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle} border-r w-32`} >
-                          <DataTable.Cell key={id_store} style={tw`h-12 ${headerTitleTableStyle} border-r ${determineWidthAccordingWithLengthOfName(store_name!)}`}>
-                            <Text 
-                              ellipsizeMode='tail'
-                              numberOfLines={1}
-                              style={tw`${textHeaderTableStyle}`}
-                              >
-                              {capitalizeFirstLetterOfEachWord(store_name)}
-                            </Text>
-                          </DataTable.Cell>
-                    // </DataTable.Title>
-                    );
-                  })
-                }
-                { calculateTotalOfProduct &&
-                      <DataTable.Cell style={tw`${headerTitleTableStyle} w-32`}>
-                      <Text 
+                      <DataTable.Cell key={id_store} 
+                      // style={tw`h-12 ${headerTitleTableStyle} border-r ${determineWidthAccordingWithLengthOfName(store_name!)}
+                      style={tw`h-12 ${headerTitleTableStyle} ${determineHeaderStyle(store_name!, true, undefined)}
+                      `}>
+                        <Text 
                           ellipsizeMode='tail'
                           numberOfLines={1}
                           style={tw`${textHeaderTableStyle}`}
                           >
-                        Total
-                      </Text>
-                    </DataTable.Cell>
-                  // </DataTable.Title>
+                          {capitalizeFirstLetterOfEachWord(store_name)}
+                        </Text>
+                      </DataTable.Cell>
+                    );
+                  })
+                }
+                { calculateTotalOfProduct &&
+                  <DataTable.Cell 
+                  // style={tw`${headerTitleTableStyle} w-32`}
+                  style={tw`${determineHeaderStyle('Total', true, undefined)}`}
+                  >
+                  <Text 
+                      ellipsizeMode='tail'
+                      numberOfLines={1}
+                      style={tw`${textHeaderTableStyle}`}
+                      >
+                    Total
+                  </Text>
+                </DataTable.Cell>
                 }
               </DataTable.Header>
               {/* Body section */}
               
               { (stores.length > 0) &&
-                sortedAvailableProducts.map((product) => {
+                sortedAvailableProducts.map((product, indexRow) => {
                   /*
                     This table display the information using the product as the main reference, and then traversing for all the stores.
                     So for each product, we will get the amount for each store, and then display it in the table.
@@ -215,7 +220,8 @@ const TableRouteTransactionProductVisualization = (
                           console.log(`ROW - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                           return (
                             <DataTable.Cell key={index} 
-                              style={tw`border-r ${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} ${determineWidthAccordingWithLengthOfName(store_name!)}`}
+                              // style={tw`border-r ${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} ${determineWidthAccordingWithLengthOfName(store_name!)}`}
+                              style={tw`border-r ${determineRowStyle(indexRow, productAmount > 0, true, store_name!, undefined)}`}
                               >
                               {/* <View style={tw`${viewTagRowTableStyle}`}> */}
                                 <Text 
@@ -231,7 +237,9 @@ const TableRouteTransactionProductVisualization = (
                       {/* Inflow product */}
                       { calculateTotalOfProduct === true &&
                         <DataTable.Cell 
-                        style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
+                        // style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}
+                        style={tw`border-r ${determineRowStyle(indexRow, totalOfProduct > 0, true, 'total', undefined)}`}
+                        >
                           <Text style={tw`${textRowTableStyle}`}>
                             {totalOfProduct}
                           </Text>
