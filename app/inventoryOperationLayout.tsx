@@ -759,8 +759,7 @@ const inventoryOperationLayout = () => {
         text1: 'Operación de inventario cancelada con éxito.',
         text2: 'La operación de inventario ha sido cancelada correctamente.',
       });
-
-      
+      router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
     } catch (error) {
       console.log(error)
       Toast.show({

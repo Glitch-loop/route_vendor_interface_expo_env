@@ -1,6 +1,7 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { TextInput, Keyboard } from 'react-native';
+import { delay } from 'tsyringe';
 import tw from 'twrnc';
 
 const AutomatedCorrectionNumberInput = ({
@@ -11,36 +12,9 @@ const AutomatedCorrectionNumberInput = ({
   onChangeAmount:any
 }) => {
   const [inputValue, setInputValue] = useState(amount.toString());
-  const [lastInput, setLastInput] = useState('');
-  const [isTypping, setIsTypping] = useState(false);
-
-  useEffect(() => {
-    const hideListener = Keyboard.addListener('keyboardDidHide', () => {
-      console.log("closing")
-    });
-
-    return () => hideListener.remove();
-  }, []);
-
-  useEffect(() => {
-    if (isTypping) {
-      /* It is not possible to update the input while user is typping*/
-      console.log("Hello")
-    } else {
-      /* Once the user finished of typping, update the what shows the input*/
-      setInputValue(amount.toString());
-    }
-  },[amount, isTypping]);
-
+  
   // Handlers
   const handleTextChange = (input:string) => {
-    if (input === '') {
-      /* User didn't type anything */
-      input = lastInput;
-    } else {
-      /* User type some different from what is in the current input */
-    }
-
     let resultInput:number = 0;
     let parsedInput:number = parseInt(input, 10);
 
@@ -55,48 +29,32 @@ const AutomatedCorrectionNumberInput = ({
       }
     }
     setInputValue(input);
-    onChangeAmount(resultInput);
+
+    setTimeout(() => { onChangeAmount(resultInput); }, 100);
   };
 
-  const handleAvoidingFalseTouch = async (input:string) => {
-    setTimeout(() => {
-      // input === '' && lastInput === ''
-      if (input === '' && !Keyboard.isVisible()) {
-        /* User didn't type anything */
-        if (lastInput === '') {
-          input = '0';
-        } else {
-          /* There is instructions */
-        }
+  const handleOnLeaveInput = () => {
+    if(inputValue === '') handleTextChange(amount.toString());
+    else handleTextChange(inputValue);
+  }
 
-
-        handleTextChange(input);
-      } else {
-        /* Since there is not a new input, then it will let the current value of the input */
-        //handleTextChange(inputValue)
-      }
-    }, 300);
-  };
+  const handleFocusInput = () => {
+    if (inputValue === '0') {
+      setInputValue('');
+    }
+  }
 
   return (
     <TextInput
-    style={tw`mx-1 text-lg border border-solid bg-white rounded-md h-12 text-center`}
-    value={inputValue}
-    onTouchStart={ () => {
-      setIsTypping(true);
-      setInputValue('');
-      setLastInput(inputValue);
-    }}
-    onTouchEnd={() => { handleAvoidingFalseTouch(inputValue); }}
-    onEndEditing={() => {
-
-      setIsTypping(false);
-      handleTextChange(inputValue);
-      setLastInput('');
-    }}
-
-    onChangeText={(text) => { setInputValue(text); }}
-    keyboardType={'numeric'}/>
+      style={tw`mx-1 text-lg border border-solid bg-white rounded-md h-12 text-center`}
+      value={inputValue}
+      onTouchStart={ () => { handleFocusInput(); } }
+      onEndEditing={() => { handleOnLeaveInput(); }}
+      onChangeText={(text) => { 
+        setInputValue(text); 
+        handleTextChange(text);
+      }}
+      keyboardType={'numeric'}/>
   );
 };
 
