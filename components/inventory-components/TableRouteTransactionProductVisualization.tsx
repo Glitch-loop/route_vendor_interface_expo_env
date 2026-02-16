@@ -102,9 +102,7 @@ const TableRouteTransactionProductVisualization = (
             <DataTable.Header style={tw`w-full`}>
               {/* This field is never empty since it is necessary anytime */}
               <DataTable.Cell style={tw`${headerTitleTableStyle} ${determineHeaderStyle('Producto', false, undefined)}`}>
-                  <Text style={tw`${textHeaderTableStyle}`}>
-                    Producto
-                  </Text>
+                  <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
               </DataTable.Cell>
             </DataTable.Header>
             {
@@ -113,9 +111,7 @@ const TableRouteTransactionProductVisualization = (
                 return (
                   <DataTable.Row key={id_product} style={tw`w-full`}>
                     <DataTable.Cell style={tw`${cellTableStyle} ${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
-                        <Text style={tw`${textRowTableStyle}`}>
-                          {capitalizeFirstLetterOfEachWord(product_name)}
-                        </Text>
+                      <Text style={tw`${textRowTableStyle}`}>{capitalizeFirstLetterOfEachWord(product_name)}</Text>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -132,11 +128,7 @@ const TableRouteTransactionProductVisualization = (
                     const { store_name, id_store } = store;
                     return (
                       <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
-                        <Text 
-                          ellipsizeMode='tail'
-                          numberOfLines={1}
-                          style={tw`${textHeaderTableStyle}`}
-                          >
+                        <Text ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>
                           {capitalizeFirstLetterOfEachWord(store_name)}
                         </Text>
                       </DataTable.Cell>
@@ -144,15 +136,8 @@ const TableRouteTransactionProductVisualization = (
                   })
                 }
                 { calculateTotalOfProduct &&
-                  <DataTable.Cell style={tw`${determineHeaderStyle('Total', true, undefined)}`}
-                  >
-                  <Text 
-                      ellipsizeMode='tail'
-                      numberOfLines={1}
-                      style={tw`${textHeaderTableStyle}`}
-                      >
-                    Total
-                  </Text>
+                <DataTable.Cell style={tw`${determineHeaderStyle('Total', true, undefined)}`}>
+                  <Text ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>Total</Text>
                 </DataTable.Cell>
                 }
               </DataTable.Header>
@@ -174,9 +159,8 @@ const TableRouteTransactionProductVisualization = (
                       const storeInformation = mapConsolidatedByConcept.get(id_store);
                       if (storeInformation !== undefined) {
                         const consolidatedInformation = storeInformation.get(id_product);
-                        if (consolidatedInformation !== undefined) {
-                          totalOfProduct += consolidatedInformation.amount;
-                        }
+                        if (consolidatedInformation !== undefined) totalOfProduct += consolidatedInformation.amount;
+                        
                       }
                     }
                   }
@@ -193,9 +177,7 @@ const TableRouteTransactionProductVisualization = (
                           if (storeInformation !== undefined) {
                             const consolidatedInformation = storeInformation.get(id_product);
 
-                            if (consolidatedInformation !== undefined) {
-                              productAmount = consolidatedInformation.amount;
-                            }
+                            if (consolidatedInformation !== undefined) productAmount = consolidatedInformation.amount
                           } 
                           return (
                             <DataTable.Cell key={index} style={tw`${determineRowStyle(indexRow, productAmount > 0, true, store_name!, undefined)}`}>
