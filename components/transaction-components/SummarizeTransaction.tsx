@@ -173,6 +173,15 @@ const SummarizeTransaction = ({
   };
 
   const handleOnStartASale = async () => {
+    if (shiftWorkDay === null) {
+      Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
+      return;
+    }
+    const { finish_date } = shiftWorkDay;
+    if (finish_date !== null) {
+      Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
+      return;
+    }
     const { id_store, id_route_transaction } = currentTransaction;
     router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}`);
   };
@@ -182,12 +191,9 @@ const SummarizeTransaction = ({
       Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'Reinicia la aplicación e intenta de nuevo'});
       return;
     }
-
     const { finish_date } = shiftWorkDay;
-
     if (finish_date !== null) Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-    else setShowDialog(true);       
-    
+    else setShowDialog(true);
   };
 
   const handleOnCancelShowDialog = () => { setShowDialog(false); };
