@@ -215,7 +215,9 @@ const storeMenuLayout = () => {
     <SafeAreaView>
       <View style={tw`w-full h-full flex-col justify-start items-center`}>
         <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
-          <MenuHeader onGoBack={handlerGoBackToStoreMenu}/>
+          <MenuHeader 
+            id_store={id_store_search_param}
+            onGoBack={handlerGoBackToStoreMenu}/>
         </View>
           { routeTransactions.length > 0 ? (
             <ScrollView showsVerticalScrollIndicator={false}>

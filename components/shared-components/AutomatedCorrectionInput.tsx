@@ -15,8 +15,17 @@ const AutomatedCorrectionNumberInput = ({
   const [isTypping, setIsTypping] = useState(false);
 
   useEffect(() => {
+    const hideListener = Keyboard.addListener('keyboardDidHide', () => {
+      console.log("closing")
+    });
+
+    return () => hideListener.remove();
+  }, []);
+
+  useEffect(() => {
     if (isTypping) {
       /* It is not possible to update the input while user is typping*/
+      console.log("Hello")
     } else {
       /* Once the user finished of typping, update the what shows the input*/
       setInputValue(amount.toString());
