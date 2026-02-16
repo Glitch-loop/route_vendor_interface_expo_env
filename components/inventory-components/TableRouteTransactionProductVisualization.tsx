@@ -24,6 +24,7 @@ import {
   cellTableStyleWithAmountOfProduct,
 } from '../../utils/inventoryOperationTableStyles';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
@@ -40,6 +41,20 @@ import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState'
 
 interface consolidatedInformation {
   amount: number;
+}
+
+function determineWidthAccordingWithLengthOfName(name: string): string {
+  let width:string = "w-32"; // Default width
+  
+  if (name.length > 20 && name.length <= 30) {
+    width = "w-48 max-w-48";
+  } else if (name.length > 30 && name.length <= 40) {
+    width = "w-64 max-w-64";
+  } else if (name.length > 40) {
+    width = "w-96 max-w-96";
+  }
+  
+  return width;
 }
 
 const TableRouteTransactionProductVisualization = (
@@ -90,35 +105,29 @@ const TableRouteTransactionProductVisualization = (
     mapConsolidatedByConcept.set(id_store, productMap);
   }
 
-
-  
   return (
     <View style={tw`w-full flex flex-row`}>
       {(sortedAvailableProducts.length > 0) ?
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
-            <DataTable.Header>
+            <DataTable.Header style={tw`w-full`}>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
-                <View style={tw`${viewTagHeaderTableStyle}`}>
+              <DataTable.Cell style={tw`h-12 ${headerTitleTableStyle} border-r w-48`}>
                   <Text style={tw`${textHeaderTableStyle}`}>
                     Producto
                   </Text>
-                </View>
-              </DataTable.Title>
+              </DataTable.Cell>
             </DataTable.Header>
             {
               sortedAvailableProducts.map((product) => {
                 const { id_product, product_name } = product;
                 return (
-                  <DataTable.Row key={id_product} style={tw`${rowTableStyle}`}>
-                    <DataTable.Cell style={tw`${cellTableStyle}`}>
-                      <View style={tw`${viewTagRowTableStyle}`}>
+                  <DataTable.Row key={id_product} style={tw`w-full`}>
+                    <DataTable.Cell style={tw`${cellTableStyle} border-r w-48`}>
                         <Text style={tw`${textRowTableStyle}`}>
-                          {product_name}
+                          {capitalizeFirstLetterOfEachWord(product_name)}
                         </Text>
-                      </View>
                     </DataTable.Cell>
                   </DataTable.Row>
                 );
@@ -133,31 +142,33 @@ const TableRouteTransactionProductVisualization = (
                 {/* Set title of columns */}
                 { stores.map((store) => {
                     const { store_name, id_store } = store;
+                    console.log(`TITLE - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                     return (
-                      <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle} w-32`}>
-                        <View style={tw`${viewTagHeaderTableStyle}`}>
-                          <Text 
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={tw`${textHeaderTableStyle}`}>
-                            {store_name}
-                          </Text>
-                        </View>
-                    </DataTable.Title>
+                      // <DataTable.Title key={id_store} style={tw`${headerTitleTableStyle} border-r w-32`} >
+                          <DataTable.Cell key={id_store} style={tw`h-12 ${headerTitleTableStyle} border-r ${determineWidthAccordingWithLengthOfName(store_name!)}`}>
+                            <Text 
+                              ellipsizeMode='tail'
+                              numberOfLines={1}
+                              style={tw`${textHeaderTableStyle}`}
+                              >
+                              {capitalizeFirstLetterOfEachWord(store_name)}
+                            </Text>
+                          </DataTable.Cell>
+                    // </DataTable.Title>
                     );
                   })
                 }
                 { calculateTotalOfProduct &&
-                  <DataTable.Title style={tw`${headerTitleTableStyle} w-28`}>
-                    <View style={tw`${viewTagHeaderTableStyle}`}>
+                      <DataTable.Cell style={tw`${headerTitleTableStyle} w-32`}>
                       <Text 
                           ellipsizeMode='tail'
                           numberOfLines={1}
-                          style={tw` ${textHeaderTableStyle}`}>
+                          style={tw`${textHeaderTableStyle}`}
+                          >
                         Total
                       </Text>
-                    </View>
-                  </DataTable.Title>
+                    </DataTable.Cell>
+                  // </DataTable.Title>
                 }
               </DataTable.Header>
               {/* Body section */}
@@ -190,7 +201,7 @@ const TableRouteTransactionProductVisualization = (
                       {/* This field is never empty since it is necessary anytime */}
                       {/* Restock of product */}
                       { stores.map((store, index) => {
-                          const { id_store } = store;
+                          const { id_store, store_name } = store;
                           let productAmount:number = 0;
                           const storeInformation = mapConsolidatedByConcept.get(id_store);
 
@@ -201,27 +212,29 @@ const TableRouteTransactionProductVisualization = (
                               productAmount = consolidatedInformation.amount;
                             }
                           } 
-
+                          console.log(`ROW - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                           return (
-                            <DataTable.Cell key={index} style={tw`${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
-                              <View style={tw`${viewTagRowTableStyle}`}>
+                            <DataTable.Cell key={index} 
+                              style={tw`border-r ${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} ${determineWidthAccordingWithLengthOfName(store_name!)}`}
+                              >
+                              {/* <View style={tw`${viewTagRowTableStyle}`}> */}
                                 <Text 
-                                  style={tw`${textRowTableStyle}`}>
+                                  style={tw`${textRowTableStyle}`}
+                                  >
                                   {productAmount}
                                 </Text>
-                              </View>
+                              {/* </View> */}
                             </DataTable.Cell>
                           );
                         })
                       }
                       {/* Inflow product */}
                       { calculateTotalOfProduct === true &&
-                        <DataTable.Cell style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-24`}>
-                          <View style={tw`${viewTagRowTableStyle}`}>
-                            <Text style={tw`${textRowTableStyle}`}>
-                              {totalOfProduct}
-                            </Text>
-                          </View>
+                        <DataTable.Cell 
+                        style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}>
+                          <Text style={tw`${textRowTableStyle}`}>
+                            {totalOfProduct}
+                          </Text>
                         </DataTable.Cell>
                       }
                     </DataTable.Row>
