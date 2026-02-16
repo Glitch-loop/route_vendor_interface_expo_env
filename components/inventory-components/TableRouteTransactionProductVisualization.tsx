@@ -62,13 +62,35 @@ const TableRouteTransactionProductVisualization = (
   
     
   // Organizing product in ascending order to display in the table
-  const sortedAvailableProducts = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
-
+  const sortedAvailableProducts: ProductDTO[] = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
+  const sortedRouteTransactions: RouteTransactionDTO[] = routeTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Order in ascending order. Earlier dates first
+  
   const mapConsolidatedByConcept = new Map<string, Map<string, consolidatedInformation>>(); //Map <id_store, Map<id_product, consolidatedInformation>>
+  
+  const storesToShow: (StoreDTO & RouteTransactionDTO)[] = [];
+  const storeIdsAdded: Set<string> = new Set();
+
+  // Join route transaction with store information
+  const transactionWithStore: ((RouteTransactionDTO & StoreDTO) | null)[] = sortedRouteTransactions.map(routeTransaction => {
+    const store = stores.find(store => store.id_store === routeTransaction.id_store);
+    if (store) return { ...routeTransaction, ...store };
+    else return null;
+  });
+  
+  
+  // Verify a store only appears only once.
+  for (const transaction of transactionWithStore) {
+    if (transaction === null) continue;
+    const { id_store } = transaction;
+    if (!storeIdsAdded.has(id_store)) {
+      storesToShow.push(transaction);
+      storeIdsAdded.add(id_store);
+    }
+  }
 
 
   // Consolidate amounts by store and product across all transaction descriptions
-  for (const routeTransaction of routeTransactions) {
+  for (const routeTransaction of sortedRouteTransactions) {
     const { id_store, transaction_description, state } = routeTransaction;
 
     if (state === ROUTE_TRANSACTION_STATE.CANCELLED) continue; // Skip cancelled transactions
@@ -92,6 +114,9 @@ const TableRouteTransactionProductVisualization = (
     }
     mapConsolidatedByConcept.set(id_store, productMap);
   }
+
+
+  // 
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -124,7 +149,7 @@ const TableRouteTransactionProductVisualization = (
               {/* Header section */}
               <DataTable.Header>
                 {/* Set title of columns */}
-                { stores.map((store, index) => {
+                { storesToShow.map((store, index) => {
                     const { store_name, id_store } = store;
                     return (
                       <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
@@ -169,7 +194,7 @@ const TableRouteTransactionProductVisualization = (
                     <DataTable.Row key={product.id_product}>
                       {/* This field is never empty since it is necessary anytime */}
                       {/* Restock of product */}
-                      { stores.map((store, index) => {
+                      { storesToShow.map((store, index) => {
                           const { id_store, store_name } = store;
                           let productAmount:number = 0;
                           const storeInformation = mapConsolidatedByConcept.get(id_store);
