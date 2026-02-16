@@ -32,7 +32,7 @@ function determineWidthAccordingWithLengthOfName(name: string): string {
  * @param titleOfColumn Refers to the text the header (column), this will be used to ***calculate the height of the cell***.
  */
 export function determineRowStyle(numberOfRow: number, cellContainInformation: boolean, rightBorder: boolean, titleOfColumn: string|undefined, titleOfRow: string|undefined): string {
-    let style:string = 'flex flex-row justify-center items-center';
+    let style:string = 'h-12 flex flex-row justify-center items-center';
 
     if (rightBorder) style += ' border-r';
 
@@ -52,7 +52,7 @@ export function determineRowStyle(numberOfRow: number, cellContainInformation: b
  * @param firstHeader Refers to the leftmost header, this will be used to ***calculate the height of the cell***.
  */
 export function determineHeaderStyle(headerTitle: string, rightBorder: boolean, firstHeader: string|undefined): string {
-    let style:string = 'flex flex-row justify-center items-center';
+    let style:string = 'h-12 flex flex-row justify-center items-center';
 
     if (rightBorder) style += ' border-r';
 

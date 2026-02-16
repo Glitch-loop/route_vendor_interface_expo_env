@@ -45,20 +45,6 @@ interface consolidatedInformation {
   amount: number;
 }
 
-function determineWidthAccordingWithLengthOfName(name: string): string {
-  let width:string = "w-32"; // Default width
-  
-  if (name.length > 20 && name.length <= 30) {
-    width = "w-48 max-w-48";
-  } else if (name.length > 30 && name.length <= 40) {
-    width = "w-64 max-w-64";
-  } else if (name.length > 40) {
-    width = "w-96 max-w-96";
-  }
-  
-  return width;
-}
-
 const TableRouteTransactionProductVisualization = (
   {
     availableProducts,
@@ -115,18 +101,18 @@ const TableRouteTransactionProductVisualization = (
           <DataTable style={tw`w-1/3`}>
             <DataTable.Header style={tw`w-full`}>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Cell style={tw`h-12 ${headerTitleTableStyle} border-r w-48`}>
+              <DataTable.Cell style={tw`${headerTitleTableStyle} ${determineHeaderStyle('Producto', false, undefined)}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>
                     Producto
                   </Text>
               </DataTable.Cell>
             </DataTable.Header>
             {
-              sortedAvailableProducts.map((product) => {
+              sortedAvailableProducts.map((product, indexAvialableProducts) => {
                 const { id_product, product_name } = product;
                 return (
                   <DataTable.Row key={id_product} style={tw`w-full`}>
-                    <DataTable.Cell style={tw`${cellTableStyle} border-r w-48`}>
+                    <DataTable.Cell style={tw`${cellTableStyle} ${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
                         <Text style={tw`${textRowTableStyle}`}>
                           {capitalizeFirstLetterOfEachWord(product_name)}
                         </Text>
@@ -144,12 +130,8 @@ const TableRouteTransactionProductVisualization = (
                 {/* Set title of columns */}
                 { stores.map((store, index) => {
                     const { store_name, id_store } = store;
-                    console.log(`TITLE - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                     return (
-                      <DataTable.Cell key={id_store} 
-                      // style={tw`h-12 ${headerTitleTableStyle} border-r ${determineWidthAccordingWithLengthOfName(store_name!)}
-                      style={tw`h-12 ${headerTitleTableStyle} ${determineHeaderStyle(store_name!, true, undefined)}
-                      `}>
+                      <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
                         <Text 
                           ellipsizeMode='tail'
                           numberOfLines={1}
@@ -162,9 +144,7 @@ const TableRouteTransactionProductVisualization = (
                   })
                 }
                 { calculateTotalOfProduct &&
-                  <DataTable.Cell 
-                  // style={tw`${headerTitleTableStyle} w-32`}
-                  style={tw`${determineHeaderStyle('Total', true, undefined)}`}
+                  <DataTable.Cell style={tw`${determineHeaderStyle('Total', true, undefined)}`}
                   >
                   <Text 
                       ellipsizeMode='tail'
@@ -217,32 +197,17 @@ const TableRouteTransactionProductVisualization = (
                               productAmount = consolidatedInformation.amount;
                             }
                           } 
-                          console.log(`ROW - Store: ${store_name}, width: ${determineWidthAccordingWithLengthOfName(store_name!)}`)
                           return (
-                            <DataTable.Cell key={index} 
-                              // style={tw`border-r ${productAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} ${determineWidthAccordingWithLengthOfName(store_name!)}`}
-                              style={tw`border-r ${determineRowStyle(indexRow, productAmount > 0, true, store_name!, undefined)}`}
-                              >
-                              {/* <View style={tw`${viewTagRowTableStyle}`}> */}
-                                <Text 
-                                  style={tw`${textRowTableStyle}`}
-                                  >
-                                  {productAmount}
-                                </Text>
-                              {/* </View> */}
+                            <DataTable.Cell key={index} style={tw`${determineRowStyle(indexRow, productAmount > 0, true, store_name!, undefined)}`}>
+                                <Text style={tw`${textRowTableStyle}`}>{productAmount}</Text>
                             </DataTable.Cell>
                           );
                         })
                       }
                       {/* Inflow product */}
                       { calculateTotalOfProduct === true &&
-                        <DataTable.Cell 
-                        // style={tw`${totalOfProduct > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-32`}
-                        style={tw`border-r ${determineRowStyle(indexRow, totalOfProduct > 0, true, 'total', undefined)}`}
-                        >
-                          <Text style={tw`${textRowTableStyle}`}>
-                            {totalOfProduct}
-                          </Text>
+                        <DataTable.Cell style={tw`${determineRowStyle(indexRow, totalOfProduct > 0, true, 'total', undefined)}`}>
+                          <Text style={tw`${textRowTableStyle}`}>{totalOfProduct}</Text>
                         </DataTable.Cell>
                       }
                     </DataTable.Row>
