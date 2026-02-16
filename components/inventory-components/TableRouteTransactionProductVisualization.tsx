@@ -27,6 +27,8 @@ import {
 } from '../../utils/inventoryOperationTableStyles';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import { convertArrayOfInterfacesToMapOfInterfaces } from '@/utils/interface/utils';
 
 /*
  This component is an abstraction from "TableInventoryVisualization" component, here, what is in the "props"
@@ -51,12 +53,14 @@ const TableRouteTransactionProductVisualization = (
     stores,
     routeTransactions,
     idInventoryOperationTypeToShow,
+    dayOperations,
     calculateTotalOfProduct = false,
   }:{
     availableProducts: ProductDTO[],
     stores: StoreDTO[],
     routeTransactions: RouteTransactionDTO[],
     idInventoryOperationTypeToShow: DAY_OPERATIONS,
+    dayOperations: DayOperationDTO[],
     calculateTotalOfProduct:boolean
   }) => {
   
@@ -67,24 +71,47 @@ const TableRouteTransactionProductVisualization = (
   
   const mapConsolidatedByConcept = new Map<string, Map<string, consolidatedInformation>>(); //Map <id_store, Map<id_product, consolidatedInformation>>
   
-  const storesToShow: (StoreDTO & RouteTransactionDTO)[] = [];
-  const storeIdsAdded: Set<string> = new Set();
+  // Determining stores to show based on route transactions. The problem with this method is that this doesn't show all the visited stores during the day. 
+  // const storesToShow: (StoreDTO & RouteTransactionDTO)[] = [];
+  // const storeIdsAdded: Set<string> = new Set();
 
-  // Join route transaction with store information
-  const transactionWithStore: ((RouteTransactionDTO & StoreDTO) | null)[] = sortedRouteTransactions.map(routeTransaction => {
-    const store = stores.find(store => store.id_store === routeTransaction.id_store);
-    if (store) return { ...routeTransaction, ...store };
-    else return null;
-  });
+  // // Join route transaction with store information
+  // const transactionWithStore: ((RouteTransactionDTO & StoreDTO) | null)[] = sortedRouteTransactions.map(routeTransaction => {
+  //   const store = stores.find(store => store.id_store === routeTransaction.id_store);
+  //   if (store) return { ...routeTransaction, ...store };
+  //   else return null;
+  // });
   
   
   // Verify a store only appears only once.
-  for (const transaction of transactionWithStore) {
-    if (transaction === null) continue;
-    const { id_store } = transaction;
-    if (!storeIdsAdded.has(id_store)) {
-      storesToShow.push(transaction);
-      storeIdsAdded.add(id_store);
+  // for (const transaction of transactionWithStore) {
+  //   if (transaction === null) continue;
+  //   const { id_store } = transaction;
+  //   if (!storeIdsAdded.has(id_store)) {
+  //     storesToShow.push(transaction);
+  //     storeIdsAdded.add(id_store);
+  //   }
+  // }
+  
+  // Determining stores to show based on day operations, this method is better than the previous one since it shows all the visited stores during the day, but the problem is that it doesn't consider if the store has route transactions of the type of operation to show, so it can show stores that doesn't have information to show in the table.
+  const mapStoresById: Map<string, StoreDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_store', stores);
+  const storeIdsAdded: Set<string> = new Set();
+  const storesToShow: (StoreDTO & DayOperationDTO)[] = [];
+
+  for (const dayOperation of dayOperations) {
+    const { id_item, operation_type } = dayOperation;
+
+    if (operation_type === DAY_OPERATIONS.attend_client_petition
+    ||  operation_type === DAY_OPERATIONS.attention_out_of_route
+    || operation_type === DAY_OPERATIONS.new_client_registration
+    || operation_type === DAY_OPERATIONS.route_client_attention) {
+
+      const store = mapStoresById.get(id_item);
+
+      if (store && !storeIdsAdded.has(id_item)) {
+        storesToShow.push({ ...dayOperation, ...store });
+        storeIdsAdded.add(id_item);
+      }
     }
   }
 

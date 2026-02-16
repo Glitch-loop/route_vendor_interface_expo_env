@@ -41,7 +41,7 @@ import ActionDialog from '@/components/shared-components/ActionDialog';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 // Utils
-import { getTitleDayOperation } from '@/utils/day-operation/utils'; 
+import { getTitleDayOperation, orderDayOperationsForDisplaying } from '@/utils/day-operation/utils'; 
 import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
 
 // Use cases
@@ -181,7 +181,9 @@ const inventoryOperationLayout = () => {
   const routeDay = useSelector((state: RootState) => state.routeDay);
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
-  const storesRedux = useSelector((state: RootState) => state.stores);
+  const dayOperationReduxState = useSelector((state: RootState) => state.dayOperations);
+
+    
 
   // Routing
   const router:Router = useRouter();
@@ -210,6 +212,8 @@ const inventoryOperationLayout = () => {
   const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
   const [routeTransactions, setRouteTransactions] = useState<RouteTransactionDTO[]>([]);
   const [storesToConsult, setStoresToConsult] = useState<StoreDTO[]>([]);
+  const [orderedStoreForPrinting, setOrderedStoreForPrinting] = useState<DayOperationDTO[]>([]);
+
 
   // States related to UI logic
   const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -222,6 +226,7 @@ const inventoryOperationLayout = () => {
     setEnvironmentForInventoryOperation();
     setRoutingOfInventoryOperationScreen();
   }, []);
+
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
@@ -308,6 +313,16 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
+        if (dayOperationReduxState === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error al consultar la operación de inventario.',
+            text2: 'No fue posible obtener la operación de inventario, intente nuevamente.',
+          });
+          router.replace('/routeOperationMenuLayout');
+          return;
+        }
+
         const allRouteTransactions:RouteTransactionDTO[] = await listAllRouteTransactionsQuery.execute()
         const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
@@ -324,6 +339,8 @@ const inventoryOperationLayout = () => {
 
         setRouteTransactions(allActiveRouteTransactions);
         setStoresToConsult(await listRegisteredStoresQuery.execute());        
+
+        setOrderedStoreForPrinting(orderDayOperationsForDisplaying([...dayOperationReduxState]));
 
         setInventoryWithdrawal(true);
         setInventoryOutflow(true);
@@ -853,7 +870,8 @@ const inventoryOperationLayout = () => {
                       stores                          = {storesToConsult}
                       routeTransactions               = {routeTransactions}
                       idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_devolution }
-                      calculateTotalOfProduct         = {true}/>
+                      calculateTotalOfProduct         = {true}
+                      dayOperations                   = {orderedStoreForPrinting}/>
                   <Text style={tw`w-full text-center text-black text-2xl`}>
                     Reposición de producto por tienda
                   </Text>
@@ -862,7 +880,8 @@ const inventoryOperationLayout = () => {
                       stores                          = {storesToConsult}
                       routeTransactions               = {routeTransactions}
                       idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_reposition }
-                      calculateTotalOfProduct         = {true}/>
+                      calculateTotalOfProduct         = {true}
+                      dayOperations                   = {orderedStoreForPrinting} />
                   <Text style={tw`w-full text-center text-black text-2xl`}>
                     Producto vendido por tienda
                   </Text>
@@ -871,7 +890,8 @@ const inventoryOperationLayout = () => {
                       stores                          = {storesToConsult}
                       routeTransactions               = {routeTransactions}
                       idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sales }
-                      calculateTotalOfProduct         = {true}/>
+                      calculateTotalOfProduct         = {true}
+                      dayOperations                   = {orderedStoreForPrinting} />
                 </View>
               }
             </View> :
