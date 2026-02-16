@@ -99,18 +99,18 @@ const TableRouteTransactionProductVisualization = (
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
-            <DataTable.Header style={tw`w-full`}>
+            <DataTable.Header style={tw`${determineHeaderStyle('Producto', false, undefined)}`}>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Cell style={tw`${headerTitleTableStyle} ${determineHeaderStyle('Producto', false, undefined)}`}>
+              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
-              </DataTable.Cell>
+              </DataTable.Title>
             </DataTable.Header>
             {
               sortedAvailableProducts.map((product, indexAvialableProducts) => {
                 const { id_product, product_name } = product;
                 return (
-                  <DataTable.Row key={id_product} style={tw`w-full`}>
-                    <DataTable.Cell style={tw`${cellTableStyle} ${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
+                  <DataTable.Row key={id_product} style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
+                    <DataTable.Cell style={tw`${cellTableStyle}`}>
                       <Text style={tw`${textRowTableStyle}`}>{capitalizeFirstLetterOfEachWord(product_name)}</Text>
                     </DataTable.Cell>
                   </DataTable.Row>
