@@ -1,5 +1,5 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { BackHandler, ScrollView, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
@@ -105,6 +105,10 @@ const routeOperationMenuLayout = () => {
   const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
   const [dayOperations, setDayOperations] = useState<DayOperationDTO[]|null>(null);
 
+  // Refs
+  const operationsDayRef = useRef<Map<string, View|null>>(new Map());
+  const scrolldownRef = useRef<ScrollView>(null);
+
   useEffect(() => {
     setUpOperationMenu();
 
@@ -126,6 +130,18 @@ const routeOperationMenuLayout = () => {
     return () => backHandler.remove();
 
   }, [isDayWorkClosed, routeDay, workdayInformationReduxState]);
+
+  useEffect(() => {
+    if (currentInventoryOperation) {
+      const { id_day_operation } = currentInventoryOperation;
+      const operationRef = operationsDayRef.current.get(id_day_operation);
+      if (operationRef) {
+        operationRef.measure((fx, fy, width, height, px, py) => {
+          if (scrolldownRef.current) { scrolldownRef.current.scrollTo({ y: fy }); }
+        });        
+      }
+    }
+  }, [currentInventoryOperation])
 
   const setUpOperationMenu = ():void => {
     if (dayOperationsReduxState !== null) {
@@ -338,6 +354,7 @@ const routeOperationMenuLayout = () => {
         />
         </View>
         <ScrollView
+          ref={scrolldownRef}
           style={tw`w-full h-full flex flex-col`}
           scrollEventThrottle={16}>
           <View style={tw`my-5`}>
@@ -419,7 +436,9 @@ const routeOperationMenuLayout = () => {
                 if (isPrintableOperation) {
                   return (
                     <RouteCard
-                      key={dayOperation.id_day_operation}
+                      ref = {((ref: any) => { operationsDayRef.current.set(id_day_operation, ref);})}
+                      key= {id_day_operation}
+                      // ref= {((ref) => { markerRefs.current[id_store] = ref; })}
                       itemOrder={itemOrder}
                       itemName={itemName}
                       description={description}
