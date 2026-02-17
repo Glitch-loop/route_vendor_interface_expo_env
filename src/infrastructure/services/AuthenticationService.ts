@@ -55,19 +55,21 @@ export default class AuthenticationService {
     }
 
     async activeSession(): Promise<UserDTO | null> {
-        const useSessionKey = process.env.EXPO_USER_SESSION_KEY;
-        console.log('TOKEN: ', useSessionKey)
+        const useSessionKey = 'twister_user_session';
+        // console.log('TOKEN: ', process.env.EXPO_USER_SESSION_KEY)
+        // console.log('TOKEN: ', process.env.EXPO_PUBLIC_SUPABASE_URL)
         if (!useSessionKey) return null;
         
         const session = await SecureStore.getItemAsync(useSessionKey);
-        
+        console.log("session; ", session);
         if (!session) return null;
-
+        
         const parsedSession = JSON.parse(session);
         console.log('Parsed session: ', parsedSession);
         const expiresAt = new Date(parsedSession.expires_at);
-            parsedSession
-        if (expiresAt < new Date()) {
+        console.log("User: ", parsedSession.user)
+        console.log(new Date())
+        if (new Date() < expiresAt) {
             return this.mapUserToDTO(parsedSession.user as User);
         } else {
             await SecureStore.deleteItemAsync(useSessionKey);
@@ -77,8 +79,8 @@ export default class AuthenticationService {
 
     private async persistSession(user: User): Promise<void> {
         try {
-            const useSessionKey = process.env.EXPO_USER_SESSION_KEY;
-
+            // const useSessionKey = process.env.EXPO_USER_SESSION_KEY;
+            const useSessionKey = "twister_user_session";
             if (!useSessionKey) return;
 
             const session = {

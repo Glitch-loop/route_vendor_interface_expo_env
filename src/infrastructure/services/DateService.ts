@@ -1,19 +1,15 @@
 // Interfaces
 import { DateService as IDateService } from '@/src/core/interfaces/DateService';
 import { injectable } from 'tsyringe';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 @injectable()
 export class DateService implements IDateService {
-	getCurrentTimestamp(): number {
+	getCurrentTimestamp(): number|string {
+		console.log('DateService: getCurrentTimestamp called, date: ', new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+		let date = new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' })
+		console.log("Date: ", date);
+		console.log("Get time: ", new Date(date));
 		
-		console.log("Get time: ", dayjs().tz('America/Mexico_City').valueOf());
-		return dayjs().tz('America/Mexico_City').valueOf();
+		return new Date(date).getTime()
 	}
 }
