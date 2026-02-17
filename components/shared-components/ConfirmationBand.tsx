@@ -30,12 +30,6 @@ const ConfirmationBand = ({
         buttonStyle={tw`h-14 max-w-32 rounded
         flex flex-row basis-1/2  justify-center items-center`}
         textStyle='text-center text-black' />
-        {/*<Pressable style={
-          tw`${styleOnCancel!} h-14 max-w-32 border border-solid rounded
-          flex flex-row basis-1/2  justify-center items-center`}
-          onPress={() => {handleOnCancel();}}>
-          <Text style={tw`text-center text-black`}>{textOnCancel}</Text>
-        </Pressable> */}
       <ProjectButton
         title={textOnAccept}
         onPress={handleOnAccept}
@@ -43,12 +37,6 @@ const ConfirmationBand = ({
         buttonStyle={tw`h-14 max-w-32 rounded
         flex flex-row basis-1/2  justify-center items-center`}
         textStyle='text-center text-black' />
-      {/* <Pressable style={
-        tw`${styleOnAccept!} h-14 max-w-32 border border-solid rounded
-        flex flex-row basis-1/2 justify-center items-center`}
-        onPress={() => {handleOnAccept();}}>
-        <Text style={tw`text-center text-black`}>{textOnAccept}</Text>
-      </Pressable> */}
     </View>
   );
 };
