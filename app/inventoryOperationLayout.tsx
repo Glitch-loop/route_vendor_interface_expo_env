@@ -83,6 +83,7 @@ import StoreDTO from '@/src/application/dto/StoreDTO';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 
 // Auxiliar functions
@@ -122,9 +123,10 @@ function determineTextOfCashInventoryVisualization(inventoryOperation: Inventory
   if (state === 0) text = '';
   else {
     if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-      text = `Dinero llevado al inicio de la ruta: $${workdayInformation.start_petty_cash}`;
+      
+      text = `Dinero llevado al inicio de la ruta: ${formatNumberAsAccountingCurrency(workdayInformation.start_petty_cash)}`;
     } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
-      text += ` Dinero regresado al final de la ruta: $${workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0}`;
+      text += ` Dinero regresado al final de la ruta: ${formatNumberAsAccountingCurrency(workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0)}`;
     } else {
       text = '';
     }
@@ -940,7 +942,7 @@ const inventoryOperationLayout = () => {
           {/* Total amount of petty cash */}
           { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
             <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
-              <Text style={tw`text-black text-lg`}>
+              <Text style={tw`text-black text-lg text-center`}>
                 { determineTextOfCashInventoryVisualization(inventoryOperationToConsult, workDayInformation) }
               </Text>
             </View>
