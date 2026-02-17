@@ -385,9 +385,17 @@ const salesLayout = () => {
     It is not possible to sell product that you don't have
   */
   const handleSetProductReposition = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
-      if (productInventoryMap !== undefined) {
+    if (productDevolution.length === 0)  {
+      Toast.show({
+        type: 'error',
+        text1: "No puedes agregar una reposición de producto si no existe devolución", 
+        text2: "Agrega una devolución de producto antes de agregar una reposición"});
+      return;
+    }
+    
+    if (productInventoryMap !== undefined) {
         if (item === null) {
-          setProductSale(
+          setProductReposition(
             productCommitedValidation(
               productInventoryMap, 
               productsToCommit, 
