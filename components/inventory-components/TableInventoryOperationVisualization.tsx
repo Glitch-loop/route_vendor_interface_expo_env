@@ -304,10 +304,11 @@ const TableInventoryOperationVisualization = (
                       }
 
                        { issueInventory === true &&
-                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, inventoryIssueAmount > 0, true, 'Problema de inventario', undefined)} w-48`}>
+                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, inventoryIssueAmount > 0, true, 'Problema de inventario', undefined)} 
+                          ${inventoryIssueAmount !== 0 ? 'bg-red-200' : 'bg-green-200'} w-48 border-b`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
-                              {inventoryIssueAmount}
+                              {inventoryIssueAmount < 0 ? inventoryIssueAmount * -1 : inventoryIssueAmount} {inventoryIssueAmount > 0 ? ' (Falto)' : ''} {inventoryIssueAmount < 0 ? ' (Sobro)' : ''}
                             </Text>
                           </View>
                         </DataTable.Cell>
