@@ -32,15 +32,11 @@ export default function login() {
   }, []);
   
   const setUpUserSession = async () => {
-    console.log("Parsed session")
     const authenticationService = di_container.resolve(AuthenticationService);
-    console.log("Checking active session")
     const userSession:UserDTO | null = await authenticationService.activeSession();
-    console.log("Active session found: ", userSession);
     if (userSession === null) return;
     dispatch(setUser(userSession));
     router.replace('/routeSelectionLayout');
-
   }
 
   // Handlers
