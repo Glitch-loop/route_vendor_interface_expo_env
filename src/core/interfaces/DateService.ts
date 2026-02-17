@@ -1,4 +1,4 @@
 
 export abstract class DateService {
-    abstract getCurrentTimestamp(): number;
+    abstract getCurrentTimestamp(): number|string;
 }

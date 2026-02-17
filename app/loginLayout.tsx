@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TextInput, KeyboardAvoidingView, Pressable, Text } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
@@ -14,6 +14,7 @@ import AuthenticationService from '@/src/infrastructure/services/AuthenticationS
 
 // Componentes
 import Toast from 'react-native-toast-message';
+import UserDTO from '@/src/application/dto/UserDTO';
 
 export default function login() {
   // Redux states
@@ -25,6 +26,22 @@ export default function login() {
   // Declaring states
   const [inputCellphone, setInputCellphone] = useState<string>('');
   const [inputPassword, setInputPassword] = useState<string>('');
+
+  useEffect(() => {
+    setUpUserSession();
+  }, []);
+  
+  const setUpUserSession = async () => {
+    console.log("Parsed session")
+    const authenticationService = di_container.resolve(AuthenticationService);
+    console.log("Checking active session")
+    const userSession:UserDTO | null = await authenticationService.activeSession();
+    if (userSession === null) return;
+
+    dispatch(setUser(userSession));
+    router.replace('/routeSelectionLayout');
+
+  }
 
   // Handlers
   const handlerLogin = async (cellphone:string, password:string) => {

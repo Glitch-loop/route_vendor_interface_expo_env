@@ -19,6 +19,7 @@ export default class AuthenticationService {
     ) { }
 
     async loginUser(cellphone: string, password: string): Promise<UserDTO | null> {
+        console.log('Attempting login for cellphone: ', await SecureStore.getItemAsync(USER_SESSION_KEY));
         const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
         const localUser = localUsers.at(0);
 
@@ -53,8 +54,33 @@ export default class AuthenticationService {
         };
     }
 
+    async activeSession(): Promise<UserDTO | null> {
+        const useSessionKey = process.env.EXPO_USER_SESSION_KEY;
+        console.log('TOKEN: ', useSessionKey)
+        if (!useSessionKey) return null;
+        
+        const session = await SecureStore.getItemAsync(useSessionKey);
+        
+        if (!session) return null;
+
+        const parsedSession = JSON.parse(session);
+        console.log('Parsed session: ', parsedSession);
+        const expiresAt = new Date(parsedSession.expires_at);
+            parsedSession
+        if (expiresAt < new Date()) {
+            return this.mapUserToDTO(parsedSession.user as User);
+        } else {
+            await SecureStore.deleteItemAsync(useSessionKey);
+            return null;
+        }
+    }
+
     private async persistSession(user: User): Promise<void> {
         try {
+            const useSessionKey = process.env.EXPO_USER_SESSION_KEY;
+
+            if (!useSessionKey) return;
+
             const session = {
                 token: Crypto.randomUUID(),
                 expires_at: new Date(Date.now() + EIGHT_HOURS_IN_MS).toISOString(),
@@ -65,8 +91,8 @@ export default class AuthenticationService {
                     status: user.status,
                 },
             };
-
-            await SecureStore.setItemAsync(USER_SESSION_KEY, JSON.stringify(session));
+            
+            await SecureStore.setItemAsync(useSessionKey, JSON.stringify(session));
         } catch (error) {
             console.log('Error persisting user session: ', error);
         }
