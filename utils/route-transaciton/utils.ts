@@ -242,15 +242,15 @@ export function getNamePaymentMethodById(id_payment_method:string):string {
         case PAYMENT_METHODS.CASH:
             name_payment_method = 'Efectivo';
             break;
-        case PAYMENT_METHODS.TRANSFER:
-            name_payment_method = 'Transferencia';
-            break;
-        case PAYMENT_METHODS.CREDIT_CARD:
-            name_payment_method = 'Tarjeta de crédito';
-            break;
-        case PAYMENT_METHODS.DEBIT_CARD:
-            name_payment_method = 'Tarjeta de débito';
-            break;
+        // case PAYMENT_METHODS.TRANSFER:
+        //     name_payment_method = 'Transferencia';
+        //     break;
+        // case PAYMENT_METHODS.CREDIT_CARD:
+        //     name_payment_method = 'Tarjeta de crédito';
+        //     break;
+        // case PAYMENT_METHODS.DEBIT_CARD:
+        //     name_payment_method = 'Tarjeta de débito';
+        //     break;
     }
     return name_payment_method;
 }
