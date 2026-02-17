@@ -427,7 +427,7 @@ const routeOperationMenuLayout = () => {
                 }
 
                 if(currentInventoryOperation !== null) {
-                  if (id_day_operation === currentInventoryOperation.id_day_operation) {
+                  if (id_day_operation === currentInventoryOperation.id_day_operation && currentInventoryOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
                     cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, true);
                   }
 
