@@ -91,7 +91,7 @@ export default class AuthenticationService {
             
             await SecureStore.setItemAsync(useSessionKey, JSON.stringify(session));
         } catch (error) {
-            console.log('Error persisting user session: ', error);
+            throw new Error('Error persisting user session: ' + error);
         }
     }
 }
