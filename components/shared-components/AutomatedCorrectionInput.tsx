@@ -39,11 +39,20 @@ const AutomatedCorrectionNumberInput = ({
   };
 
   const handleOnLeaveInput = () => {
+    console.log("Leave input with value")
     if(inputValue === '') handleTextChange(amount.toString());
-    else handleTextChange(inputValue);
+    else {
+      if (inputValue !== amount.toString()) { 
+        handleTextChange(amount.toString());
+      } else {
+        handleTextChange(inputValue);
+
+      }
+    } 
   }
 
   const handleFocusInput = () => {
+    // console.log("On touch start")
     setInputValue('');
     // if (inputValue === '0') { }
   }
@@ -52,7 +61,8 @@ const AutomatedCorrectionNumberInput = ({
     <TextInput
       style={tw`mx-1 text-lg border border-solid bg-white rounded-md h-12 text-center`}
       value={inputValue}
-      onTouchStart={ () => { handleFocusInput(); } }
+      onFocus={ () => { handleFocusInput(); }}
+      // onTouchStart={ () => { handleFocusInput(); } }
       onEndEditing={() => { handleOnLeaveInput(); }}
       onChangeText={(text) => { 
         setInputValue(text); 

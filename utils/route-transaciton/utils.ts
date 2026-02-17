@@ -210,7 +210,7 @@ export function productCommitedValidation(
         });
     }
 
-    return reviewedProducts;
+    return reviewedProducts.map((product:RouteTransactionDescriptionDTO) => { return {...product}; });
 }
 
 export function calculateChange(total:number, received:number){
