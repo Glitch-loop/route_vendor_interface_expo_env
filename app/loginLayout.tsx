@@ -8,11 +8,9 @@ import { Router, useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../redux/slices/userSlice';
 import { AppDispatch } from '../redux/store';
-//Services
-import { loginUser } from '../services/authenticationService';
-
-// Interfaces
-import { IResponse, IUser } from '../interfaces/interfaces';
+// Services
+import { container as di_container } from '@/src/infrastructure/di/container';
+import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
 
 // Componentes
 import Toast from 'react-native-toast-message';
@@ -35,27 +33,29 @@ export default function login() {
       text2: 'Validando credenciales para acceder.',
     });
 
-    const response:IResponse<IUser> = await loginUser({
-      id_vendor: '',
-      cellphone: cellphone.trim(),
-      name: '',
-      password: password.trim(),
-      status: 0,
-    });
+    try {
+      const authenticationService = di_container.resolve(AuthenticationService);
+      const authenticatedUser = await authenticationService.loginUser(
+        cellphone.trim(),
+        password.trim()
+      );
 
-    const { responseCode, data } = response;
+      if (authenticatedUser) {
+        dispatch(setUser(authenticatedUser));
+        router.replace('/routeSelectionLayout');
+        return;
+      }
 
-
-    if(responseCode === 200) {
-      dispatch(setUser(data));
-      router.replace('/routeSelectionLayout')
-    //   navigation.reset({
-    //     index: 0,
-    //     routes: [{ name: 'routeSelection' }],
-    //   });
-    } else {
-      Toast.show({type: 'error',
-        text1:'Error durante autenticación.',
+      Toast.show({
+        type: 'error',
+        text1: 'Credenciales inválidas.',
+        text2: 'Revisa tu número telefónico y contraseña.',
+      });
+    } catch (error) {
+      console.log('Error logging user: ', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error durante autenticación.',
         text2: 'Ha habido un error durante la autenticación de las credenciales.',
       });
     }

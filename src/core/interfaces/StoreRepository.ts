@@ -1,4 +1,4 @@
-import { Store } from '../entities/Store';
+import { Store } from '@/src/core/entities/Store';
 
 export abstract class StoreRepository {
   abstract insertStores(stores: Store[]): void;

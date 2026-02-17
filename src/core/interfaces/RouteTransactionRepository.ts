@@ -1,10 +1,9 @@
 // Entities
-import { RouteTransaction } from '../entities/RouteTransaction';
-import { Store } from '../entities/Store';
+import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
+import { Store } from '@/src/core/entities/Store';
 
 // Object values
-import { PaymentMethod } from '../object-values/PaymentMethod';
-import { RouteTransactionDescription } from '../object-values/RouteTransactionDescription';
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
 export abstract class RouteTransactionRepository {
   abstract insertRouteTransaction(route_transaction: RouteTransaction): Promise<void>;

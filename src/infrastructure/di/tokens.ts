@@ -21,7 +21,10 @@ export const TOKENS = {
     SupabaseShiftOrganizationRepository: Symbol('SupabaseShiftOrganizationRepository'),
     SupabaseStoreRepository: Symbol('SupabaseStoreRepository'),
     SupabaseProductRepository: Symbol('SupabaseProductRepository'),
-    
+    // Authentication service
+    ServerAuthenticationRepository: Symbol('ServerAuthenticationRepository'),
+
+
     // SQLite
     SQLiteDayOperationRepository: Symbol('SQLiteDayOperationRepository'),
     SQLiteInventoryOperationRepository: Symbol('SQLiteInventoryOperationRepository'),
@@ -36,6 +39,8 @@ export const TOKENS = {
     SyncRouteTransactionRepository: Symbol('SyncRouteTransactionRepository'),
     SyncStoreRepository: Symbol('SyncStoreRepository'),
     SyncWorkdayInformationRepository: Symbol('SyncWorkdayInformationRepository'),
+    // Authentication service
+    LocalAuthenticationRepository: Symbol('LocalAuthenticationRepository'),
 
     // Sync Server Repositories
     SyncServerStoreRepository: Symbol('SyncServerStoreRepository'),
@@ -53,4 +58,5 @@ export const TOKENS = {
     PrinterService: Symbol('PrinterService'),
     LocationService: Symbol('LocationService'),
     DataReplicationService: Symbol('DataReplicationService'),
+    AuthenticationService: Symbol('AuthenticationService'),
 }

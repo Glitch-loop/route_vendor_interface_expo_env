@@ -17,12 +17,15 @@ import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransacti
 import { IDService } from '@/src/core/interfaces/IDService'
 import { DateService as IDateService } from '@/src/core/interfaces/DateService'
 import { LocationService } from '@/src/core/interfaces/LocationService'
+import { LocalUserRepository } from '@/src/core/interfaces/LocalUserRepository';
+import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
 
 // Sync interfaces
 import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
 import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
 import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
+
 
 // Interfaces
 import { RouteRepository } from '@/src/core/interfaces/RouteRepository'
@@ -35,6 +38,7 @@ import { SupabaseProductRepository } from '@/src/infrastructure/repositories/sup
 import { SupabaseRouteTransactionRepository } from '@/src/infrastructure/repositories/supabase/SupabaseRouteTransactionRepository'
 import { SupabaseInventoryOperationRepository } from '@/src/infrastructure/repositories/supabase/SupabaseInventoryOperationRepository'
 import { SupabaseWorkdayInformationRepository } from '@/src/infrastructure/repositories/supabase/SupabaseWorkdayInformationRepository'
+import { SupabaseServerUserRepository } from '@/src/infrastructure/repositories/supabase/SupabaseServerUserRepository'
 
 // Implementations - SQLite
 import { SQLiteDayOperationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteDayOperationRepository';
@@ -44,6 +48,7 @@ import { SQLiteProductRepository } from '@/src/infrastructure/repositories/SQLit
 import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository'
 import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteShiftOrganizationRepository'
 import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransaction'
+import { SQLiteUserRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteUserRepository'
 
 // Services
 import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
@@ -112,6 +117,10 @@ container.register<ProductRepository>(TOKENS.SQLiteProductRepository, {
     useClass: SQLiteProductRepository
 });
 
+container.register<LocalUserRepository>(TOKENS.LocalAuthenticationRepository, {
+    useClass: SQLiteUserRepository
+});
+
 // RouteRepository: There is not need to register it because there is not implementation needed.
 
 container.register<RouteTransactionRepository>(TOKENS.SQLiteRouteTransactionRepository, {
@@ -156,6 +165,10 @@ container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
 
 container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
     useClass: SupabaseProductRepository
+});
+
+container.register<ServerUserRepository>(TOKENS.ServerAuthenticationRepository, {
+    useClass: SupabaseServerUserRepository
 });
 
 // =================== Implementation of repositories - SyncServer (Supabase) ====================

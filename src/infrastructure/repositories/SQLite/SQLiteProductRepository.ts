@@ -9,7 +9,7 @@ import { ProductRepository } from '@/src/core/interfaces/ProductRepository';
 import { Product } from '@/src/core/entities/Product';
 
 // DataSources
-import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";

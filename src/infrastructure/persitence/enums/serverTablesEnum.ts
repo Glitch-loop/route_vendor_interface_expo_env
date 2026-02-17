@@ -1,6 +1,7 @@
 
 
 export enum SERVER_DATABASE_ENUM {
+    VENDORS = 'vendors',
     STORES = 'stores',
     ROUTE_TRANSACTIONS = 'route_transactions',
     ROUTE_TRANSACTION_DESCRIPTIONS = 'route_transaction_descriptions',

@@ -1,5 +1,4 @@
-import { WorkDayInformation } from '../entities/WorkDayInformation';
-import { DayOperation } from '../entities/DayOperation';
+import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 
 export abstract class ShiftOrganizationRepository {
   abstract insertWorkDay(workDay: WorkDayInformation): void;

@@ -100,6 +100,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
     async cleanDatabase(): Promise<void> { 
         const tablesToDelete:string[] = [
+            EMBEDDED_TABLES.USER,
             EMBEDDED_TABLES.ROUTE_DAY,
             EMBEDDED_TABLES.STORES,
             EMBEDDED_TABLES.PRODUCTS,
