@@ -5,6 +5,11 @@ import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository
 import { LocalUserRepository } from '@/src/core/interfaces/LocalUserRepository';
 import UserDTO from '@/src/application/dto/UserDTO';
 import { User } from '@/src/core/entities/User';
+import * as SecureStore from 'expo-secure-store';
+import * as Crypto from 'expo-crypto';
+
+const USER_SESSION_KEY = 'twister_user_session';
+const EIGHT_HOURS_IN_MS = 8 * 60 * 60 * 1000;
 
 @injectable()
 export default class AuthenticationService {
@@ -18,9 +23,9 @@ export default class AuthenticationService {
         const localUser = localUsers.at(0);
 
         if (localUser) {
-            return this.passwordMatches(localUser.password, password)
-                ? this.mapUserToDTO(localUser)
-                : null;
+            if (!this.passwordMatches(localUser.password, password)) return null;
+            await this.persistSession(localUser);
+            return this.mapUserToDTO(localUser);
         }
 
         const serverUsers = await this.serverAuthrepository.getUserByPhoneNumber(cellphone);
@@ -30,6 +35,7 @@ export default class AuthenticationService {
         if (!this.passwordMatches(serverUser.password, password)) return null;
 
         await this.localAuthRepository.insertUser(serverUser);
+        await this.persistSession(serverUser);
         return this.mapUserToDTO(serverUser);
     }
 
@@ -45,5 +51,24 @@ export default class AuthenticationService {
             password: user.password,
             status: user.status,
         };
+    }
+
+    private async persistSession(user: User): Promise<void> {
+        try {
+            const session = {
+                token: Crypto.randomUUID(),
+                expires_at: new Date(Date.now() + EIGHT_HOURS_IN_MS).toISOString(),
+                user: {
+                    id_vendor: user.id_vendor,
+                    cellphone: user.cellphone,
+                    name: user.name,
+                    status: user.status,
+                },
+            };
+
+            await SecureStore.setItemAsync(USER_SESSION_KEY, JSON.stringify(session));
+        } catch (error) {
+            console.log('Error persisting user session: ', error);
+        }
     }
 }

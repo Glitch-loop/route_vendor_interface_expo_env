@@ -12,6 +12,7 @@ import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 
 // UI Components
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import TableProduct from '@/components/sale-layout/table-product/TableProduct';
 import SaleSummarize from '@/components/sale-layout/SaleSummarize';
@@ -21,7 +22,6 @@ import SubtotalLine from '@/components/sale-layout/SubtotalLine';
 import PaymentProcess from '@/components/sale-layout/payment/PaymentProcess';
 import MenuHeader from '@/components/shared-components/MenuHeader';
 import ActionButton from '@/components/sale-layout/table-product/ActionButton';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // Mapper and DTOs

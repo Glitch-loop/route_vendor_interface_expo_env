@@ -5,7 +5,8 @@ import tw from 'twrnc';
 
 // UI components
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ConfirmationBand from '@/components/shared-components/ConfirmationBand';;
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';import ProjectButton from '../shared-components/ProjectButton';
+;
 
 const ResultSale = ({
   resultSaleState,
@@ -41,8 +42,8 @@ const ResultSale = ({
             textOnCancel={resultSaleState ? 'Imprimir ticket' : 'Intentar de nuevo'}
             handleOnAccept={resultSaleState ? onSuccessfullCompletion : onFailedCompletion}
             handleOnCancel={resultSaleState ? onPrintTicket : onTryAgain}
-            styleOnAccept={resultSaleState ? 'bg-green-500' : 'bg-orange-500'}
-            styleOnCancel={resultSaleState ? 'bg-blue-500' : 'bg-amber-400'}/>
+            styleOnAccept={resultSaleState ? 'success' : 'warning'}
+            styleOnCancel={resultSaleState ? 'primary' : 'danger'}/>
       </View>
     </View>
   );

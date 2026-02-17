@@ -116,14 +116,15 @@ export default function Index() {
     const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
     const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
 
-    console.log("Setting user in redux state for user");
-    dispatch(setUser({
-      id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
-      cellphone: '3221488795',
-      name: 'Renet de Jesús Pérez Gómez de renteria abdulasis',
-      password: '',
-      status: 1
-    }))
+    // TESTING PURPOSES: Setting user in redux state for user
+    // console.log("Setting user in redux state for user");
+    // dispatch(setUser({
+    //   id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
+    //   cellphone: '3221488795',
+    //   name: 'Renet de Jesús Pérez Gómez de renteria abdulasis',
+    //   password: '',
+    //   status: 1
+    // }))
 
     try {
       const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
@@ -154,7 +155,8 @@ export default function Index() {
 
 
   return (
-    <Redirect href="/routeSelectionLayout" />
+    // <Redirect href="/routeSelectionLayout" />
+    <Redirect href="/loginLayout" />
     // <Redirect href="/__testing__/component-testing/SQLite/SQLiteTestSwitch" />
   );
 }

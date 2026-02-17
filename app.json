@@ -16,7 +16,7 @@
       }
     },
     "android": {
-      "experimental" : {
+      "experimental": {
         "useNewArchitecture": true
       },
       "adaptiveIcon": {
@@ -38,10 +38,10 @@
         ]
       },
       "permissions": [
-        "android.permission.BLUETOOTH", 
-        "android.permission.BLUETOOTH_ADMIN", 
-        "android.permission.BLUETOOTH_CONNECT", 
-        "android.permission.BLUETOOTH_SCAN", 
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.renet_perez.route_vendor_interface",
@@ -76,7 +76,8 @@
           "isAndroidBackgroundLocationEnabled": "Allow $(PRODUCT_NAME) to use your location.",
           "isAndroidForegroundServiceEnabled": "Allow $(PRODUCT_NAME) to use your location."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

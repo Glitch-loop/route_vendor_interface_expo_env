@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextInput, Keyboard } from 'react-native';
 import { delay } from 'tsyringe';
 import tw from 'twrnc';
@@ -11,13 +11,18 @@ const AutomatedCorrectionNumberInput = ({
   amount:number,
   onChangeAmount:any
 }) => {
+  useEffect(() => {
+    console.log("use effect amount: ", amount)
+    setInputValue(amount.toString());
+  }, [amount])
+
   const [inputValue, setInputValue] = useState(amount.toString());
   
   // Handlers
   const handleTextChange = (input:string) => {
     let resultInput:number = 0;
     let parsedInput:number = parseInt(input, 10);
-
+    console.log("New input: ", input)
     if (isNaN(parsedInput)) {
       resultInput = 0;
     } else {
@@ -39,9 +44,8 @@ const AutomatedCorrectionNumberInput = ({
   }
 
   const handleFocusInput = () => {
-    if (inputValue === '0') {
-      setInputValue('');
-    }
+    setInputValue('');
+    // if (inputValue === '0') { }
   }
 
   return (

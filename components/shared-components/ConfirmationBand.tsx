@@ -1,30 +1,32 @@
 // Libraries
 import React from 'react';
-import { View, Pressable, Text } from 'react-native';
+import { View } from 'react-native';
 import tw from 'twrnc';
 import ProjectButton from './ProjectButton';
+import { ButtonVariant } from '@/utils/types/ButtonVariantType';
+
 
 const ConfirmationBand = ({
   textOnAccept,
   textOnCancel,
   handleOnAccept,
   handleOnCancel,
-  styleOnAccept = 'bg-green-500',
-  styleOnCancel = 'bg-orange-500',
+  styleOnAccept = 'success',
+  styleOnCancel = 'warning',
 }:{
   textOnAccept:string,
   textOnCancel:string,
   handleOnAccept:any,
   handleOnCancel:any,
-  styleOnAccept?:string,
-  styleOnCancel?:string,
+  styleOnAccept?:ButtonVariant,
+  styleOnCancel?:ButtonVariant,
 }) => {
   return (
     <View style={tw`flex flex-row justify-around`}>
       <ProjectButton
         title={textOnCancel}
         onPress={handleOnCancel}
-        buttonVariant='warning'
+        buttonVariant={styleOnCancel}
         buttonStyle={tw`h-14 max-w-32 rounded
         flex flex-row basis-1/2  justify-center items-center`}
         textStyle='text-center text-black' />
@@ -37,7 +39,7 @@ const ConfirmationBand = ({
       <ProjectButton
         title={textOnAccept}
         onPress={handleOnAccept}
-        buttonVariant='success'
+        buttonVariant={styleOnAccept}
         buttonStyle={tw`h-14 max-w-32 rounded
         flex flex-row basis-1/2  justify-center items-center`}
         textStyle='text-center text-black' />

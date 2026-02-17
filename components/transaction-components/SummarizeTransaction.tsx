@@ -281,7 +281,7 @@ const SummarizeTransaction = ({
                 textOnCancel={'Imprimr'}
                 handleOnAccept={() => { handleOnStartASale(); }}
                 handleOnCancel={() => { handleOnPrint(); }}
-                styleOnCancel={'bg-blue-500'}
+                styleOnCancel={'primary'}
                 />
             </View>
           </View>
