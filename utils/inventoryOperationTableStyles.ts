@@ -23,6 +23,20 @@ function determineWidthAccordingWithLengthOfName(name: string): string {
   return width;
 }
 
+function determineHeightAccordingWithLengthOfName(name: string): string {
+  let height:string = "h-12 max-h-12"; // Default height
+  
+  if (name.length > 20 && name.length <= 30) {
+    height = "h-16 max-h-16";
+  } else if (name.length > 30 && name.length <= 40) {
+    height = "h-20 max-h-20";
+  } else if (name.length > 40) {
+    height = "h-24 max-h-24";
+  }
+  
+  return height;
+}
+
 
 /**
  * 
@@ -41,6 +55,8 @@ export function determineRowStyle(numberOfRow: number, cellContainInformation: b
     if (cellContainInformation) numberOfRow % 2 === 0 ? style += ' bg-amber-300' : style += ' bg-amber-200'
 
     if (titleOfColumn) style += ` ${determineWidthAccordingWithLengthOfName(titleOfColumn)}`;
+
+    // if (titleOfRow) style += ` ${determineWidthAccordingWithLengthOfName(titleOfRow)}`;
 
     return style;
 }

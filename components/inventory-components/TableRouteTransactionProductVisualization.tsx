@@ -70,7 +70,8 @@ const TableRouteTransactionProductVisualization = (
   const sortedRouteTransactions: RouteTransactionDTO[] = routeTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Order in ascending order. Earlier dates first
   
   const mapConsolidatedByConcept = new Map<string, Map<string, consolidatedInformation>>(); //Map <id_store, Map<id_product, consolidatedInformation>>
-  
+  const mapAvialbleProductsById = convertArrayOfInterfacesToMapOfInterfaces('id_product', availableProducts);
+
   // Determining stores to show based on route transactions. The problem with this method is that this doesn't show all the visited stores during the day. 
   // const storesToShow: (StoreDTO & RouteTransactionDTO)[] = [];
   // const storeIdsAdded: Set<string> = new Set();
@@ -160,9 +161,7 @@ const TableRouteTransactionProductVisualization = (
               return (
                 <DataTable.Row key={id_product}>
                   <DataTable.Cell style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
-                    <Text 
-                    style={tw`${textRowTableStyle}`}
-                    >{capitalizeFirstLetterOfEachWord(product_name)}</Text>
+                    <Text  style={tw`${textRowTableStyle}`}>{capitalizeFirstLetterOfEachWord(product_name)}</Text>
                   </DataTable.Cell>
                 </DataTable.Row>
               );
@@ -175,7 +174,7 @@ const TableRouteTransactionProductVisualization = (
               {/* Header section */}
               <DataTable.Header>
                 {/* Set title of columns */}
-                { storesToShow.map((store, index) => {
+                { storesToShow.map((store) => {
                     const { store_name, id_store } = store;
                     console.log('Store name: ', store_name)
                     return (
@@ -201,7 +200,7 @@ const TableRouteTransactionProductVisualization = (
                     This table display the information using the product as the main reference, and then traversing for all the stores.
                     So for each product, we will get the amount for each store, and then display it in the table.
                   */
-                  const { id_product } = product;
+                  const { id_product, product_name } = product;
                   let totalOfProduct:number = 0;
                  
                   if (calculateTotalOfProduct === true) {
@@ -218,19 +217,22 @@ const TableRouteTransactionProductVisualization = (
                   }
 
                   return (
-                    <DataTable.Row key={product.id_product}>
+                    <DataTable.Row key={id_product}>
                       {/* This field is never empty since it is necessary anytime */}
                       {/* Restock of product */}
                       { storesToShow.map((store, index) => {
                           const { id_store, store_name } = store;
                           let productAmount:number = 0;
                           const storeInformation = mapConsolidatedByConcept.get(id_store);
+                          let titleOfRow:string|undefined = undefined;
 
                           if (storeInformation !== undefined) {
                             const consolidatedInformation = storeInformation.get(id_product);
 
                             if (consolidatedInformation !== undefined) productAmount = consolidatedInformation.amount
-                          } 
+                          }
+
+
                           return (
                             <DataTable.Cell key={index} style={tw`${determineRowStyle(indexRow, productAmount > 0, true, store_name!, undefined)}`}>
                                 <Text style={tw`${textRowTableStyle}`}>{productAmount}</Text>
