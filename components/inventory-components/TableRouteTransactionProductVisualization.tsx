@@ -176,12 +176,13 @@ const TableRouteTransactionProductVisualization = (
           </DataTable>
           {/* Datatable for the information for each concept */}
           <ScrollView horizontal={true}>
-            <DataTable style={tw`w-full`}>
+            <DataTable style={tw`w-2/3`}>
               {/* Header section */}
               <DataTable.Header>
                 {/* Set title of columns */}
                 { storesToShow.map((store, index) => {
                     const { store_name, id_store } = store;
+                    console.log('Store name: ', store_name)
                     return (
                       <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
                         <Text key={id_store} ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>
