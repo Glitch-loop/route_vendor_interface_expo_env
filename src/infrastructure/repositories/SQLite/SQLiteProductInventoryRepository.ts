@@ -20,6 +20,12 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export class SQLiteProductInventoryRepository implements ProductInventoryRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
+    private printProductInventory(products: ProductInventory[]) {
+        products.forEach((product) => {
+            console.log(`id_product_inventory: ${product.get_id_product_inventory()}, stock: ${product.get_stock_of_product()}`);
+        });
+    }
+
     async createInventory(products: ProductInventory[]): Promise<void> {
         try {
             await this.dataSource.initialize();
@@ -74,7 +80,6 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
     async retrieveInventory(): Promise<ProductInventory[]> {
         const inventory: ProductInventory[] = [];
         try {
-            await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
             const result = statement.executeSync<any>();

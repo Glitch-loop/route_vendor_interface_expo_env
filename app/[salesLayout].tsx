@@ -257,15 +257,6 @@ const salesLayout = () => {
           text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
         return;
       }
-
-      await registerNewRouteTransactionCommand.execute(
-        [...productDevolution, ...productReposition, ...productSale],
-        workDayInformation!,
-        paymentMethod,
-        receivedCash,
-        id_store_search_param,
-        id_day_operation_dependent
-      );
       
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],

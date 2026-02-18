@@ -42,7 +42,6 @@ export function determineRowStyle(numberOfRow: number, cellContainInformation: b
 
     if (titleOfColumn) style += ` ${determineWidthAccordingWithLengthOfName(titleOfColumn)}`;
 
-    console.log(style)
     return style;
 }
 
@@ -61,6 +60,5 @@ export function determineHeaderStyle(headerTitle: string, rightBorder: boolean, 
 
     if (headerTitle) style += ` ${determineWidthAccordingWithLengthOfName(headerTitle)}`;
 
-    console.log(style)
     return style;
 }
