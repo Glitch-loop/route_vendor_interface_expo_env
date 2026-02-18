@@ -158,13 +158,8 @@ const TableRouteTransactionProductVisualization = (
             sortedAvailableProducts.map((product, indexAvialableProducts) => {
               const { id_product, product_name } = product;
               return (
-                <DataTable.Row key={id_product} 
-                // style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}
-                >
-                  <DataTable.Cell 
-                  style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}
-                  // style={tw`${cellTableStyle}`}
-                  >
+                <DataTable.Row key={id_product}>
+                  <DataTable.Cell style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
                     <Text 
                     style={tw`${textRowTableStyle}`}
                     >{capitalizeFirstLetterOfEachWord(product_name)}</Text>
