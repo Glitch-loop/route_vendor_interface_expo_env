@@ -94,16 +94,16 @@ const TableInventoryOperationVisualization = (
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
-            <DataTable.Header style={tw`${determineHeaderStyle('Inventario inicial', false, undefined)}`}>
-              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+            <DataTable.Header>
+              <DataTable.Title style={tw`${determineHeaderStyle('Inventario inicial', false, undefined)}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
               </DataTable.Title>
             </DataTable.Header>
             { availableProductsStored.map((product, indexAvailableProducts) => {
               const { id_product, product_name } = product;
               return (
-                <DataTable.Row key={id_product} style={tw`${determineRowStyle(indexAvailableProducts, false, false, 'Producto', undefined)}`}>
-                  <DataTable.Cell style={tw`${cellTableStyle}`}>
+                <DataTable.Row key={id_product}>
+                  <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, false, false, 'Producto', undefined)}`}>
                       <Text style={tw`${textRowTableStyle}`}>{product_name}</Text>
                   </DataTable.Cell>
                 </DataTable.Row>
@@ -220,8 +220,7 @@ const TableInventoryOperationVisualization = (
 
                   inventoryIssueAmount = finalOperationAmount - returnedInventoryOperationAmount;
                   return (
-                    <DataTable.Row style={tw`${rowTableStyle}`}
-                    key={product.id_product}>
+                    <DataTable.Row key={product.id_product}>
                       { suggestedInventory.length > 0 &&
                         <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, suggestedAmount > 0, true, 'Inventario sugerido', undefined)}`}>
                             <Text style={tw`${textRowTableStyle}`}>{suggestedAmount}</Text>
