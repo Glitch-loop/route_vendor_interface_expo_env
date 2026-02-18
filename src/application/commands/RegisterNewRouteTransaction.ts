@@ -33,6 +33,7 @@ import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransacti
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import RouteTransactionDTO from '../dto/RouteTransactionDTO';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
@@ -55,7 +56,7 @@ export default class RegisterNewRouteTransaction {
         cashReceived: number,
         id_store: string,
         id_day_operation_dependent: string,
-    ):Promise<void> {
+    ):Promise<RouteTransaction> {
         const { id_work_day } = workDayInformation;
         
         const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
@@ -125,6 +126,8 @@ export default class RegisterNewRouteTransaction {
         await this.localProductInventoryRepo.updateInventory(updatedInventory);
         await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
         await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+        
+        return routeTransaction;
     }
 
     async execute(
@@ -133,14 +136,14 @@ export default class RegisterNewRouteTransaction {
         paymentMethod: PAYMENT_METHODS,
         cashReceived: number,
         id_store: string,
-        id_day_operation_dependent: string) {
+        id_day_operation_dependent: string):Promise<RouteTransactionDTO> {
             const mapper = new MapperDTO();
             const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
                 .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
 
             const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
 
-            await this.executeUseCase(
+            const newRouteTransaction = await this.executeUseCase(
                 routeTransactionDescriptions,
                 workDayInformationEntity,
                 paymentMethod,
@@ -149,5 +152,6 @@ export default class RegisterNewRouteTransaction {
                 id_day_operation_dependent
             );
         
+        return mapper.toDTO(newRouteTransaction);
     }
 }

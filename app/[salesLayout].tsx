@@ -54,6 +54,7 @@ import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -142,6 +143,8 @@ const salesLayout = () => {
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
 
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
+
+  const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
 
   /* States used in the logic of the layout. */
   const [startPaymentProcess, setStartPaymentProcess] = useState<boolean>(false);
@@ -264,6 +267,16 @@ const salesLayout = () => {
         id_day_operation_dependent
       );
       
+      const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
+        [...productDevolution, ...productReposition, ...productSale],
+        workDayInformation!,
+        paymentMethod,
+        receivedCash,
+        id_store_search_param,
+        id_day_operation_dependent
+      );
+      setNewRouteTransaction(newRouteTransaction);
+
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
             
@@ -318,22 +331,39 @@ const salesLayout = () => {
       return;
     }
 
-    try {
+    try {      
       let storeToConsult:StoreDTO|undefined = undefined;
+      let ticketToPrint: string = '';
+
+
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
       
-      // Set up printer
-      await printerService.getConnectedPrinter();
-      await printerService.printTicket(
-        getTicketSale(
+      if (finishedSale) {
+
+          
+          ticketToPrint = getTicketSale(
+            productInventoryMap,
+            productDevolution,
+            productReposition,
+            productSale,
+            newRouteTransaction === null ? undefined : newRouteTransaction,
+            storeToConsult
+          );
+      } else {
+        ticketToPrint = getTicketSale(
           productInventoryMap,
           productDevolution,
           productReposition,
           productSale,
           undefined, // At this point, the route transacion doesn't exist, it only exsits the movements of the route transaction.
           storeToConsult
-        ));
+        );
+      }
+
+      // Set up printer
+      await printerService.getConnectedPrinter();
+      await printerService.printTicket(ticketToPrint);
 
     } catch(error) {
       Toast.show({

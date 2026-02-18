@@ -36,7 +36,7 @@ export class SupabaseInventoryOperationRepository implements SyncServerInventory
                 id_inventory_operation_type: op.id_inventory_operation_type,
                 id_work_day: op.id_work_day,
             }));
-
+            console.log('Upserting inventory operations:', records);
             const { error } = await this.supabase
                 .from(SERVER_DATABASE_ENUM.INVENTORY_OPERATIONS)
                 .upsert(records, { onConflict: 'id_inventory_operation' });

@@ -28,6 +28,7 @@ export default function login() {
   const [inputPassword, setInputPassword] = useState<string>('');
 
   useEffect(() => {
+    console.log("Login")
     setUpUserSession();
   }, []);
   

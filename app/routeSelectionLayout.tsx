@@ -64,11 +64,57 @@ const routeSelectionLayout = () => {
   const [routeSelected, setRouteSelected] = useState<RouteDTO|undefined>(undefined);
 
   useEffect(() => {
-    console.log("routeSelectionLayout.tsx")
-    determineFlowStartSession();
+    startSession();
   }, []);
 
-  
+  const startSession = async () => {
+    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
+
+    try {
+      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
+
+      if (workDayInformation !== null) { // A work day exists
+        const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
+        const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
+        const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
+        const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
+
+        dispatch(setWorkDayInformation(workDayInformation));
+        dispatch(setProductInventory(productInventory));
+        dispatch(setDayOperations(dayOperations));
+        dispatch(setStores(stores));
+        dispatch(setProducts(products));
+
+        router.replace('/routeOperationMenuLayout');
+
+      } else { // It is a new 'work' day.
+        if (user === null) {
+          Toast.show({type: 'error',
+            text1:'Error durante la inicialización de la aplicación.',
+            text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
+          });
+          return;
+        }
+        
+        const { id_vendor } = user;
+        const routes = await getAllRoutesByUserQuery.execute(id_vendor)
+        setVendorRoutes(routes);
+      }
+    } catch (error) {
+      Toast.show({type: 'error',
+        text1:'Error durante la inicialización de la aplicación.',
+        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
+      });
+    }
+  }
+
+
+
 
   // Auxiliar functions
   const determineFlowStartSession = async () => {

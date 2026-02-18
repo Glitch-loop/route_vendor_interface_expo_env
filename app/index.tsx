@@ -1,32 +1,23 @@
+// Import first
+import "./global.css"
+
 // Libraries
 import React, {useEffect} from 'react';
-import { Redirect } from "expo-router";
-import "./global.css"
-// import { AppRegistry } from 'react-native';
-// import { Text, View } from "react-native";
-// import tw from 'twrnc';
-
-// Redux context
-import { Provider } from "react-redux";
-import store from '../redux/store';
-
-// Embedded database
-// Queries
-import {
-  createEmbeddedDatabase,
-  dropEmbeddedDatabase,
-  // dropUsersEmbeddedTable,
- } from '../queries/SQLite/sqlLiteQueries';
+import tw from 'twrnc';
+import { Router, useRouter } from 'expo-router';
+import { View } from 'react-native';
 
 // Services
-// import { getPrinterBluetoothConnection } from '../services/printerService';
-// import { requestGeolocalizationPermissionsProcess } from '../services/geolocationService';
-// import { createBackgroundSyncProcess } from '../services/syncService';
-import { SQLiteDatabaseService } from '@/src/infrastructure/services/SQLiteDatabaseService';
+
+// Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { PaperProvider } from 'react-native-paper';
+
+// UI components
+import { PaperProvider, Text } from 'react-native-paper';
 import ToastMessage from '@/components/notifications/ToastMessage';
 import Toast from 'react-native-toast-message';
+
+// Interfaces
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
 // hooks
@@ -34,7 +25,6 @@ import useCurrentLocation from '@/hooks/useCurrentLocation';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
 
-import { Router, useRouter } from 'expo-router';
 
 // Use case - queries
 import { container } from '@/src/infrastructure/di/container';
@@ -66,9 +56,11 @@ import { setRoute } from '@/redux/slices/routeSlice';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setStores } from '@/redux/slices/storesSlice';
 import { setUser } from '@/redux/slices/userSlice';
+import AuthenticationService from "@/src/infrastructure/services/AuthenticationService";
+import UserDTO from "@/src/application/dto/UserDTO";
 
 
-async function appInitialization() {
+async function localDatabaseInitialization() {
   console.log("Initializing local database...");
   // Initializing datasource
   const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
@@ -97,6 +89,7 @@ export default function Index() {
   const dispatch: AppDispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
 
+
   useEffect(() => {
     // Initializing database
     console.log("index.tsx")
@@ -105,58 +98,29 @@ export default function Index() {
 
 
   const startSession = async () => {
+    const authenticationService = container.resolve(AuthenticationService);
+    await localDatabaseInitialization();
+    const userSession:UserDTO | null = await authenticationService.activeSession();
 
-    await appInitialization();
-    
-    
-    const retrieveDayOperationQuery: RetrieveDayOperationQuery = container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-    const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-    const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-    const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
-    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
-
-    // TESTING PURPOSES: Setting user in redux state for user
-    // console.log("Setting user in redux state for user");
-    // dispatch(setUser({
-    //   id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
-    //   cellphone: '3221488795',
-    //   name: 'Renet de Jesús Pérez Gómez de renteria abdulasis',
-    //   password: '',
-    //   status: 1
-    // }))
-
-    try {
-      const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
-
-      
-      if (workDayInformation !== null) { // A work day exists
-        const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
-        const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
-        const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
-        const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
-
-        dispatch(setWorkDayInformation(workDayInformation));
-        dispatch(setProductInventory(productInventory));
-        dispatch(setDayOperations(dayOperations));
-        dispatch(setStores(stores));
-        dispatch(setProducts(products));
-      } else { // It is a new 'work' day.
-        
-      }
-    } catch (error) {
-      console.error(error);
-      Toast.show({type: 'error',
-        text1:'Error durante la inicialización de la aplicación.',
-        text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',
-      });
-    }
+    if (userSession === null) {
+      router.replace('/loginLayout');
+      return;
+    } else {
+      dispatch(setUser(userSession));
+      router.replace('/routeSelectionLayout');
+    }    
   }
 
 
   return (
     // <Redirect href="/routeSelectionLayout" />
-    <Redirect href="/loginLayout" />
+    // <Redirect href="/loginLayout" />
+    <View
+      onTouchEnd={() => { console.log("asas") }} 
+      style={tw`flex-1 justify-center items-center`}>
+      <Text style={tw`text-lg`}>Iniciando la aplicación</Text>
+      {/* <Redirect href="/loginLayout" /> */}
+    </View>
     // <Redirect href="/__testing__/component-testing/SQLite/SQLiteTestSwitch" />
   );
 }
