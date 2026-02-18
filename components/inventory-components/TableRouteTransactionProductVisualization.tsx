@@ -142,32 +142,36 @@ const TableRouteTransactionProductVisualization = (
     mapConsolidatedByConcept.set(id_store, productMap);
   }
 
-
-  // 
-
   return (
     <View style={tw`w-full flex flex-row`}>
       {(sortedAvailableProducts.length > 0) ?
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
-            <DataTable.Header style={tw`${determineHeaderStyle('Producto', false, undefined)}`}>
+            <DataTable.Header>
               {/* This field is never empty since it is necessary anytime */}
-              <DataTable.Title style={tw`${headerTitleTableStyle}`}>
+              <DataTable.Cell style={tw`${headerTitleTableStyle}`}>
                   <Text style={tw`${textHeaderTableStyle}`}>Producto</Text>
-              </DataTable.Title>
+              </DataTable.Cell>
             </DataTable.Header>
             {
-              sortedAvailableProducts.map((product, indexAvialableProducts) => {
-                const { id_product, product_name } = product;
-                return (
-                  <DataTable.Row key={id_product} style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}>
-                    <DataTable.Cell style={tw`${cellTableStyle}`}>
-                      <Text style={tw`${textRowTableStyle}`}>{capitalizeFirstLetterOfEachWord(product_name)}</Text>
-                    </DataTable.Cell>
-                  </DataTable.Row>
-                );
-              })
+            sortedAvailableProducts.map((product, indexAvialableProducts) => {
+              const { id_product, product_name } = product;
+              return (
+                <DataTable.Row key={id_product} 
+                // style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}
+                >
+                  <DataTable.Cell 
+                  style={tw`${determineRowStyle(indexAvialableProducts, false, false, 'Producto', undefined)}`}
+                  // style={tw`${cellTableStyle}`}
+                  >
+                    <Text 
+                    style={tw`${textRowTableStyle}`}
+                    >{capitalizeFirstLetterOfEachWord(product_name)}</Text>
+                  </DataTable.Cell>
+                </DataTable.Row>
+              );
+            })
             }
           </DataTable>
           {/* Datatable for the information for each concept */}
@@ -180,7 +184,7 @@ const TableRouteTransactionProductVisualization = (
                     const { store_name, id_store } = store;
                     return (
                       <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
-                        <Text ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>
+                        <Text key={id_store} ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>
                           {capitalizeFirstLetterOfEachWord(store_name)}
                         </Text>
                       </DataTable.Cell>
@@ -240,7 +244,7 @@ const TableRouteTransactionProductVisualization = (
                       }
                       {/* Inflow product */}
                       { calculateTotalOfProduct === true &&
-                        <DataTable.Cell style={tw`${determineRowStyle(indexRow, totalOfProduct > 0, true, 'total', undefined)}`}>
+                        <DataTable.Cell style={tw`${determineRowStyle(indexRow, totalOfProduct > 0, false, 'total', undefined)} border`}>
                           <Text style={tw`${textRowTableStyle}`}>{totalOfProduct}</Text>
                         </DataTable.Cell>
                       }
