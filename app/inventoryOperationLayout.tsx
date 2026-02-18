@@ -933,9 +933,8 @@ const inventoryOperationLayout = () => {
                 cashInventoryOperation={cashInventory}
                 setCashInventoryOperation={setCashInventory}/>
               <Text style={tw`w-full text-center text-black text-xl mt-2`}>
-                Total:
-                ${cashInventory
-                  .reduce((accumulator, denomination) => { return accumulator + denomination.amount! * denomination.value;},0)}
+                Total: { formatNumberAsAccountingCurrency(
+                  cashInventory .reduce((accumulator, denomination) => { return accumulator + denomination.amount! * denomination.value;},0))}
                 </Text>
             </View>
           }

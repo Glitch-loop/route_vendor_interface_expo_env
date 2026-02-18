@@ -63,6 +63,13 @@ export default class RegisterNewRouteTransaction {
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
         const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
 
+        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log("Stores retrieved in RegisterNewRouteTransaction");
+        console.log(currentInventory.forEach((inventory) => {
+            console.log(`id_product_inventory: ${inventory.get_id_product_inventory()}, id_product: ${inventory.get_id_product()}, stock: ${inventory.get_stock_of_product()}`);
+        }));
+
+
         if (storesRetrieved.length === 0) throw new Error("The store where the route transaction is being registered does not exist.");
 
         const { status_store } = storesRetrieved[0];

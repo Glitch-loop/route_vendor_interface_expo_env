@@ -393,6 +393,7 @@ const routeOperationMenuLayout = () => {
                 ) {
                   isClientOperation = false;
                   isPrintableOperation = true;
+                  console.log("Type of inventory: ", getTitleDayOperationForMenuOperation(operation_type), " - id operation: ", id_item)
                   itemName = getTitleDayOperationForMenuOperation(operation_type);
                 } else if (operation_type === DAY_OPERATIONS.route_client_attention
                   || operation_type === DAY_OPERATIONS.attend_client_petition

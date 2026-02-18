@@ -12,7 +12,6 @@ const AutomatedCorrectionNumberInput = ({
   onChangeAmount:any
 }) => {
   useEffect(() => {
-    console.log("use effect amount: ", amount)
     setInputValue(amount.toString());
   }, [amount])
 
@@ -22,7 +21,6 @@ const AutomatedCorrectionNumberInput = ({
   const handleTextChange = (input:string) => {
     let resultInput:number = 0;
     let parsedInput:number = parseInt(input, 10);
-    console.log("New input: ", input)
     if (isNaN(parsedInput)) {
       resultInput = 0;
     } else {
@@ -39,7 +37,6 @@ const AutomatedCorrectionNumberInput = ({
   };
 
   const handleOnLeaveInput = () => {
-    console.log("Leave input with value")
     if(inputValue === '') handleTextChange(amount.toString());
     else {
       if (inputValue !== amount.toString()) { 
