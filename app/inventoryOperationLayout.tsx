@@ -680,7 +680,7 @@ const inventoryOperationLayout = () => {
 
           const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
           const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
-          const currentWorkdayInformation = await retrieveWorkDayInformationQuery.execute()
+          const currentWorkdayInformation   = await retrieveWorkDayInformationQuery.execute()
 
           if (currentWorkdayInformation === null) {
             Toast.show({
@@ -752,15 +752,15 @@ const inventoryOperationLayout = () => {
           }
         });
 
-          if (isfinalInventory) {
-            Toast.show({
-              type: 'error',
-              text1: 'No se puede iniciar el inventario final.',
-              text2: 'Ya existe un inventario final registrado para este día, por lo tanto no se puede iniciar otro.',
-            });
-            return;
-          }
+        if (isfinalInventory) {
+          Toast.show({
+            type: 'error',
+            text1: 'No se puede iniciar el inventario final.',
+            text2: 'Ya existe un inventario final registrado para este día, por lo tanto no se puede iniciar otro.',
+          });
+          return;
         }
+      }
 
       router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
     }
