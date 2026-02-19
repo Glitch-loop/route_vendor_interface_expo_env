@@ -122,7 +122,6 @@ const RouteMap = ({
    useEffect(() => {
     if (selectedLocation && selectedLocationMarkerRef.current !== null) {
       // @ts-ignore
-      console.log("showing callout")
       setTimeout(() => {
         // @ts-ignore
         selectedLocationMarkerRef.current?.showCallout?.();

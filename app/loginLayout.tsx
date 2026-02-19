@@ -27,10 +27,7 @@ export default function login() {
   const [inputCellphone, setInputCellphone] = useState<string>('');
   const [inputPassword, setInputPassword] = useState<string>('');
 
-  useEffect(() => {
-    console.log("Login")
-    setUpUserSession();
-  }, []);
+  useEffect(() => { setUpUserSession(); }, []);
   
   const setUpUserSession = async () => {
     const authenticationService = di_container.resolve(AuthenticationService);
@@ -66,7 +63,6 @@ export default function login() {
         text2: 'Revisa tu número telefónico y contraseña.',
       });
     } catch (error) {
-      console.log('Error logging user: ', error);
       Toast.show({
         type: 'error',
         text1: 'Error durante autenticación.',

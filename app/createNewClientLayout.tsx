@@ -81,7 +81,6 @@ export default function CreateNewClientLayout() {
   // Auxiliar functions
   const setUpCreateNewClientLayout = async ():Promise<void> => {
     const userLocationCoordinates = await determineUserLocation();
-    console.log("User location coordinates: ", userLocationCoordinates);
     if(storesRedux !== null && dayOperationsRedux !== null && userLocationCoordinates !== undefined) {
       const storesRouteMap: IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap(storesRedux, dayOperationsRedux);
       const storesAround: IStoreRouteMap[] = findStoresAround(userLocationCoordinates, storesRouteMap, 500);
@@ -108,7 +107,6 @@ export default function CreateNewClientLayout() {
 
   //Handlers
   const handleGoBack = (): void => {
-    console.log("Going back to route operation menu")
     router.replace('/routeOperationMenuLayout');
   }
 

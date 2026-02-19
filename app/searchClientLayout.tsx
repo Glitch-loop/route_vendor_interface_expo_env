@@ -168,7 +168,6 @@ const searchClientLayout = () => {
     const handlerGoBack = () => { router.replace('/routeOperationMenuLayout'); }
 
     const handlerRangeChange = async (newRange: number) => {
-        console.log(`Changing search range to ${newRange}m`);
         setmAround(newRange);
         
         const userCurrentLocation: LocationObject | null = await getCurrentUserLocation();
@@ -198,7 +197,6 @@ const searchClientLayout = () => {
                 );
                 
                 if (!isSelectedClientInRange) {
-                    console.log('Selected client is now outside the search range');
                     // Keep the selected client visible even if outside range
                     setStoresToShow(mergeStoresToDisplay(storesWithStatus, nearbyStores, selectedClient));
                 } else {

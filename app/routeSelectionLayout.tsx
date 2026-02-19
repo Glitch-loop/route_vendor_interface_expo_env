@@ -113,23 +113,6 @@ const routeSelectionLayout = () => {
     }
   }
 
-
-
-
-  // Auxiliar functions
-  const determineFlowStartSession = async () => {
-    const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
-    console.log("WORKDAY: ", workday);
-    console.log("USER: ", user);
-    if (workday === null && user !== null) {
-      const { id_vendor } = user;
-      const routes = await getAllRoutesByUserQuery.execute(id_vendor)
-      setVendorRoutes(routes);
-    } else {
-      router.replace('/routeOperationMenuLayout');
-    }
-  }
-
   const holdRouteSelected = (routeDaySelected: RouteDayDTO, route: RouteDTO) => {
     /*
       This screen is part of the start shift process of the vendor.

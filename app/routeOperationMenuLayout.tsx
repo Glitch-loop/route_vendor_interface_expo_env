@@ -170,7 +170,7 @@ const routeOperationMenuLayout = () => {
       const currentOp = await determineCurrentQuery.execute();
       setCurrentInventoryOperation(currentOp);
     } catch (error) {
-      console.log("Error loading current inventory operation: ", error);
+      Toast.show({type: 'error', text1:'Error cargando las operaciones del dia.', text2: 'Reinicia la aplicación'});
     }
   }
 
@@ -232,7 +232,6 @@ const routeOperationMenuLayout = () => {
   // Related with to the end of  the day.
   const finishWorkDay = async ():Promise<void> => {
     try {
-      console.log("Finishing day")
       if (dayOperationsReduxState === null) {
         Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Reinicia la aplicación'});
         return;
@@ -304,7 +303,6 @@ const routeOperationMenuLayout = () => {
       router.replace('/routeSelectionLayout');
 
     } catch (error) {
-      console.log("Error finishing work day: ", error);
       Toast.show({
         type: 'error',
         text1:'Ha habido un error al momento de guardar la información, asegurate de tener conexión a internet para completar el proceso',
@@ -393,7 +391,6 @@ const routeOperationMenuLayout = () => {
                 ) {
                   isClientOperation = false;
                   isPrintableOperation = true;
-                  console.log("Type of inventory: ", getTitleDayOperationForMenuOperation(operation_type), " - id operation: ", id_item)
                   itemName = getTitleDayOperationForMenuOperation(operation_type);
                 } else if (operation_type === DAY_OPERATIONS.route_client_attention
                   || operation_type === DAY_OPERATIONS.attend_client_petition

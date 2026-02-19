@@ -176,7 +176,6 @@ const TableRouteTransactionProductVisualization = (
                 {/* Set title of columns */}
                 { storesToShow.map((store) => {
                     const { store_name, id_store } = store;
-                    console.log('Store name: ', store_name)
                     return (
                       <DataTable.Cell key={id_store} style={tw`${determineHeaderStyle(store_name!, true, undefined)}`}>
                         <Text key={id_store} ellipsizeMode='tail' numberOfLines={1} style={tw`${textHeaderTableStyle}`}>

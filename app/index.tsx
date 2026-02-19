@@ -61,7 +61,7 @@ import UserDTO from "@/src/application/dto/UserDTO";
 
 
 async function localDatabaseInitialization() {
-  console.log("Initializing local database...");
+  // console.log("Initializing local database...");
   // Initializing datasource
   const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
   await sqliteDataSource.initialize();
@@ -71,10 +71,10 @@ async function localDatabaseInitialization() {
   try {
     // console.log("Dropping database")
     // await sqliteDatabaseService.dropDatabase();
-    console.log("Creating database")
+    // console.log("Creating database")
     await sqliteDatabaseService.createDatabase();
   } catch (error) {
-    console.log("Error during database initialization: ", error);
+    // console.log("Error during database initialization: ", error);
   }
 }
 
@@ -92,7 +92,7 @@ export default function Index() {
 
   useEffect(() => {
     // Initializing database
-    console.log("index.tsx")
+    // console.log("index.tsx")
     startSession()
   },[]);
 
@@ -116,7 +116,7 @@ export default function Index() {
     // <Redirect href="/routeSelectionLayout" />
     // <Redirect href="/loginLayout" />
     <View
-      onTouchEnd={() => { console.log("asas") }} 
+      // onTouchEnd={() => { console.log("asas") }} 
       style={tw`flex-1 justify-center items-center`}>
       <Text style={tw`text-lg`}>Iniciando la aplicación</Text>
       {/* <Redirect href="/loginLayout" /> */}
