@@ -218,6 +218,7 @@ const salesLayout = () => {
     that the sale is closed.
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
+    console.log("Start payment sale.")
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
 
@@ -251,13 +252,14 @@ const salesLayout = () => {
       }
 
       if (id_day_operation_dependent === null) {
+        console.log("Error: No se pudo obtener la operación del día dependiente para la venta. id_day_operation_dependent_search_param: ", id_day_operation_dependent_search_param, " is_selling_out_of_route: ", is_selling_out_of_route);
          Toast.show({
           type: 'error',
           text1:'Error interno',
           text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
         return;
       }
-      
+      console.log("execuiting special use case")
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,

@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
@@ -58,7 +58,7 @@ const SummarizeTransaction = ({
 
   /* Declaring redux context */
   const dispatch: AppDispatch = useDispatch();
-  const productInventory = useSelector((state: RootState) => state.productsInventory);
+  const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
   const stores = useSelector((state: RootState) => state.stores);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
   const shiftWorkDay = useSelector((state: RootState) => state.workDayInformation);
@@ -193,8 +193,21 @@ const SummarizeTransaction = ({
       Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
       return;
     }
+
+    if (dayOperationsReduxState === null) {
+      Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'No es posible comenzar una venta a partir de esta. Inicia una nueva venta.'});
+      return;
+    }
+    
     const { id_store, id_route_transaction } = currentTransaction;
-    router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}`);
+    const id_day_operation_dependent = dayOperationsReduxState.find((operation) => operation.id_item === id_route_transaction)?.id_dependency;
+    
+    if (id_day_operation_dependent === undefined || id_day_operation_dependent === null) {
+      Toast.show({type: 'error', text1:'Error al iniciar venta', text2: 'No es posible comenzar una venta a partir de esta. Inicia una nueva venta.'});
+      return;
+    }
+
+    router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}&id_day_operation_dependent_search_param=${id_day_operation_dependent}`);
   };
 
   const handleOnShowDialog = () => { 
