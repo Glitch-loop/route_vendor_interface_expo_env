@@ -125,7 +125,16 @@ const RouteMap = ({
       setTimeout(() => {
         // @ts-ignore
         selectedLocationMarkerRef.current?.showCallout?.();
+
+        setTimeout(() => {
+          // @ts-ignore
+          selectedLocationMarkerRef.current?.hideCallout?.();
+        }, 2000);
+
       }, 100);
+
+
+
     }
     }, [selectedLocation])
     

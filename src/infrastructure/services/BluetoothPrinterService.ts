@@ -74,15 +74,11 @@ export class BluetoothPrinterService implements PrinterService {
             const bondedPrinters = await this.getBondedPrinters();
             
             if (bondedPrinters.length === 0) { // Discover devices
-                console.log("Discovering devices...");
                 RNBluetoothClassic.startDiscovery();
                 this.onDiscoverSubscription = RNBluetoothClassic.onDeviceDiscovered((device: BluetoothDeviceEvent) => { this.discoverAndConnectToPrinter(device); });
                 
             } else { // Printers already bonded
-                console.log("Connecting to bonded printers...");
                 for (const printer of bondedPrinters) {
-                    const { address } = printer;
-                    console.log("Candidate printer to connect: ", address);
                     await this.establishConnectionToPrinter(printer);
                 }
             }

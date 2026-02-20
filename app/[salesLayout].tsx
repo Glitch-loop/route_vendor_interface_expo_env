@@ -329,17 +329,16 @@ const salesLayout = () => {
 
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
-      
-      if (finishedSale) {
 
-          
+      if (finishedSale) {          
           ticketToPrint = getTicketSale(
             productInventoryMap,
             productDevolution,
             productReposition,
             productSale,
             newRouteTransaction === null ? undefined : newRouteTransaction,
-            storeToConsult
+            storeToConsult,
+            userSessionReduxState
           );
       } else {
         ticketToPrint = getTicketSale(
@@ -348,7 +347,8 @@ const salesLayout = () => {
           productReposition,
           productSale,
           undefined, // At this point, the route transacion doesn't exist, it only exsits the movements of the route transaction.
-          storeToConsult
+          storeToConsult,
+          userSessionReduxState
         );
       }
 

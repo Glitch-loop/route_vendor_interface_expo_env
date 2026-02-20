@@ -104,7 +104,7 @@ const SummarizeTransaction = ({
     }
 
     try {
-      const { id_store } = routeTransaction;
+      const { id_store } = currentTransaction;
       let storeToConsult:StoreDTO|undefined = undefined;
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store);
@@ -115,8 +115,9 @@ const SummarizeTransaction = ({
             productsDevolution,
             productsReposition,
             productsSale,
-            routeTransaction,
-            storeToConsult
+            currentTransaction,
+            storeToConsult,
+            userSessionReduxState
           )
         );
     } catch(error) {
@@ -159,6 +160,7 @@ const SummarizeTransaction = ({
         const updatedRouteTransaction:RouteTransactionDTO = retrieveRouteTransactionByIdResult[0];
 
         // Updating state
+        console.log('Updated route transaction: ', updatedRouteTransaction);
         setCurrentTransaction(updatedRouteTransaction);
 
         Toast.show({type: 'success',

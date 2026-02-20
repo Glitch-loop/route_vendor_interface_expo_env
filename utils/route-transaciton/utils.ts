@@ -4,6 +4,7 @@ import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
 import ProductDTO from "@/src/application/dto/ProductDTO";
 import RouteTransactionDTO from "@/src/application/dto/RouteTransactionDTO";
 import StoreDTO from "@/src/application/dto/StoreDTO";
+import UserDTO from "@/src/application/dto/UserDTO";
 
 // UI
 import Toast from "react-native-toast-message";
@@ -13,6 +14,7 @@ import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
 import { format_date_to_UI_format, time_posix_format } from "@/utils/date/momentFormat";
 import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState";
 import { capitalizeFirstLetter } from "../string/utils";
+import { capitalizeFirstLetterOfEachWord } from "../generalFunctions";
 
 // Related to route transaction workflow
 export function retrievePriceFromProductInventory(
@@ -347,7 +349,8 @@ export function getTicketSale(
     productsReposition:RouteTransactionDescriptionDTO[],
     productsSale: RouteTransactionDescriptionDTO[],
     routeTransacion?:RouteTransactionDTO,
-    storeTransaction?:StoreDTO
+    storeTransaction?:StoreDTO,
+    userSession?: UserDTO | null
 ) {
   // Variable to keep the text of the ticket .
   let ticket = '\n';
@@ -393,6 +396,7 @@ export function getTicketSale(
   // If there is information about the transaction, store and vendor, add it to the ticket
   if (routeTransacion !== undefined) {
     const { state, date, payment_method } = routeTransacion;
+    console.log("STATUS ROUTE TRANSACTION: ", state, "++++++++++++++++++++++++++++++++++++++++++++++++++")
     if (state === ROUTE_TRANSACTION_STATE.ACTIVE) {
       status = 'Completada';
     } else {
@@ -419,16 +423,14 @@ export function getTicketSale(
     storeName = store_name !== null ? store_name : 'No disponible'; 
   }
 
-  // if (vendorTransaction !== undefined) {
-  //   vendor = vendorTransaction.name;
-  // }
+  vendor = (userSession !== undefined && userSession !== null) ? userSession.name : 'No disponible';
 
   // Header of the ticket
   ticket += getTicketLine('Ferdis', true, 13);
   ticket += getTicketLine(`Fecha: ${routeTransactionDate}`, true);
-  ticket += getTicketLine(`Vendedor: ${vendor}`, true);
-  ticket += getTicketLine(`Estatus: ${status}`, true);
-  ticket += getTicketLine(`Cliente: ${storeName}`, true);
+  ticket += getTicketLine(`Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`, true);
+  ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, true);
+  ticket += getTicketLine(`Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`, true);
   ticket += getTicketLine('', true);
 
   // Body of the ticket
