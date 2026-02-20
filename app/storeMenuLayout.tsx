@@ -145,7 +145,7 @@ const storeMenuLayout = () => {
   return (!isConsultTransaction ?
     // Main menu of store
     <SafeAreaView>
-      <View style={tw`w-full h-full`}>
+      <View style={tw`w-full h-full flex items-center`}>
         <View style={tw`w-full flex basis-1/12 flex-row justify-center items-center`}>
           <MenuHeader 
             id_store={id_store_search_param}
@@ -170,7 +170,7 @@ const storeMenuLayout = () => {
         }
         <View style={tw`w-11/12 mx-2 mt-2 flex flex-col basis-5/12 flex-col items-center justify-start`}>
           { consultedStore !== null && 
-          <View style={tw`w-11/12 mx-2 basis-2/4 flex flex-col justify-center items-center`}>
+          <View style={tw`w-11/12 mx-2 basis-2/4 flex flex-col justify-center items-start`}>
             <ScrollView
               persistentScrollbar={true}
               showsVerticalScrollIndicator={true}>
@@ -191,7 +191,7 @@ const storeMenuLayout = () => {
           </View>
           }
           {/* Actions band */}
-          <View style={tw`w-full basis-1/4 flex flex-row justify-around items-center`}>
+          <View style={tw`w-full basis-1/4 flex flex-row justify-around items-start`}>
             { productInventoryMap !== undefined &&
               <ProjectButton 
                 title='Transacciones de hoy'
