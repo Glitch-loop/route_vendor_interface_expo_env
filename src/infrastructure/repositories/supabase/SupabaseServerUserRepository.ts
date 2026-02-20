@@ -25,7 +25,8 @@ export class SupabaseServerUserRepository implements ServerUserRepository {
 			const { data, error } = await this.supabase
 				.from(SERVER_DATABASE_ENUM.VENDORS)
 				.select('*')
-				.eq('cellphone', cellphone);
+				.eq('cellphone', cellphone)
+				.eq('status', 1);
 
 			if (error) throw new Error(`Error retrieving user: ${error.message}`);
 

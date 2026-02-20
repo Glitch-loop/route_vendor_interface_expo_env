@@ -129,7 +129,8 @@ export class SupabaseStoreRepository implements StoreRepository, SyncServerStore
         try {
             const { data, error } = await this.supabase
                 .from(SERVER_DATABASE_ENUM.STORES)
-                .select('*');
+                .select('*')
+                .eq('status_store', 1);
 
             if (error) throw new Error(`Error listing stores: ${error.message}`);
             const stores: Store[] = [];

@@ -51,10 +51,6 @@ This command will move you to the folder where resides the native code.
 This command will start the build. Depending on you computer it will take a while.
 
 
-npx expo prebuild
-
-npx expo run:android
-
 ./gradlew clean
 
 ./gradlew assembleRelease

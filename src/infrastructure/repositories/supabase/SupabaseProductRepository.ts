@@ -69,7 +69,8 @@ export class SupabaseProductRepository extends ProductRepository {
     const { data, error } = await this.supabaseDataSource
       .getClient()
       .from(SERVER_DATABASE_ENUM.PRODUCTS)
-      .select('*');
+      .select('*')
+      .eq('product_status', 1);
 
     if (error) {
       throw new Error(`Failed to retrieve products: ${error.message}`);
