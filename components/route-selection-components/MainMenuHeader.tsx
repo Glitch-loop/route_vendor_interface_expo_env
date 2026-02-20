@@ -11,22 +11,19 @@ import { logoutUser } from '@/redux/slices/userSlice'
 
 // UI components
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import { capitalizeFirstLetterOfEachWord } from '@/utils/generalFunctions';
 
 
-const MainMenuHeader = () => {
-  // Redux (context definitions)
-  const dispatch:AppDispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user);
-
-  // router
-  const router:Router = useRouter();
-
-  // Handlers
-  const handlerLogOut = () => {
-    dispatch(logoutUser(null));
-
-    router.replace('/loginLayout')
+const MainMenuHeader = (
+  {
+    onLogOut
+  }:
+  {
+    onLogOut: () => void;
   }
+) => {
+  // Redux (context definitions)
+  const user = useSelector((state: RootState) => state.user);
 
   return (
     <View
@@ -35,7 +32,7 @@ const MainMenuHeader = () => {
         <Text 
           ellipsizeMode='tail'
           numberOfLines={1}
-          style={tw`max-w-48 text-base text-black text-center`}>{user ? user.name : 'No identificado'}</Text>
+          style={tw`max-w-48 text-base text-black text-center`}>{user ? capitalizeFirstLetterOfEachWord(user.name) : 'No identificado'}</Text>
         <Text 
           ellipsizeMode='tail'
           numberOfLines={1}
@@ -43,7 +40,7 @@ const MainMenuHeader = () => {
       </View>
       <ProjectButton
           title='Cerrar sesión'
-          onPress={() => { handlerLogOut()}}
+          onPress={() => { onLogOut()}}
           buttonVariant='primary'
           textStyle='text-gray-800'
           buttonStyle={tw`px-4 py-3 rounded-md`}

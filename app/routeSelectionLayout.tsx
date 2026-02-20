@@ -28,6 +28,9 @@ import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/Retrie
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
 
+// Services
+import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
+
 // DTOs
 import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
@@ -46,6 +49,7 @@ import { ActivityIndicator } from 'react-native-paper';
 // Utils
 import { DAYS_ARRAY } from '@/src/core/constants/Days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
+import { logoutUser } from '@/redux/slices/userSlice';
 
 const routeSelectionLayout = () => {
   // Redux
@@ -180,6 +184,13 @@ const routeSelectionLayout = () => {
     setRouteSelected(undefined);
   };
 
+  const handleLogout = async () => {
+    const authenticationService = container.resolve(AuthenticationService);
+    await authenticationService.logoutUser();
+    dispatch(logoutUser(null));
+    router.replace('/loginLayout');
+  }
+
   const onRefresh = () => {
     // startSession();
     setRefreshing(true);
@@ -211,7 +222,8 @@ const routeSelectionLayout = () => {
                 }
               </View>
           </ActionDialog>
-        <MainMenuHeader/>
+        <MainMenuHeader
+          onLogOut={handleLogout} />
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           >

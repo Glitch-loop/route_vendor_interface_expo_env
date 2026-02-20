@@ -58,7 +58,6 @@ export default class AuthenticationService {
         const useSessionKey = 'twister_user_session';
         // console.log('TOKEN: ', process.env.EXPO_USER_SESSION_KEY)
         if (!useSessionKey) return null;
-        
         const session = await SecureStore.getItemAsync(useSessionKey);
         if (!session) return null;
         
@@ -70,6 +69,11 @@ export default class AuthenticationService {
             await SecureStore.deleteItemAsync(useSessionKey);
             return null;
         }
+    }
+
+    async logoutUser(): Promise<void> {
+        const useSessionKey = "twister_user_session";
+        await SecureStore.deleteItemAsync(useSessionKey);
     }
 
     private async persistSession(user: User): Promise<void> {
