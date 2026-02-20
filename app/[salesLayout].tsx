@@ -559,11 +559,11 @@ const salesLayout = () => {
                   totalMessage        = { 'Total de valor de la reposición:' }
                   />
               </View>
-              <View style={tw`flex flex-row my-1`}>
+              <View style={tw`w-11/12 flex flex-row justify-end`}>
                 <SubtotalLine
                   description     = { getMessageForProductDevolutionOperation(productDevolution, productReposition, productInventoryMap) }
-                  total           = { getProductDevolutionBalanceWithoutNegativeNumber(productDevolution, productReposition, productInventoryMap).toString() }
-                  fontStyle={'font-bold text-lg'}/>
+                  total           = { getProductDevolutionBalanceWithoutNegativeNumber(productDevolution, productReposition, productInventoryMap) }
+                  fontStyle       = {'font-bold text-lg'}/>
               </View>
               <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
               <View style={tw`w-full flex flex-row`}>

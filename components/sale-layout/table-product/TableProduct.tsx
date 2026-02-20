@@ -225,24 +225,26 @@ const TableProduct = ({
         }
         )
       }
-      <SubtotalLine
-        description={totalMessage}
-        total={
-          commitedProducts.reduce((accumulator, currentValue) => {
-          let price:number = 0;
-          const { amount, id_product_inventory } = currentValue;
+      <View style={tw`w-11/12 flex flex-row justify-end mr-2`}>
+        <SubtotalLine
+          description={totalMessage}
+          total={
+            commitedProducts.reduce((accumulator, currentValue) => {
+            let price:number = 0;
+            const { amount, id_product_inventory } = currentValue;
 
-          if (catalogMap.has(id_product_inventory)) {
-            const productCatalog = catalogMap.get(id_product_inventory)!;
-            const { price_at_moment } = productCatalog;
-            price = price_at_moment;
+            if (catalogMap.has(id_product_inventory)) {
+              const productCatalog = catalogMap.get(id_product_inventory)!;
+              const { price_at_moment } = productCatalog;
+              price = price_at_moment;
+            }
+            
+            return accumulator + amount * price;
+            }, 0)
           }
-          
-          return accumulator + amount * price;
-          }, 0).toString()
-        }
-        fontStyle={'font-bold text-lg'}
-      />
+          fontStyle={'font-bold text-lg'}
+        />
+      </View>
       <View style={tw`w-11/12 border border-solid mt-2`} />
     </View>
   );

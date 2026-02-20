@@ -283,6 +283,7 @@ const SummarizeTransaction = ({
               totalSectionCaptionMessage={'Total venta: '}/>
             <View style={tw`w-full border`}/>
             {/* Totals sections */}
+            <Text style={tw`text-black font-bold text-xl text-center mt-3`}>Resumen</Text>
             <TotalsSummarize
                 routeTransaction={currentTransaction}
                 productsDevolution={productsDevolution}

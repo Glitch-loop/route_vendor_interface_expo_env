@@ -3,6 +3,8 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import tw from 'twrnc';
 
+// Utils
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 const SubtotalLine = ({
     description,
@@ -10,16 +12,16 @@ const SubtotalLine = ({
     fontStyle,
   }:{
     description:string,
-    total:string,
+    total:number,
     fontStyle:string
   }) => {
   return (
-    <View style={tw`w-11/12 flex flex-row justify-center items-center`}>
+    <View style={tw`w-full flex flex-row justify-end`}>
       <View style={tw`flex basis-5/6`}>
         <Text style={tw`text-black text-right ${fontStyle}`}>{description}</Text>
       </View>
-      <View style={tw`flex basis-1/6`}>
-        <Text style={tw`text-black text-center ${fontStyle}`}>${total}</Text>
+      <View style={tw`flex items-center justify-center`}>
+        <Text style={tw`text-black ${fontStyle}`}> {formatNumberAsAccountingCurrency(total)}</Text>
       </View>
     </View>
   );

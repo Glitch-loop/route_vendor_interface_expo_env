@@ -7,6 +7,7 @@ import tw from 'twrnc';
 // Utils
 import { calculateChange, getTransactionIdentifier } from '@/utils/route-transaciton/utils';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 function initializeState(total:number, paymentMethod: PAYMENT_METHODS) {
   let result:number = 0;
@@ -62,7 +63,7 @@ const PaymentMenu = ({
           Total:
         </Text>
         <Text style={tw`text-xl text-black text-left flex flex-row basis-1/2`}>
-          ${total > 0 ? total : total * -1 }
+          { formatNumberAsAccountingCurrency(total > 0 ? total : total * -1) }
         </Text>
       </View>
       {/* Section for cash method */}
@@ -91,7 +92,7 @@ const PaymentMenu = ({
             </Text>
           </View>
           <Text style={tw`text-black text-xl text-left flex flex-row basis-1/2`}>
-            ${ calculateChange(total, cashReceived) }
+            { formatNumberAsAccountingCurrency(calculateChange(total, cashReceived)) }
           </Text>
         </View>
       }

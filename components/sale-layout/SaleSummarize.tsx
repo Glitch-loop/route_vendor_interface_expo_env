@@ -17,7 +17,7 @@ import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 
 // Utils
-import { capitalizeFirstLetter } from '@/utils/string/utils';
+import { capitalizeFirstLetter, formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 function combineCommitedProduct(
   productSale:RouteTransactionDescriptionDTO[],
@@ -120,10 +120,10 @@ const SaleSummarize = ({
             return (
               <View key={id_product_inventory} style={tw`w-full my-1 flex flex-row items-center`}>
                 <Text style={tw`flex basis-1/4 text-center text-black`}>{ capitalizeFirstLetter(product_name) }</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>${ price_at_moment }</Text>
+                <Text style={tw`flex basis-1/4 text-center text-black`}>{ formatNumberAsAccountingCurrency(price_at_moment) }</Text>
                 <Text style={tw`flex basis-1/4 text-center text-black`}>{ amount }</Text>
                 <Text style={tw`flex basis-1/4 text-center text-black`}>
-                  ${ amount * price_at_moment }
+                  { formatNumberAsAccountingCurrency(amount * price_at_moment) }
                 </Text>
               </View>
             );
@@ -144,7 +144,7 @@ const SaleSummarize = ({
             productsDevolution,
             [],
             productInventoryMap)
-            .toString() }
+             }
           fontStyle={'font-bold italic text-base'}/>
       }
 
@@ -207,14 +207,14 @@ const SaleSummarize = ({
                   {/* Information related to the sales */}
 
                   <View style={tw`w-16 flex`}>
-                    <Text style={tw`text-center text-black`}>${ price_at_moment }</Text>
+                    <Text style={tw`text-center text-black`}>{ formatNumberAsAccountingCurrency(price_at_moment) }</Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>{ productSale.amount }</Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>
-                      ${ price_at_moment * productSale.amount }
+                      { formatNumberAsAccountingCurrency(price_at_moment * productSale.amount) }
                     </Text>
                   </View>
 
@@ -227,12 +227,12 @@ const SaleSummarize = ({
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>
-                      ${ price_at_moment * productReposition.amount }
+                      { formatNumberAsAccountingCurrency(price_at_moment * productReposition.amount) }
                     </Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`underline font-bold text-center text-black`}>
-                      {productSale.amount + productReposition.amount}
+                      { formatNumberAsAccountingCurrency((productSale.amount + productReposition.amount) * price_at_moment) }
                     </Text>
                   </View>
                 </View>
@@ -258,7 +258,7 @@ const SaleSummarize = ({
                 {/* Sale Subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    ${getProductDevolutionBalanceWithoutNegativeNumber(productsSale, [], productInventoryMap)}
+                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber(productsSale, [], productInventoryMap))}
                   </Text>
                 </View>
                 {/* Reposition amount */}
@@ -268,7 +268,7 @@ const SaleSummarize = ({
                 {/* Reposition subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    ${getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition, productInventoryMap)}
+                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition, productInventoryMap))}
                   </Text>
                 </View>
                 {/* Total product amount amount */}

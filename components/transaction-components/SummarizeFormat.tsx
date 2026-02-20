@@ -8,10 +8,11 @@ import tw from 'twrnc';
 import { getProductDevolutionBalanceWithoutNegativeNumber } from '@/utils/route-transaciton/utils';
 
 // Components
-import SubtotalLine from '../sale-layout/SubtotalLine';
+import SubtotalLine from '@/components/sale-layout/SubtotalLine';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 /*
   Although this component is more related to "transaction summrizing",
@@ -50,9 +51,9 @@ const SummarizeFormat = ({
         return (
           <View key={id_route_transaction_description} style={tw`w-full my-1 flex flex-row items-center`}>
             <Text style={tw`flex basis-1/4 text-center text-black`}>{product_name}</Text>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>${price_at_moment}</Text>
+            <Text style={tw`flex basis-1/4 text-center text-black`}>{formatNumberAsAccountingCurrency(price_at_moment)}</Text>
             <Text style={tw`flex basis-1/4 text-center text-black`}>{amount}</Text>
-            <Text style={tw`flex basis-1/4 text-center text-black`}>${amount * price_at_moment}</Text>
+            <Text style={tw`flex basis-1/4 text-center text-black`}>{formatNumberAsAccountingCurrency(amount * price_at_moment)}</Text>
           </View>
         );})
         ) : (
@@ -62,7 +63,7 @@ const SummarizeFormat = ({
       { productsMovement.length > 0 &&
         <SubtotalLine
           description={totalSectionCaptionMessage}
-          total={getProductDevolutionBalanceWithoutNegativeNumber(productsMovement, [], productInventoryMap).toString()}
+          total={getProductDevolutionBalanceWithoutNegativeNumber(productsMovement, [], productInventoryMap)}
           fontStyle={'font-bold italic text-base'}/>
       }
     </View>

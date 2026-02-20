@@ -10,6 +10,7 @@ import { View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ActionButton from '@/components/sale-layout/table-product/ActionButton';
 import AutomatedCorrectionNumberInput from '@/components/shared-components/AutomatedCorrectionInput';
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 const CardProduct = ({
     productName,
@@ -66,7 +67,7 @@ const CardProduct = ({
         <Text style={tw`text-black text-base`}>{productName}</Text>
       </View>
       <View style={tw`flex flex-row basis-2/12 justify-center`}>
-        <Text style={tw`text-black text-lg`}>${price}</Text>
+        <Text style={tw`text-black text-lg`}>{formatNumberAsAccountingCurrency(price)}</Text>
       </View>
       <View style={tw`flex flex-row basis-4/12 justify-around items-center`}>
         <ActionButton
@@ -89,7 +90,7 @@ const CardProduct = ({
         </ActionButton>
       </View>
       <View style={tw`flex flex-row basis-3/12 justify-center`}>
-        <Text style={tw`text-black text-lg`}>${subtotal}</Text>
+        <Text style={tw`text-black text-lg`}>{formatNumberAsAccountingCurrency(subtotal)}</Text>
       </View>
       <View style={tw`w-full h-full absolute bottom-2 left-2 flex flex-row justify-end items-start`}>
         <View>

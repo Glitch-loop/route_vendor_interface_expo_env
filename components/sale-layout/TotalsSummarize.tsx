@@ -15,6 +15,7 @@ import ProductDTO from '@/src/application/dto/ProductDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 const TotalsSummarize = ({
   routeTransaction,
@@ -37,6 +38,8 @@ const TotalsSummarize = ({
   let cashReceived              = '$0';
   let greatTotalNumber          = (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution);
 
+
+  
   // Getting product devolution balance
   if (subtotalProductReposition - subtotalProductDevolution < 0) {
     productDevolutionBalance = '-$' + ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
@@ -68,7 +71,7 @@ const TotalsSummarize = ({
           Valor total de devolución de producto:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
-          -${subtotalProductDevolution}
+          { formatNumberAsAccountingCurrency(subtotalProductDevolution) }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
@@ -76,7 +79,7 @@ const TotalsSummarize = ({
           Valor total de reposición de producto:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
-          ${subtotalProductReposition}
+          { formatNumberAsAccountingCurrency(subtotalProductReposition) }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
@@ -85,7 +88,7 @@ const TotalsSummarize = ({
         </Text>
         <Text
           style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
-          { productDevolutionBalance }
+          { formatNumberAsAccountingCurrency(subtotalProductReposition - subtotalProductDevolution) }
         </Text>
       </View>
       <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
@@ -94,7 +97,7 @@ const TotalsSummarize = ({
           Balance de devolución de producto:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
-          { productDevolutionBalance }
+          { formatNumberAsAccountingCurrency(subtotalProductReposition - subtotalProductDevolution) }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
@@ -102,7 +105,7 @@ const TotalsSummarize = ({
           Total de venta:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
-          ${ subtotalSaleProduct }
+          { formatNumberAsAccountingCurrency(subtotalSaleProduct) }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>
@@ -110,7 +113,7 @@ const TotalsSummarize = ({
           Gran total:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
-          { greatTotal }
+          { formatNumberAsAccountingCurrency(greatTotalNumber) }
         </Text>
       </View>
       { routeTransaction !== undefined &&
@@ -119,7 +122,7 @@ const TotalsSummarize = ({
             Metodo de pago {`(${getNamePaymentMethodById(routeTransaction.payment_method)})`}:
           </Text>
           <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
-            { cashReceived }
+            { formatNumberAsAccountingCurrency(routeTransaction.cash_received) }
           </Text>
         </View>
       }
@@ -129,7 +132,7 @@ const TotalsSummarize = ({
             Cambio:
           </Text>
           <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
-            ${ calculateChange(greatTotalNumber, routeTransaction.cash_received) }
+            { formatNumberAsAccountingCurrency(calculateChange(greatTotalNumber, routeTransaction.cash_received)) }
           </Text>
         </View>
       }
