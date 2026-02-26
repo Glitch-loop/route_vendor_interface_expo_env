@@ -28,7 +28,7 @@ export default class ListRoutesByUserQuery {
     async execute(userId: string): Promise<RouteDTO[]> {
         const vendorRoutes: Route[] = [];
         const routes: Route[] = await this.repo.listRoutesByUser(userId);
-        
+
         // Get the routes of the vendor and group the clients to attend by route day.
         for (const route of routes) {
             const routeDayOfRoute:RouteDay[] = [];

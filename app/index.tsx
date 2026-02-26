@@ -70,7 +70,7 @@ async function localDatabaseInitialization() {
   const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
   try {
     // console.log("Dropping database")
-    // await sqliteDatabaseService.dropDatabase();
+    await sqliteDatabaseService.dropDatabase();
     // console.log("Creating database")
     await sqliteDatabaseService.createDatabase();
   } catch (error) {

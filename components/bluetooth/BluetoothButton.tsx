@@ -87,8 +87,12 @@ const BluetoothButton = () => {
   const initializeBluetoohComponent = async () => {
     setConnectedPrinter(await printerService.getConnectedPrinter())
   }
+
   // Handlers
   const handleOnAccessBleMenu = async () => {
+    console.log("Accessing bluetooth menu, discovering printers...");
+    console.log("Accessing bluetooth menu, discovering printers...");
+    
     setPairedPrinters(await getPairedPrinters(true));
     printerService.discoverPrinters(
       (device: BluetoothDeviceEvent) => {
@@ -100,8 +104,8 @@ const BluetoothButton = () => {
         });
       }
     )
-    setShowListPrintersDialog(true);
     
+    setShowListPrintersDialog(true);
   }
 
   const handlePairDevice = async (deviceEvent: BluetoothDeviceEvent) => {

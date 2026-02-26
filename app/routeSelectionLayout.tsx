@@ -81,7 +81,6 @@ const routeSelectionLayout = () => {
 
     try {
       const workDayInformation: WorkDayInformationDTO | null = await retrieveCurrentWorkdayInformationQuery.execute();
-
       if (workDayInformation !== null) { // A work day exists
         const dayOperations: DayOperationDTO[] = await retrieveDayOperationQuery.execute();
         const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
@@ -104,12 +103,12 @@ const routeSelectionLayout = () => {
           });
           return;
         }
-        
         const { id_vendor } = user;
         const routes = await getAllRoutesByUserQuery.execute(id_vendor)
         setVendorRoutes(routes);
       }
     } catch (error) {
+      console.error("Error during session start: ", error);
       Toast.show({type: 'error',
         text1:'Error durante la inicialización de la aplicación.',
         text2: 'Ha habido un error durante la inicialización de la app, por favor intente nuevamente',

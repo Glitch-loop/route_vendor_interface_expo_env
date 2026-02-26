@@ -8,7 +8,8 @@ export class AndroidPlatformPermissions implements PlatformPermissionsService {
         if (Platform.OS !== 'android') throw new Error('AndroidPlatformPermissions can only be used on Android platform.');
 
         const results = await PermissionsAndroid.requestMultiple(permissions);
-        return Object.values(results).every(r => r === PermissionsAndroid.RESULTS.GRANTED);        
+        console.log("Permission results: ", results);
+        return Object.values(results).every(r => r === PermissionsAndroid.RESULTS.GRANTED || r === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN);        
     }
 
     async isPermissionGranted(permission: Permission): Promise<boolean> {
