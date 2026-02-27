@@ -42,7 +42,9 @@ const toastConfig = {
 const ToastMessage = () => {
   return (
     <View style={tw`absolute w-full z-20 flex flex-row justify-center`}>
-      <Toast config={toastConfig}/>
+      <Toast 
+        onPress={() => {console.log("pressed")}}
+        config={toastConfig}/>
     </View>
   );
 };
