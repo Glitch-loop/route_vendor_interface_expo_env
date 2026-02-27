@@ -43,7 +43,10 @@ const ToastMessage = () => {
   return (
     <View style={tw`absolute w-full z-20 flex flex-row justify-center`}>
       <Toast 
-        onPress={() => {console.log("pressed")}}
+        onShow={() => { setTimeout(() => { Toast.hide() }, 3000) }}
+        onPress={() => {
+          Toast.hide();
+        }}
         config={toastConfig}/>
     </View>
   );
