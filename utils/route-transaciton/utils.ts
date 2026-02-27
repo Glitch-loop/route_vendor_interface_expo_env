@@ -396,7 +396,6 @@ export function getTicketSale(
   // If there is information about the transaction, store and vendor, add it to the ticket
   if (routeTransacion !== undefined) {
     const { state, date, payment_method } = routeTransacion;
-    console.log("STATUS ROUTE TRANSACTION: ", state, "++++++++++++++++++++++++++++++++++++++++++++++++++")
     if (state === ROUTE_TRANSACTION_STATE.ACTIVE) {
       status = 'Completada';
     } else {
@@ -415,7 +414,7 @@ export function getTicketSale(
 
   } else { // Route transaction is in process.
     status = 'En proceso';
-    routeTransactionDate = format_date_to_UI_format(time_posix_format().toString());
+    routeTransactionDate = format_date_to_UI_format(new Date());
   }
 
   if (storeTransaction !== undefined) {

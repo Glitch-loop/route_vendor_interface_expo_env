@@ -139,7 +139,6 @@ export class BluetoothPrinterService implements PrinterService {
             
             if (addressDevice === address) {
                 callback("disconnected");
-                console.log("Printer disconnected");
             }
             
         });
@@ -155,7 +154,9 @@ export class BluetoothPrinterService implements PrinterService {
         const isConnected = await RNBluetoothClassic.isDeviceConnected(address);
         if (!isConnected) throw new Error("Printer is not connected.");
 
-        await RNBluetoothClassic.writeToDevice(address, messageToPrint);
+        // messageToPrint.normalize()
+        const normalizedMessage = messageToPrint.normalize("NFKD");
+        await RNBluetoothClassic.writeToDevice(address, normalizedMessage, "latin1");
     }
 
     async connectDevice(device: BluetoothDevice): Promise<boolean> {

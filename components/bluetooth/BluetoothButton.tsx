@@ -89,10 +89,7 @@ const BluetoothButton = () => {
   }
 
   // Handlers
-  const handleOnAccessBleMenu = async () => {
-    console.log("Accessing bluetooth menu, discovering printers...");
-    console.log("Accessing bluetooth menu, discovering printers...");
-    
+  const handleOnAccessBleMenu = async () => {    
     setPairedPrinters(await getPairedPrinters(true));
     printerService.discoverPrinters(
       (device: BluetoothDeviceEvent) => {
@@ -126,13 +123,13 @@ const BluetoothButton = () => {
 
       } else {
         Toast.show({type: 'error',
-          text1:'No se ha podido regitrar la impresora',
+          text1:'No se ha podido registrar la impresora',
           text2: 'Si pide contraseña, generalmente es: 0000 ó 1234.'});
       }
 
     } catch {
       Toast.show({type: 'error',
-        text1:'No se ha podido regitrar la impresora',
+        text1:'No se ha podido registrar la impresora',
         text2: 'Intenta nuevamente.'});
     }
   };
