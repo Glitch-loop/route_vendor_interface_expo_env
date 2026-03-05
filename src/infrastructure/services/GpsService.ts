@@ -1,6 +1,6 @@
 // Libraries
 import { inject, injectable } from "tsyringe";
-import { getCurrentPositionAsync, LocationObject, hasServicesEnabledAsync, requestForegroundPermissionsAsync } from "expo-location";
+import { getCurrentPositionAsync, LocationObject, hasServicesEnabledAsync, requestForegroundPermissionsAsync, Accuracy } from "expo-location";
 import { PermissionsAndroid } from "react-native";
 
 // Interfaces
@@ -22,7 +22,7 @@ export class GpsService implements LocationService {
     async getCurrentLocation(): Promise<Coordinates | null> {
         await this.setGPSServiceEnvironment();
         
-        const currentLocation:LocationObject = await getCurrentPositionAsync();
+        const currentLocation:LocationObject = await getCurrentPositionAsync({accuracy: Accuracy.High});
         const { coords } = currentLocation;
         const { latitude, longitude } = coords;
 

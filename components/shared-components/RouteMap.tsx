@@ -138,8 +138,7 @@ const RouteMap = ({
     }
     }, [selectedLocation])
     
-   
-   
+
   // Auxiliar
    const setUpMap = async () => {
       // const userLocation: LocationObject | null = await userCurrentLocation.getCurrentUserLocation();
@@ -151,6 +150,8 @@ const RouteMap = ({
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         })
+
+
         // const newCamera: Camera = {
         //   center: {
         //       latitude: latitude,
@@ -192,14 +193,13 @@ const RouteMap = ({
     <View style={styles.mapContainer}>
       <MapView
         ref={mapRef}
-        
-        // camera={initialCoordinates}
         region={initialLocation}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         showsUserLocation={true}
         showsMyLocationButton={true}
-        onPress={(data) => { handleLocationSelected(data.nativeEvent.coordinate); }}>
+        onPress={(data) => { handleLocationSelected(data.nativeEvent.coordinate); }}
+        >
           { selectedLocation &&
           <Marker  
               ref={selectedLocationMarkerRef}

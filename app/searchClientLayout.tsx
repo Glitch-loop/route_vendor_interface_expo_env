@@ -88,7 +88,7 @@ function criteriaForSelectedItemsByStoreAddressForSearchBar(item: IStoreRouteMap
 }
 
 const searchClientLayout = () => {
-    const { getCurrentUserLocation } = useCurrentLocation();
+    const { getCurrentUserLocation, getMostAccurateCurrentUserLocation } = useCurrentLocation();
     
     // Redux
     const storesRedux = useSelector((state: RootState) => state.stores);
@@ -160,20 +160,31 @@ const searchClientLayout = () => {
         setStoresWithStatus(storeWithRouteDay);
         
         // Starting map information.
-        const location = await getCurrentUserLocation();
-        setUserLocation(location);
+        getCurrentUserLocation()
+        .then((loc) => {
+            setUserLocation(loc);
+            
+            if (loc) {
+                // Get stores that are around the user
+                const nearbyStores = findStoresAround(loc.coords, [ ...allStores ], mAround);
+                setStoresAround(nearbyStores);
+                setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, nearbyStores, undefined));
+            }
+
+            getMostAccurateCurrentUserLocation().then((location) => {
+                setUserLocation(location);
         
-        if (location) {
-            // Get stores that are around the user
-            const nearbyStores = findStoresAround(location.coords, [ ...allStores ], mAround);
-            setStoresAround(nearbyStores);
-            setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, nearbyStores, undefined));
-        }
+                if (location) {
+                    // Get stores that are around the user
+                    const nearbyStores = findStoresAround(location.coords, [ ...allStores ], mAround);
+                    setStoresAround(nearbyStores);
+                    setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, nearbyStores, undefined));
+                }
+            
+            })
+            
 
-
-
-
-    
+        });
     }
 
     // Handlers
@@ -181,23 +192,28 @@ const searchClientLayout = () => {
 
     const handlerRangeChange = async (newRange: number) => {
         setmAround(newRange);
-        
-        const userCurrentLocation: LocationObject | null = await getCurrentUserLocation();
-
-        if (userCurrentLocation === null && selectedLocation === undefined) {
-            Toast.show({
-                type: 'error',
-                text1: 'No hay un punto de referencia para buscar tiendas cercanas.',
-                text2: 'Asegúrate de que los permisos de ubicación estén habilitados o selecciona un punto en el mapa.'
-            });
-            return;
-        }
-
-
+    
 
         // Update stores around with new range
         if (allStoresCatalog.length > 0 && dayOperationsRedux) {
-            const pivotLocation:LocationObjectCoords|LatLng = selectedLocation ? selectedLocation : userCurrentLocation!.coords;
+            let pivotLocation:LocationObjectCoords|LatLng|undefined = undefined
+
+            if (selectedLocation === undefined) {
+                const userCurrentLocation: LocationObject | null = await getCurrentUserLocation();
+
+               if (userCurrentLocation === null) {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'No hay un punto de referencia para buscar tiendas cercanas.',
+                        text2: 'Asegúrate de que los permisos de ubicación estén habilitados o selecciona un punto en el mapa.'
+                    });
+                    return;
+                }
+
+                pivotLocation =  userCurrentLocation.coords;
+            } else {
+                pivotLocation = selectedLocation;
+            }
 
             const nearbyStores = findStoresAround(pivotLocation, [...allStoresCatalog], newRange);
             setStoresAround(nearbyStores);
@@ -372,7 +388,7 @@ const searchClientLayout = () => {
 
                     {/* Map Container - Much Larger */}
                     <View style={tw`w-full h-96 flex-1 px-4 py-2`}>
-                        {userLocation === null ? (
+                        {/* {userLocation !== null ? (
                             <View style={tw`w-full h-full flex justify-center items-center border-2 border-gray-300 rounded-lg bg-gray-100`}>
                                 <ActivityIndicator size="large" />
                                 <Text style={tw`mt-2 text-gray-600`}>Cargando ubicación...</Text>
@@ -381,8 +397,11 @@ const searchClientLayout = () => {
                             <View style={tw`w-full h-full border-2 border-gray-300 rounded-lg overflow-hidden`}>
                                 <RouteMap 
                                     initialCoordinates={{ 
-                                        latitude: userLocation?.coords.latitude || 20.66020491403627, 
-                                        longitude: userLocation?.coords.longitude || -105.23041097690118 
+                                        latitude: 20.66020491403627, 
+                                        // userLocation?.coords.latitude || 20.66020491403627, 
+                                        longitude: -105.23041097690118 
+                                        // userLocation?.coords.longitude || -105.23041097690118 
+                                        
                                     }}
                                     selectedStore={selectedClient}
                                     stores={storesToShow}
@@ -390,7 +409,19 @@ const searchClientLayout = () => {
                                     onSelectLocation={handleSelectLocation}
                                 />
                             </View>
-                        )}
+                        )} */}
+                        <RouteMap 
+                            initialCoordinates={
+                                { 
+                                    latitude: userLocation?.coords.latitude || 20.66020491403627, 
+                                    longitude: userLocation?.coords.longitude || -105.23041097690118     
+                                }
+                            }
+                            selectedStore={selectedClient}
+                            stores={storesToShow}
+                            onClick={setSelectedClient}
+                            onSelectLocation={handleSelectLocation}
+                        />
                     </View>
 
                     {/* Selected Client Info */}
