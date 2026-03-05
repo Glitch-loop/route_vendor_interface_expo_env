@@ -119,49 +119,61 @@ const searchClientLayout = () => {
     }, [storesRedux, dayOperationsRedux]);
 
     const setUpSearchClientLayout = async() => {
+        if (dayOperationsRedux === null || storesRedux === null) {
+            Toast.show({
+                type: 'error',
+                text1: 'Ha habido un error al cargar la información de las tiendas.',
+                text2: 'Porfavor, reinicia la aplicación.'
+            });
+            return;
+        }
+
+        const dayOperations: DayOperationDTO[] = [...dayOperationsRedux];
+        const idStoresWithDayOperation: Map<string, DayOperationDTO> = new Map<string, DayOperationDTO>();
+        const storeWithRouteDay: IStoreRouteMap[] = [];
+
+        // Starting search bar information
+        const allStores:IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap([...storesRedux], [...dayOperationsRedux]);
+        setAllStoresCatalog(allStores);
+
+        // Get stores that alredy has day operations (today's client, clients attended out of route, etc) and set them in the state to show in the map
+        dayOperations.forEach((dayOperation) => {
+            const { operation_type, id_item } = dayOperation;    
+            if (operation_type === DAY_OPERATIONS.attend_client_petition
+            ||  operation_type === DAY_OPERATIONS.attention_out_of_route 
+            ||  operation_type === DAY_OPERATIONS.new_client_registration
+            ||  operation_type === DAY_OPERATIONS.route_client_attention) {
+                idStoresWithDayOperation.set(id_item, dayOperation); // In theory, there are only stores
+            }
+        });
+
+        // Get catalog of stores.
+        allStores.forEach((store) => {
+            const { id_store } = store;
+            const dayOperationForStore = idStoresWithDayOperation.get(id_store);       
+
+            if (dayOperationForStore !== undefined) {
+                storeWithRouteDay.push(store);
+            }
+        });
+        
+        setStoresWithStatus(storeWithRouteDay);
+        
+        // Starting map information.
         const location = await getCurrentUserLocation();
         setUserLocation(location);
-
-        if (dayOperationsRedux !== null && storesRedux !== null) {
-            // Get catalog of stores.
-            const allStores:IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap([...storesRedux], [...dayOperationsRedux]);
-            setAllStoresCatalog(allStores);
-
-
-            const dayOperations: DayOperationDTO[] = [...dayOperationsRedux];
-            const idStoresWithDayOperation: Map<string, DayOperationDTO> = new Map<string, DayOperationDTO>();
-            const storeWithRouteDay: IStoreRouteMap[] = [];
-
-            // Get stores that alredy has day operations (today's client, clients attended out of route, etc) and set them in the state to show in the map
-            dayOperations.forEach((dayOperation) => {
-                const { operation_type, id_item } = dayOperation;    
-                if (operation_type === DAY_OPERATIONS.attend_client_petition
-                ||  operation_type === DAY_OPERATIONS.attention_out_of_route 
-                ||  operation_type === DAY_OPERATIONS.new_client_registration
-                ||  operation_type === DAY_OPERATIONS.route_client_attention) {
-                    idStoresWithDayOperation.set(id_item, dayOperation); // In theory, there are only stores
-                }
-            });
-
-            allStores.forEach((store) => {
-                const { id_store } = store;
-                const dayOperationForStore = idStoresWithDayOperation.get(id_store);       
-
-                if (dayOperationForStore !== undefined) {
-                    storeWithRouteDay.push(store);
-                }
-            });
-            
-            setStoresWithStatus(storeWithRouteDay);
-
-
-            if (location) {
-                // Get stores that are around the user
-                const nearbyStores = findStoresAround(location.coords, [ ...allStores ], mAround);
-                setStoresAround(nearbyStores);
-                setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, nearbyStores, undefined));
-            }
+        
+        if (location) {
+            // Get stores that are around the user
+            const nearbyStores = findStoresAround(location.coords, [ ...allStores ], mAround);
+            setStoresAround(nearbyStores);
+            setStoresToShow(mergeStoresToDisplay(storeWithRouteDay, nearbyStores, undefined));
         }
+
+
+
+
+    
     }
 
     // Handlers

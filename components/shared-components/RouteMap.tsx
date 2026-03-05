@@ -192,6 +192,7 @@ const RouteMap = ({
     <View style={styles.mapContainer}>
       <MapView
         ref={mapRef}
+        
         // camera={initialCoordinates}
         region={initialLocation}
         provider={PROVIDER_GOOGLE}
@@ -227,6 +228,7 @@ const RouteMap = ({
             )
           })
           }
+          
       </MapView>
     </View>
   );

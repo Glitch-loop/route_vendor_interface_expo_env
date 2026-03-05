@@ -82,7 +82,7 @@ function determineHeaderOfInputColumn(id_type_of_operation: string):string {
   let result:string = ""
   if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
     result = 'Merma a reportar';
-  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory || id_type_of_operation === DAY_OPERATIONS.product_devolution_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Producto a llevar';
@@ -95,7 +95,7 @@ function determineHeaderOfFinalColumn(id_type_of_operation: string):string {
   let result:string = ""
   if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
     result = 'Merma a reportar';
-  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory || id_type_of_operation === DAY_OPERATIONS.product_devolution_inventory) {
     result = 'Producto regresado';
   } else {
     result = 'Producto en ruta';
@@ -110,7 +110,7 @@ function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
   let result:string = ""
   if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
     result = 'Merma a entregar';
-  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory) {
+  } else if (id_type_of_operation === DAY_OPERATIONS.end_shift_inventory || id_type_of_operation === DAY_OPERATIONS.product_devolution_inventory) {
     result = 'Producto a regresar';
   } else {
     result = 'Inventario a llevar';
