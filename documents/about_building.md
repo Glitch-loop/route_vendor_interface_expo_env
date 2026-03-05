@@ -59,5 +59,6 @@ npx expo run:android
 ./gradlew assembleRelease
 
 npx expo prebuild
+
 cd ./android
 ./gradlew assembleRelease
