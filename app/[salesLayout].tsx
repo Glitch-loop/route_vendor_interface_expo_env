@@ -1,5 +1,5 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, ScrollView, Text, KeyboardAvoidingView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setRouteTransactionDescription, clearRouteTransactionDescription } from '@/redux/slices/routeTransactionDescriptionTempSlice';
 
 // UI Components
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -48,13 +49,15 @@ import {
   getMessageForProductDevolutionOperation,
   getGreatTotal,
   productCommitedValidation,
-  getTicketSale
+  getTicketSale,
+  getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import { BackHandler } from 'react-native';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -99,6 +102,8 @@ function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO
   return productToCommitForValidation;
 }
 
+
+
 type typeSearchParams = {
   id_store_search_param: string;
   id_day_operation_dependent_search_param?: string;
@@ -118,6 +123,9 @@ const salesLayout = () => {
 
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
 
+  // Routing
+  const router:Router = useRouter();
+
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
   const productInventory      = useSelector((state: RootState) => state.productsInventory);
@@ -125,78 +133,130 @@ const salesLayout = () => {
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
   const stores                = useSelector((state: RootState) => state.stores);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
-
-  useEffect(() => {
-
-    setpUpSalesLayout();
-  }, [productInventory, availableProducts])
-
-  // Routing
-  const router:Router = useRouter();
+  const routeTransactionDescriptionTempReduxState = useSelector((state: RootState) => state.routeTransactionDescriptionTemp);
 
   // Use states
   /* States to store the current product according with their context. */
   const [productDevolution, setProductDevolution] = useState<RouteTransactionDescriptionDTO[]>([]);
-
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
-
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
-
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
-
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
+
+  // Use refs
+  const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
+  const productRepositionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
+  const productSaleRef = useRef<RouteTransactionDescriptionDTO[]>([]);
+
 
   /* States used in the logic of the layout. */
   const [startPaymentProcess, setStartPaymentProcess] = useState<boolean>(false);
   const [finishedSale, setFinishedSale] = useState<boolean>(false);
   const [resultSaleState, setResultSaleState] = useState<boolean>(true);
 
-  // Use effect
+// BackHandler now reads from refs (always latest)
+useEffect(() => {
+  const backAction = (): boolean => {
+    dispatch(setRouteTransactionDescription([
+      ...productDevolutionRef.current,
+      ...productRepositionRef.current,
+      ...productSaleRef.current
+    ]));
+    return false; // Allow default back behavior after saving
+  };
+
+  const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+  return () => backHandler.remove();
+}, []); // Empty deps is fine now - refs always have latest values
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    productDevolutionRef.current = productDevolution;
+  }, [productDevolution]);
+
+  useEffect(() => {
+    productRepositionRef.current = productReposition;
+  }, [productReposition]);
+
+  useEffect(() => {
+    productSaleRef.current = productSale;
+  }, [productSale]);
+
+  useEffect(() => {
+    setpUpSalesLayout();
+  }, [productInventory, availableProducts])
+
+  // -- Auxiliar functions --
   const setpUpSalesLayout = async () => {
+    let devolutionMovements:RouteTransactionDescriptionDTO[] = [];
+    let repositionMovements:RouteTransactionDescriptionDTO[] = [];
+    let saleMovements:RouteTransactionDescriptionDTO[] = [];
+
     // Setting up initial states for the sale layout.
     if (productInventory !== null && availableProducts !== null) {
       const productInventoryMapLocal = createMapProductInventoryWithProduct(productInventory, availableProducts)
       setProductInventoryMap(productInventoryMapLocal);
 
+      // Start a new route transaction from another route transaction.
       if (id_route_transaction_search_param !== undefined) {
         const retrieve_route_transaction_by_id = di_container.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
         const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
   
         if (routeTransactions.length > 0) {
           const routeTransaction = routeTransactions[0];
-          const devolutionMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.product_devolution));
-          const repositionMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.product_reposition));
-          const saleMovements = routeTransaction.transaction_description.filter((movement => movement.id_transaction_operation_type === DAY_OPERATIONS.sales));
-        
-          setProductDevolution(devolutionMovements);
-          setProductReposition(
-            productCommitedValidation(
-              productInventoryMapLocal, 
-              repositionMovements, 
-              saleMovements, 
-              true
-            )
-          );
-  
-          setProductSale(
-            productCommitedValidation(
-              productInventoryMapLocal, 
-              saleMovements, 
-              repositionMovements, 
-              false
-            )
-          );
-        
-        }
-  
-      }   
+          const { transaction_description } = routeTransaction;
+          devolutionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description, DAY_OPERATIONS.product_devolution);
+          repositionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description, DAY_OPERATIONS.product_reposition);
+          saleMovements       = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description, DAY_OPERATIONS.sales);
+          
+          dispatch(setRouteTransactionDescription(routeTransaction.transaction_description));
+        } else { /* Do nothing: Route transaction doesn't have any movement. */}
+      } else {
+        if (routeTransactionDescriptionTempReduxState !== null) {
+          devolutionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_devolution);
+          repositionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_reposition);
+          saleMovements       = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.sales);
+        } else { /* Do nothing: There was not a previous route transaction movement. */ }
+      }
+
+      setProductDevolution(devolutionMovements);
+      setProductReposition(
+        productCommitedValidation(
+          productInventoryMapLocal, 
+          repositionMovements, 
+          saleMovements, 
+          true
+        )
+      );
+
+      setProductSale(
+        productCommitedValidation(
+          productInventoryMapLocal, 
+          saleMovements, 
+          repositionMovements, 
+          false
+        )
+      );
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Error cargando información del inventario.',
+        text2: 'Intenta recargar la pagina nuevamente.'});
     }
   }
 
-  // Handlers
-  const handleCancelSale = () => { router.back(); };
 
-  const handleOnGoBack = () => { router.back(); };
+
+  // Handlers
+  const handleCancelSale = () => { 
+    dispatch(clearRouteTransactionDescription());
+    router.back(); 
+  };
+
+  const handleOnGoBack = () => {
+    dispatch(setRouteTransactionDescription([...productDevolution, ...productReposition, ...productSale]));
+    router.back(); 
+  };
 
   const handleSalePaymentProcess = () => {
     /* Validating if the product reposition is valid */
@@ -218,7 +278,6 @@ const salesLayout = () => {
     that the sale is closed.
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
-    console.log("Start payment sale.")
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
 
@@ -238,10 +297,9 @@ const salesLayout = () => {
       text1:'Comenzando proceso para registrar la venta',
       text2: 'Iniciando proceso para registrar la venta'});
     
-    try {
+      try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        // Todo: Implement route transaction for client out the route.
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
@@ -252,14 +310,12 @@ const salesLayout = () => {
       }
 
       if (id_day_operation_dependent === null) {
-        console.log("Error: No se pudo obtener la operación del día dependiente para la venta. id_day_operation_dependent_search_param: ", id_day_operation_dependent_search_param, " is_selling_out_of_route: ", is_selling_out_of_route);
          Toast.show({
           type: 'error',
           text1:'Error interno',
           text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
         return;
       }
-      console.log("execuiting special use case")
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSale],
         workDayInformation!,
@@ -289,10 +345,8 @@ const salesLayout = () => {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
         syncingService.executeReplicationSession(userSessionReduxState);
       }
-
-        setResultSaleState(true);
+      setResultSaleState(true);
       } catch (error) {
-        console.error("Error during registering route transaction: ", error);
         Toast.show({
           type: 'error',
           text1:'Hubo un problema durante el registro de la venta',
@@ -303,9 +357,15 @@ const salesLayout = () => {
 
   }
 
-  const handleOnSuccessfullCompletionSale = async () => { router.push('/routeOperationMenuLayout'); };
+  const handleOnSuccessfullCompletionSale = async () => {
+    dispatch(clearRouteTransactionDescription()); 
+    router.push('/routeOperationMenuLayout'); 
+  };
 
-  const handleOnFailedCompletionSale = () => { router.push('/routeOperationMenuLayout'); };
+  const handleOnFailedCompletionSale = () => { 
+    dispatch(clearRouteTransactionDescription()); 
+    router.push('/routeOperationMenuLayout'); 
+  };
 
   const handlePrintTicket = async () => {
     if (productInventoryMap === undefined) {
@@ -385,20 +445,20 @@ const salesLayout = () => {
     if (item === null) {
       setProductDevolution(declaredProductDevolution);
     } else {
-    const {id_product, price_at_moment, id_product_inventory} = item;
-    
-    const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
-        id_route_transaction_description: '',
-        price_at_moment: price_at_moment,
-        amount: amountToSet,
-        created_at: new Date(),
-        id_transaction_operation_type: DAY_OPERATIONS.product_devolution,
-        id_product: id_product,
-        id_route_transaction: '',
-        id_product_inventory: id_product_inventory,
-    };
+      const {id_product, price_at_moment, id_product_inventory} = item;
+      
+      const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
+          id_route_transaction_description: '',
+          price_at_moment: price_at_moment,
+          amount: amountToSet,
+          created_at: new Date(),
+          id_transaction_operation_type: DAY_OPERATIONS.product_devolution,
+          id_product: id_product,
+          id_route_transaction: '',
+          id_product_inventory: id_product_inventory,
+      };
 
-    setProductDevolution(pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
+      setProductDevolution(pushProductToCommitList(declaredProductDevolution, newRouteTransactionDescription))
     }
 
   }

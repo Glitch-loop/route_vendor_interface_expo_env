@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import RouteDTO from '@/src/application/dto/RouteDTO';
-import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 
 const routeSlice = createSlice({
     name: 'route',

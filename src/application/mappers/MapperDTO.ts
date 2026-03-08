@@ -202,6 +202,13 @@ export class MapperDTO {
     }
 
     private storeToDTO(entity: Store): StoreDTO {
+        let creation_date:string = '';
+        if (entity.creation_date instanceof Date) {
+            creation_date = entity.creation_date.toISOString();
+        } else {
+            creation_date = entity.creation_date;
+
+        }
         return {
             id_store: entity.id_store,
             street: entity.street,
@@ -212,7 +219,7 @@ export class MapperDTO {
             store_name: entity.store_name,
             latitude: entity.latitude,
             longitude: entity.longitude,
-            creation_date: entity.creation_date,
+            creation_date: creation_date,
             status_store: entity.status_store,
             is_new: entity.is_new
         };
@@ -323,6 +330,11 @@ export class MapperDTO {
 
     // StoreDTO -> Store (domain)
     private storeDTOToEntity(dto: StoreDTO): Store {
+
+        if (typeof dto.creation_date === 'string' && isNaN(Date.parse(dto.creation_date))) {
+            throw new Error('Invalid creation_date format in StoreDTO');
+        }
+
         return new Store(
             dto.id_store,
             dto.street,
@@ -336,7 +348,7 @@ export class MapperDTO {
             dto.latitude,
             dto.longitude,
             '',
-            dto.creation_date,
+            new Date(dto.creation_date),
             '',
             dto.status_store,
             dto.is_new ?? 0

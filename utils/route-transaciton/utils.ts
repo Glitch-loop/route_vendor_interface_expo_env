@@ -15,6 +15,7 @@ import { format_date_to_UI_format, time_posix_format } from "@/utils/date/moment
 import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState";
 import { capitalizeFirstLetter } from "../string/utils";
 import { capitalizeFirstLetterOfEachWord } from "../generalFunctions";
+import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 
 // Related to route transaction workflow
 export function retrievePriceFromProductInventory(
@@ -270,6 +271,11 @@ export function getTransactionIdentifier(transactionIdentifier:string) {
   }
 
   return finalTransactionIdentifier;
+}
+
+
+export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description: RouteTransactionDescriptionDTO[], type: DAY_OPERATIONS): RouteTransactionDescriptionDTO[] {
+  return transaction_description.filter(((movement: RouteTransactionDescriptionDTO) => movement.id_transaction_operation_type === type));
 }
 
 // Related to ticket service

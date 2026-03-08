@@ -38,7 +38,7 @@ const ResultSale = ({
       </Text>
       <View style={tw`w-full`}>
         <ConfirmationBand
-            textOnAccept={resultSaleState ? 'Continuar' : 'Continuar con el siguiente cliente'}
+            textOnAccept={resultSaleState ? 'Continuar' : 'Regresar al menú principal'}
             textOnCancel={resultSaleState ? 'Imprimir ticket' : 'Intentar de nuevo'}
             handleOnAccept={resultSaleState ? onSuccessfullCompletion : onFailedCompletion}
             handleOnCancel={resultSaleState ? onPrintTicket : onTryAgain}
