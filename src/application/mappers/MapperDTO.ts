@@ -516,24 +516,4 @@ export class MapperDTO {
             stores
         );
     }
-
-  // ==================== HELPER METHODS ====================
-
-  private formatAddress(store: Store): string {
-    return `${store.street} ${store.ext_number}, ${store.colony}`;
-  }
-
-
-    private mapPaymentMethodToDTO(id_payment_method: string): PaymentMethod {
-        // Create a minimal PaymentMethod value object; label mapping can be centralized if needed
-        const labelMap: { [key: string]: string } = {
-            [PAYMENT_METHODS.CASH]: 'Efectivo',
-            [PAYMENT_METHODS.TRANSFER]: 'Transferencia',
-            [PAYMENT_METHODS.CREDIT_CARD]: 'Tarjeta de crédito',
-            [PAYMENT_METHODS.DEBIT_CARD]: 'Tarjeta de débito',
-        } as any;
-        const name = labelMap[id_payment_method] ?? 'Desconocido';
-        return new PaymentMethod(id_payment_method, name);
-    }
-
 }
