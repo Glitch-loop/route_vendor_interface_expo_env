@@ -9,6 +9,7 @@ import workDayInformation from '@/redux/slices/workdayInformation';
 import routeSlice from '@/redux/slices/routeSlice';
 import productSlice from '@/redux/slices/productSlice';
 import routeTransactionDescriptionTempSlice from '@/redux/slices/routeTransactionDescriptionTempSlice';
+import inventoryOperationDescriptionTempSlice from '@/redux/slices/inventoryOperationDescriptionTempSlice';
 
 const store = configureStore({
   reducer: {
@@ -21,7 +22,8 @@ const store = configureStore({
     workDayInformation: workDayInformation,
     route: routeSlice,
     products: productSlice,
-    routeTransactionDescriptionTemp: routeTransactionDescriptionTempSlice
+    routeTransactionDescriptionTemp: routeTransactionDescriptionTempSlice,
+    inventoryOperationDescriptionTemp: inventoryOperationDescriptionTempSlice
   },
 });
 

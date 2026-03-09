@@ -1,5 +1,5 @@
 // Libraries
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useEffect, useRef, useState } from 'react';
 import { View, ScrollView, Text, BackHandler, Pressable, KeyboardAvoidingView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter, useLocalSearchParams } from 'expo-router';
@@ -12,6 +12,7 @@ import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setStores } from '@/redux/slices/storesSlice';
 import { setProducts } from '@/redux/slices/productSlice';
+import { setTemporalInventoryOperationDescription, clearTemporalInventoryOperationDescription } from '@/redux/slices/inventoryOperationDescriptionTempSlice';
 
 // Components
 import RouteHeader from '@/components/shared-components/RouteHeader';
@@ -186,7 +187,7 @@ const inventoryOperationLayout = () => {
   const workDayInformation = useSelector((state: RootState) => state.workDayInformation);
   const dayOperationReduxState = useSelector((state: RootState) => state.dayOperations);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
-
+  const inventoryDescriptionsTempReduxState = useSelector((state: RootState) => state.inventoryOperationDescriptionTemp);
     
 
   // Routing
@@ -218,18 +219,42 @@ const inventoryOperationLayout = () => {
   const [storesToConsult, setStoresToConsult] = useState<StoreDTO[]>([]);
   const [orderedStoreForPrinting, setOrderedStoreForPrinting] = useState<DayOperationDTO[]>([]);
 
-
   // States related to UI logic
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [isInventoryAccepted, setIsInventoryAccepted] = useState<boolean>(false);
   const [availableProducts, setAvailableProducts] = useState<ProductDTO[]>([]);
   const [inventoryOperationToConsult, setInventoryOperationToConsult] = useState<InventoryOperationDTO | null>(null);
 
+  // Refs
+  const inventoryOperationMovementsRef = useRef<InventoryOperationDescriptionDTO[]>([]);
+
   // Use effect operations
   useEffect(() => {
     setEnvironmentForInventoryOperation();
-    setRoutingOfInventoryOperationScreen();
   }, []);
+
+  useEffect(() => {
+    inventoryOperationMovementsRef.current = inventoryOperationMovements
+  }, [inventoryOperationMovements]);
+
+  useEffect(() => {
+    // Mirror in-screen cancel/back behavior when user presses native Android back.
+    const backAction = () => {
+      if (id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+        dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovementsRef.current));
+      }
+
+      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+        router.replace('/routeSelectionLayout');
+      } else {
+        router.replace('/routeOperationMenuLayout');
+      }
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [dispatch, id_type_of_operation_search_param, inventoryOperationMovements, router]);
 
 
   // ======= Auxiliar functions ======
@@ -364,66 +389,46 @@ const inventoryOperationLayout = () => {
       setInventoryWithdrawal(true);
       setInventoryOutflow(true);
       setFinalOperation(true);
-      setIssueInventory(true);
-
-      // Setting movements because the user started the inventory operation from another one.
-      if (inventoryOperationToConsult.length > 0) {
-        const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-        setInventoryOperationMovements(inventory_operation_descriptions);
-      }
-
-      
+      setIssueInventory(true);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
       setCurrentShiftInventory(productsInventoryReduxState!);
       setAvailableProducts(products);
-      setSuggestedInventory([]);
-
-      // Setting movements because the user started the inventory operation from another one.
-      if (inventoryOperationToConsult.length > 0) {
-        const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
-        setInventoryOperationMovements(inventory_operation_descriptions);
-      }
-      
+      setSuggestedInventory([]);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
       setAvailableProducts(products);
-
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
       setAvailableProducts(products);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
+    } else {
+      /* Do nothing */
+    }
 
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
+    || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory
+    || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory
+    ) {
+      // Note: Product devolution cannot be started from another inventory operation.
       // Setting movements because the user started the inventory operation from another one.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
         setInventoryOperationMovements(inventory_operation_descriptions);
+      } else {
+        if (inventoryDescriptionsTempReduxState !== null) {
+          setInventoryOperationMovements([...inventoryDescriptionsTempReduxState]);
+        }
       }
-    } else {
-      /* Do nothing */
     }
   }
 
-  const setRoutingOfInventoryOperationScreen = () => {
-      // Determining where to redirect in case of the user touch the handler "back handler" of the phone
-      const backAction = () => {
-        if (workDayInformation === null) {
-          router.back();
-        } else {
-          router.push('/routeOperationMenuLayout');
-        }
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction
-      );
-
-      return () => backHandler.remove();
-  }
-
   // Handlers
-  const handleGoBackOperationDayMenu = async ():Promise<void> => { router.replace('/routeOperationMenuLayout'); };
+  const handleGoBackOperationDayMenu = async ():Promise<void> => { 
+    if(id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+      dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements))
+    }
+    router.replace('/routeOperationMenuLayout'); 
+  }
 
   const handleAcceptInventoryOperation = ():void => {
     let askToUserIfAgreeWithInventory: boolean = false;
@@ -714,6 +719,8 @@ const inventoryOperationLayout = () => {
         /* Do nothing */
       }
 
+      dispatch(clearTemporalInventoryOperationDescription());
+
       // Syncing with central database
       if (userSessionReduxState !== null) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
@@ -722,6 +729,9 @@ const inventoryOperationLayout = () => {
   }
 
   const handlerOnVendorCancelation = () => {
+    if (id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+      dispatch(clearTemporalInventoryOperationDescription()); 
+    }
     if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
       /*
         According with the workflow, if the vendor is making the start shift inventory, if he decides to
@@ -732,7 +742,7 @@ const inventoryOperationLayout = () => {
       // That means the route vendor is canceling an inventory operation during the day.
       router.replace('/routeOperationMenuLayout');
     }
-  };
+  }
 
   const handleStartInventoryOperationFromThisOperation = async () => {
     if (inventoryOperationToConsult !== null) {
@@ -835,7 +845,7 @@ const inventoryOperationLayout = () => {
 
           <View style={tw`mt-3 w-full flex basis-1/6`}>
             {/* Go back it's considered as canceling the inventory operation */}
-            <RouteHeader onGoBack={handlerOnVendorCancelation}/> 
+            <RouteHeader onGoBack={handleGoBackOperationDayMenu}/> 
           </View>
 
           {/* Inventory operation section. */}
