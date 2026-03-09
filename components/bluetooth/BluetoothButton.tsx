@@ -32,6 +32,11 @@ const BluetoothButton = () => {
   const [connectedPrinter, setConnectedPrinter] = useState<BluetoothDevice | null>(null);
   const connectedPrinterRef = useRef<BluetoothDevice | null>(null);
 
+  // Auto-reconnect refs
+  const lastConnectedPrinterRef = useRef<BluetoothDevice | null>(null);
+  const reconnectIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isManualDisconnectRef = useRef<boolean>(false);
+
 
 
   useEffect(() => {
@@ -42,6 +47,7 @@ const BluetoothButton = () => {
       // Cleanup any active listeners on unmount
       printerService.stopDisconnectPrinterListener();
       printerService.stopDiscoverPrinters();
+      clearReconnectInterval();
     };
   }, []);
 
@@ -69,6 +75,58 @@ const BluetoothButton = () => {
     return printersToReturn;
   };
 
+  // Auto-reconnect functions
+  const clearReconnectInterval = () => {
+    if (reconnectIntervalRef.current) {
+      clearInterval(reconnectIntervalRef.current);
+      reconnectIntervalRef.current = null;
+    }
+  };
+
+  const attemptReconnect = async () => {
+    const deviceToReconnect = lastConnectedPrinterRef.current;
+    if (!deviceToReconnect) {
+      clearReconnectInterval();
+      return;
+    }
+
+    try {
+      const result = await printerService.connectDevice(deviceToReconnect);
+      if (result) {
+        // Successfully reconnected
+        clearReconnectInterval();
+        setConnectedPrinter(deviceToReconnect);
+        setPairedPrinters(prev => prev.filter(p => p.address !== deviceToReconnect.address));
+        lastConnectedPrinterRef.current = null;
+        
+        Toast.show({
+          type: 'success',
+          text1: 'Impresora reconectada',
+          text2: 'La conexión se restableció automáticamente.'
+        });
+      }
+    } catch (error) {
+      // Connection attempt failed, will retry in next interval
+    }
+  };
+
+  const startReconnectInterval = (device: BluetoothDevice) => {
+    // Clear any existing interval first
+    clearReconnectInterval();
+    
+    // Store the device to reconnect
+    lastConnectedPrinterRef.current = device;
+    
+    Toast.show({
+      type: 'info',
+      text1: 'Impresora desconectada',
+      text2: 'Intentando reconectar automáticamente...'
+    });
+    
+    // Start interval to attempt reconnection every 3 seconds
+    reconnectIntervalRef.current = setInterval(attemptReconnect, 3000);
+  };
+
   const createListenerForDisconnectedDevice = async () => {
     await printerService.disconnectPrinterListener(
       (deviceEvent: BluetoothDeviceEvent) => {
@@ -79,6 +137,12 @@ const BluetoothButton = () => {
           // Deterministically mark disconnected and move it back to registered
           setConnectedPrinter(null);
           getPairedPrinters(false).then((printers) => setPairedPrinters(printers));
+          
+          // Start auto-reconnect if not a manual disconnect
+          if (!isManualDisconnectRef.current) {
+            startReconnectInterval(current);
+          }
+          isManualDisconnectRef.current = false;
         }
       }
     );
@@ -142,6 +206,10 @@ const BluetoothButton = () => {
       return;
     }
     try {
+      // Clear any ongoing auto-reconnect attempt
+      clearReconnectInterval();
+      lastConnectedPrinterRef.current = null;
+      
       Toast.show({type: 'info',
       text1:'Iniciando conexión con la impresora',
       text2: 'Puede tomar unos segundos...'});
@@ -170,6 +238,13 @@ const BluetoothButton = () => {
 
   const handleUnPairDevice = async (device: BluetoothDevice) => {
     try {
+        // If unpairing the connected device, mark as manual to prevent auto-reconnect
+        if (connectedPrinter && connectedPrinter.address === device.address) {
+          isManualDisconnectRef.current = true;
+          clearReconnectInterval();
+          lastConnectedPrinterRef.current = null;
+        }
+        
         Toast.show({type: 'info',
         text1:'Removiendo impresora del registro',
         text2: 'Puedes volver a registrarla después.'});
@@ -198,6 +273,11 @@ const BluetoothButton = () => {
 
   const handleDisconnectConnectedDevice = async (device: BluetoothDevice) => {
     try {
+      // Mark as manual disconnect to prevent auto-reconnect
+      isManualDisconnectRef.current = true;
+      clearReconnectInterval();
+      lastConnectedPrinterRef.current = null;
+      
       Toast.show({type: 'info',
         text1:'Desconectando impresora',
         text2: 'Puede tomar unos segundos...'});
