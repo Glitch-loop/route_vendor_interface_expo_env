@@ -2,6 +2,7 @@
 import { container as di_container } from 'tsyringe';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TextInput, KeyboardAvoidingView } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { Router, useRouter }  from 'expo-router';
@@ -35,10 +36,12 @@ import ProjectButton from '@/components/shared-components/ProjectButton';
 
 // Utils
 import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
-import { IStoreRouteMap } from '@/interfaces/interfaces';
+import { IStoreRouteMap, PostalCode } from '@/interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
+import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
+import POSTAL_CODE from '@/utils/constants/postalCodes';
 
 
 interface NewClientFormData {
@@ -49,6 +52,17 @@ interface NewClientFormData {
   postal_code: string;
   address_reference: string;
 }
+
+
+function validatorCriteria(query: string, item: PostalCode):boolean {
+    const { stablishment_name } = item;
+    return stablishment_name.toLowerCase().includes(query.toLowerCase());
+}
+
+function criteriaForSelectedItems(item: PostalCode, selectedItems: PostalCode[]):boolean {
+    return selectedItems.some(selectedItem => selectedItem.stablishment_name === item.stablishment_name);
+}
+
 
 export default function CreateNewClientLayout() {
   // Hooks
@@ -74,6 +88,7 @@ export default function CreateNewClientLayout() {
     address_reference: ''
   });
 
+  const [selectedItems, setSelectedItems] = useState<PostalCode[]>([]);  
 
   useEffect(() => {
     setUpCreateNewClientLayout();
@@ -217,6 +232,12 @@ export default function CreateNewClientLayout() {
     }
   }
 
+  const handlerOnSelectItem = (selectedItem: PostalCode): void => {
+    setSelectedItems([selectedItem]); 
+    handleFormChange('colony', selectedItem.stablishment_name);
+    handleFormChange('postal_code', selectedItem.postal_code);
+  }
+
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <KeyboardAvoidingView 
@@ -273,11 +294,24 @@ export default function CreateNewClientLayout() {
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
+          {/* Autocomplete for colony */}
+          <Text style={tw`mt-3 text-lg font-bold text-gray-900`}>Colonia</Text>
+          <View style={tw`mt-2 w-full flex flex-row justify-center items-center px-3 py-2`}>
+              <SearchBarWithSuggestions 
+                  catalog={POSTAL_CODE || []}
+                  selectedCatalog={selectedItems}
+                  fieldToSearch={'stablishment_name'}
+                  keyField={'id'}
+                  onSelectHandler={handlerOnSelectItem}
+                  criteriaForValidQuery={validatorCriteria}
+                  criteriaForSelectedItems={criteriaForSelectedItems}
+              />
+          </View>
           {/* colony */}
           <View style={tw`mt-4`}>
-            <Text style={tw`text-sm text-gray-700`}>Colonia</Text>
+            <Text style={tw`text-sm text-gray-700`}>Nombre colonia</Text>
             <TextInput 
-              placeholder="Colonia" 
+              placeholder="Nombre colonia" 
               value={formData.colony}
               onChangeText={(text) => handleFormChange('colony', text)}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />

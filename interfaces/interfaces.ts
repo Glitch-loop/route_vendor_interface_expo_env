@@ -1,5 +1,11 @@
 import StoreDTO from "@/src/application/dto/StoreDTO";
 
+export interface PostalCode {
+  id: string;
+  stablishment_name: string;
+  postal_code: string;
+}
+
 export interface IStoreRouteMap extends StoreDTO {
   tw_color: string;
   route_status_store: string;
