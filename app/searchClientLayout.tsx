@@ -35,6 +35,7 @@ import RangeButtonSelection from '@/components/search-client/RangeButtonSelectio
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
 
 
 
@@ -412,10 +413,11 @@ const searchClientLayout = () => {
                         )} */}
                         <RouteMap 
                             initialCoordinates={
-                                { 
-                                    latitude: userLocation?.coords.latitude || 20.66020491403627, 
-                                    longitude: userLocation?.coords.longitude || -105.23041097690118     
-                                }
+                                userLocation ? userLocation.coords : INITIAL_COORDINATES
+                                // { 
+                                //     latitude: userLocation?.coords.latitude || 20.66020491403627, 
+                                //     longitude: userLocation?.coords.longitude || -105.23041097690118     
+                                // }
                             }
                             selectedStore={selectedClient}
                             stores={storesToShow}

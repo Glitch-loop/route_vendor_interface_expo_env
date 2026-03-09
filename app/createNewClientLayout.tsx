@@ -38,6 +38,7 @@ import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/store
 import { IStoreRouteMap } from '@/interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
+import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
 
 
 interface NewClientFormData {
@@ -80,11 +81,27 @@ export default function CreateNewClientLayout() {
 
   // Auxiliar functions
   const setUpCreateNewClientLayout = async ():Promise<void> => {
-    const userLocationCoordinates = await determineUserLocation();
-    if(storesRedux !== null && dayOperationsRedux !== null && userLocationCoordinates !== undefined) {
+    if(storesRedux !== null && dayOperationsRedux !== null) {
       const storesRouteMap: IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap(storesRedux, dayOperationsRedux);
-      const storesAround: IStoreRouteMap[] = findStoresAround(userLocationCoordinates, storesRouteMap, 500);
-      setNearStores(storesAround);
+      
+      
+      userLocationHook.getCurrentUserLocation().then((location: LocationObject|null) => {
+        if (location !== null) {
+          const { coords } = location;
+          setUserLocation(coords);
+          const storesAround: IStoreRouteMap[] = findStoresAround(coords, storesRouteMap, 500);
+          setNearStores(storesAround);
+          
+          userLocationHook.getMostAccurateCurrentUserLocation().then((mostAccurateLocation: LocationObject|null) => {
+              if (mostAccurateLocation) {
+                const { coords } = mostAccurateLocation;
+                setUserLocation(coords);
+                const updatedStoresAround: IStoreRouteMap[] = findStoresAround(coords, storesRouteMap, 500);
+                setNearStores(updatedStoresAround);
+              }
+          });
+        }
+      });
     } else {
       Toast.show({type: 'error', text1:'Error cargando el mapa.', text2: 'Por favor, reinicia la aplicación e intenta de nuevo.'});
     }
@@ -217,18 +234,11 @@ export default function CreateNewClientLayout() {
             { userLocation &&
               <Text style={tw`text-lg text-center font-semibold text-gray-900`}>Tiendas cercanas</Text>
             }
-            {userLocation === undefined ? (
-                <View style={tw`w-full h-full flex justify-center items-center border-2 border-gray-300 rounded-lg bg-gray-100`}>
-                    <ActivityIndicator size="large" />
-                    <Text style={tw`mt-2 text-gray-600`}>Cargando ubicación...</Text>
-                </View>
-            ) : (
-              <View style={tw`w-full h-full border-2 border-gray-300 rounded-lg overflow-hidden`}>
-                <RouteMap 
-                  initialCoordinates={userLocation} 
-                  stores={nearStores} />
-              </View>
-            )}
+            <View style={tw`w-full h-full border-2 border-gray-300 rounded-lg overflow-hidden`}>
+              <RouteMap 
+                initialCoordinates={userLocation ? userLocation : INITIAL_COORDINATES} 
+                stores={nearStores} />
+            </View>
         </View>
         <View style={tw`px-4 mt-7`}>
           <Text style={tw`text-lg font-bold text-gray-900`}>Nuevo cliente</Text>
