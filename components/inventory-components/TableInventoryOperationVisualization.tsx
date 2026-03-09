@@ -50,6 +50,7 @@ const TableInventoryOperationVisualization = (
     suggestedInventory,
     initialInventory,
     restockInventories,
+    devolutionInventory,
     soldOperations,
     repositionsOperations,
     returnedInventory,
@@ -62,6 +63,7 @@ const TableInventoryOperationVisualization = (
     suggestedInventory: ProductInventoryDTO[],
     initialInventory: InventoryOperationDescriptionDTO[], // There is only "one" initial inventory operation
     restockInventories: InventoryOperationDescriptionDTO[][], // It could be many "restock" inventories
+    devolutionInventory: InventoryOperationDescriptionDTO[], // It could be many "restock" inventories
     soldOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of selling
     repositionsOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of repositions
     returnedInventory: InventoryOperationDescriptionDTO[], // Refers to the final inventory
@@ -82,6 +84,7 @@ const TableInventoryOperationVisualization = (
     restockInventoriesMaps.push(currentMapRestockInventory);
   });
   
+  const mapDevolutionInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', devolutionInventory);
   const mapReturnedInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', returnedInventory);
   const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', soldOperations);
   const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', repositionsOperations);
@@ -90,7 +93,8 @@ const TableInventoryOperationVisualization = (
     <View style={tw`w-full flex flex-row`}>
       { (initialInventory.length > 0
       || returnedInventory.length > 0
-      || restockInventories.length > 0) ?
+      || restockInventories.length > 0
+      || devolutionInventory.length > 0) ?
         <View style={tw`w-full flex flex-row`}>
           {/* Datatable for name of the products */}
           <DataTable style={tw`w-1/3`}>
@@ -129,6 +133,11 @@ const TableInventoryOperationVisualization = (
                     );
                   })
                 }
+                { devolutionInventory.length > 0 && 
+                  <DataTable.Title style={tw`${determineHeaderStyle('Devolución de producto', true, undefined)} w-48`}>
+                    <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Devolución de producto</Text>
+                  </DataTable.Title>
+                }
                 { inventoryWithdrawal &&
                   <DataTable.Title style={tw`${determineHeaderStyle('Salida total', true, undefined)} w-28`}>
                     <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Salida total</Text>
@@ -166,7 +175,7 @@ const TableInventoryOperationVisualization = (
                 }
               </DataTable.Header>
               {/* Body section */}
-              { (initialInventory.length > 0 || returnedInventory.length > 0 || restockInventories.length > 0) &&
+              { (initialInventory.length > 0 || returnedInventory.length > 0 || restockInventories.length > 0 || devolutionInventory.length > 0) &&
                 availableProductsStored.map((product, indexAvailableProducts) => {
                   /*
                     To keep an order of how to print the inventory operations, it is used the variable "inventory" which has
@@ -188,6 +197,7 @@ const TableInventoryOperationVisualization = (
                   let suggestedAmount = 0;
                   let initialInventoryOperationAmount = 0;
                   let returnedInventoryOperationAmount = 0;
+                  let devolutionInventoryOperationAmount = 0;
                   let restockInventoryOperationAmount:number[] = [];
                   let soldInventoryOperationAmount = 0;
                   let repositionInventoryOperationAmount = 0;
@@ -201,10 +211,10 @@ const TableInventoryOperationVisualization = (
                   // Searching the product in the inventory operations
                   suggestedAmount                     = mapSuggestedInventory.has(id_product) ? mapSuggestedInventory.get(id_product)!.stock : 0;
                   initialInventoryOperationAmount     = mapInitialInventory.has(id_product) ? mapInitialInventory.get(id_product)!.amount : 0;
+                  devolutionInventoryOperationAmount  = mapDevolutionInventory.has(id_product) ? mapDevolutionInventory.get(id_product)!.amount : 0;
                   returnedInventoryOperationAmount    = mapReturnedInventory.has(id_product) ? mapReturnedInventory.get(id_product)!.amount : 0;
                   soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
                   repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
-                  
               
                   restockInventoriesMaps.forEach((mapRestockInventory:Map<string, InventoryOperationDescriptionDTO>) => {
                     const currentRestockProductAmount = mapRestockInventory.has(id_product) ? mapRestockInventory.get(id_product)!.amount : 0;
@@ -230,7 +240,6 @@ const TableInventoryOperationVisualization = (
                         <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, initialInventoryOperationAmount > 0, true, 'Inventario inicial', undefined)} w-32`}>
                           <Text style={tw`${textRowTableStyle}`}>{initialInventoryOperationAmount}</Text>
                       </DataTable.Cell>
-
                       }
                       { restockInventoryOperationAmount.length > 0 &&
                         restockInventoryOperationAmount.map((productAmount, index) => {
@@ -241,6 +250,12 @@ const TableInventoryOperationVisualization = (
                           );
                         })
                       }
+                      { devolutionInventory.length > 0 &&
+                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, devolutionInventoryOperationAmount > 0, true, 'Devolución de producto', undefined)} w-48`}>
+                          <Text style={tw`${textRowTableStyle}`}>{devolutionInventoryOperationAmount}</Text>
+                      </DataTable.Cell>
+                      }
+
 
                       { inventoryWithdrawal === true &&
                         <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, withdrawalAmount > 0, true, 'Retiro de inventario', undefined)} w-28`}>

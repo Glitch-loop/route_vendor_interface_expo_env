@@ -207,6 +207,7 @@ const inventoryOperationLayout = () => {
   // States related to consult inventory operation
   const [initialShiftInventory, setInitialShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [restockInventories, setRestockInventories] = useState<InventoryOperationDescriptionDTO[][]>([]);
+  const [devolutionInventory, setDevolutionInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [finalShiftInventory, setFinalShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [productRepositionTransactions, setProductRepositionTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
@@ -324,6 +325,7 @@ const inventoryOperationLayout = () => {
         setAvailableProducts(products);
         setInitialShiftInventory(inventory_operation_descriptions)
         setRestockInventories([]);
+        setDevolutionInventory([]);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
@@ -331,13 +333,15 @@ const inventoryOperationLayout = () => {
         setAvailableProducts(products);
         setInitialShiftInventory([])
         setRestockInventories([inventory_operation_descriptions]);
+        setDevolutionInventory([]);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
         setAvailableProducts(products);
         setInitialShiftInventory([])
-        setRestockInventories([inventory_operation_descriptions]);
+        setRestockInventories([]);
+        setDevolutionInventory(inventory_operation_descriptions);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
@@ -360,8 +364,9 @@ const inventoryOperationLayout = () => {
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
 
         setAvailableProducts(products);
-        setInitialShiftInventory(startInventoryOperationDescriptions[0])
+        setInitialShiftInventory(startInventoryOperationDescriptions[0]);
         setRestockInventories(restockInventoryOperationsDescriptions);
+        setFinalShiftInventory([]);
         setFinalShiftInventory(inventory_operation_descriptions);
         setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_reposition));
         setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sales));
@@ -427,7 +432,13 @@ const inventoryOperationLayout = () => {
     if(id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
       dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements))
     }
-    router.replace('/routeOperationMenuLayout'); 
+
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+      // TODO: If start shift inventory will be cancelable, then action needs a refactor to prevent send the user to the route selection screen when there is already and workday started.
+      router.replace('/routeSelectionLayout');
+    } else {
+      router.replace('/routeOperationMenuLayout'); 
+    }
   }
 
   const handleAcceptInventoryOperation = ():void => {
@@ -878,6 +889,7 @@ const inventoryOperationLayout = () => {
                 suggestedInventory              = {suggestedInventory}
                 initialInventory                = {initialShiftInventory}
                 restockInventories              = {restockInventories}
+                devolutionInventory             = {devolutionInventory}
                 soldOperations                  = {productSoldTransactions}
                 repositionsOperations           = {productRepositionTransactions}
                 returnedInventory               = {finalShiftInventory}
