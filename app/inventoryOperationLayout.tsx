@@ -592,14 +592,16 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, workDayInformation);
-
+          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation);
+          
           const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
           const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
+          const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
 
           dispatch(setProductInventory(currentShiftInventory));
           dispatch(setDayOperations(currentDayOperationsResult));
-
+          dispatch(setProducts(allRegisteredProductsResult))
+          
           Toast.show({
                 type: 'success',
                 text1: 'Se ha registrado el restock exitosamente.',

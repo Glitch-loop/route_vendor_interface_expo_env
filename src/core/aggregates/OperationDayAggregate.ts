@@ -272,7 +272,6 @@ export class OperationDayAggregate {
             }
         }
 
-        console.log('indexCurrentOperationDay: ', indexCurrentOperationDay);
         return indexCurrentOperationDay;
     }
 

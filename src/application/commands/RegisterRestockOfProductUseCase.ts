@@ -13,6 +13,7 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { DayOperation } from '@/src/core/entities/DayOperation';
+import { Product } from '@/src/core/entities/Product';
 
 // Aggregates
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';
@@ -30,6 +31,8 @@ import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import ProductDTO from '../dto/ProductDTO';
+import { ProductRepository } from '@/src/core/interfaces/ProductRepository';
 
 
 @injectable()
@@ -39,6 +42,7 @@ export default class RegisterRestockOfProductUseCase {
     @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
     @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
     @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,   
+    @inject(TOKENS.SQLiteProductRepository) private readonly localProductRepo: ProductRepository,
 
     // Services
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -48,12 +52,14 @@ export default class RegisterRestockOfProductUseCase {
     // TODO: Add synchronization with central database when online.
     private async executeUseCase(
         inventoryOperationDescriptions: InventoryOperationDescription[],
+        availableProducts: Product[],
         workdayInformation: WorkDayInformation
     ): Promise<void> {
         if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for a restock operation.");
 
         const { id_work_day } = workdayInformation;
-        
+        const newProducts: Product[] = [];
+
         const currentInventory:ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
         const dayOperations:DayOperation[] = await this.localDayOperationRepo.listDayOperations();
 
@@ -85,17 +91,16 @@ export default class RegisterRestockOfProductUseCase {
 
         // Update product inventory
         for (const description of inventoryOperationDescriptions) {
-            const { amount, id_product, price_at_moment } = description; 
-            
+            const { amount, id_product, price_at_moment } = description;             
             // Find if there is a product inventory record, if so increase stock, otherwise insert new product.            
-            if (productInventoryAggregate.isNewProductInventory(id_product)) { // There is not a product inventory record for this product.
+            if (productInventoryAggregate.isNewProductInventory(id_product)) { // There is not a inventory record for this product.
                 productInventoryAggregate.insertProductToInventory(
                     this.idService.generateID(),
                     price_at_moment,
                     amount,
                     id_product
                 )
-            } else { // There is a product inventory record for this product.
+            } else { // There is a inventory record for this product.
                 const findProductInventory:ProductInventory | undefined = currentInventory.find((pi) => pi.get_id_product() === id_product);
                 if (!findProductInventory) throw new Error("Unexpected error: Product inventory not found.");
                 productInventoryAggregate.increaseStock(findProductInventory.get_id_product_inventory(), amount);
@@ -111,16 +116,26 @@ export default class RegisterRestockOfProductUseCase {
             id_inventory_operation,
             new Date(this.dateService.getCurrentTimestamp()),
         );
-        
+                
         // Persist all changes
         const newDayOperations:DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         
         // Determine which products were updated and which were inserted
         const productInventoryToInsert: ProductInventory[] = productInventoryAggregate.getNewProductsInventory()
         const productInventoryToUpdate: ProductInventory[] = productInventoryAggregate.getModifiedProductInventory();
-                
+        
+        // Retrieve the product if there was a new product in the inventory
+        for (const productInventory of productInventoryToInsert) {
+            const product = availableProducts.find((p) => p.id_product === productInventory.get_id_product());
+            if (!product) throw new Error("Unexpected error: Product not found for new inventory.");
+            newProducts.push(product);
+        }
+        // throw new Error("Debug: Check the values to be inserted and updated in the database.");
+        // Persist changes in the database
         await this.localDayOperationRepo.insertDayOperations(newDayOperations);
         await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+
+        for (const newProduct of newProducts) await this.localProductRepo.insertProduct(newProduct);
 
         await this.localProductInventoryRepo.createInventory(productInventoryToInsert);
         await this.localProductInventoryRepo.updateInventory(productInventoryToUpdate);
@@ -128,6 +143,7 @@ export default class RegisterRestockOfProductUseCase {
 
     async execute(
         inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
+        availableProducts: ProductDTO[],
         workdayInformationDTO: WorkDayInformationDTO
     ): Promise<void> {
         const mapper = new MapperDTO();
@@ -135,9 +151,11 @@ export default class RegisterRestockOfProductUseCase {
         const inventoryOperationDescriptions: InventoryOperationDescription[] = inventoryOperationDescriptionDTO
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
+        const availableProductsEntities: Product[] = availableProducts.map((productDTO) => mapper.toEntity(productDTO));
 
         return await this.executeUseCase(
             inventoryOperationDescriptions,
+            availableProductsEntities,
             workdayInformation
         );
     }
