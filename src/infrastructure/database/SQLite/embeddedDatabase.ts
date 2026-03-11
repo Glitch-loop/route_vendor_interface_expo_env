@@ -78,7 +78,7 @@ export const productsEmbeddedTable = `
     comission       NUMERIC(6,3),
     price           NUMERIC(6,3) NOT NULL,
     product_status  INT NOT NULL,
-    order_to_show   INT NOT NULL UNIQUE
+    order_to_show   INT NOT NULL
   );
 `;
 

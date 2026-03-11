@@ -86,6 +86,9 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
+// Custom hooks
+import useNetworkState from '@/hooks/useNetworkState';
+
 
 // Auxiliar functions
 function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
@@ -189,7 +192,6 @@ const inventoryOperationLayout = () => {
   const userSessionReduxState = useSelector((state: RootState) => state.user);
   const inventoryDescriptionsTempReduxState = useSelector((state: RootState) => state.inventoryOperationDescriptionTemp);
     
-
   // Routing
   const router:Router = useRouter();
 
@@ -229,6 +231,10 @@ const inventoryOperationLayout = () => {
   // Refs
   const inventoryOperationMovementsRef = useRef<InventoryOperationDescriptionDTO[]>([]);
 
+  // Custom hooks
+  const { refreshNetworkState } = useNetworkState();
+
+
   // Use effect operations
   useEffect(() => {
     setEnvironmentForInventoryOperation();
@@ -259,12 +265,41 @@ const inventoryOperationLayout = () => {
 
 
   // ======= Auxiliar functions ======
+
+  const validateInternetConnectionForStartInventory = async () => {
+    const hasInternetConnection = await refreshNetworkState();
+
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+      /*
+        Business rule:
+        The user has to have internet at moment of starting a new workday.
+
+        It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
+        user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
+        of starting a new workday.
+      */
+     console.log("Hola mundo")
+      Toast.show({
+        type: 'error',
+        text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
+        text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
+      });
+      router.replace('/selectionRouteOperationLayout');
+      return;
+    }
+  }
+
   const setEnvironmentForInventoryOperation = async () => {
+    let availableProducts: ProductDTO[] = []
+    
+
     const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
+  
     await sqliteDataSource.initialize();
   
     // Initializing local database
     const getProductOfCompany = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
+    const getProductsAllRegisterdProductsQuery = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  
     const determineIfInventoryOperationCancelableUseCase = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
@@ -272,8 +307,38 @@ const inventoryOperationLayout = () => {
     const listAllRouteTransactionsQuery = di_container.resolve<ListAllRouteTransactionsQuery>(ListAllRouteTransactionsQuery);
     const listRegisteredStoresQuery = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
 
+    // Internet validation
+    const hasInternetConnection = await refreshNetworkState();
 
-    const products: ProductDTO[] = await getProductOfCompany.execute();
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+      /*
+        Business rule:
+        The user has to have internet at moment of starting a new workday.
+
+        It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
+        user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
+        of starting a new workday.
+      */
+      Toast.show({
+        type: 'error',
+        text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
+        text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
+      });
+      dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
+      router.replace('/selectionRouteOperationLayout');
+      return;
+    }
+
+    if (hasInternetConnection) {
+      availableProducts = await getProductOfCompany.execute();
+    } else {
+      Toast.show({
+        type: 'info',
+        text1: 'Estas haciendo la operación sin internet.',
+        text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
+      });
+      availableProducts = await getProductsAllRegisterdProductsQuery.execute();
+    }
     
     let inventoryOperationToConsult:InventoryOperationDTO[] = [];
     let isCancelable: boolean = false;
@@ -322,7 +387,7 @@ const inventoryOperationLayout = () => {
       setFinalOperation(false);
       setIssueInventory(false);
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-        setAvailableProducts(products);
+        setAvailableProducts(availableProducts);
         setInitialShiftInventory(inventory_operation_descriptions)
         setRestockInventories([]);
         setDevolutionInventory([]);
@@ -330,7 +395,7 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
-        setAvailableProducts(products);
+        setAvailableProducts(availableProducts);
         setInitialShiftInventory([])
         setRestockInventories([inventory_operation_descriptions]);
         setDevolutionInventory([]);
@@ -338,7 +403,7 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-        setAvailableProducts(products);
+        setAvailableProducts(availableProducts);
         setInitialShiftInventory([])
         setRestockInventories([]);
         setDevolutionInventory(inventory_operation_descriptions);
@@ -363,7 +428,7 @@ const inventoryOperationLayout = () => {
         
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
 
-        setAvailableProducts(products);
+        setAvailableProducts(availableProducts);
         setInitialShiftInventory(startInventoryOperationDescriptions[0]);
         setRestockInventories(restockInventoryOperationsDescriptions);
         setFinalShiftInventory([]);
@@ -387,7 +452,7 @@ const inventoryOperationLayout = () => {
       /* Dispose the list of product and let the user to introduce the inventory movement. */
 
       // Looking for all the products available for the company
-      setAvailableProducts(products);
+      setAvailableProducts(availableProducts);
 
       // TODO: set suggested inventory for start shift inventory
 
@@ -397,12 +462,12 @@ const inventoryOperationLayout = () => {
       setIssueInventory(true);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
       setCurrentShiftInventory(productsInventoryReduxState!);
-      setAvailableProducts(products);
+      setAvailableProducts(availableProducts);
       setSuggestedInventory([]);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
-      setAvailableProducts(products);
+      setAvailableProducts(availableProducts);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
-      setAvailableProducts(products);
+      setAvailableProducts(availableProducts);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
@@ -421,7 +486,21 @@ const inventoryOperationLayout = () => {
         setInventoryOperationMovements(inventory_operation_descriptions);
       } else {
         if (inventoryDescriptionsTempReduxState !== null) {
-          setInventoryOperationMovements([...inventoryDescriptionsTempReduxState]);
+          // Remove those products that are not longer available in the products list.
+          /*
+            Business rule:
+              Products are not registered until the inventory operation is finilized.
+
+            This means, if the user starts an inventory operation and the response contains new products, if the user moves to another screen and the inventory operation
+            is keeping alive, the "amount" of product for those new products will be ignored if the user returns to continue the inventory operation and the device is offline.
+
+            The reason of this is because this system takes as source of true the local or server database, not an state of the application (redux).
+          */
+          const productOfTheCurrentInventoryOperation: InventoryOperationDescriptionDTO[] = [...inventoryDescriptionsTempReduxState];
+          const availableProductIds = new Set(availableProducts.map((product) => product.id_product));
+          const filteredProductOfTheCurrentInventoryOperation = productOfTheCurrentInventoryOperation.filter((product) => availableProductIds.has(product.id_product));
+
+          setInventoryOperationMovements([...filteredProductOfTheCurrentInventoryOperation]);
         }
       }
     }
@@ -430,7 +509,7 @@ const inventoryOperationLayout = () => {
   // Handlers
   const handleGoBackOperationDayMenu = async ():Promise<void> => { 
     if(id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
-      dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements))
+      dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
     }
 
     if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
@@ -463,9 +542,28 @@ const inventoryOperationLayout = () => {
 
   const handleConfirmInventoryOperation = async (): Promise<void> => {      
       const inventoryOperationMovementWithoutZeroAmount = inventoryOperationMovements.filter((inv) => inv.amount > 0);
-      
+      const hasInternetConnection = await refreshNetworkState();
+
       setShowDialog(false);
-      
+        
+
+      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+        /*
+          Business rule:
+          The user has to have internet at moment of starting a new workday.
+
+          It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
+          user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
+          of starting a new workday.
+        */
+        Toast.show({
+          type: 'error',
+          text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
+          text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
+        });
+        dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
+        return;
+      }
 
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
         if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
@@ -565,6 +663,7 @@ const inventoryOperationLayout = () => {
  
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.error(error)
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -607,7 +706,7 @@ const inventoryOperationLayout = () => {
                 text1: 'Se ha registrado el restock exitosamente.',
                 text2: 'Se ha actualizado el inventario actual.',
           });
-          // TODO: Update redux
+
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
           Toast.show({

@@ -49,6 +49,7 @@ export class SQLiteProductRepository implements ProductRepository {
                 ]);
             });
         } catch (error) {
+            console.error('Error inserting product:', error);
             throw new Error('Failed to create product.');
         }
     }

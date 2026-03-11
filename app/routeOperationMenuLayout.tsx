@@ -49,12 +49,13 @@ import {
   getDayOperationColor,
   orderDayOperationsForDisplaying
 } from '@/utils/day-operation/utils';
-import { maintainUserTable } from '../services/authenticationService';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 import UserDTO from '@/src/application/dto/UserDTO';
 
+// Custom hooks
+import useNetworkState from '@/hooks/useNetworkState';
 
 // Auxiliar functions
 const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
@@ -108,6 +109,9 @@ const routeOperationMenuLayout = () => {
   // Refs
   const operationsDayRef = useRef<Map<string, View|null>>(new Map());
   const scrolldownRef = useRef<ScrollView>(null);
+
+  // Custom hooks
+  const { refreshNetworkState } = useNetworkState();
 
   useEffect(() => {
     setUpOperationMenu();
@@ -254,7 +258,8 @@ const routeOperationMenuLayout = () => {
         return;
       }      
 
-      const isConnected = await deviceHasInternetConnection();      
+      const isConnected = await refreshNetworkState();
+      
       if (!isConnected) {
         Toast.show({
           type: 'error', 
