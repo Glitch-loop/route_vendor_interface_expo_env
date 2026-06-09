@@ -56,10 +56,9 @@ import {
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 export class MapperDTO {
-  
     constructor() {}
 
-  // Method overloads for type safety
+    // Method overloads for type safety
     toDTO(entity: Route): RouteDTO;
     toDTO(entity: Product): ProductDTO;
     toDTO(entity: Store): StoreDTO;
@@ -330,7 +329,6 @@ export class MapperDTO {
 
     // StoreDTO -> Store (domain)
     private storeDTOToEntity(dto: StoreDTO): Store {
-
         if (typeof dto.creation_date === 'string' && isNaN(Date.parse(dto.creation_date))) {
             throw new Error('Invalid creation_date format in StoreDTO');
         }
