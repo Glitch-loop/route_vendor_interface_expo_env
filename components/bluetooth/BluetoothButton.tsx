@@ -19,10 +19,18 @@ import { BluetoothPrinterService } from '@/src/infrastructure/services/Bluetooth
 // UI components
 import ListPrintersDialog from '@/components/bluetooth/ListPrintersDialog';
 
+// Redux
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import { setCurrentPrinter, clearCurrentPrinter } from '@/redux/slices/currentPrinterSlice';
+
 
 const BluetoothButton = () => {
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
   
+  const dispatch: AppDispatch = useDispatch();
+  const currentPrinerSlice = useSelector((state: RootState) => state.currentPrinterSlice);
+
   const [isBeingConnected, setIsBeingConnected] = useState<boolean>(false);
   const [showListPrintersDialog, setShowListPrintersDialog] = useState<boolean>(false);
   const [renderingComponent, setRenderingComponent] = useState<boolean>(false);
@@ -75,6 +83,12 @@ const BluetoothButton = () => {
     return printersToReturn;
   };
 
+  const consultDeviceFromPrintersList = async(address: string): Promise<BluetoothDevice|undefined> => {
+        const piredDevices:BluetoothDevice[] = await getPairedPrinters(false)
+        return piredDevices.find((deivce) => {return deivce.address === address})
+  }
+
+
   // Auto-reconnect functions
   const clearReconnectInterval = () => {
     if (reconnectIntervalRef.current) {
@@ -83,20 +97,35 @@ const BluetoothButton = () => {
     }
   };
 
-  const attemptReconnect = async () => {
+  const autoAttemptReconnect = async () => {
+    let result:boolean = false;
+    let address:string = ""
     const deviceToReconnect = lastConnectedPrinterRef.current;
-    if (!deviceToReconnect) {
-      clearReconnectInterval();
-      return;
-    }
-
+    
     try {
-      const result = await printerService.connectDevice(deviceToReconnect);
+      if (currentPrinerSlice === null && deviceToReconnect === null) {
+        clearReconnectInterval();
+        return;
+      }
+      if (currentPrinerSlice !== null) {
+        const currentPrinterToConnect = await consultDeviceFromPrintersList(currentPrinerSlice);
+        if(currentPrinterToConnect) {
+          result = await printerService.connectDevice(currentPrinterToConnect);
+          address = currentPrinerSlice;
+        }
+
+      } else {
+        if(deviceToReconnect){
+          address = deviceToReconnect.address
+          result = await printerService.connectDevice(deviceToReconnect);
+        }
+      }    
+      
       if (result) {
         // Successfully reconnected
         clearReconnectInterval();
         setConnectedPrinter(deviceToReconnect);
-        setPairedPrinters(prev => prev.filter(p => p.address !== deviceToReconnect.address));
+        setPairedPrinters(prev => prev.filter(p => p.address !== address));
         lastConnectedPrinterRef.current = null;
         
         Toast.show({
@@ -104,6 +133,8 @@ const BluetoothButton = () => {
           text1: 'Impresora reconectada',
           text2: 'La conexión se restableció automáticamente.'
         });
+      } else {
+        /* There is not an message for avoiding annoying the user. */
       }
     } catch (error) {
       // Connection attempt failed, will retry in next interval
@@ -124,7 +155,7 @@ const BluetoothButton = () => {
     });
     
     // Start interval to attempt reconnection every 3 seconds
-    reconnectIntervalRef.current = setInterval(attemptReconnect, 3000);
+    reconnectIntervalRef.current = setInterval(autoAttemptReconnect, 3000);
   };
 
   const createListenerForDisconnectedDevice = async () => {
@@ -149,7 +180,20 @@ const BluetoothButton = () => {
   };
       
   const initializeBluetoohComponent = async () => {
-    setConnectedPrinter(await printerService.getConnectedPrinter())
+    //If the device has a current connected printer, set the printer as the current one in the component
+    //otherwise try to connect to the last printer.
+    const connectedPrinter: BluetoothDevice|null = await printerService.getConnectedPrinter();
+    console.log("Initializing ble comoponent; ", currentPrinerSlice)
+    if (connectedPrinter !== null) {
+      setConnectedPrinter(connectedPrinter)
+    } else {
+      if (currentPrinerSlice !== null) {
+        const currentPrinterToConnect = await consultDeviceFromPrintersList(currentPrinerSlice);
+        if(currentPrinterToConnect) startReconnectInterval(currentPrinterToConnect);
+      } else {
+        setConnectedPrinter(null);
+      }
+    }
   }
 
   // Handlers
@@ -224,6 +268,9 @@ const BluetoothButton = () => {
         Toast.show({type: 'success',
           text1:'Impresora conectada',
           text2: 'La impresora está lista para usar.'});
+        
+        // Set as the user's current printer
+        dispatch(setCurrentPrinter(device.address))
       } else {
         Toast.show({type: 'error',
           text1:'No se ha podido conectar la impresora',
@@ -296,6 +343,9 @@ const BluetoothButton = () => {
 
       setRenderingComponent(false);
       setIsBeingConnected(false);
+
+      // Remove user's printer.
+      dispatch(clearCurrentPrinter());
     } catch (error) {
       Toast.show({type: 'error',
         text1:'No se ha podido desconectar la impresora',

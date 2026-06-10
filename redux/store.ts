@@ -10,6 +10,9 @@ import routeSlice from '@/redux/slices/routeSlice';
 import productSlice from '@/redux/slices/productSlice';
 import routeTransactionDescriptionTempSlice from '@/redux/slices/routeTransactionDescriptionTempSlice';
 import inventoryOperationDescriptionTempSlice from '@/redux/slices/inventoryOperationDescriptionTempSlice';
+import currentPrinterSlice from '@/redux/slices/currentPrinterSlice'
+// import currentPrinter from '@/redux/slices/currentPrinter'
+
 
 const store = configureStore({
   reducer: {
@@ -23,7 +26,8 @@ const store = configureStore({
     route: routeSlice,
     products: productSlice,
     routeTransactionDescriptionTemp: routeTransactionDescriptionTempSlice,
-    inventoryOperationDescriptionTemp: inventoryOperationDescriptionTempSlice
+    inventoryOperationDescriptionTemp: inventoryOperationDescriptionTempSlice,
+    currentPrinterSlice: currentPrinterSlice 
   },
 });
 
