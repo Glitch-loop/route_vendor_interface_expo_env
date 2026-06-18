@@ -21,7 +21,6 @@ export class ProductInventoryAggregate {
 
         const newProductInventory = new ProductInventory(
             idProductInventory,
-            priceAtMoment,
             stock,
             idProduct
         );
@@ -46,7 +45,6 @@ export class ProductInventoryAggregate {
 
         const updatedProductInventory = new ProductInventory(
             product.get_id_product_inventory(),
-            product.get_price_of_product(),
             updatedStock,
             product.get_id_product()
         );
@@ -81,7 +79,6 @@ export class ProductInventoryAggregate {
 
         const updatedProductInventory = new ProductInventory(
             product.get_id_product_inventory(),
-            product.get_price_of_product(),
             updatedStock,
             product.get_id_product()
         );
