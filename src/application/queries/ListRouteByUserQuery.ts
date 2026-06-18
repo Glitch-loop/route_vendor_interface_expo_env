@@ -26,6 +26,7 @@ export default class ListRoutesByUserQuery {
     ) { }
 
     async execute(userId: string): Promise<RouteDTO[]> {
+        console.log("Consulting")
         const vendorRoutes: Route[] = [];
         const routes: Route[] = await this.repo.listRoutesByUser(userId);
 

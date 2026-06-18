@@ -36,11 +36,10 @@ export default class AuthenticationService {
     async loginUser(cellphone: string, password: string): Promise<UserDTO | null> {
         // Online login
         const access_token: string|null = await this.serverAuthrepository.login(cellphone, password);
-        console.log("access_token: ", access_token)
         if(access_token === null) { // Try offline login
             const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
             const localUser = localUsers.at(0);
-            console.log("localUser: ", localUser)
+
             // Offline login
             if (localUser) {
                 if (!this.passwordMatches(localUser.password, password)) return null;
@@ -50,16 +49,15 @@ export default class AuthenticationService {
                 return null;
             }
         } else { // Online login was successfully.
-            console.log("Online login")
             this.dataSource.setAuthToken(access_token);
             const users: User[] = await this.serverAuthrepository.getUserByPhoneNumber(cellphone);
-            console.log("users: ", users)
+            
             if (users.at(0) === undefined) return null;
             users.at(0)!.password = password;
             const serverUser: User = users.at(0)!;
+            serverUser.token = access_token;
 
             // Persist user for offline login
-            await this.localAuthRepository.deleteUser(serverUser);
             await this.localAuthRepository.insertUser({...serverUser, password: password});
 
             // Persist session
@@ -89,6 +87,7 @@ export default class AuthenticationService {
         if (!session) return null;
         
         const parsedSession = JSON.parse(session);
+        this.dataSource.setAuthToken(parsedSession.token);
         const expiresAt = new Date(parsedSession.expires_at);
         if (new Date() < expiresAt) {
             return this.mapUserToDTO(parsedSession.user as User);
@@ -97,6 +96,8 @@ export default class AuthenticationService {
             return null;
         }
     }
+
+    
 
     async logoutUser(): Promise<void> {
         const useSessionKey = "twister_user_session";
@@ -123,7 +124,6 @@ export default class AuthenticationService {
             
             await SecureStore.setItemAsync(useSessionKey, JSON.stringify(session));
         } catch (error) {
-            console.log("error: ", error)
             throw new Error('Error persisting user session: ' + error);
         }
     }

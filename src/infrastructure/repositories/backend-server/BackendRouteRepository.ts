@@ -107,7 +107,7 @@ export class BackendRouteRepository implements RouteRepository {
       for(const id_route in routes) {
         routesArr.push(routes.get(id_route)!);
       }
-
+      console.log("Route assigned: ", routesArr)
       return routesArr        
     } catch (error) {
       throw new Error('Error fetching routes: ' + error);

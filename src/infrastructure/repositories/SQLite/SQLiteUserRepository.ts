@@ -23,7 +23,7 @@ export class SQLiteUserRepository implements LocalUserRepository {
             const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(
-                    `INSERT INTO ${EMBEDDED_TABLES.USER} (
+                    `REPLACE INTO ${EMBEDDED_TABLES.USER} (
                         id_vendor,
                         cellphone,
                         name,
@@ -40,12 +40,14 @@ export class SQLiteUserRepository implements LocalUserRepository {
                 );
             });
         } catch (error) {
+            console.log(error)
             throw new Error('Failed to insert user.');
         }
     }
 
     async deleteUser(user: User): Promise<void> {
         try {
+            console.log("user to delete: ", user)
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {

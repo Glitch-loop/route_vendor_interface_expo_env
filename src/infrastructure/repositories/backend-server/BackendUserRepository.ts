@@ -40,7 +40,6 @@ export class BackendUserRepository implements ServerUserRepository {
 					'/users'
 				);
 
-			console.log(response)
 			const users: User[] = [];
 			for (const record of response || []) {
 				users.push({
@@ -54,7 +53,6 @@ export class BackendUserRepository implements ServerUserRepository {
 
 			return users.filter((user) => user.cellphone === cellphone); // TODO: Implement query params for filtering at backend.
 		} catch (error: any) {
-			console.log(error)
 			throw new Error(`Failed to retrieve user by cellphone: ${error}`);
 		}
 	}
@@ -70,7 +68,6 @@ export class BackendUserRepository implements ServerUserRepository {
 					'/security/login',
 					body
 				);
-
 
 				return access_token ? access_token : null;
 
