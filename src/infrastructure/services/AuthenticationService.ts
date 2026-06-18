@@ -85,10 +85,7 @@ export default class AuthenticationService {
         if (!useSessionKey) return null;
         const session = await SecureStore.getItemAsync(useSessionKey);
         if (!session) return null;
-        console.log("Stored session: ", session)
         const parsedSession = JSON.parse(session);
-        console.log("Token; ", parsedSession.user.token)
-        console.log("Expires at; ", parsedSession.expires_at)
         this.dataSource.setAuthToken(parsedSession.user.token);
         const expiresAt = new Date(parsedSession.expires_at);
         if (new Date() < expiresAt) {

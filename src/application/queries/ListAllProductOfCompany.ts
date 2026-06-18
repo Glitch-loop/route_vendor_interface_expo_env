@@ -17,7 +17,7 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 @injectable()
 export default class ListAllProductOfCompany {
     constructor (
-        @inject(TOKENS.SupabaseProductRepository) private productRepository: ProductRepository,
+        @inject(TOKENS.ServerProductRepository) private productRepository: ProductRepository,
         private mapperDTO: MapperDTO
     ) {}
 

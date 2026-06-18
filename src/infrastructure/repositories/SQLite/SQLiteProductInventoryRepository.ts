@@ -35,13 +35,11 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
                             id_product_inventory,
-                            price_at_moment,
                             stock,
                             id_product
-                        ) VALUES (?, ?, ?, ?);
+                        ) VALUES (?, ?, ?);
                     `, [
                         product.get_id_product_inventory(),
-                        product.get_price_of_product(),
                         product.get_stock_of_product(),
                         product.get_id_product()
                     ]);
@@ -60,12 +58,10 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                 for (const product of products) {
                     await tx.runAsync(`
                         UPDATE ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} SET
-                            price_at_moment = ?,
                             stock = ?,
                             id_product = ?
                         WHERE id_product_inventory = ?;
                     `, [
-                        product.get_price_of_product(),
                         product.get_stock_of_product(),
                         product.get_id_product(),
                         product.get_id_product_inventory()
@@ -91,7 +87,6 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                         row.id_product_inventory,
                         row.price_at_moment,
                         row.stock,
-                        row.id_product,
                     )
                 );
             }

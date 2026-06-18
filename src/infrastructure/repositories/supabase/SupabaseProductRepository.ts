@@ -14,55 +14,19 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serverTablesEnum';
 
 @injectable()
-export class SupabaseProductRepository extends ProductRepository {
+export class SupabaseProductRepository implements ProductRepository {
   constructor(
     @inject(TOKENS.SupabaseDataSource) private supabaseDataSource: SupabaseDataSource
-  ) {
-    super();
-  }
+  ) { }
 
   async insertProduct(product: Product): Promise<void> {
-    const { data, error } = await this.supabaseDataSource
-      .getClient()
-      .from(SERVER_DATABASE_ENUM.PRODUCTS)
-      .insert([
-        {
-          id_product: product.id_product,
-          product_name: product.product_name,
-          barcode: product.barcode,
-          weight: product.weight,
-          unit: product.unit,
-          comission: product.comission,
-          price: product.price,
-          product_status: product.product_status,
-          order_to_show: product.order_to_show,
-        },
-      ]);
-
-    if (error) {
-      throw new Error(`Failed to insert product: ${error.message}`);
-    }
+    // Note (06-18-26): Vendor's app must not perform this operation.
+    return;
   }
 
   async updateProduct(product: Product): Promise<void> {
-    const { data, error } = await this.supabaseDataSource
-      .getClient()
-      .from(SERVER_DATABASE_ENUM.PRODUCTS)
-      .update({
-        product_name: product.product_name,
-        barcode: product.barcode,
-        weight: product.weight,
-        unit: product.unit,
-        comission: product.comission,
-        price: product.price,
-        product_status: product.product_status,
-        order_to_show: product.order_to_show,
-      })
-      .eq('id_product', product.id_product);
-
-    if (error) {
-      throw new Error(`Failed to update product: ${error.message}`);
-    }
+    // Note (06-18-26): Vendor's app must not perform this operation.
+    return;
   }
 
   async retrieveAllProducts(): Promise<Product[]> {
@@ -93,14 +57,7 @@ export class SupabaseProductRepository extends ProductRepository {
   }
 
   async deleteProduct(product: Product): Promise<void> {
-    const { data, error } = await this.supabaseDataSource
-      .getClient()
-      .from(SERVER_DATABASE_ENUM.PRODUCTS)
-      .delete()
-      .eq('id_product', product.id_product);
-
-    if (error) {
-      throw new Error(`Failed to delete product: ${error.message}`);
-    }
+    // Note (06-18-26): Vendor's app must not perform this operation.
+    return;
   }
 }

@@ -17,7 +17,7 @@ import { SERVER_DATABASE_ENUM } from '@/src/infrastructure/persitence/enums/serv
 
 
 @injectable()
-export class SupabaseInventoryOperationRepository implements SyncServerInventoryOperationRepository {
+export class BackendInventoryOperationRepository implements SyncServerInventoryOperationRepository {
     constructor(@inject(TOKENS.SupabaseDataSource) private readonly dataSource: SupabaseDataSource) { }
 
     private get supabase() {

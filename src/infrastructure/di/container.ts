@@ -70,6 +70,7 @@ import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
 import { BackendRouteRepository } from '../repositories/backend-server/BackendRouteRepository';
+import { BackendProductRepository } from '../repositories/backend-server/BackendProductRepository';
 
 
 
@@ -174,11 +175,16 @@ Alternative:
     - SupabaseRouteRepository
 */
 
-container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
-    useClass: SupabaseProductRepository
+container.register<ProductRepository>(TOKENS.ServerProductRepository, {
+    useClass: BackendProductRepository
 });
 
+/*
+Alternative:
+    - SupabaseProductRepository
+        Note (06-18-26): Product entity has been modified.
 
+*/
 
 container.register<ServerUserRepository>(TOKENS.ServerAuthenticationRepository, {
     useClass: BackendUserRepository

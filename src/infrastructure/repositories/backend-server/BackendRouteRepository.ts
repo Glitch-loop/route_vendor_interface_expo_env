@@ -17,9 +17,7 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import RouteMap from '@/components/shared-components/RouteMap';
 import { DAYS } from '@/src/core/constants/Days';
-import DayType from '@/src/core/types/DaysType';
 
 interface RouteDayLocationInterface {
   position_in_route: number;

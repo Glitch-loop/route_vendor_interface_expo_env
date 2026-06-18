@@ -100,10 +100,12 @@ export default function Index() {
 
   const startSession = async () => {
     const authenticationService = container.resolve(AuthenticationService);
+    console.log("Database initialization")
     await localDatabaseInitialization();
+    console.log("User session")
     const userSession:UserDTO | null = await authenticationService.activeSession();
 
-    console.log("Starting session: ", userSession)
+    console.log("Starting session: ", userSession); 
     if (userSession === null) {
       router.replace('/loginLayout');
       return;

@@ -70,22 +70,30 @@ export const storesEmbeddedTable = `
 
 export const productsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS} (
-    id_product      TEXT NOT NULL UNIQUE,
-    product_name    TEXT NOT NULL,
-    barcode         TEXT,
-    weight          TEXT,
-    unit            TEXT,
-    comission       NUMERIC(6,3),
-    price           NUMERIC(6,3) NOT NULL,
-    product_status  INT NOT NULL,
-    order_to_show   INT NOT NULL
+    id_product              TEXT NOT NULL UNIQUE,
+    product_name            TEXT NOT NULL,
+    cost                    NUMERIC(6,3) NOT NULL,
+    product_status          INT NOT NULL,
+    quantity_presentation   NUMERIC(6,3) NOT NULL,
+    order_to_show           INT NOT NULL,
+    id_measurement_unit      INT NOT NULL,
+    barcode                 TEXT
+  );
+`;
+export const productPricesEmbeddedTable = `
+  CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS_PRICES} (
+    id_product_price      TEXT NOT NULL,
+    price                 NUMERIC(6,3) NOT NULL,
+    create_at             TEXT NOT NULL,
+    id_client             TEXT NOT NULL,
+    id_location           TEXT NOT NULL,
+    id_route_day          TEXT NOT NULL
   );
 `;
 
 export const productsInventoryEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
     id_product_inventory  TEXT NOT NULL UNIQUE,
-    price_at_moment       NUMERIC(6,3) NOT NULL,
     stock                 INT NOT NULL,
     id_product            TEXT NOT NULL
   );
