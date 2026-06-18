@@ -126,10 +126,10 @@ function determineTextOfCashInventoryVisualization(inventoryOperation: Inventory
 
   if (state === 0) text = '';
   else {
-    if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-      
-      text = `Dinero llevado al inicio de la ruta: ${formatNumberAsAccountingCurrency(workdayInformation.start_petty_cash)}`;
-    } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
+    // if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
+    //   text = `Dinero llevado al inicio de la ruta: ${formatNumberAsAccountingCurrency(workdayInformation.start_petty_cash)}`;
+    // } else 
+      if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
       text += ` Dinero regresado al final de la ruta: ${formatNumberAsAccountingCurrency(workdayInformation.final_petty_cash ? workdayInformation.final_petty_cash : 0)}`;
     } else {
       text = '';
@@ -215,7 +215,7 @@ const inventoryOperationLayout = () => {
   const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [inventoryWithdrawal, setInventoryWithdrawal] = useState<boolean>(false);
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
-  const [finalOperation, setFinalOperation] = useState<boolean>(false);
+  const [finaxlOperation, setFinalOperation] = useState<boolean>(false);
   const [issueInventory, setIssueInventory] = useState<boolean>(false);
   const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
   const [routeTransactions, setRouteTransactions] = useState<RouteTransactionDTO[]>([]);
@@ -265,30 +265,6 @@ const inventoryOperationLayout = () => {
 
 
   // ======= Auxiliar functions ======
-
-  const validateInternetConnectionForStartInventory = async () => {
-    const hasInternetConnection = await refreshNetworkState();
-
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
-      /*
-        Business rule:
-        The user has to have internet at moment of starting a new workday.
-
-        It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
-        user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
-        of starting a new workday.
-      */
-     console.log("Hola mundo")
-      Toast.show({
-        type: 'error',
-        text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
-        text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
-      });
-      router.replace('/selectionRouteOperationLayout');
-      return;
-    }
-  }
-
   const setEnvironmentForInventoryOperation = async () => {
     let availableProducts: ProductDTO[] = []
     
@@ -523,8 +499,9 @@ const inventoryOperationLayout = () => {
   const handleAcceptInventoryOperation = ():void => {
     let askToUserIfAgreeWithInventory: boolean = false;
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory 
-    || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+    if (
+      // id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || 
+      id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
       if (getTotalAmountFromCashInventory(cashInventory) === 0 || !determineIfExistsOperationDescriptionMovement(inventoryOperationMovements)) askToUserIfAgreeWithInventory = true;
       else askToUserIfAgreeWithInventory = false;
     } else {
@@ -603,7 +580,6 @@ const inventoryOperationLayout = () => {
 
       // Use cases - commands
       if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-        
         if (route === null || routeDay === null) {
           Toast.show({
             type: 'error',
@@ -1045,12 +1021,13 @@ const inventoryOperationLayout = () => {
             </View>
           }
           {/* Cash reception section. */}
-          {((id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-          || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)) &&
+          {((
+          // id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || 
+          id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)) &&
             <View style={tw`flex basis-auto w-full mt-3`}>
               <Text style={tw`w-full text-center text-black text-2xl`}>
-                {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'}
-                {id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory && 'Fondo + dinero de venta (efectivo)'}
+                {/* {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'} */}
+                {id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory && 'Dinero de venta (efectivo)'}
               </Text>
               <TableCashReception
                 cashInventoryOperation={cashInventory}

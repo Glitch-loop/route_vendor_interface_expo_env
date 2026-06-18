@@ -83,6 +83,7 @@ async function localDatabaseInitialization() {
 
 export default function Index() {
   // const { getCurrentUserLocation } = useCurrentLocation();
+
   const router:Router = useRouter();
   
   // Redux
@@ -102,6 +103,7 @@ export default function Index() {
     await localDatabaseInitialization();
     const userSession:UserDTO | null = await authenticationService.activeSession();
 
+    console.log("Starting session: ", userSession)
     if (userSession === null) {
       router.replace('/loginLayout');
       return;

@@ -6,8 +6,8 @@ import { Router, useRouter } from 'expo-router';
 
 // Redux states
 import { useDispatch } from 'react-redux';
-import { setUser } from '../redux/slices/userSlice';
-import { AppDispatch } from '../redux/store';
+import { setUser } from '@/redux/slices/userSlice';
+import { AppDispatch } from '@/redux/store';
 // Services
 import { container as di_container } from '@/src/infrastructure/di/container';
 import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
@@ -26,6 +26,7 @@ export default function login() {
   // Declaring states
   const [inputCellphone, setInputCellphone] = useState<string>('');
   const [inputPassword, setInputPassword] = useState<string>('');
+  const [signInAttempts, setSignInAttempts] = useState<number>(0);
 
   useEffect(() => { setUpUserSession(); }, []);
   
@@ -57,11 +58,21 @@ export default function login() {
         return;
       }
 
-      Toast.show({
-        type: 'error',
-        text1: 'Credenciales inválidas.',
-        text2: 'Revisa tu número telefónico y contraseña.',
-      });
+      if(signInAttempts <= 2) {
+        Toast.show({
+          type: 'error',
+          text1: 'Credenciales inválidas.',
+          text2: 'Revisa tu número telefónico y contraseña.',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Credenciales inválidas. Intenta hacer un inicio de sesión con internet.',
+          text2: 'Intenta iniciar sesión con tu número telefónico y contraseña.',
+        });
+      }
+
+      setSignInAttempts((prev) => {return prev + 1 })
     } catch (error) {
       Toast.show({
         type: 'error',

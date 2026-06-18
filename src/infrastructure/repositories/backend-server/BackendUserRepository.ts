@@ -1,0 +1,81 @@
+// Libraries
+import { injectable, inject } from 'tsyringe';
+
+// Interfaces & entities
+import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
+import { User } from '@/src/core/entities/User';
+
+// Infrastructure
+import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatasource';
+
+// Utils
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+interface LoginRequestInterface {
+	cellphone: string;
+	password: string;
+}
+
+interface UserInterface {
+	id_user: string;
+	cellphone: string;
+	name: string;
+	status: number;
+	salary: number;
+	created_at: string;
+	updated_at: string;
+	assigned_roles: any[];
+	address: string;
+	rfc: string;
+	imss: string;
+}
+
+@injectable()
+export class BackendUserRepository implements ServerUserRepository {
+	constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
+
+	async getUserByPhoneNumber(cellphone: string): Promise<User[]> {
+		try {
+				const response = await this.dataSource.get<UserInterface[]>(
+					'/users'
+				);
+
+			console.log(response)
+			const users: User[] = [];
+			for (const record of response || []) {
+				users.push({
+					id_vendor: record.id_user,
+					cellphone: record.cellphone ?? null,
+					name: record.name ?? '',
+					password: null,
+					status: record.status ?? null,
+				});
+			}
+
+			return users.filter((user) => user.cellphone === cellphone); // TODO: Implement query params for filtering at backend.
+		} catch (error: any) {
+			console.log(error)
+			throw new Error(`Failed to retrieve user by cellphone: ${error}`);
+		}
+	}
+
+	async login(cellphone: string, password: string): Promise<string|null> {
+			const body: LoginRequestInterface = {
+				cellphone: cellphone,
+				password: password
+			}
+
+			try {
+				const access_token = await this.dataSource.post<string|undefined>(
+					'/security/login',
+					body
+				);
+
+
+				return access_token ? access_token : null;
+
+			} catch (error) {
+				return null;
+			}
+	}
+}

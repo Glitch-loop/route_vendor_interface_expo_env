@@ -1,6 +1,6 @@
 // Libraries
 import { inject, injectable } from "tsyringe";
-import { getCurrentPositionAsync, LocationObject, hasServicesEnabledAsync, requestForegroundPermissionsAsync, Accuracy } from "expo-location";
+import { getCurrentPositionAsync, LocationObject, hasServicesEnabledAsync, requestForegroundPermissionsAsync, Accuracy,  } from "expo-location";
 import { PermissionsAndroid } from "react-native";
 
 // Interfaces

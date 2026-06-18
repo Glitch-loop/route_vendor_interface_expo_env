@@ -1,12 +1,23 @@
 // Libraries
 import { inject, injectable } from 'tsyringe';
-import { TOKENS } from '../di/tokens';
-import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
-import { LocalUserRepository } from '@/src/core/interfaces/LocalUserRepository';
-import UserDTO from '@/src/application/dto/UserDTO';
-import { User } from '@/src/core/entities/User';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
+
+// Interfaces
+import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
+import { LocalUserRepository } from '@/src/core/interfaces/LocalUserRepository';
+
+// Tokens
+import { TOKENS } from '../di/tokens';
+
+// DTOs
+import UserDTO from '@/src/application/dto/UserDTO';
+
+// Entities
+import { User } from '@/src/core/entities/User';
+
+// Infrastructure
+import { BackendDataSource } from '../datasources/BackendDatasource';
 
 const USER_SESSION_KEY = 'twister_user_session';
 const EIGHT_HOURS_IN_MS = 8 * 60 * 60 * 1000;
@@ -14,30 +25,47 @@ const EIGHT_HOURS_IN_MS = 8 * 60 * 60 * 1000;
 @injectable()
 export default class AuthenticationService {
     constructor(
+        @inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource,
         @inject(TOKENS.ServerAuthenticationRepository) private readonly serverAuthrepository: ServerUserRepository,
         @inject(TOKENS.LocalAuthenticationRepository) private readonly localAuthRepository: LocalUserRepository
     ) { }
 
+    /*
+        Prioritize online login over offline login
+    */
     async loginUser(cellphone: string, password: string): Promise<UserDTO | null> {
-        console.log('Attempting login for cellphone: ', await SecureStore.getItemAsync(USER_SESSION_KEY));
-        const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
-        const localUser = localUsers.at(0);
+        // Online login
+        const access_token: string|null = await this.serverAuthrepository.login(cellphone, password);
+        console.log("access_token: ", access_token)
+        if(access_token === null) { // Try offline login
+            const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
+            const localUser = localUsers.at(0);
+            console.log("localUser: ", localUser)
+            // Offline login
+            if (localUser) {
+                if (!this.passwordMatches(localUser.password, password)) return null;
+                await this.persistSession(localUser);
+                return this.mapUserToDTO(localUser);
+            } else {
+                return null;
+            }
+        } else { // Online login was successfully.
+            console.log("Online login")
+            this.dataSource.setAuthToken(access_token);
+            const users: User[] = await this.serverAuthrepository.getUserByPhoneNumber(cellphone);
+            console.log("users: ", users)
+            if (users.at(0) === undefined) return null;
+            users.at(0)!.password = password;
+            const serverUser: User = users.at(0)!;
 
-        if (localUser) {
-            if (!this.passwordMatches(localUser.password, password)) return null;
-            await this.persistSession(localUser);
-            return this.mapUserToDTO(localUser);
+            // Persist user for offline login
+            await this.localAuthRepository.deleteUser(serverUser);
+            await this.localAuthRepository.insertUser({...serverUser, password: password});
+
+            // Persist session
+            await this.persistSession(serverUser); 
+            return this.mapUserToDTO(serverUser);
         }
-
-        const serverUsers = await this.serverAuthrepository.getUserByPhoneNumber(cellphone);
-        const serverUser = serverUsers.at(0);
-
-        if (!serverUser) return null;
-        if (!this.passwordMatches(serverUser.password, password)) return null;
-
-        await this.localAuthRepository.insertUser(serverUser);
-        await this.persistSession(serverUser);
-        return this.mapUserToDTO(serverUser);
     }
 
     private passwordMatches(storedPassword: string | null, providedPassword: string): boolean {
@@ -56,7 +84,6 @@ export default class AuthenticationService {
 
     async activeSession(): Promise<UserDTO | null> {
         const useSessionKey = 'twister_user_session';
-        // console.log('TOKEN: ', process.env.EXPO_USER_SESSION_KEY)
         if (!useSessionKey) return null;
         const session = await SecureStore.getItemAsync(useSessionKey);
         if (!session) return null;
@@ -90,11 +117,13 @@ export default class AuthenticationService {
                     cellphone: user.cellphone,
                     name: user.name,
                     status: user.status,
+                    token: user.token,
                 },
             };
             
             await SecureStore.setItemAsync(useSessionKey, JSON.stringify(session));
         } catch (error) {
+            console.log("error: ", error)
             throw new Error('Error persisting user session: ' + error);
         }
     }

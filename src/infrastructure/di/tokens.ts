@@ -59,4 +59,7 @@ export const TOKENS = {
     LocationService: Symbol('LocationService'),
     DataReplicationService: Symbol('DataReplicationService'),
     AuthenticationService: Symbol('AuthenticationService'),
+
+    // Backend server
+    BackendDataSource: Symbol('BackendDataSource')
 }

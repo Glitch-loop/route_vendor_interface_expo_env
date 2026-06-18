@@ -41,6 +41,7 @@
     "@rneui/themed": "^4.0.0-rc.8",
     "@supabase/supabase-js": "^2.47.10",
     "@types/jest": "29.5.14",
+    "axios": "^1.18.0",
     "dayjs": "^1.11.13",
     "dotenv": "^17.2.3",
     "expo": "~54.0.33",

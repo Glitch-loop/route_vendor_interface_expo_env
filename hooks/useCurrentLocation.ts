@@ -12,7 +12,6 @@ function useCurrentLocation(): expoLocationHook {
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
     const [bestLocation, setBestLocation] = useState<Location.LocationObject | null>(null);
 
-
     const getCurrentUserLocation = async () => {
         if (bestLocation !== null) {
             getMostAccurateCurrentUserLocation();
@@ -39,10 +38,6 @@ function useCurrentLocation(): expoLocationHook {
         setBestLocation(location);
         return location; 
     }
-
-
-
-
 
     return {
         getCurrentUserLocation,

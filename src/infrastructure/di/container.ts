@@ -6,6 +6,7 @@ import { container, Lifecycle } from 'tsyringe'
 // DataSources
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource'
+import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatasource';
 
 // Interfaces
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -50,6 +51,10 @@ import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/reposito
 import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransaction'
 import { SQLiteUserRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteUserRepository'
 
+
+// Implementations - Backend
+import { BackendUserRepository } from '@/src/infrastructure/repositories/backend-server/BackendUserRepository';
+
 // Services
 import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
 import { DateService } from '@/src/infrastructure/services/DateService'
@@ -70,6 +75,8 @@ import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermis
 // Register DataSources as SINGLETON (one instance for entire app)
 container.registerSingleton<SupabaseDataSource>(TOKENS.SupabaseDataSource, SupabaseDataSource);
 
+container.registerSingleton<BackendDataSource>(TOKENS.BackendDataSource, BackendDataSource)
+
 container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource, 
     { useClass: SQLiteDataSource },
     { lifecycle: Lifecycle.Singleton }
@@ -83,16 +90,14 @@ container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);
 
 container.registerSingleton<IDateService>(TOKENS.DateService, DateService);
 
+container.registerSingleton<LocationService>(TOKENS.LocationService, GpsService);
+
 container.register<LocalDatabaseService>(TOKENS.LocalDatabaseService, {
     useClass: SQLiteDatabaseService
 });
 
 container.register<PlatformPermissionsService>(TOKENS.PlataformService, {
     useClass: AndroidPlatformPermissions
-});
-
-container.register<LocationService>(TOKENS.LocationService, {
-    useClass: GpsService
 });
 
 container.register(TOKENS.DataReplicationService, {
@@ -168,8 +173,13 @@ container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
 });
 
 container.register<ServerUserRepository>(TOKENS.ServerAuthenticationRepository, {
-    useClass: SupabaseServerUserRepository
+    useClass: BackendUserRepository
 });
+
+/*
+Alternative:
+    - SupabaseServerUserRepository
+*/
 
 // =================== Implementation of repositories - SyncServer (Supabase) ====================
 container.register(TOKENS.SyncServerStoreRepository, {
