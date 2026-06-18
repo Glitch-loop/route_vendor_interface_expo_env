@@ -85,9 +85,11 @@ export default class AuthenticationService {
         if (!useSessionKey) return null;
         const session = await SecureStore.getItemAsync(useSessionKey);
         if (!session) return null;
-        
+        console.log("Stored session: ", session)
         const parsedSession = JSON.parse(session);
-        this.dataSource.setAuthToken(parsedSession.token);
+        console.log("Token; ", parsedSession.user.token)
+        console.log("Expires at; ", parsedSession.expires_at)
+        this.dataSource.setAuthToken(parsedSession.user.token);
         const expiresAt = new Date(parsedSession.expires_at);
         if (new Date() < expiresAt) {
             return this.mapUserToDTO(parsedSession.user as User);
@@ -121,7 +123,7 @@ export default class AuthenticationService {
                     token: user.token,
                 },
             };
-            
+            console.log("Session to persit: ", session)
             await SecureStore.setItemAsync(useSessionKey, JSON.stringify(session));
         } catch (error) {
             throw new Error('Error persisting user session: ' + error);

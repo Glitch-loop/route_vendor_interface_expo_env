@@ -16,7 +16,7 @@ export const TOKENS = {
     SupabaseDayOperationRepository: Symbol('SupabaseDayOperationRepository'),
     SupabaseInventoryOperationRepository: Symbol('SupabaseInventoryOperationRepository'),
     SupabaseInventoryRepository: Symbol('SupabaseInventoryRepository'),
-    SupabaseRouteRepository: Symbol('SupabaseRouteRepository'),
+    ServerRouteRepository: Symbol('ServerRouteRepository'),
     SupabaseRouteTransactionRepository: Symbol('SupabaseRouteTransactionRepository'),
     SupabaseShiftOrganizationRepository: Symbol('SupabaseShiftOrganizationRepository'),
     SupabaseStoreRepository: Symbol('SupabaseStoreRepository'),

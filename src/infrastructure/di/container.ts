@@ -69,6 +69,7 @@ import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
+import { BackendRouteRepository } from '../repositories/backend-server/BackendRouteRepository';
 
 
 
@@ -164,13 +165,20 @@ container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
     useClass: SupabaseStoreRepository
 });
 
-container.register<RouteRepository>(TOKENS.SupabaseRouteRepository, {
-    useClass: SupabaseRouteRepository
+container.register<RouteRepository>(TOKENS.ServerRouteRepository, {
+    useClass: BackendRouteRepository
 });
+
+/*
+Alternative:
+    - SupabaseRouteRepository
+*/
 
 container.register<ProductRepository>(TOKENS.SupabaseProductRepository, {
     useClass: SupabaseProductRepository
 });
+
+
 
 container.register<ServerUserRepository>(TOKENS.ServerAuthenticationRepository, {
     useClass: BackendUserRepository

@@ -71,7 +71,7 @@ export class BackendRouteRepository implements RouteRepository {
         routeDayByUserRequest
       );
 
-      // Retrieve routes that belongs the assigned route days.
+      // Retrieve routes of the route days that are assiend to the user.
       responseRouteDays.forEach((assignedRoute) => {
         const { id_route } = assignedRoute;
         routesId.add(id_route)
@@ -85,7 +85,8 @@ export class BackendRouteRepository implements RouteRepository {
       responseRoutes.forEach((route) => {
         const { id_route, route_name, description } = route;
         if (routesId.has(id_route)) {
-          const newRoute: Route = new Route(id_route,
+          const newRoute: Route = new Route(
+            id_route,
             route_name,
             description,
             true, // Only active routes can be retrieved.
@@ -104,10 +105,10 @@ export class BackendRouteRepository implements RouteRepository {
         }
       });
 
-      for(const id_route in routes) {
+      for(const id_route of routesId) {
         routesArr.push(routes.get(id_route)!);
       }
-      console.log("Route assigned: ", routesArr)
+
       return routesArr        
     } catch (error) {
       throw new Error('Error fetching routes: ' + error);
