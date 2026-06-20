@@ -18,26 +18,6 @@ import { capitalizeFirstLetterOfEachWord } from "../generalFunctions";
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
 
 // Related to route transaction workflow
-export function retrievePriceFromProductInventory(
-  id_product_inventory:string, 
-  productInventory: Map<string, ProductInventoryDTO>):number {
-    // productInventory Map<id_product_inventory, ProductInventoryDTO>
-    let price:number = 0;
-
-    if (productInventory.has(id_product_inventory)) {
-        const foundProduct = productInventory.get(id_product_inventory);
-        if (foundProduct) {
-            price = foundProduct.price_at_moment;
-        } else {
-            price = 0;
-        }
-    } else {
-        price = 0;
-    }
-
-    return price;
-  }
-
 export function getProductDevolutionBalance(
   productDevolution: RouteTransactionDescriptionDTO[], 
   productReposition: RouteTransactionDescriptionDTO[]
