@@ -15,7 +15,6 @@ const productsInventorySlice = createSlice({
       return action.payload.map(productInventory => {
         return {
           id_product_inventory: productInventory.id_product_inventory,
-          price_at_moment: productInventory.price_at_moment,
           stock: productInventory.stock,
           id_product: productInventory.id_product,
         }

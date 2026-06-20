@@ -257,7 +257,7 @@ const SummarizeTransaction = ({
             />
             <SummarizeFormat
               productInventoryMap={productInventoryMap}
-              productsMovement={productsDevolution}
+              transactionMovements={productsDevolution}
               totalSectionCaptionMessage={'Valor total de devolución: '}/>
             <View style={tw`w-full border`}/>
             {/* Product reposition section */}
@@ -268,7 +268,7 @@ const SummarizeTransaction = ({
               />
             <SummarizeFormat
               productInventoryMap={productInventoryMap}
-              productsMovement={productsReposition}
+              transactionMovements={productsReposition}
               totalSectionCaptionMessage={'Valor total de reposición: '}/>
             <View style={tw`w-full border`}/>
             {/* Product sale section */}
@@ -279,7 +279,7 @@ const SummarizeTransaction = ({
               />
             <SummarizeFormat
               productInventoryMap={productInventoryMap}
-              productsMovement={productsSale}
+              transactionMovements={productsSale}
               totalSectionCaptionMessage={'Total venta: '}/>
             <View style={tw`w-full border`}/>
             {/* Totals sections */}
@@ -289,7 +289,6 @@ const SummarizeTransaction = ({
                 productsDevolution={productsDevolution}
                 productsReposition={productsReposition}
                 productsSale={productsSale}
-                productInventoryMap={productInventoryMap}
             />
             <View style={tw`w-full flex flex-row`}>
               <ConfirmationBand

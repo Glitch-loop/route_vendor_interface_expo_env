@@ -59,6 +59,8 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import { BackHandler } from 'react-native';
 
+import ProductClass from '../classes/ProductClass';
+
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
 //   productsToCommit:RouteTransactionDescriptionDTO[],
@@ -103,7 +105,6 @@ function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO
 }
 
 
-
 type typeSearchParams = {
   id_store_search_param: string;
   id_day_operation_dependent_search_param?: string;
@@ -141,6 +142,7 @@ const salesLayout = () => {
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
+  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>());
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
 
   // Use refs
@@ -191,11 +193,22 @@ useEffect(() => {
     let devolutionMovements:RouteTransactionDescriptionDTO[] = [];
     let repositionMovements:RouteTransactionDescriptionDTO[] = [];
     let saleMovements:RouteTransactionDescriptionDTO[] = [];
+    const productClassMap: Map<string, ProductClass> = new Map<string, ProductClass>();
 
     // Setting up initial states for the sale layout.
     if (productInventory !== null && availableProducts !== null) {
       const productInventoryMapLocal = createMapProductInventoryWithProduct(productInventory, availableProducts)
       setProductInventoryMap(productInventoryMapLocal);
+
+      // Creating product class for retrieving prices
+      for (const [currentIdProductInventory, currentProductInventory] of productInventoryMapLocal) {
+        productClassMap.set(
+          currentIdProductInventory, 
+          new ProductClass(currentProductInventory)
+        )
+      }
+
+      setProductClassMap(productClassMap);
 
       // Start a new route transaction from another route transaction.
       if (id_route_transaction_search_param !== undefined) {
@@ -245,7 +258,20 @@ useEffect(() => {
     }
   }
 
+  const getPriceForAProduct = (item: ProductDTO): number => {
+    const {id_product} = item;
+    const productToDevolve = productClassMap.get(id_product);
 
+    if(productToDevolve === undefined) {
+      Toast.show({
+        type: 'error',
+        text1: "Ha ocurrido un error inesperado, vuelve a cargar la pagina.", 
+        text2: "Ha ocurrido un error inesperado, vuelve a cargar la pagina."});
+      return 0;
+    }
+
+    return productToDevolve.getPrice(id_store_search_param, workDayInformation?.id_route_day);
+  }
 
   // Handlers
   const handleCancelSale = () => { 
@@ -445,8 +471,8 @@ useEffect(() => {
     if (item === null) {
       setProductDevolution(declaredProductDevolution);
     } else {
-      const {id_product, price_at_moment, id_product_inventory} = item;
-      
+      const {id_product, id_product_inventory} = item;
+      const price_at_moment:number = getPriceForAProduct(item);
       const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
           id_route_transaction_description: '',
           price_at_moment: price_at_moment,
@@ -485,7 +511,8 @@ useEffect(() => {
               productSale, 
               false));
         } else {
-          const {id_product, price_at_moment, id_product_inventory} = item;
+          const {id_product, id_product_inventory} = item;
+          const price_at_moment:number = getPriceForAProduct(item);
           const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
               id_route_transaction_description: '',
               price_at_moment: price_at_moment,
@@ -537,8 +564,8 @@ useEffect(() => {
             productReposition, 
             false));
       } else {
-        const {id_product, price_at_moment, id_product_inventory} = item;
-        
+        const {id_product, id_product_inventory} = item;
+        const price_at_moment:number = getPriceForAProduct(item);
         // Creating movement with the new amount.
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',
@@ -586,7 +613,7 @@ useEffect(() => {
               */}
               <PaymentProcess
                 transactionIdentifier   = { workDayInformation?.id_work_day || '' }
-                totalToPay              = { getGreatTotal(productDevolution, productReposition, productSale, productInventoryMap) }
+                totalToPay              = { getGreatTotal(productDevolution, productReposition, productSale) }
                 paymentProcess          = { startPaymentProcess }
                 onCancelPaymentProcess  = { setStartPaymentProcess }
                 onPaySale               = {(receivedCash:number, paymnetMethod:PAYMENT_METHODS) => handlePaySale(receivedCash, paymnetMethod)}/>
