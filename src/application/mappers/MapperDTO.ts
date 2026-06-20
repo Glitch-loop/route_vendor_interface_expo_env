@@ -8,6 +8,7 @@ import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { DayOperation } from '@/src/core/entities/DayOperation';
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
+import { ProductPrice } from '@/src/core/object-values/ProductPrice';
 import { PaymentMethod } from '@/src/core/object-values/PaymentMethod';
 import { PAYMENT_METHODS } from '@/src/core/enums/PaymentMethod';
 
@@ -16,6 +17,7 @@ import RouteDTO from '@/src/application/dto/RouteDTO';
 import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import RouteDayStoreDTO from '@/src/application/dto/RouteDayStoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import ProductPriceDTO from '@/src/application/dto/ProductPriceDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
@@ -190,13 +192,11 @@ export class MapperDTO {
         return {
             id_product: entity.id_product,
             product_name: entity.product_name,
-            barcode: entity.barcode || '',
-            weight: entity.weight || '',
-            unit: entity.unit || '',
-            comission: entity.comission,
-            price: entity.price,
-            product_status: entity.product_status,
-            order_to_show: entity.order_to_show,
+            cost: entity.cost,
+            quantity_presentation: entity.quantity_presentation,
+            order_to_show: entity.order_to_show === null ? 0 : Number(entity.order_to_show),
+            product_price: entity.price.map((price) => this.productPriceObjectValueToDTO(price)),
+            barcode: entity.barcode,
         };
     }
 
@@ -240,7 +240,6 @@ export class MapperDTO {
     private productInventoryToDTO(entity: ProductInventory): ProductInventoryDTO {
         return {
             id_product_inventory: (entity as any)['id_product_inventory'],
-            price_at_moment: entity.get_price_of_product(),
             stock: entity.get_stock_of_product(),
             id_product: (entity as any)['id_product'],
         };
@@ -317,13 +316,35 @@ export class MapperDTO {
         return new Product(
             dto.id_product,
             dto.product_name,
-            dto.barcode ?? null,
-            dto.weight ?? null,
-            dto.unit ?? null,
-            dto.comission,
-            dto.price,
-            dto.product_status,
-            dto.order_to_show
+            dto.cost,
+            1,
+            dto.quantity_presentation,
+            String(dto.order_to_show),
+            null,
+            dto.product_price.map((price) => this.productPriceDTOToObjectValue(price)),
+            dto.barcode ?? null
+        );
+    }
+
+    private productPriceObjectValueToDTO(productPrice: ProductPrice): ProductPriceDTO {
+        return new ProductPriceDTO(
+            productPrice.id_product_price,
+            productPrice.price,
+            productPrice.created_at,
+            productPrice.id_client === '' ? null : productPrice.id_client,
+            productPrice.id_location === '' ? null : productPrice.id_location,
+            productPrice.id_route_day === '' ? null : productPrice.id_route_day,
+        );
+    }
+
+    private productPriceDTOToObjectValue(productPrice: ProductPriceDTO): ProductPrice {
+        return new ProductPrice(
+            productPrice.id_product_price,
+            productPrice.price,
+            productPrice.created_at,
+            (productPrice.id_client ?? null) as unknown as string,
+            (productPrice.id_location ?? null) as unknown as string,
+            (productPrice.id_route_day ?? null) as unknown as string,
         );
     }
 

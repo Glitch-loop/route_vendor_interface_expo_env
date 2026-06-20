@@ -41,7 +41,6 @@ import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
-import ProductDTO from '@/src/application/dto/ProductDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 

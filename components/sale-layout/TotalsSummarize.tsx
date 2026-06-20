@@ -3,42 +3,36 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import tw from 'twrnc';
 
+// DTOs
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+
 // Utils
 import { 
   getProductDevolutionBalance,
   calculateChange,
   getNamePaymentMethodById
 } from '@/utils/route-transaciton/utils';
-
-// DTOs
-import ProductDTO from '@/src/application/dto/ProductDTO';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
-import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 
 const TotalsSummarize = ({
   routeTransaction,
   productsDevolution,
   productsReposition,
-  productsSale,
-  productInventoryMap,
-  }:{
+  productsSale
+}:{
   routeTransaction?:RouteTransactionDTO
   productsDevolution:RouteTransactionDescriptionDTO[],
   productsReposition:RouteTransactionDescriptionDTO[],
   productsSale:RouteTransactionDescriptionDTO[],
-  productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
-  }) => {
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[], productInventoryMap);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[], productInventoryMap);
-  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale,[], productInventoryMap);
+}) => {
+  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
+  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
   let productDevolutionBalance  = '$0';
   let greatTotal                = '$0';
   let cashReceived              = '$0';
   let greatTotalNumber          = (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution);
-
-
   
   // Getting product devolution balance
   if (subtotalProductReposition - subtotalProductDevolution < 0) {

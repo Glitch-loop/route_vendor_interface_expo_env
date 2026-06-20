@@ -151,7 +151,7 @@ export default class RegisterRestockOfProductUseCase {
         const inventoryOperationDescriptions: InventoryOperationDescription[] = inventoryOperationDescriptionDTO
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const workdayInformation: WorkDayInformation = mapper.toEntity(workdayInformationDTO);
-        const availableProductsEntities: Product[] = availableProducts.map((productDTO) => mapper.toEntity(productDTO));
+        const availableProductsEntities: Product[] = availableProducts.map((ProductDTO) => mapper.toEntity(ProductDTO));
 
         return await this.executeUseCase(
             inventoryOperationDescriptions,

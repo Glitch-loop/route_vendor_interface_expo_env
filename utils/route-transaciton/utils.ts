@@ -40,30 +40,26 @@ export function retrievePriceFromProductInventory(
 
 export function getProductDevolutionBalance(
   productDevolution: RouteTransactionDescriptionDTO[], 
-  productReposition: RouteTransactionDescriptionDTO[], 
-  productInventory: Map<string, ProductInventoryDTO>):number {
-    // productInventory Map<id_product_inventory, ProductInventoryDTO>
+  productReposition: RouteTransactionDescriptionDTO[]
+):number {
     const totalProductDevolution = productDevolution.reduce((acc,item) => {
-        const { id_product_inventory, amount } = item;
-        const price = retrievePriceFromProductInventory(id_product_inventory, productInventory);
-        return acc + price * amount;
+        const { amount, price_at_moment } = item;
+        return acc + price_at_moment * amount;
     }, 0);
 
   const totalProductReposition = productReposition.reduce((acc, item) =>{
-        const { id_product_inventory, amount } = item;
-        const price = retrievePriceFromProductInventory(id_product_inventory, productInventory);
-        return acc + price * amount;
+        const { amount, price_at_moment } = item;
+        return acc + price_at_moment * amount;
     }, 0);
 
   return totalProductDevolution - totalProductReposition;
 }
 
 export function getProductDevolutionBalanceWithoutNegativeNumber(
-    productDevolution: RouteTransactionDescriptionDTO[], 
-    productReposition: RouteTransactionDescriptionDTO[], 
-    productInventory: Map<string, ProductInventoryDTO>) {
-    // productInventory Map<id_product_inventory, ProductInventoryDTO>
-  let total = getProductDevolutionBalance(productDevolution, productReposition, productInventory);
+  productDevolution: RouteTransactionDescriptionDTO[], 
+  productReposition: RouteTransactionDescriptionDTO[]
+): number {
+  let total = getProductDevolutionBalance(productDevolution, productReposition);
   if (total < 0) {
     return total * -1;
   } else {
@@ -72,11 +68,10 @@ export function getProductDevolutionBalanceWithoutNegativeNumber(
 }
 
 export function getMessageForProductDevolutionOperation(
-    productDevolution:RouteTransactionDescriptionDTO[], 
-    productReposition:RouteTransactionDescriptionDTO[], 
-    productInventory: Map<string, ProductInventoryDTO>) {
-    // productInventory Map<id_product_inventory, ProductInventoryDTO>
-  let total = getProductDevolutionBalance(productDevolution, productReposition, productInventory);
+  productDevolution:RouteTransactionDescriptionDTO[], 
+  productReposition:RouteTransactionDescriptionDTO[]
+): string {
+  let total = getProductDevolutionBalance(productDevolution, productReposition);
   if (total < 0) {
     return 'Balance de la devolución de producto (por cobrar): ';
   } else {
@@ -87,12 +82,11 @@ export function getMessageForProductDevolutionOperation(
 export function getGreatTotal(
   productsDevolution:RouteTransactionDescriptionDTO[],
   productsReposition:RouteTransactionDescriptionDTO[],
-  salesProduct:RouteTransactionDescriptionDTO[],
-  productInventory: Map<string, ProductInventoryDTO>
+  salesProduct:RouteTransactionDescriptionDTO[]
 ):number {
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, [], productInventory);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, [], productInventory);
-  let subtotalSaleProduct = getProductDevolutionBalance(salesProduct, [], productInventory);
+  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
+  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  let subtotalSaleProduct = getProductDevolutionBalance(salesProduct, []);
   return subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
 }
 
@@ -101,7 +95,7 @@ export function productCommitedValidation(
     productsToCommit: RouteTransactionDescriptionDTO[],
     productSharingInventory: RouteTransactionDescriptionDTO[],
     isProductReposition:boolean
-):RouteTransactionDescriptionDTO[] {
+): RouteTransactionDescriptionDTO[] {
     let isNewAmountAllowed:boolean = true;
     let errorCaption:string|undefined = undefined;
 
@@ -216,7 +210,7 @@ export function productCommitedValidation(
     return reviewedProducts.map((product:RouteTransactionDescriptionDTO) => { return {...product}; });
 }
 
-export function calculateChange(total:number, received:number){
+export function calculateChange(total:number, received:number): number {
   let difference:number = 0;
   if (total < 0) {
     /*
@@ -239,7 +233,7 @@ export function calculateChange(total:number, received:number){
   return difference;
 }
 
-export function getNamePaymentMethodById(id_payment_method:string):string {
+export function getNamePaymentMethodById(id_payment_method:string): string {
   let name_payment_method:string = '';
     switch (id_payment_method) {
         case PAYMENT_METHODS.CASH:
@@ -258,7 +252,7 @@ export function getNamePaymentMethodById(id_payment_method:string):string {
     return name_payment_method;
 }
 
-export function getTransactionIdentifier(transactionIdentifier:string) {
+export function getTransactionIdentifier(transactionIdentifier:string): string {
   let finalTransactionIdentifier = '';
   if (transactionIdentifier === undefined) {
     finalTransactionIdentifier = time_posix_format().toString() + time_posix_format().toString().slice(0,3);
@@ -272,7 +266,6 @@ export function getTransactionIdentifier(transactionIdentifier:string) {
 
   return finalTransactionIdentifier;
 }
-
 
 export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description: RouteTransactionDescriptionDTO[], type: DAY_OPERATIONS): RouteTransactionDescriptionDTO[] {
   return transaction_description.filter(((movement: RouteTransactionDescriptionDTO) => movement.id_transaction_operation_type === type));
@@ -289,7 +282,7 @@ export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularT
   The parameter of indentation is of type of number and depending of the input is the number of 
   "blank spaces" that it will be let in the ticket.
 */
-export function getTicketLine(lineToWrite:string, enterAtTheEnd:boolean = true, indent:number = 0) {
+export function getTicketLine(lineToWrite:string, enterAtTheEnd:boolean = true, indent:number = 0): string {
   const anchorPrint:number = 32;
   let text:string = '';
   let writtenLine:string = '';
@@ -362,13 +355,13 @@ export function getTicketSale(
   let ticket = '\n';
 
   // Getting Subtotals of each concept
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[], productInventory);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[], productInventory);
-  let subtotalSaleProduct = getProductDevolutionBalance(productsSale,[], productInventory);
-  let productDevolutionBalance = '$0';
-  let greatTotal = '$0';
-  let cashReceived = '$0';
-  let greatTotalNumber = subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
+  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
+  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
+  let productDevolutionBalance  = '$0';
+  let greatTotal                = '$0';
+  let cashReceived              = '$0';
+  let greatTotalNumber          = subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
 
   /*
     Variables for setting the format of the ticket.
@@ -542,8 +535,6 @@ export function getListSectionTicket(productInventory: Map<string, ProductInvent
 
   return sectionTicket;
 }
-
-
 
 /*
     TODO: Verify if this function will be used in the future

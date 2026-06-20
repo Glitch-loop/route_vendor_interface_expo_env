@@ -136,7 +136,6 @@ export default class StartWorkDayUseCase {
 
             productInventoryAggregate.insertProductToInventory(
                 this.idService.generateID(),
-                price,
                 amount,
                 id_product
             )
@@ -201,7 +200,7 @@ export default class StartWorkDayUseCase {
         const mapper = new MapperDTO();
 
         const routeSelected: Route = mapper.toEntity(routeSelectedDTO);
-        const productToRegister: Product[] = productToRegisterDTO.map(productDTO => mapper.toEntity(productDTO));
+        const productToRegister: Product[] = productToRegisterDTO.map(ProductDTO => mapper.toEntity(ProductDTO));
         const inventoryOperationDescriptions: InventoryOperationDescription[] = inventoryOperationDescriptionDTO
             .map((descriptionDTO) => mapper.toEntity(descriptionDTO))
         const routeDaySelected: RouteDay = mapper.toEntity(routeDaySelectedDTO);

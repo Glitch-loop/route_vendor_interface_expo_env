@@ -16,13 +16,12 @@ export function isProductDTO(dto: any): dto is ProductDTO {
         dto && typeof dto === 'object' &&
         'id_product' in dto &&
         'product_name' in dto &&
+        'cost' in dto &&
+        'quantity_presentation' in dto &&
+        'order_to_show' in dto &&
+        'product_price' in dto &&
         'barcode' in dto &&
-        'weight' in dto &&
-        'unit' in dto &&
-        'comission' in dto &&
-        'price' in dto &&
-        'product_status' in dto &&
-        'order_to_show' in dto
+        Array.isArray(dto.product_price)
     );
 }
 

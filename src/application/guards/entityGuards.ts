@@ -29,13 +29,13 @@ export function isProduct(entity: any): entity is Product {
             (
                 'id_product' in entity &&
                 'product_name' in entity &&
-                'barcode' in entity &&
-                'weight' in entity &&
-                'unit' in entity &&
-                'comission' in entity &&
-                'price' in entity &&
+                'cost' in entity &&
                 'product_status' in entity &&
-                'order_to_show' in entity
+                'quantity_presentation' in entity &&
+                'order_to_show' in entity &&
+                'id_measurement_unit' in entity &&
+                'price' in entity &&
+                'barcode' in entity
             )
         );
     }

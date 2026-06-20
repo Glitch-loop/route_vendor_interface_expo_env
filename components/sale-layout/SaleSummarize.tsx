@@ -1,8 +1,8 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text } from 'react-native-paper';
 import tw from 'twrnc';
+import { Text } from 'react-native-paper';
+import { ScrollView, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 
 // Interfaces and utils
 import { getProductDevolutionBalanceWithoutNegativeNumber } from '@/utils/route-transaciton/utils';
@@ -12,9 +12,8 @@ import SubtotalLine from '@/components/sale-layout/SubtotalLine';
 import TotalsSummarize from '@/components/sale-layout/TotalsSummarize';
 
 // DTOs
-import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
 // Utils
 import { capitalizeFirstLetter, formatNumberAsAccountingCurrency } from '@/utils/string/utils';
@@ -23,48 +22,68 @@ function combineCommitedProduct(
   productSale:RouteTransactionDescriptionDTO[],
   productReposition:RouteTransactionDescriptionDTO[],
 ):RouteTransactionDescriptionDTO[][] {
-    const combinedCommitedProduct:RouteTransactionDescriptionDTO[][] = [];
+  const combinedCommitedProduct:RouteTransactionDescriptionDTO[][] = [];
 
+  // Populate matrix with the products of the first list
+  productSale.forEach(product => {
+    combinedCommitedProduct.push([
+      product, // Sale product
+      {
+        ...product,
+        amount: 0,
+      }, // Reposition product
+    ]);
+  });
 
-    // Populate the matrix with the products of the first list
-    productSale.forEach(product => {
+  /*
+    If the product already exist in the matrix, store it in the position of the product,
+    otherwise create a new record.
+  */
+
+  productReposition.forEach(product => {
+    // Search if the product already exists.
+    const index:number = combinedCommitedProduct.findIndex(commitedProduct => {
+      return commitedProduct[0].id_product === product.id_product;
+    });
+
+    if (index === -1) { // New product
       combinedCommitedProduct.push([
-        product, // Sale product
         {
           ...product,
           amount: 0,
-        }, // Reposition product
+        }, // Sale product
+        product, // Reposition product
       ]);
-    });
+    } else { // Exisiting product
+      combinedCommitedProduct[index] = [
+        { ...combinedCommitedProduct[index][0] }, // Sale product
+        { ...product }, // Reposition product
+      ];
+    }
+  });
+  return combinedCommitedProduct;
+}
 
-    /*
-      If the product already exist in the matrix, store it in the position of the product,
-      otherwise create a new record.
-    */
 
-    productReposition.forEach(product => {
-      // Search if the product already exists.
-      const index:number = combinedCommitedProduct.findIndex(commitedProduct => {
-        return commitedProduct[0].id_product === product.id_product;
-      });
+/*
+  Note (06-19-26)
 
-      if (index === -1) { // New product
-        combinedCommitedProduct.push([
-          {
-            ...product,
-            amount: 0,
-          }, // Sale product
-          product, // Reposition product
-        ]);
-      } else { // Exisiting product
-        combinedCommitedProduct[index] = [
-          { ...combinedCommitedProduct[index][0] }, // Sale product
-          { ...product }, // Reposition product
-        ];
-      }
-    });
-    return combinedCommitedProduct;
-  }
+  Sale summarize is a component created to display the summarize of a route transaction.
+
+  A route transaction is compound by 3 main sections:
+  
+  - Product devolution
+  - Product reposition
+  - Sale
+
+  Each section can be represented as follows:
+  - Product devolution:
+    This can be displayed as a list, representing an inflow to vendor's inventory.
+
+  - Product reposition and sale can be represented as a matrix, representing an outflow from vendor's inventory.
+    In this component, the matrix design is:
+    [saleProduct][repositionProduct]
+*/
 
 const SaleSummarize = ({
     productsDevolution,
@@ -75,13 +94,9 @@ const SaleSummarize = ({
     productsDevolution:RouteTransactionDescriptionDTO[],
     productsReposition:RouteTransactionDescriptionDTO[],
     productsSale:RouteTransactionDescriptionDTO[],
-    productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO>,
+    productInventoryMap: Map<string, ProductDTO>,
   }) => {
 
-    /*
-      At least for this component, the matriz is going to work like this:
-      [[saleProduct][repositionProduct]]
-    */
     const [summarizeProduct, setSummarizeProduct] =
       useState<RouteTransactionDescriptionDTO[][]>(combineCommitedProduct(productsSale, productsReposition));
 
@@ -95,7 +110,6 @@ const SaleSummarize = ({
       <Text style={tw`w-full text-black text-2xl text-left`}>Resumen</Text>
 
       {/* Product devolution section */}
-
       <Text
         style={tw`my-1 w-full text-black font-bold text-lg flex flex-row text-center items-center justify-center`}>
         Devolución de producto
@@ -108,13 +122,11 @@ const SaleSummarize = ({
       </View>
       { productsDevolution.length > 0 ? (
         productsDevolution.map((product: RouteTransactionDescriptionDTO) => {
-          const { id_product_inventory } = product;
+          const { id_product_inventory, price_at_moment } = product;
           
           if (productInventoryMap.has(id_product_inventory)) {
-            // TODO: BUG Since there is not product inventory record for the product devolution, it is not showing the product in the summarize, this should be fixed in the future, but for now, we are going to show only the product that have a record in the product inventory, which means that they were sold at least once. This is a edge case that is not common, since usually the product devolution is made for products that were sold, but it is important to take it into account.
             const inventoryProduct = productInventoryMap.get(id_product_inventory)!;
-
-            const { product_name, price_at_moment } = inventoryProduct;
+            const { product_name } = inventoryProduct;
             const { amount } = product;
 
             return (
@@ -140,16 +152,11 @@ const SaleSummarize = ({
       { productsDevolution.length > 0 &&
         <SubtotalLine
           description={'Total devolución de producto:'}
-          total={ getProductDevolutionBalanceWithoutNegativeNumber(
-            productsDevolution,
-            [],
-            productInventoryMap)
-             }
+          total={ getProductDevolutionBalanceWithoutNegativeNumber(productsDevolution, []) }
           fontStyle={'font-bold italic text-base'}/>
       }
 
       {/* Selling and product reposition section */}
-
       <Text
         style={tw`mt-3 mb-1 w-full text-black font-bold text-lg flex flex-row text-center items-center justify-center`}>
         Venta y reposición
@@ -193,9 +200,9 @@ const SaleSummarize = ({
                 return null;
               }
 
-              const productInventory:ProductDTO&ProductInventoryDTO = productInventoryMap.get(id_product_inventory)!;
+              const productInventory:ProductDTO = productInventoryMap.get(id_product_inventory)!;
 
-              const { product_name, price_at_moment } = productInventory;
+              const { product_name } = productInventory;
 
               return (
                 <View key= { id_product_inventory } style={tw`w-full my-1 flex flex-row items-center`}>
@@ -207,14 +214,14 @@ const SaleSummarize = ({
                   {/* Information related to the sales */}
 
                   <View style={tw`w-16 flex`}>
-                    <Text style={tw`text-center text-black`}>{ formatNumberAsAccountingCurrency(price_at_moment) }</Text>
+                    <Text style={tw`text-center text-black`}>{ formatNumberAsAccountingCurrency(productSale.price_at_moment) }</Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>{ productSale.amount }</Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>
-                      { formatNumberAsAccountingCurrency(price_at_moment * productSale.amount) }
+                      { formatNumberAsAccountingCurrency(productSale.price_at_moment * productSale.amount) }
                     </Text>
                   </View>
 
@@ -227,12 +234,12 @@ const SaleSummarize = ({
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`text-center text-black`}>
-                      { formatNumberAsAccountingCurrency(price_at_moment * productReposition.amount) }
+                      { formatNumberAsAccountingCurrency(productSale.price_at_moment * productReposition.amount) }
                     </Text>
                   </View>
                   <View style={tw`w-24 flex`}>
                     <Text style={tw`underline font-bold text-center text-black`}>
-                      { formatNumberAsAccountingCurrency((productSale.amount + productReposition.amount) * price_at_moment) }
+                      { formatNumberAsAccountingCurrency((productSale.amount + productReposition.amount) * productSale.price_at_moment) }
                     </Text>
                   </View>
                 </View>
@@ -258,7 +265,7 @@ const SaleSummarize = ({
                 {/* Sale Subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber(productsSale, [], productInventoryMap))}
+                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber(productsSale, []))}
                   </Text>
                 </View>
                 {/* Reposition amount */}
@@ -268,7 +275,7 @@ const SaleSummarize = ({
                 {/* Reposition subtotal */}
                 <View style={tw`w-24 flex`}>
                   <Text style={tw`font-bold italic text-base text-center`}>
-                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition, productInventoryMap))}
+                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition))}
                   </Text>
                 </View>
                 {/* Total product amount amount */}
@@ -277,54 +284,10 @@ const SaleSummarize = ({
           }
         </View>
       </ScrollView>
-
-      {/* Billing section */}
-      {
-        // (() => {
-        //   let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution,[]);
-        //   let subtotalProductReposition = getProductDevolutionBalance(productsReposition,[]);
-        //   let subtotalSaleProduct = getProductDevolutionBalance(productsSale,[]);
-        //   let productDevolutionBalance = '$0';
-        //   let greatTotal = '$0';
-
-        //   if (subtotalProductReposition - subtotalProductDevolution < 0) {
-        //     productDevolutionBalance = '-$' + ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
-        //   } else {
-        //     productDevolutionBalance = '$' + (subtotalProductReposition - subtotalProductDevolution).toString();
-        //   }
-
-        //   if (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution < 0) {
-        //     greatTotal = '-$' + ((subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution) * -1).toString();
-        //   } else {
-        //     greatTotal = '$' + (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution).toString();
-        //   }
-
-        //   return (
-        //     <View style={tw`w-full my-5 flex flex-col items-end`}>
-        //         <Text style={tw`italic text-base`}>
-        //           Valor total de devolución de producto: -${subtotalProductDevolution}
-        //         </Text>
-        //         <Text style={tw`italic text-base`}>
-        //           Valor total de reposición de producto: ${subtotalProductReposition}
-        //         </Text>
-        //         <Text style={tw`italic text-base font-bold`}>
-        //           Balance de devolución de producto: { productDevolutionBalance }
-        //         </Text>
-        //         <View style={tw`flex flex-row w-10/12 border border-solid mt-2`} />
-        //         <Text style={tw`italic text-base`}>
-        //           Balance de devolución de producto: { productDevolutionBalance }
-        //         </Text>
-        //         <Text style={tw`italic text-base`}> Total de venta: ${ subtotalSaleProduct } </Text>
-        //         <Text style={tw`italic text-base font-bold`}>Gran total: { greatTotal } </Text>
-        //     </View>
-        //   );
-        // })()
-      }
       <TotalsSummarize
         productsDevolution={productsDevolution}
         productsReposition={productsReposition}
-        productsSale={productsSale}
-        productInventoryMap={productInventoryMap}/>
+        productsSale={productsSale}/>
     </View>
   );
 };

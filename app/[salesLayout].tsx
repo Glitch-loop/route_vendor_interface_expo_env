@@ -621,8 +621,8 @@ useEffect(() => {
               </View>
               <View style={tw`w-11/12 flex flex-row justify-end`}>
                 <SubtotalLine
-                  description     = { getMessageForProductDevolutionOperation(productDevolution, productReposition, productInventoryMap) }
-                  total           = { getProductDevolutionBalanceWithoutNegativeNumber(productDevolution, productReposition, productInventoryMap) }
+                  description     = { getMessageForProductDevolutionOperation(productDevolution, productReposition) }
+                  total           = { getProductDevolutionBalanceWithoutNegativeNumber(productDevolution, productReposition) }
                   fontStyle       = {'font-bold text-lg'}/>
               </View>
               <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />

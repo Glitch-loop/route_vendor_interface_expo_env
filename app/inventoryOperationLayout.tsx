@@ -34,57 +34,59 @@ import {
  // Utils
 import TableCashReception from '../components/inventory-components/TableCashReception';
 import { initialMXNCurrencyState, } from '../utils/inventoryOperations';
-
-
 import ActionDialog from '@/components/shared-components/ActionDialog';
 
 // Enums
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
-// Utils
-import { getTitleDayOperation, orderDayOperationsForDisplaying } from '@/utils/day-operation/utils'; 
-import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
+// DI container
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { container, container as di_container } from '@/src/infrastructure/di/container';
 
 // Use cases
 import ListAllProductOfCompany from '@/src/application/queries/ListAllProductOfCompany';
-
-// DI container
-import { container, container as di_container } from '@/src/infrastructure/di/container';
-
-// Use cases and queries
 import StartWorkDayUseCase from '@/src/application/commands/StartShiftDayUseCase';
+import CancelInventoryOperationUseCase from '@/src/application/commands/CancelInventoryOperationUseCase';
 import RegisterRestockOfProductUseCase from '@/src/application/commands/RegisterRestockOfProductUseCase';
 import RegisterProductDevolutionUseCase from '@/src/application/commands/RegisterProductDevolutionUseCase';
+import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/RegisterFinalShiftInventoryUseCase';
+import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/commands/DetermineIfInventoryOperationCancelableUseCase';
+import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
 
+// Queries
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
+import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
 
 // Mapper and DTOs
-import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
+import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/commands/DetermineIfInventoryOperationCancelableUseCase';
-import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
-import CancelInventoryOperationUseCase from '@/src/application/commands/CancelInventoryOperationUseCase';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import RegisterFinalShiftInventoryUseCase from '@/src/application/commands/RegisterFinalShiftInventoryUseCase';
-import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
-import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
-import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
-import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
-import StoreDTO from '@/src/application/dto/StoreDTO';
-import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
-import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+
+
+// Data source
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+
+// Utils
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
+import { getTitleDayOperation, orderDayOperationsForDisplaying } from '@/utils/day-operation/utils'; 
+import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
+import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
+
+// Service
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
@@ -215,7 +217,7 @@ const inventoryOperationLayout = () => {
   const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [inventoryWithdrawal, setInventoryWithdrawal] = useState<boolean>(false);
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
-  const [finaxlOperation, setFinalOperation] = useState<boolean>(false);
+  const [finalOperation, setFinalOperation] = useState<boolean>(false);
   const [issueInventory, setIssueInventory] = useState<boolean>(false);
   const [isInventoryCancelable, setIsInventoryCancelable] = useState<boolean>(false);
   const [routeTransactions, setRouteTransactions] = useState<RouteTransactionDTO[]>([]);
@@ -266,11 +268,10 @@ const inventoryOperationLayout = () => {
 
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
-    let availableProducts: ProductDTO[] = []
+    let availableProductsForInventoryOperation: ProductDTO[] = []
     
-
+    // TODO: Validate if this sqlite initialization is actually useful.
     const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
-  
     await sqliteDataSource.initialize();
   
     // Initializing local database
@@ -306,14 +307,14 @@ const inventoryOperationLayout = () => {
     }
 
     if (hasInternetConnection) {
-      availableProducts = await getProductOfCompany.execute();
+      availableProductsForInventoryOperation = await getProductOfCompany.execute();
     } else {
       Toast.show({
         type: 'info',
         text1: 'Estas haciendo la operación sin internet.',
         text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
       });
-      availableProducts = await getProductsAllRegisterdProductsQuery.execute();
+      availableProductsForInventoryOperation = await getProductsAllRegisterdProductsQuery.execute();
     }
     
     let inventoryOperationToConsult:InventoryOperationDTO[] = [];
@@ -333,7 +334,7 @@ const inventoryOperationLayout = () => {
         Toast.show({
           type: 'error',
           text1: 'Error al iniciar operación de inventario.',
-          text2: 'No fue posible rastrar el inventario actual del vendedor, intente nuevamente.',
+          text2: 'No fue posible recuperar el inventario actual del vendedor, intente nuevamente.',
         });
 
         router.replace('/routeOperationMenuLayout');
@@ -363,7 +364,7 @@ const inventoryOperationLayout = () => {
       setFinalOperation(false);
       setIssueInventory(false);
       if (id_inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
-        setAvailableProducts(availableProducts);
+        setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory(inventory_operation_descriptions)
         setRestockInventories([]);
         setDevolutionInventory([]);
@@ -371,7 +372,7 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
-        setAvailableProducts(availableProducts);
+        setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory([])
         setRestockInventories([inventory_operation_descriptions]);
         setDevolutionInventory([]);
@@ -379,7 +380,7 @@ const inventoryOperationLayout = () => {
         setProductRepositionTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-        setAvailableProducts(availableProducts);
+        setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory([])
         setRestockInventories([]);
         setDevolutionInventory(inventory_operation_descriptions);
@@ -404,7 +405,7 @@ const inventoryOperationLayout = () => {
         
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
 
-        setAvailableProducts(availableProducts);
+        setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory(startInventoryOperationDescriptions[0]);
         setRestockInventories(restockInventoryOperationsDescriptions);
         setFinalShiftInventory([]);
@@ -428,7 +429,7 @@ const inventoryOperationLayout = () => {
       /* Dispose the list of product and let the user to introduce the inventory movement. */
 
       // Looking for all the products available for the company
-      setAvailableProducts(availableProducts);
+      setAvailableProducts(availableProductsForInventoryOperation);
 
       // TODO: set suggested inventory for start shift inventory
 
@@ -438,12 +439,12 @@ const inventoryOperationLayout = () => {
       setIssueInventory(true);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
       setCurrentShiftInventory(productsInventoryReduxState!);
-      setAvailableProducts(availableProducts);
+      setAvailableProducts(availableProductsForInventoryOperation);
       setSuggestedInventory([]);      
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
-      setAvailableProducts(availableProducts);
+      setAvailableProducts(availableProductsForInventoryOperation);
     } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
-      setAvailableProducts(availableProducts);
+      setAvailableProducts(availableProductsForInventoryOperation);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
       // setFinalShiftInventory([]);
@@ -456,7 +457,7 @@ const inventoryOperationLayout = () => {
     || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory
     ) {
       // Note: Product devolution cannot be started from another inventory operation.
-      // Setting movements because the user started the inventory operation from another one.
+      // Set current inventory operation movements for starting the next inventory operation.
       if (inventoryOperationToConsult.length > 0) {
         const { inventory_operation_descriptions  } = inventoryOperationToConsult[0];
         setInventoryOperationMovements(inventory_operation_descriptions);
@@ -467,13 +468,14 @@ const inventoryOperationLayout = () => {
             Business rule:
               Products are not registered until the inventory operation is finilized.
 
-            This means, if the user starts an inventory operation and the response contains new products, if the user moves to another screen and the inventory operation
-            is keeping alive, the "amount" of product for those new products will be ignored if the user returns to continue the inventory operation and the device is offline.
+            It implies:
+              This means, if the user starts an inventory operation and the response contains new products, if the user moves to another screen and the inventory operation
+              is keeping alive, the "amount" of product for those new products will be ignored if the user returns to continue the inventory operation and the device is offline.
 
-            The reason of this is because this system takes as source of true the local or server database, not an state of the application (redux).
+              The reason of this is because this system takes as source of true the local or server database, not an state of the application (redux).
           */
           const productOfTheCurrentInventoryOperation: InventoryOperationDescriptionDTO[] = [...inventoryDescriptionsTempReduxState];
-          const availableProductIds = new Set(availableProducts.map((product) => product.id_product));
+          const availableProductIds = new Set(availableProductsForInventoryOperation.map((product) => product.id_product));
           const filteredProductOfTheCurrentInventoryOperation = productOfTheCurrentInventoryOperation.filter((product) => availableProductIds.has(product.id_product));
 
           setInventoryOperationMovements([...filteredProductOfTheCurrentInventoryOperation]);

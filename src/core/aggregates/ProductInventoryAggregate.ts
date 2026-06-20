@@ -13,7 +13,7 @@ export class ProductInventoryAggregate {
         this.initialProductInventory = [ ...productInventory ];
     }
 
-    insertProductToInventory(idProductInventory: string, priceAtMoment: number, stock: number, idProduct: string) {
+    insertProductToInventory(idProductInventory: string, stock: number, idProduct: string) {
 
         const indexFound:number = this.productInventory.findIndex(pi => pi.get_id_product_inventory() === idProductInventory);
 
