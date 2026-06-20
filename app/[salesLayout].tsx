@@ -4,6 +4,11 @@ import { View, ScrollView, Text, KeyboardAvoidingView } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
+import { BackHandler } from 'react-native';
+
+// Enums
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
@@ -31,6 +36,7 @@ import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO";
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 // Use cases and queries
 import { container as di_container } from '@/src/infrastructure/di/container';
@@ -40,8 +46,12 @@ import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOper
 import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
 import VisitClientOutOfRouteUseCase from '@/src/application/commands/VisitClientOutOfRouteUseCase';
 
+//Classes
+import ProductClass from '@/classes/ProductClass';
+
 // Services
 import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
+import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // Utils
 import { 
@@ -52,14 +62,7 @@ import {
   getTicketSale,
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
-import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
-import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
-import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
-import { BackHandler } from 'react-native';
-
-import ProductClass from '../classes/ProductClass';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -69,16 +72,13 @@ import ProductClass from '../classes/ProductClass';
 // ):RouteTransactionDescriptionDTO[] {
 //   return productCommitedValidation(
 //     productInventory, productsToCommit, productSharingInventory, isProductReposition);
-
 //   // const {data, responseCode, error} = responseProductCommitedValidation;
-
 //   // if (responseCode === 400) {
 //   //   Toast.show({type: 'error', 
 //   //     text1:'Cantidad a vender excede el inventario.', 
 //   //     text2: error
 //   //   });
 //   // }
-
 //   // return data;
 // }
 
