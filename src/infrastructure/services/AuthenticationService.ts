@@ -36,10 +36,11 @@ export default class AuthenticationService {
     async loginUser(cellphone: string, password: string): Promise<UserDTO | null> {
         // Online login
         const access_token: string|null = await this.serverAuthrepository.login(cellphone, password);
+        console.log("Online login: ", access_token)
         if(access_token === null) { // Try offline login
             const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
             const localUser = localUsers.at(0);
-
+            console.log("Offline login, recorded: ", localUsers)
             // Offline login
             if (localUser) {
                 if (!this.passwordMatches(localUser.password, password)) return null;

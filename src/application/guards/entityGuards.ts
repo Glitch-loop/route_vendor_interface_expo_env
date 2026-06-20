@@ -104,6 +104,7 @@ export function isStore(entity: any): entity is Store {
             'latitude' in entity &&
             'longitude' in entity &&
             'id_creator' in entity &&
+            'id_client' in entity &&
             'creation_date' in entity &&
             'creation_context' in entity &&
             'status_store' in entity

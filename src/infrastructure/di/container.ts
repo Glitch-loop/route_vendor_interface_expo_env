@@ -54,6 +54,7 @@ import { SQLiteUserRepository } from '@/src/infrastructure/repositories/SQLite/S
 
 // Implementations - Backend
 import { BackendUserRepository } from '@/src/infrastructure/repositories/backend-server/BackendUserRepository';
+import { BackendWorkdayInformationRepository } from '@/src/infrastructure/repositories/backend-server/BackendWorkdayInformationRepository';
 
 // Services
 import { UUIDv4Service } from '@/src/infrastructure/services/UUIDv4Service'
@@ -206,7 +207,7 @@ container.register(TOKENS.SyncServerInventoryOperationRepository, {
     useClass: SupabaseInventoryOperationRepository
 });
 container.register(TOKENS.SyncServerWorkdayInformationRepository, {
-    useClass: SupabaseWorkdayInformationRepository
+    useClass: BackendWorkdayInformationRepository
 });
 
 export { container }

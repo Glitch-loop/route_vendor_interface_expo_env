@@ -25,27 +25,8 @@ export default class ListRouteTransactionsOfStoreQuery {
   ) {}
 
   // Accepts StoreDTO to align with UI usage (storeMenuLayout)
-  async execute(store: StoreDTO): Promise<RouteTransactionDTO[]> {
-    // Repository only uses id_store; fill other fields with safe defaults
-    const storeEntity = new Store(
-      store.id_store,
-      store.street,
-      store.ext_number ?? null,
-      store.colony,
-      store.postal_code,
-      store.address_reference ?? null,
-      store.store_name ?? null,
-      null, // owner_name not present in DTO
-      null, // cellphone not present in DTO
-      store.latitude,
-      store.longitude,
-      '', // id_creator (not needed for this query)
-      store.creation_date,
-      '', // creation_context (not needed for this query)
-      store.status_store,
-    );
-
-    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactionByStore(storeEntity);
+  async execute(store: StoreDTO): Promise<RouteTransactionDTO[]> {    
+    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactionByStore(this.mapperDTO.toEntity(store));
     return transactions.map((t) => this.mapperDTO.toDTO(t));
   }
 }

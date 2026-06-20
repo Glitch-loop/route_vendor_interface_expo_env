@@ -354,7 +354,7 @@ export class MapperDTO {
             throw new Error('Invalid creation_date format in StoreDTO');
         }
 
-        return new Store(
+        const storeEntity: Store = new Store(
             dto.id_store,
             dto.street,
             dto.ext_number ?? null,
@@ -367,11 +367,14 @@ export class MapperDTO {
             dto.latitude,
             dto.longitude,
             '',
+            '',
             new Date(dto.creation_date),
             '',
             dto.status_store,
-            dto.is_new ?? 0
-        );
+            dto.is_new ?? 0,
+        )
+
+        return storeEntity;
     }
 
     // InventoryOperationDescriptionDTO -> InventoryOperationDescription (domain)

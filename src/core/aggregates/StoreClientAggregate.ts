@@ -21,6 +21,7 @@ export class StoreClientAggregate {
         latitude: string,
         longitude: string,
         id_creator: string,
+        id_client: string|undefined,
         creation_date: Date,
         creation_context: string,
     ) {
@@ -41,6 +42,7 @@ export class StoreClientAggregate {
             latitude,
             longitude,
             id_creator,
+            id_client,
             creation_date,
             creation_context,
             state,

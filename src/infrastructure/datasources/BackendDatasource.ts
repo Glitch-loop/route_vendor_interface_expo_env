@@ -18,7 +18,7 @@ export class BackendDataSource {
 
   constructor() {
     this.url = process.env.EXPO_PUBLIC_BACKEND_URL;
-
+    console.log("Server: ", this.url)
     if (!this.url) {
       throw new Error('Backend URL not found in environment variables');
     }
