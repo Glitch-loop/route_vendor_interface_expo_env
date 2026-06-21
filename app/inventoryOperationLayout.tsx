@@ -601,6 +601,7 @@ const inventoryOperationLayout = () => {
         });
         
         try {
+          console.log("Product to register: ", availableProducts)
           const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
           await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),

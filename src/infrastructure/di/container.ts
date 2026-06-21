@@ -72,6 +72,7 @@ import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
 import { BackendRouteRepository } from '../repositories/backend-server/BackendRouteRepository';
 import { BackendProductRepository } from '../repositories/backend-server/BackendProductRepository';
+import { BackendStoreRepository } from '../repositories/backend-server/BackendStoreRepository';
 
 
 
@@ -163,9 +164,14 @@ container.register<SyncInventoryOperationRepository>(TOKENS.SyncInventoryOperati
 
 
 // =================== Implementation of repositories - Supabase ====================
-container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
-    useClass: SupabaseStoreRepository
+container.register<StoreRepository>(TOKENS.ServerStoreRepository, {
+    useClass: BackendStoreRepository
 });
+
+/*
+Alternative:
+    - SupabaseStoreRepository
+*/
 
 container.register<RouteRepository>(TOKENS.ServerRouteRepository, {
     useClass: BackendRouteRepository

@@ -55,7 +55,7 @@ export default class StartWorkDayUseCase {
     @inject(TOKENS.SQLiteProductRepository) private readonly localProductRepo: ProductRepository,
     
     // Remote repositories dependencies
-    @inject(TOKENS.SupabaseStoreRepository) private readonly remoteStoreRepo: StoreRepository,
+    @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
     
     // Services depdendencies
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -191,14 +191,20 @@ export default class StartWorkDayUseCase {
 
     // Store information in local database.
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+    console.log("Inserting stores")
     await this.localStoreRepo.insertStores(allStores);
     
+    console.log("Inserting products")
     for (const product of productToRegister) {
         await this.localProductRepo.insertProduct(product);
     }
     
+    console.log("Inserting inventories")
     await this.localProductInventoryRepo.createInventory(newInventory);
+    console.log("Inserting work days")
     await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
+    console.log("Inserting day operations")
+    console.log("data: ", newDayOperations)
     await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
   }
 

@@ -23,6 +23,7 @@ export default class ListAllRegisterdStoresQuery {
 
 	async execute(): Promise<StoreDTO[]> {
 		const stores: Store[] = await this.storeRepository.listStores();
+		console.log(stores)
 		return stores.map((s) => this.mapperDTO.toDTO(s));
 	}
 }

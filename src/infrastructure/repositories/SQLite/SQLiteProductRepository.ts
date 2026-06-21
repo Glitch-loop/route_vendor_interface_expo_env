@@ -22,6 +22,7 @@ export class SQLiteProductRepository implements ProductRepository {
 
     async insertProduct(product: Product): Promise<void> {
         try {
+            console.log("Inserting product locally: ", product)
             await this.dataSource.initialize();
             const db: SQLiteDatabase = this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
@@ -68,7 +69,7 @@ export class SQLiteProductRepository implements ProductRepository {
                 }
             });
         } catch (error) {
-            throw new Error('Failed to create product.');
+            throw new Error('Failed to create product: ' + error);
         }
     }
 

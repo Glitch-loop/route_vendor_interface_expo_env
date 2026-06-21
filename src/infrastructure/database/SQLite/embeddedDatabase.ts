@@ -58,6 +58,7 @@ export const storesEmbeddedTable = `
     latitude          TEXT,
     longitude         TEXT,
     id_creator        TEXT,
+    id_client         TEXT,
     creation_date     TEXT,
     creation_context  TEXT,
     status_store      INT,
@@ -68,6 +69,7 @@ export const storesEmbeddedTable = `
   );
 `;
 
+// Note (06-24-26) id_measurement_unit at moment is not used, so it can be set as null
 export const productsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.PRODUCTS} (
     id_product              TEXT NOT NULL UNIQUE,
@@ -76,7 +78,7 @@ export const productsEmbeddedTable = `
     product_status          INT NOT NULL,
     quantity_presentation   NUMERIC(6,3) NOT NULL,
     order_to_show           INT NOT NULL,
-    id_measurement_unit      INT NOT NULL,
+    id_measurement_unit     TEXT,
     barcode                 TEXT
   );
 `;
@@ -85,9 +87,9 @@ export const productPricesEmbeddedTable = `
     id_product_price      TEXT NOT NULL,
     price                 NUMERIC(6,3) NOT NULL,
     create_at             TEXT NOT NULL,
-    id_client             TEXT NOT NULL,
-    id_location           TEXT NOT NULL,
-    id_route_day          TEXT NOT NULL
+    id_client             TEXT,
+    id_location           TEXT,
+    id_route_day          TEXT
   );
 `;
 

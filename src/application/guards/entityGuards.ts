@@ -89,6 +89,28 @@ export function isTransactionDescription(entity: any): entity is RouteTransactio
     }
 
 export function isStore(entity: any): entity is Store {
+    console.log("Is store entity? ")
+    console.log("Statement 1: ", entity instanceof Store)
+    console.log("Statement 2: ", (
+            'id_store' in entity &&
+            'street' in entity 
+            // &&
+            // 'ext_number' in entity &&
+            // 'colony' in entity 
+            // &&
+            // 'postal_code' in entity &&
+            // 'address_reference' in entity &&
+            // 'store_name' in entity &&
+            // 'owner_name' in entity &&
+            // 'cellphone' in entity 
+            // &&
+            // 'latitude' in entity &&
+            // 'longitude' in entity &&
+            // 'id_creator' in entity &&
+            // 'id_client' in entity &&
+            // 'creation_date' in entity &&
+            // 'status_store' in entity
+        ))
     return (
         entity instanceof Store || 
         (

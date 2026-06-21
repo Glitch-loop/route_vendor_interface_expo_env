@@ -47,7 +47,7 @@ export default class RegisterFinalShiftInventoryUseCase {
         @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
         
         // Remote repositories dependencies
-        @inject(TOKENS.SupabaseStoreRepository) private readonly remoteStoreRepo: StoreRepository,
+        @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
         
         // Services depdendencies
         @inject(TOKENS.IDService) private readonly idService: IDService,

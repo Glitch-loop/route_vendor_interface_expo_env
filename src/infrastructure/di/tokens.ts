@@ -19,7 +19,7 @@ export const TOKENS = {
     ServerRouteRepository: Symbol('ServerRouteRepository'),
     SupabaseRouteTransactionRepository: Symbol('SupabaseRouteTransactionRepository'),
     SupabaseShiftOrganizationRepository: Symbol('SupabaseShiftOrganizationRepository'),
-    SupabaseStoreRepository: Symbol('SupabaseStoreRepository'),
+    ServerStoreRepository: Symbol('ServerStoreRepository'),
     ServerProductRepository: Symbol('ServerProductRepository'),
     // Authentication service
     ServerAuthenticationRepository: Symbol('ServerAuthenticationRepository'),

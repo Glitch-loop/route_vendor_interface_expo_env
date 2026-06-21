@@ -46,6 +46,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         latitude,
                         longitude,
                         id_creator,
+                        id_client,
                         creation_date,
                         creation_context,
                         status_store,
@@ -64,10 +65,11 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         latitude, 
                         longitude, 
                         id_creator, 
+                        id_client, 
                         creation_date, 
                         creation_context,
                         status_store,
-                        is_new) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                        is_new) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                     [
                         id_store,
                         street,
@@ -81,6 +83,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                         latitude,
                         longitude,
                         id_creator,
+                        id_client,
                         new Date(creation_date).toISOString(),
                         creation_context,
                         status_store,
@@ -143,6 +146,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             owner_name,
             cellphone,
             latitude,
+            id_client,
             longitude,
             id_creator,
             creation_date,
@@ -163,6 +167,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             latitude = ?, 
             longitude = ?, 
             id_creator = ?, 
+            id_client = ?, 
             creation_date = ?, 
             creation_context = ?, 
             status_store = ? 
@@ -178,7 +183,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                 cellphone,
                 latitude,
                 longitude,
-                id_creator,
+                id_client,
                 new Date(creation_date).toISOString(),
                 creation_context,
                 status_store,
@@ -201,7 +206,27 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
         const result = statement.executeSync<Store>();
         
         for(let row of result) {
-            stores.push(row);
+            stores.push(
+              new Store(
+                row.id_store,
+                row.street,
+                row.ext_number,
+                row.colony,
+                row.postal_code,
+                row.address_reference,
+                row.store_name,
+                row.owner_name,
+                row.cellphone,
+                row.latitude,
+                row.longitude,
+                row.id_creator,
+                row.id_client,
+                new Date(row.creation_date),
+                row.creation_context,
+                row.status_store,
+                row.is_new,
+              )
+            );
         }
 
         return stores;
@@ -221,7 +246,27 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
         const result = statement.executeSync<Store>();
         
         for(let row of result) {
-            stores.push(row);
+            stores.push(
+              new Store(
+                row.id_store,
+                row.street,
+                row.ext_number,
+                row.colony,
+                row.postal_code,
+                row.address_reference,
+                row.store_name,
+                row.owner_name,
+                row.cellphone,
+                row.latitude,
+                row.longitude,
+                row.id_creator,
+                row.id_client,
+                new Date(row.creation_date),
+                row.creation_context,
+                row.status_store,
+                row.is_new,
+              )
+            );
         }
 
         return stores;

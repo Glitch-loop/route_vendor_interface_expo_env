@@ -32,6 +32,7 @@ export default class DataReplicationService {
     ) { }   
     
     async executeReplicationSession(userSession: UserDTO): Promise<void> {
+        return // While Development (21-06-26)
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();

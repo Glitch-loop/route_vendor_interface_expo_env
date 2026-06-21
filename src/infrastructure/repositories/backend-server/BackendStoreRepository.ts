@@ -35,7 +35,7 @@ interface CreateLocationRequestInterface {
     latitude: string;
     longitude: string;
     id_creator: string;
-    id_client: string|undefined;
+    id_client: string|null;
     status_location: number;
     id_location_type: string;
     created_at: string;
@@ -74,68 +74,69 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
     constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 
     async insertStores(stores: Store[]): Promise<void> {
-            try {
-                for (const store of stores) {
-                    const request: CreateLocationRequestInterface = this.toCreateLocationRequest(store);
-                    await this.dataSource.post<LocationStoreResponseInterface, CreateLocationRequestInterface>(
-                        '/clients/locations',
-                        request
-                    );
-                }
-            } catch (error: any) {
-                throw new Error(`Failed to insert stores: ${error.message}`);
-            }
+      try {
+        for (const store of stores) {
+          const request: CreateLocationRequestInterface = this.toCreateLocationRequest(store);
+          await this.dataSource.post<LocationStoreResponseInterface, CreateLocationRequestInterface>(
+            '/clients/locations',
+            request
+          );
+        }
+      } catch (error: any) {
+        throw new Error(`Failed to insert stores: ${error.message}`);
+      }
     }
 
     async updateStore(store: Store): Promise<void> {
-            // Note (06-20-26): Backend does not expose an update endpoint for locations in this repository.
-            return;
+      // Note (06-20-26): Backend does not expose an update endpoint for locations in this repository.
+      return;
     }
 
     async retrieveStore(id_stores: string[]): Promise<Store[]> {
-        try {
-                        const request: RetrieveLocationsByIdsRequestInterface = {
-                            id_locations: id_stores,
-                        };
+      try {
+        const request: RetrieveLocationsByIdsRequestInterface = {
+          id_locations: id_stores,
+        };
 
-                        const response = await this.dataSource.post<LocationsCollectionResponseInterface | LocationStoreResponseInterface[], RetrieveLocationsByIdsRequestInterface>(
-                            '/clients/locations/ids',
-                            request
-                        );
+        const response = await this.dataSource.post<LocationsCollectionResponseInterface | LocationStoreResponseInterface[], RetrieveLocationsByIdsRequestInterface>(
+          '/clients/locations/ids',
+          request
+        );
 
-                        return this.mapResponseToStores(response);
-                } catch (error: any) {
-                        throw new Error(`Failed to retrieve stores: ${error.message}`);
-        }
+        return this.mapResponseToStores(response);
+      } catch (error: any) {
+        throw new Error(`Failed to retrieve stores: ${error.message}`);
+      }
     }
 
     async listStores(): Promise<Store[]> {
-        try {
-                        const response = await this.dataSource.get<LocationsCollectionResponseInterface | LocationStoreResponseInterface[]>(
-                            '/clients/locations'
-                        );
+      try {
+        const response = await this.dataSource.get<LocationsCollectionResponseInterface | LocationStoreResponseInterface[]>(
+          '/clients/locations'
+        );
 
-                        return this.mapResponseToStores(response);
-        } catch (error: any) {
-            throw new Error(`Failed to list stores: ${error.message}`);
-        }
+        console.log("Lisiting retrieved stores: ", this.mapResponseToStores(response))
+        return this.mapResponseToStores(response);
+      } catch (error: any) {
+        throw new Error(`Failed to list stores: ${error.message}`);
+      }
     }
 
     async deleteStores(stores: Store[]): Promise<void> {
-            // Note (06-20-26): Backend does not expose a delete endpoint for locations in this repository.
+      // Note (06-20-26): Backend does not expose a delete endpoint for locations in this repository.
       return;
     }
 
     async upsertStores(stores: StoreModel[]): Promise<void> {
-            if (!stores || stores.length === 0) return;
+      if (!stores || stores.length === 0) return;
 
-            try {
-                // Upsert is handled as insert, per the current backend contract.
-                const entities = stores.map((store) => this.toStoreEntityFromModel(store));
-                await this.insertStores(entities);
-            } catch (error: any) {
-                throw new Error(`Failed to upsert stores: ${error.message}`);
-            }
+      try {
+        // Upsert is handled as insert, per the current backend contract.
+        const entities = stores.map((store) => this.toStoreEntityFromModel(store));
+        await this.insertStores(entities);
+      } catch (error: any) {
+        throw new Error(`Failed to upsert stores: ${error.message}`);
+      }
     }
 
         private mapResponseToStores(
@@ -145,7 +146,27 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
                 ? response
                 : response.data ?? response.items ?? response.collection ?? response.locations ?? [];
 
-            return locations.map((location) => this.toStoreEntity(this.toStoreDTO(location)));
+            return locations.map((location) => (
+              new Store(
+                location.id_location,
+                location.street,
+                location.ext_number,
+                location.colony,
+                location.postal_code,
+                location.address_reference,
+                location.location_name,
+                null, // Note (06-21-26): No provided by the server
+                null, // Note (06-21-26): No provided by the server
+                location.latitude,
+                location.longitude,
+                location.id_creator,
+                location.id_client,
+                new Date(location.created_at),
+                'On route', 
+                location.status_location,
+                0 // By default this is False.
+              )
+            ));
         }
 
         private toStoreDTO(location: LocationStoreResponseInterface): StoreDTO {
@@ -179,7 +200,7 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
                 storeDTO.latitude,
                 storeDTO.longitude,
                 '',
-                '',
+                null,
                 new Date(storeDTO.creation_date),
                 '',
                 storeDTO.status_store,

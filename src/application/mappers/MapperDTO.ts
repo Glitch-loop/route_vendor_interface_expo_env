@@ -116,7 +116,7 @@ export class MapperDTO {
             return this.routeTransactionDescriptionToDTO(entity as RouteTransactionDescription);
         }       
         
-        throw new Error('Unknown entity type');
+        throw new Error('Unknown entity type at moment of transforming to dto.');
   }
 
     toEntity(dto: ProductDTO): Product;
@@ -139,7 +139,7 @@ export class MapperDTO {
         if (isRouteTransactionDTO(dto)) return this.routeTransactionDTOToEntity(dto);
         if (isRouteTransactionDescriptionDTO(dto)) return this.routeTransactionDescriptionDTOToEntity(dto);
         
-        throw new Error('Unknown DTO type');
+        throw new Error('Unknown DTO type at moment of transforming to entity.');
     }
 
     // ==================== MAPPER METHODS ENTITY to DTO ====================

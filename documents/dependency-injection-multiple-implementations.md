@@ -33,7 +33,7 @@ container.register<StoreRepository>(TOKENS.StoreRepository, {
 })
 
 // Specific implementations
-container.register<StoreRepository>(TOKENS.SupabaseStoreRepository, {
+container.register<StoreRepository>(TOKENS.ServerStoreRepository, {
     useClass: SupabaseStoreRepository
 })
 
@@ -49,7 +49,7 @@ container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
 @injectable()
 export class RegisterNewClientUseCase {
     constructor(
-        @inject(TOKENS.SupabaseStoreRepository) 
+        @inject(TOKENS.ServerStoreRepository) 
         private repo: StoreRepository
     ) { }
 
@@ -104,7 +104,7 @@ export type DataSource = 'supabase' | 'sqlite';
 @injectable()
 export class StoreRepositoryFactory {
     constructor(
-        @inject(TOKENS.SupabaseStoreRepository) 
+        @inject(TOKENS.ServerStoreRepository) 
         private supabaseRepo: StoreRepository,
         
         @inject(TOKENS.SQLiteStoreRepository) 
@@ -153,7 +153,7 @@ export class StoreService {
     private currentRepo: StoreRepository;
     
     constructor(
-        @inject(TOKENS.SupabaseStoreRepository) 
+        @inject(TOKENS.ServerStoreRepository) 
         private supabaseRepo: StoreRepository,
         
         @inject(TOKENS.SQLiteStoreRepository) 
@@ -189,7 +189,7 @@ export class StoreService {
 
 | Scenario | Pattern | Example |
 |----------|---------|---------|
-| Register new client (online only) | Named Token | `@inject(TOKENS.SupabaseStoreRepository)` |
+| Register new client (online only) | Named Token | `@inject(TOKENS.ServerStoreRepository)` |
 | Start work day (local only) | Named Token | `@inject(TOKENS.SQLiteStoreRepository)` |
 | Sync operation (depends on connectivity) | Factory | `factory.getRepository(isOnline ? 'supabase' : 'sqlite')` |
 | Legacy code (no preference) | Default Token | `@inject(TOKENS.StoreRepository)` |
@@ -198,6 +198,6 @@ export class StoreService {
 
 To migrate existing use cases:
 
-1. If they should use Supabase: Change `TOKENS.StoreRepository` → `TOKENS.SupabaseStoreRepository`
+1. If they should use Supabase: Change `TOKENS.StoreRepository` → `TOKENS.ServerStoreRepository`
 2. If they should use SQLite: Change `TOKENS.StoreRepository` → `TOKENS.SQLiteStoreRepository`
 3. If they need both: Inject both tokens or use the factory pattern

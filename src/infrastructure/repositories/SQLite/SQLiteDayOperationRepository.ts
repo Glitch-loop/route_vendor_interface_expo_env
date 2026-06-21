@@ -23,9 +23,12 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async insertDayOperations(day_operations: DayOperation[]): Promise<void> {
         try {
+            console.log("Initializing local db")
             await this.dataSource.initialize();
+            console.log("Getting client")
             const db: SQLiteDatabase = await this.dataSource.getClient();
             
+            console.log("Making transaction")
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const dayOperation of day_operations) {
                     await tx.runAsync(`
