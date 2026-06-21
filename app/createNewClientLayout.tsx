@@ -47,6 +47,7 @@ import POSTAL_CODE from '@/utils/constants/postalCodes';
 interface NewClientFormData {
   store_name: string;
   street: string;
+  cross_street: string;
   ext_number: string;
   colony: string;
   postal_code: string;
@@ -82,6 +83,7 @@ export default function CreateNewClientLayout() {
   const [formData, setFormData] = useState<NewClientFormData>({
     store_name: '',
     street: '',
+    cross_street: '',
     ext_number: '',
     colony: '',
     postal_code: '',
@@ -281,6 +283,14 @@ export default function CreateNewClientLayout() {
               placeholder="Nombre de la calle" 
               value={formData.street}
               onChangeText={(text) => handleFormChange('street', text)}
+              style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+          </View>
+          <View style={tw`mt-4`}>
+            <Text style={tw`text-sm text-gray-700`}>Calle</Text>
+            <TextInput 
+              placeholder="Esquina." 
+              value={formData.cross_street}
+              onChangeText={(text) => handleFormChange('cross_street', text)}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 

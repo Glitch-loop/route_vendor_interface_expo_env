@@ -307,6 +307,7 @@ const inventoryOperationLayout = () => {
     }
 
     if (hasInternetConnection) {
+      console.log("Fetching product from backend")
       availableProductsForInventoryOperation = await getProductOfCompany.execute();
     } else {
       Toast.show({
@@ -314,6 +315,7 @@ const inventoryOperationLayout = () => {
         text1: 'Estas haciendo la operación sin internet.',
         text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
       });
+      console.log("Fetching products from local db")
       availableProductsForInventoryOperation = await getProductsAllRegisterdProductsQuery.execute();
     }
     

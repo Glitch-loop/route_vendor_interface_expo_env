@@ -73,7 +73,7 @@ export class BackendProductRepository implements ProductRepository {
           params: request,
         }
       );
-
+      console.log("Products retrieved: ", response)
       const products = this.extractProductsCollection(response);
 
       return products.map((product) => this.toProductEntity(product));
@@ -117,9 +117,9 @@ export class BackendProductRepository implements ProductRepository {
       response.id_product_price,
       response.price,
       new Date(response.created_at),
-      response.id_client ?? '',
-      response.id_location ?? '',
-      response.id_route_day ?? ''
+      response.id_client ?? null,
+      response.id_location ?? null,
+      response.id_route_day ?? null
     );
   }
 }

@@ -28,9 +28,7 @@ export default class ProductClass {
 
   constructor(_product: ProductDTO) {
     this.product = _product;
-
     this.basePrice = this.determineBasePrice();
-    
   }
 
   /**

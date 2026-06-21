@@ -23,6 +23,6 @@ export default class ListAllProductOfCompany {
 
     async execute(): Promise<ProductDTO[]> {
         const availableProducts: Product[] = await this.productRepository.retrieveAllProducts();
-        return availableProducts.map((product) => this.mapperDTO.toDTO(product))
+        return availableProducts.map((product) => this.mapperDTO.toDTO(product));
     }
 }
