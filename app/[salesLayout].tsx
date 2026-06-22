@@ -40,7 +40,7 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 // Use cases and queries
-import { container as di_container } from '@/src/infrastructure/di/container';
+import { container, container as di_container } from '@/src/infrastructure/di/container';
 import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
@@ -64,6 +64,8 @@ import {
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
+import ActionDialog from '@/components/shared-components/ActionDialog';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -196,6 +198,7 @@ const salesLayout = () => {
   const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // id product, Product class
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
   const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
+  const [showYesNoVisitWithoutSelling, setShowYesNoVisitWithoutSelling] = useState<boolean>(false);
 
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
@@ -369,7 +372,7 @@ useEffect(() => {
   }
 
   const getPriceForAProduct = (item: ProductDTO, store: StoreDTO | null): number => {
-    const {id_product} = item;
+    const { id_product } = item;
     const priceToFind = productClassMap.get(id_product);
     const idStore: string | undefined = store === null ? undefined : store.id_store;
     const idClient: string | undefined = store === null ? undefined : store.id_client;
@@ -408,6 +411,28 @@ useEffect(() => {
     // } else {
     // }
     setStartPaymentProcess(true);
+  };
+
+  const handleVisitWithoutSelling = async () => {
+    setShowYesNoVisitWithoutSelling(false);
+    if (currentStore === null || id_day_operation_dependent_search_param === undefined) {
+      Toast.show({
+        type: 'error',
+        text1:'Ha ocurrido un error.',
+        text2: 'Vuelve a cargar la pagina para poder hacer esta operación.'});
+    } else {
+      const visitWithoutSelling = container.resolve<VisitClientWithoutMakeARouteTransactionUseCase>(VisitClientWithoutMakeARouteTransactionUseCase);
+      const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+      
+      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_search_param);
+      const newDayOperationsList = await retrieveDayOperationQuery.execute();
+      
+      console.log(newDayOperationsList)
+      dispatch(setDayOperations(newDayOperationsList));
+      dispatch(clearRouteTransactionDescription());
+      
+      router.replace('/routeOperationMenuLayout');
+    }
   };
 
   /*
@@ -499,7 +524,7 @@ useEffect(() => {
 
   const handleOnSuccessfullCompletionSale = async () => {
     dispatch(clearRouteTransactionDescription()); 
-    router.push('/routeOperationMenuLayout'); 
+    router.replace('/routeOperationMenuLayout');
   };
 
   const handleOnFailedCompletionSale = () => { 
@@ -750,6 +775,13 @@ useEffect(() => {
   return (
     finishedSale === false ?
       <SafeAreaView style={tw`flex-1`}>
+        <ActionDialog 
+          visible={showYesNoVisitWithoutSelling}
+          onAcceptDialog={ () => { handleVisitWithoutSelling() } }
+          onDeclinedialog={() => { setShowYesNoVisitWithoutSelling(false); }}
+        >
+          <Text style={tw`text-lg text-black align-middle`}>¿Estas seguro de continuar?</Text>
+        </ActionDialog>
         <KeyboardAvoidingView 
           style={tw`flex-1`} 
           behavior='padding' 
@@ -859,7 +891,7 @@ useEffect(() => {
             <View style={tw`w-full flex flex-row justify-center my-3`}>
               <ProjectButton
                 title={'Visita sin venta'}
-                onPress={() => { handlePrintTicket() }}
+                onPress={() => { setShowYesNoVisitWithoutSelling(true) }}
                 buttonVariant={'indigo'}
                 buttonStyle={tw`h-14 max-w-32 rounded flex flex-row basis-1/2  justify-center items-center`}/>
             </View>

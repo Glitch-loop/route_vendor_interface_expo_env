@@ -31,7 +31,7 @@ export default class VisitClientOutOfRouteUseCase {
         @inject(TOKENS.DateService) private readonly dateService: DateService,
     ) { }
 
-    async execute(id_store: string):Promise<DayOperationDTO|null> {
+    async execute(id_store: string): Promise<DayOperationDTO|null> {
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
         const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
         const mapper: MapperDTO = new MapperDTO();
@@ -43,7 +43,6 @@ export default class VisitClientOutOfRouteUseCase {
             new Date(this.dateService.getCurrentTimestamp())
         );
 
-        
         // Persist all changes
         const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 

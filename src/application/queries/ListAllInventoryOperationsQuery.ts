@@ -1,21 +1,18 @@
 // Library
 import { inject, injectable } from 'tsyringe';
 
-// Interfaces
-import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
+// Repositories
+import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
 
 // Entities
-import { ProductInventory } from '@/src/core/entities/ProductInventory';
+import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 
 // DTOs & Mapper
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 
 // DI Tokens
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
-import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
-import InventoryOperationDTO from '../dto/InventoryOperationDTO';
 
 @injectable()
 export default class ListAllInventoryOperationsQuery {

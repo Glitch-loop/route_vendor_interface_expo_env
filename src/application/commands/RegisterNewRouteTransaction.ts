@@ -1,40 +1,43 @@
 // Libraries
 import { injectable, inject } from 'tsyringe'
 
+// Repositories
+import { IDService } from '@/src/core/interfaces/IDService';
+import { DateService } from '@/src/core/interfaces/DateService';
+import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
+import { LocationService } from '@/src/core/interfaces/LocationService';
+import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
+import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
+import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
+
+// Enums
+import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+
 // Aggregates
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';
 import { ProductInventoryAggregate } from '@/src/core/aggregates/ProductInventoryAggregate';
 import { RouteTransactionAggregate } from '@/src/core/aggregates/RouteTransactionAggregate';
 
-// Entitties
+// Entities
 import { DayOperation } from '@/src/core/entities/DayOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { Store } from '@/src/core/entities/Store';
 import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
-// Interfaces
-import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
-import { IDService } from '@/src/core/interfaces/IDService';
-import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
-import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
-import { DateService } from '@/src/core/interfaces/DateService';
-import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
-
 // Object values
+import { Coordinates } from '@/src/core/object-values/Coordinates';
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
 // DTOs & Mapper
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
-import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
-import RouteTransactionDTO from '../dto/RouteTransactionDTO';
-import { LocationService } from '@/src/core/interfaces/LocationService';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
@@ -74,7 +77,7 @@ export default class RegisterNewRouteTransaction {
 
         if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
 
-        const retrieveCoordinates = await this.locationService.getCurrentLocation();
+        const retrieveCoordinates: Coordinates | null = await this.locationService.getCurrentLocation();
 
         if (retrieveCoordinates !== null) {
             latitude = retrieveCoordinates.latitude.toString();
@@ -140,8 +143,20 @@ export default class RegisterNewRouteTransaction {
             this.idService.generateID(),
             id_route_transaction,
             new Date(this.dateService.getCurrentTimestamp()),
-            id_day_operation_dependent
+            id_day_operation_dependent,
+            latitude,
+            longitude
         );
+
+        dayOperationAggregate.registerVisitToClient(
+            this.idService.generateID(),
+            id_store,
+            new Date(this.dateService.getCurrentTimestamp()),
+            id_day_operation_dependent,
+            latitude,
+            longitude
+        );
+
 
         
         // Persist all changes

@@ -8,6 +8,7 @@ import { RouteRepository } from "@/src/core/interfaces/RouteRepository";
 import { Route } from "@/src/core/entities/Route";
 
 // Object values
+import { RouteDay } from "@/src/core/object-values/RouteDay";
 import { RouteDayStore } from "@/src/core/object-values/RouteDayStore";
 
 // Mapper DTO
@@ -16,7 +17,6 @@ import { MapperDTO } from "@/src/application/mappers/MapperDTO";
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
-import { RouteDay } from "@/src/core/object-values/RouteDay";
 
 @injectable()
 export default class ListRoutesByUserQuery {

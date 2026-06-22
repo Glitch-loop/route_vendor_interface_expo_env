@@ -12,6 +12,8 @@ const dayOperationsSlice = createSlice({
         operation_type: operation.operation_type,
         created_at: operation.created_at,
         id_dependency: operation.id_dependency,
+        latitude: operation.latitude,
+        longitude: operation.longitude
 
       }));
     },

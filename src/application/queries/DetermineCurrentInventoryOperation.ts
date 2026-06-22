@@ -2,12 +2,10 @@
 import { inject, injectable } from 'tsyringe';
 
 // Interfaces
-import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
 
 // Entities
 import { DayOperation } from '@/src/core/entities/DayOperation';
-import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
 // Aggregates
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';

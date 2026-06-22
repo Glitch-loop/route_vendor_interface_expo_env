@@ -6,4 +6,6 @@ export default interface DayOperationDTO {
     operation_type: DAY_OPERATIONS;
     created_at: string;
     id_dependency: string | null;
+    latitude: string | undefined;
+    longitude: string | undefined;
 }

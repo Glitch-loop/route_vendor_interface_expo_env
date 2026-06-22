@@ -23,24 +23,31 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
 
     async insertDayOperations(day_operations: DayOperation[]): Promise<void> {
         try {
-            console.log("Initializing local db")
             await this.dataSource.initialize();
-            console.log("Getting client")
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            
-            console.log("Making transaction")
             await db.withExclusiveTransactionAsync(async (tx) => {
                 for (const dayOperation of day_operations) {
+                    const latitude = dayOperation.latitude ? dayOperation.latitude : null;
+                    const longitude = dayOperation.longitude ? dayOperation.longitude : null;
+
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS}
-                            (id_day_operation, id_item, operation_type, created_at, id_dependency)
-                            VALUES (?, ?, ?, ?, ?);
+                            (id_day_operation, 
+                            id_item, 
+                            operation_type, 
+                            created_at, 
+                            id_dependency,
+                            latitude,
+                            longitude)
+                            VALUES (?, ?, ?, ?, ?, ?, ?);
                     `, [
                         dayOperation.id_day_operation,
                         dayOperation.id_item,
                         dayOperation.operation_type,
                         dayOperation.created_at.toISOString(),
-                        dayOperation.id_dependency
+                        dayOperation.id_dependency,
+                        latitude,
+                        longitude
                     ]);
                 }
             });
@@ -86,7 +93,9 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
                     row.id_item,
                     row.operation_type,
                     new Date(row.created_at),
-                    row.id_dependency
+                    row.id_dependency,
+                    row.latitude === null ? undefined : row.latitude,
+                    row.longitude === null ? undefined : row.longitude,
                 )
             );
         } catch (error) {

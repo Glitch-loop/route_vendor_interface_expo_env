@@ -18,14 +18,16 @@ export enum DAY_OPERATIONS {
     sales = '992f002c-13e2-4fb8-ac20-b7b571b9162a',
     sample = 'f77da214-a8e8-480b-ac8d-e41d2ed6c5af',
     product_reposition = 'ec313b8e-ba1d-4a77-bbfb-bb662663720c',
-    route_transaction = '3dfde724-fb9c-4944-b38b-2022a9689bb4',
+    route_transaction = '3dfde724-fb9c-4944-b38b-2022a9689bb4', // Before route transaction
     cancel_route_transaction = 'f11d95a4-2d40-4dad-9209-d2731c884597', // This operation doesn't exist in the central database.
 
     // Related to client operations.
+    prospect_registration = '144addfa-2963-486e-9c13-0ac97537fda3',
     attention_out_of_route = '473e5d83-5f45-4d85-b74e-e4e26fee9279',
     new_client_registration = 'a29dccef-d5a0-470d-a353-2f95e1057514',
     route_client_attention = '39088d69-f29d-4b9b-be59-a3571924cf54',
     attend_client_petition = '7bfd1aae-b315-4954-a11d-249f413b3d9e',
+    vist_to_client = '34e182af-e6b3-43f4-b0fd-0ce50f0d4633',
 }
 
 export default DAY_OPERATIONS;

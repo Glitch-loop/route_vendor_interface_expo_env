@@ -7,6 +7,8 @@ export class DayOperation {
     public readonly id_item: string,
     public readonly operation_type: DAY_OPERATIONS,
     public readonly created_at: Date,
-    public readonly id_dependency: string | null
+    public readonly id_dependency: string | null,
+    public readonly latitude: string | undefined,
+    public readonly longitude: string | undefined,
   ) {}
 }

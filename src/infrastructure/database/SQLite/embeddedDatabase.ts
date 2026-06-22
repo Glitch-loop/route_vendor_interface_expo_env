@@ -107,6 +107,8 @@ export const dayOperationsEmbeddedTable = `
     id_item             TEXT NOT NULL,
     operation_type      TEXT NOT NULL,
     created_at          DATETIME NOT NULL,
+    latitude            TEXT,
+    longitude           TEXT,
     id_dependency       TEXT
   );
 `;

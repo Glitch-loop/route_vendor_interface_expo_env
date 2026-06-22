@@ -268,7 +268,9 @@ export class MapperDTO {
             id_item: entity.id_item,
             operation_type: entity.operation_type,
             created_at: entity.created_at.toISOString(),
-            id_dependency: entity.id_dependency
+            id_dependency: entity.id_dependency,
+            latitude: entity.latitude,
+            longitude: entity.longitude
         };
     }
 
@@ -457,7 +459,9 @@ export class MapperDTO {
             dto.id_item,
             dto.operation_type,
             createdAt,
-            dto.id_dependency
+            dto.id_dependency,
+            dto.latitude,
+            dto.longitude
         );
     }
 
