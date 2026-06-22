@@ -162,15 +162,25 @@ export function determinePositionOrderToAttendOfStoreToAttend(id_item_to_determi
 
 export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]): DayOperationDTO[] {
     /*
-        Since there is not a field in the DTO to deterimne the order of the day operations, we need to order them in the following way:
-            1. Order "route client attention" route days; This is how the route vendor should see the clients during the day.
-            2. If an inventory operation, attention out of route, or new client petition occurs, then this day operation will be placed between the route client attention.
-            
-        Note: Although route client attention operations are the first operations created according with the field "created_at", route transaction
-        depends on them, so instead of taking the "created_at" from the route client attention operation, it will be taken the date from first the route transaction
-        created for that client (this according to created_at).
+        About this fucntion (06-22-26)
+
+        This function helps to orgnize the day operations in the correct chronological way.
+
+        To orgnize the operation days correctly, it is taken into account two aspects.
         
-        So, if there is not route transaction operations, the rest of the clients will be append to the end of the day..
+        1. Only this day operations are actually organized:
+            - start_shift_inventory
+            - restock_inventory
+            - product_devolution_inventory
+            - end_shift_inventory
+            - route_client_attention
+            - attend_client_petition
+            - new_client_registration
+            - prospect_registration
+            - attention_out_of_route
+
+        2. The organizaion of the route days are made around 'route_client_attention', in this way, if there is an day operation
+        between this type day operation, this other day operation will be placed between the 'route_client_attention' operations.
     */
 
     const dayOperationsOrdered: DayOperationDTO[] = [];
@@ -194,10 +204,13 @@ export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]
             // || operation_type === DAY_OPERATIONS.route_client_attention
             || operation_type === DAY_OPERATIONS.attend_client_petition
             || operation_type === DAY_OPERATIONS.new_client_registration
+            || operation_type === DAY_OPERATIONS.prospect_registration
             || operation_type === DAY_OPERATIONS.attention_out_of_route
         ) {
             dayOperationsOrdered.push(currentDayOperation);
-        } else if(operation_type === DAY_OPERATIONS.route_transaction) {
+        } else if(
+            operation_type === DAY_OPERATIONS.vist_to_client
+        ) {
             if (id_dependency !== null) {
                 if (!routeClientAttentionSorted.has(id_dependency)) {
                     const routeClientAttentionForDependency = todaysClient.find(dayOperation => dayOperation.id_day_operation === id_dependency);
