@@ -7,5 +7,5 @@ export default interface ProductDTO {
     quantity_presentation: number;
     order_to_show: number;
     product_price: ProductPriceDTO[];
-    barcode: string|null;
+    barcode: string|undefined;
 }

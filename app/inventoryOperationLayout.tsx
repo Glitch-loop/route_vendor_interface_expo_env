@@ -60,7 +60,7 @@ import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/Retri
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import ListAllRegisteredProductQuery from '@/src/application/queries/ListAllRegisteredProductQuery';
 import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
 import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
 
@@ -276,7 +276,7 @@ const inventoryOperationLayout = () => {
   
     // Initializing local database
     const getProductOfCompany = di_container.resolve<ListAllProductOfCompany>(ListAllProductOfCompany);
-    const getProductsAllRegisterdProductsQuery = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+    const getProductsAllRegisterdProductsQuery = di_container.resolve<ListAllRegisteredProductQuery>(ListAllRegisteredProductQuery);
     const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const retrieveInventoryOperationByIDQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);  
     const determineIfInventoryOperationCancelableUseCase = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
@@ -579,7 +579,7 @@ const inventoryOperationLayout = () => {
       const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
       const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-      const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+      const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisteredProductQuery>(ListAllRegisteredProductQuery);
       
 
       // Use cases - commands

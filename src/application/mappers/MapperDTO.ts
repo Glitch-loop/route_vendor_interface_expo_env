@@ -196,7 +196,7 @@ export class MapperDTO {
             quantity_presentation: entity.quantity_presentation,
             order_to_show: entity.order_to_show === null ? 0 : Number(entity.order_to_show),
             product_price: entity.price.map((price) => this.productPriceObjectValueToDTO(price)),
-            barcode: entity.barcode,
+            barcode: entity.barcode === null ? undefined : entity.barcode,
         };
     }
 
@@ -211,11 +211,11 @@ export class MapperDTO {
         return {
             id_store: entity.id_store,
             street: entity.street,
-            ext_number: entity.ext_number,
+            ext_number: entity.ext_number === null ? undefined : entity.ext_number,
             colony: entity.colony,
             postal_code: entity.postal_code,
-            address_reference: entity.address_reference,
-            store_name: entity.store_name,
+            address_reference: entity.address_reference === null ? undefined : entity.address_reference,
+            store_name: entity.store_name === null ? undefined : entity.store_name,
             latitude: entity.latitude,
             longitude: entity.longitude,
             creation_date: creation_date,
@@ -319,7 +319,7 @@ export class MapperDTO {
             dto.cost,
             1,
             dto.quantity_presentation,
-            String(dto.order_to_show),
+            dto.order_to_show,
             null,
             dto.product_price.map((price) => this.productPriceDTOToObjectValue(price)),
             dto.barcode ?? null
@@ -327,21 +327,21 @@ export class MapperDTO {
     }
 
     private productPriceObjectValueToDTO(productPrice: ProductPrice): ProductPriceDTO {
-        return new ProductPriceDTO(
-            productPrice.id_product_price,
-            productPrice.price,
-            productPrice.created_at,
-            productPrice.id_client === '' ? null : productPrice.id_client,
-            productPrice.id_location === '' ? null : productPrice.id_location,
-            productPrice.id_route_day === '' ? null : productPrice.id_route_day,
-        );
+        return {
+            id_product_price: productPrice.id_product_price,
+            price: productPrice.price,
+            created_at: productPrice.created_at.toISOString(),
+            id_client: productPrice.id_client === null ? undefined : productPrice.id_client,
+            id_location: productPrice.id_location === null ? undefined : productPrice.id_location,
+            id_route_day: productPrice.id_route_day === null ? undefined : productPrice.id_route_day,
+        }
     }
 
     private productPriceDTOToObjectValue(productPrice: ProductPriceDTO): ProductPrice {
         return new ProductPrice(
             productPrice.id_product_price,
             productPrice.price,
-            productPrice.created_at,
+            new Date(productPrice.created_at),
             (productPrice.id_client ?? null) as unknown as string,
             (productPrice.id_location ?? null) as unknown as string,
             (productPrice.id_route_day ?? null) as unknown as string,

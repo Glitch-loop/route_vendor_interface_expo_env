@@ -26,7 +26,7 @@ import ListRoutesByUserQuery from '@/src/application/queries/ListRouteByUserQuer
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import ListAllRegisteredProductQuery from '@/src/application/queries/ListAllRegisteredProductQuery';
 
 // Services
 import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
@@ -76,7 +76,7 @@ const routeSelectionLayout = () => {
     const retrieveCurrentWorkdayInformationQuery: RetrieveCurrentWorkdayInformationQuery = container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
     const retrieveCurrentShiftInventoryQuery: RetrieveCurrentShiftInventoryQuery = container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const listAllRegisterdStoresQuery: ListAllRegisterdStoresQuery = container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-    const listAllRegisterdProductQuery: ListAllRegisterdProductQuery = container.resolve<ListAllRegisterdProductQuery>(ListAllRegisterdProductQuery);
+    const listAllRegisterdProductQuery: ListAllRegisteredProductQuery = container.resolve<ListAllRegisteredProductQuery>(ListAllRegisteredProductQuery);
     const getAllRoutesByUserQuery: ListRoutesByUserQuery = container.resolve<ListRoutesByUserQuery>(ListRoutesByUserQuery);
 
     try {

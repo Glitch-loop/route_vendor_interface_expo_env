@@ -22,37 +22,16 @@ export function determineIfExistsOperationDescriptionMovement(operationMovements
 export function createMapProductInventoryWithProduct(productsInventory: ProductInventoryDTO[], products: ProductDTO[]): Map<string, ProductInventoryDTO&ProductDTO> {
   const productInventoryMap: Map<string, ProductInventoryDTO&ProductDTO> = new Map<string, ProductInventoryDTO&ProductDTO>();
   for (const currentProductInventory of productsInventory) {
-    const { id_product_inventory, price_at_moment, stock, id_product } = currentProductInventory;
+    const { id_product_inventory, stock, id_product } = currentProductInventory;
     
     const productFound:ProductDTO|undefined = products.find(prod => prod.id_product === id_product);
     
     if (productFound === undefined) continue;
-    const {
-      product_name,
-      barcode,
-      weight,
-      unit,
-      comission,
-      price,
-      product_status,
-      order_to_show
-
-    } = productFound;
-
     productInventoryMap.set(
       id_product_inventory, {
         id_product_inventory: id_product_inventory,
-        price_at_moment: price_at_moment,
         stock: stock,
-        id_product: id_product,
-        product_name: product_name,
-        barcode: barcode,
-        weight: weight,
-        unit: unit,
-        comission: comission,
-        price: price,
-        product_status: product_status,
-        order_to_show: order_to_show,
+        ...productFound
       }
     )
   }

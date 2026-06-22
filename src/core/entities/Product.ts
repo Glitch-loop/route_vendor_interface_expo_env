@@ -9,7 +9,7 @@ export class Product {
     public readonly cost: number,
     public readonly product_status: number,
     public readonly quantity_presentation: number,
-    public readonly order_to_show: string | null,
+    public readonly order_to_show: number,
     public readonly id_measurement_unit: string | null,
     public readonly price: ProductPrice[],
     public readonly barcode: string | null,
@@ -77,7 +77,6 @@ export class Product {
         The base produce price is the price by default when the product has not
         an special price.
       */
-      console.log("Determining base price for a product: ", this.price)
       for (const currentPrice of this.price) {
         if (currentPrice.id_client === null
         && currentPrice.id_location === null

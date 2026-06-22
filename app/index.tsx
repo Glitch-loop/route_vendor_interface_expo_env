@@ -33,7 +33,7 @@ import ListRoutesByUserQuery from '@/src/application/queries/ListRouteByUserQuer
 import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import ListAllRegisterdProductQuery from '@/src/application/queries/ListAllRegisterdProductQuery';
+import ListAllRegisteredProductQuery from '@/src/application/queries/ListAllRegisteredProductQuery';
 
 // DTOs
 import RouteDTO from '@/src/application/dto/RouteDTO';

@@ -63,6 +63,8 @@ import {
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { ActivityIndicator } from 'react-native-paper';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -130,7 +132,7 @@ const salesLayout = () => {
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
   const productInventory      = useSelector((state: RootState) => state.productsInventory);
-  const availableProducts     = useSelector((state: RootState) => state.products);
+  const availableProducts      = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
   const stores                = useSelector((state: RootState) => state.stores);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
@@ -186,7 +188,7 @@ useEffect(() => {
 
   useEffect(() => {
     setpUpSalesLayout();
-  }, [productInventory, availableProducts])
+  }, [productInventory])
 
   // -- Auxiliar functions --
   const setpUpSalesLayout = async () => {
@@ -260,9 +262,9 @@ useEffect(() => {
 
   const getPriceForAProduct = (item: ProductDTO): number => {
     const {id_product} = item;
-    const productToDevolve = productClassMap.get(id_product);
+    const priceToFind = productClassMap.get(id_product);
 
-    if(productToDevolve === undefined) {
+    if(priceToFind === undefined) {
       Toast.show({
         type: 'error',
         text1: "Ha ocurrido un error inesperado, vuelve a cargar la pagina.", 
@@ -270,7 +272,7 @@ useEffect(() => {
       return 0;
     }
 
-    return productToDevolve.getPrice(id_store_search_param, workDayInformation?.id_route_day);
+    return priceToFind.getPrice(id_store_search_param, workDayInformation?.id_route_day);
   }
 
   // Handlers
@@ -598,9 +600,10 @@ useEffect(() => {
           >
         {
           productInventoryMap === undefined ?
-          <View style={tw`w-full h-full flex flex-1 justify-center items-center`}>
-            <Text>Cargando información del inventario...</Text>
-          </View>
+          // <View style={tw`w-full h-full flex flex-1 justify-center items-center`}>
+          //   <Text>Cargando información del inventario...</Text>
+          // </View>
+          <ActivityIndicator />
           :
           <ScrollView
             nestedScrollEnabled={true}

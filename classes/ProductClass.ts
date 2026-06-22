@@ -89,15 +89,18 @@ export default class ProductClass {
   
   private determineBasePrice(): ProductPriceDTO {
     /*
-      The base produce price is the price by default when the product has not
+      Note 1 (06-21-26): The base produce price is the price by default when the product has not
       an special price.
+
+      Note 2 (06-21-26): Since the UI neeeds the ids as undefined, it's compared as undefined to find the
+      base price.
     */
     
     const { product_price } = this.product;
     for (const price of product_price) {
-      if (price.id_client === null
-      && price.id_location === null
-      && price.id_route_day === null) {
+      if ((price.id_client === null || price.id_client === undefined)
+      && (price.id_location === null || price.id_location === undefined)
+      && (price.id_route_day === null || price.id_route_day === undefined)) {
         return price;
       }
     }

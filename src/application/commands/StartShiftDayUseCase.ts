@@ -200,11 +200,11 @@ export default class StartWorkDayUseCase {
     }
     
     console.log("Inserting inventories")
+    console.log("New inventory: ", newInventory)
     await this.localProductInventoryRepo.createInventory(newInventory);
     console.log("Inserting work days")
     await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
     console.log("Inserting day operations")
-    console.log("data: ", newDayOperations)
     await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
   }
 

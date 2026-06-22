@@ -25,7 +25,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { setStores } from '@/redux/slices/storesSlice';
 
 // Mappers and DTOs
-import { container as conatiner_di } from '@/src/infrastructure/di/container';
+import { container as conatiner_di, container } from '@/src/infrastructure/di/container';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
@@ -57,9 +57,9 @@ const storeMenuLayout = () => {
   //Defining redux context
   const dispatch: AppDispatch = useDispatch();
   const stores = useSelector((state: RootState) => state.stores);
+  const availableProducts      = useSelector((state: RootState) => state.products);
   const workDay = useSelector((state: RootState) => state.workDayInformation);
   const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
-  const availableProductsReduxState = useSelector((state: RootState) => state.products);
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
 
   // Constants
@@ -94,8 +94,8 @@ const storeMenuLayout = () => {
       setConsultedStore(convertStoreDTOToIStoreRouteMap([foundStore], [...dayOperationsReduxState]).pop()!)
     }
 
-    if (availableProductsReduxState !== null && productsInventoryReduxState !== null) {
-      setProductInventoryMap(createMapProductInventoryWithProduct(productsInventoryReduxState, availableProductsReduxState));
+    if (productsInventoryReduxState !== null && availableProducts !== null) {
+      setProductInventoryMap(createMapProductInventoryWithProduct(productsInventoryReduxState, availableProducts));
     }
   }
 

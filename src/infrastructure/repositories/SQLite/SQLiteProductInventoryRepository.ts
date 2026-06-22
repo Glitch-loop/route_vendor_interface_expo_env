@@ -85,8 +85,8 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
                 inventory.push(
                     new ProductInventory(
                         row.id_product_inventory,
-                        row.price_at_moment,
                         row.stock,
+                        row.id_product,
                     )
                 );
             }

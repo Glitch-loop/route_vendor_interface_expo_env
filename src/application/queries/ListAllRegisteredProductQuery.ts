@@ -15,7 +15,7 @@ import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
-export default class ListAllRegisterdProductQuery {
+export default class ListAllRegisteredProductQuery {
   constructor(
     @inject(TOKENS.SQLiteProductRepository) private readonly productRepository: ProductRepository,
     private readonly mapperDTO: MapperDTO
