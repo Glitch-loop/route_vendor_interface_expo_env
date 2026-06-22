@@ -5,7 +5,6 @@ import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 
-// Databases
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,10 +17,6 @@ import { clearRoute } from '@/redux/slices/routeSlice';
 import { clearStores } from '@/redux/slices/storesSlice';
 import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 
-
-// Services
-import { deviceHasInternetConnection, syncingRecordsWithCentralDatabase } from '../services/syncService';
-
 // UI components
 import RouteCard from '@/components/route-operation-menu/RouteCard';
 import MenuHeader from '@/components/shared-components/MenuHeader';
@@ -29,16 +24,21 @@ import TypeOperationItem from '@/components/route-operation-menu/TypeOperationIt
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import ActionDialog from '@/components/shared-components/ActionDialog';
+
+// Enums
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 // DTOs
+import UserDTO from '@/src/application/dto/UserDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 
 // Use cases and queries
 import { container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import DetermineCurrentInventoryOperation from '@/src/application/queries/DetermineCurrentInventoryOperation';
-import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
 
 // Utils
@@ -49,10 +49,10 @@ import {
   getDayOperationColor,
   orderDayOperationsForDisplaying
 } from '@/utils/day-operation/utils';
-import ActionDialog from '@/components/shared-components/ActionDialog';
-import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+
+
+// Infrastructure
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
-import UserDTO from '@/src/application/dto/UserDTO';
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
