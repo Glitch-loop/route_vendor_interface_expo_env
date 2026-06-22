@@ -105,6 +105,28 @@ function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO
   return productToCommitForValidation;
 }
 
+function getPricesForStartedRouteTransaction(
+  routeTransactionDescriptions: RouteTransactionDescriptionDTO[], 
+  mapProductClass: Map<string, ProductClass>,
+  idLocation: string | undefined,
+  idRouteDay: string | undefined,
+  idClient: string | undefined
+): RouteTransactionDescriptionDTO[] {
+  return routeTransactionDescriptions.map((transactionDescription) => 
+    { 
+      const { id_product, price_at_moment } = transactionDescription;
+      
+      let price = price_at_moment;
+      
+      const productClass = mapProductClass.get(id_product)
+      if (productClass) {
+        price = productClass.getPrice(idLocation, idRouteDay, idClient);
+      }
+      
+      return { ...transactionDescription, price_at_moment: price }
+    }
+  )
+}
 
 type typeSearchParams = {
   id_store_search_param: string;
@@ -143,7 +165,7 @@ const salesLayout = () => {
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
-  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>());
+  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // id product, Product class
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
   const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
 
@@ -195,12 +217,24 @@ useEffect(() => {
     let devolutionMovements:RouteTransactionDescriptionDTO[] = [];
     let repositionMovements:RouteTransactionDescriptionDTO[] = [];
     let saleMovements:RouteTransactionDescriptionDTO[] = [];
+    let idClient: string|undefined = undefined;
+    let idRouteDay: string|undefined = undefined;
     const productClassMap: Map<string, ProductClass> = new Map<string, ProductClass>();
+
+    // Retrieving information needed for the set up process
+    if(workDayInformation !== null) {
+      idRouteDay = workDayInformation.id_route_day;
+    }
 
     // Finding the current store
     if(stores !== null) {
       const currentStore = stores.find((store) => store.id_store === id_store_search_param)
-      setCurrentStore(currentStore ?? null)
+      if (currentStore) {
+        idClient = currentStore.id_client
+        setCurrentStore(currentStore)
+      } else {
+        setCurrentStore(null)
+      }
     }
 
     // Setting up initial states for the sale layout.
@@ -218,8 +252,7 @@ useEffect(() => {
 
       setProductClassMap(productClassMap);
 
-      // Start a new route transaction from another route transaction.
-      if (id_route_transaction_search_param !== undefined) {
+      if (id_route_transaction_search_param !== undefined) { // Start transaction from another route transaction.
         const retrieve_route_transaction_by_id = di_container.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
         const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
   
@@ -232,7 +265,7 @@ useEffect(() => {
           
           dispatch(setRouteTransactionDescription(routeTransaction.transaction_description));
         } else { /* Do nothing: Route transaction doesn't have any movement. */}
-      } else {
+      } else { // Start transaction from redux state
         if (routeTransactionDescriptionTempReduxState !== null) {
           devolutionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_devolution);
           repositionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_reposition);
@@ -240,22 +273,42 @@ useEffect(() => {
         } else { /* Do nothing: There was not a previous route transaction movement. */ }
       }
 
-      setProductDevolution(devolutionMovements);
+      setProductDevolution(
+        getPricesForStartedRouteTransaction(
+          devolutionMovements,
+          productClassMap,
+          id_store_search_param,
+          idRouteDay,
+          idClient,
+        )
+      );
       setProductReposition(
-        productCommitedValidation(
-          productInventoryMapLocal, 
-          repositionMovements, 
-          saleMovements, 
-          true
+        getPricesForStartedRouteTransaction(
+          productCommitedValidation(
+            productInventoryMapLocal, 
+            repositionMovements, 
+            saleMovements, 
+            true
+          ),
+          productClassMap,
+          id_store_search_param,
+          idRouteDay,
+          idClient,
         )
       );
 
       setProductSale(
-        productCommitedValidation(
-          productInventoryMapLocal, 
-          saleMovements, 
-          repositionMovements, 
-          false
+        getPricesForStartedRouteTransaction(
+          productCommitedValidation(
+            productInventoryMapLocal, 
+            saleMovements, 
+            repositionMovements, 
+            false
+          ),
+          productClassMap,
+          id_store_search_param,
+          idRouteDay,
+          idClient,
         )
       );
     } else {
