@@ -146,6 +146,7 @@ const salesLayout = () => {
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
   const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>());
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
+  const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
 
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
@@ -196,6 +197,12 @@ useEffect(() => {
     let repositionMovements:RouteTransactionDescriptionDTO[] = [];
     let saleMovements:RouteTransactionDescriptionDTO[] = [];
     const productClassMap: Map<string, ProductClass> = new Map<string, ProductClass>();
+
+    // Finding the current store
+    if(stores !== null) {
+      const currentStore = stores.find((store) => store.id_store === id_store_search_param)
+      setCurrentStore(currentStore ?? null)
+    }
 
     // Setting up initial states for the sale layout.
     if (productInventory !== null && availableProducts !== null) {
@@ -260,10 +267,10 @@ useEffect(() => {
     }
   }
 
-  const getPriceForAProduct = (item: ProductDTO): number => {
+  const getPriceForAProduct = (item: ProductDTO, store: StoreDTO | null): number => {
     const {id_product} = item;
     const priceToFind = productClassMap.get(id_product);
-
+    const idClient: string | undefined = store === null ? undefined : store.id_client
     if(priceToFind === undefined) {
       Toast.show({
         type: 'error',
@@ -272,7 +279,7 @@ useEffect(() => {
       return 0;
     }
 
-    return priceToFind.getPrice(id_store_search_param, workDayInformation?.id_route_day);
+    return priceToFind.getPrice(id_store_search_param, workDayInformation?.id_route_day, idClient);
   }
 
   // Handlers
@@ -474,7 +481,7 @@ useEffect(() => {
       setProductDevolution(declaredProductDevolution);
     } else {
       const {id_product, id_product_inventory} = item;
-      const price_at_moment:number = getPriceForAProduct(item);
+      const price_at_moment:number = getPriceForAProduct(item, currentStore);
       const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
           id_route_transaction_description: '',
           price_at_moment: price_at_moment,
@@ -514,7 +521,7 @@ useEffect(() => {
               false));
         } else {
           const {id_product, id_product_inventory} = item;
-          const price_at_moment:number = getPriceForAProduct(item);
+          const price_at_moment:number = getPriceForAProduct(item, currentStore);
           const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
               id_route_transaction_description: '',
               price_at_moment: price_at_moment,
@@ -567,7 +574,7 @@ useEffect(() => {
             false));
       } else {
         const {id_product, id_product_inventory} = item;
-        const price_at_moment:number = getPriceForAProduct(item);
+        const price_at_moment:number = getPriceForAProduct(item, currentStore);
         // Creating movement with the new amount.
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',

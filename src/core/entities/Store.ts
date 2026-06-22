@@ -12,7 +12,7 @@ export class Store {
     public readonly latitude: string,
     public readonly longitude: string,
     public readonly id_creator: string,
-    public readonly id_client: string|null,
+    public readonly id_client: string,
     public readonly creation_date: Date,
     public readonly creation_context: string,
     public readonly status_store: number,

@@ -219,6 +219,7 @@ export class MapperDTO {
             latitude: entity.latitude,
             longitude: entity.longitude,
             creation_date: creation_date,
+            id_client: entity.id_client,
             status_store: entity.status_store,
             is_new: entity.is_new
         };
