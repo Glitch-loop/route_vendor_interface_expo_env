@@ -95,7 +95,6 @@ const TableProduct = ({
     sectionCaption: string,
     totalMessage: string,
   }) => {
-    console.log("Available products: ", productInventory)
     const catalog:(ProductDTO&ProductInventoryDTO)[] = createCatalog(avialableProducts, productInventory);
     const catalogMap: Map<string, ProductDTO&ProductInventoryDTO> = converCatalogToMap(catalog); // <id_product_inventory, ProductDTO&ProductInventoryDTO>
     

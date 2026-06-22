@@ -10,6 +10,7 @@ import { getProductDevolutionBalanceWithoutNegativeNumber } from '@/utils/route-
 // UI Components
 import SubtotalLine from '@/components/sale-layout/SubtotalLine';
 import TotalsSummarize from '@/components/sale-layout/TotalsSummarize';
+import SummaryConceptTable from '@/components/sale-layout/SummaryConceptTable';
 
 // DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';
@@ -88,11 +89,13 @@ function combineCommitedProduct(
 const SaleSummarize = ({
     productsDevolution,
     productsReposition,
+    productsSample,
     productsSale,
     productInventoryMap
   }:{
     productsDevolution:RouteTransactionDescriptionDTO[],
     productsReposition:RouteTransactionDescriptionDTO[],
+    productsSample:RouteTransactionDescriptionDTO[],
     productsSale:RouteTransactionDescriptionDTO[],
     productInventoryMap: Map<string, ProductDTO>,
   }) => {
@@ -109,45 +112,16 @@ const SaleSummarize = ({
     <View style={tw`w-11/12 flex flex-col items-center`}>
       <Text style={tw`w-full text-black text-2xl text-left`}>Resumen</Text>
 
+      {/* Product samples section */}
+      <SummaryConceptTable 
+        title="Cortesias"
+        products={productsSample}
+        productInventoryMap={productInventoryMap} />
       {/* Product devolution section */}
-      <Text
-        style={tw`my-1 w-full text-black font-bold text-lg flex flex-row text-center items-center justify-center`}>
-        Devolución de producto
-      </Text>
-      <View style={tw`w-full flex flex-row items-center`}>
-        <Text style={tw`flex basis-1/4 font-bold text-center text-black`}>Producto</Text>
-        <Text style={tw`flex basis-1/4 font-bold text-center text-black`}>Precio</Text>
-        <Text style={tw`flex basis-1/4 font-bold text-center text-black`}>Cantidad</Text>
-        <Text style={tw`flex basis-1/4 font-bold text-center text-black`}>Valor</Text>
-      </View>
-      { productsDevolution.length > 0 ? (
-        productsDevolution.map((product: RouteTransactionDescriptionDTO) => {
-          const { id_product_inventory, price_at_moment } = product;
-          
-          if (productInventoryMap.has(id_product_inventory)) {
-            const inventoryProduct = productInventoryMap.get(id_product_inventory)!;
-            const { product_name } = inventoryProduct;
-            const { amount } = product;
-
-            return (
-              <View key={id_product_inventory} style={tw`w-full my-1 flex flex-row items-center`}>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>{ capitalizeFirstLetter(product_name) }</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>{ formatNumberAsAccountingCurrency(price_at_moment) }</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>{ amount }</Text>
-                <Text style={tw`flex basis-1/4 text-center text-black`}>
-                  { formatNumberAsAccountingCurrency(amount * price_at_moment) }
-                </Text>
-              </View>
-            );
-          } else {
-            return null;
-          }
-        })
-        ) : (
-          <Text style={tw`text-black text-xl text-center mt-3`}>
-            No se ha seleccionado ningún producto
-          </Text>
-      )}
+      <SummaryConceptTable 
+        title="Devolución de producto"
+        products={productsDevolution}
+        productInventoryMap={productInventoryMap} />
       {/* Getting subtotal product devolution */}
       { productsDevolution.length > 0 &&
         <SubtotalLine
@@ -155,7 +129,6 @@ const SaleSummarize = ({
           total={ getProductDevolutionBalanceWithoutNegativeNumber(productsDevolution, []) }
           fontStyle={'font-bold italic text-base'}/>
       }
-
       {/* Selling and product reposition section */}
       <Text
         style={tw`mt-3 mb-1 w-full text-black font-bold text-lg flex flex-row text-center items-center justify-center`}>
@@ -287,6 +260,7 @@ const SaleSummarize = ({
       <TotalsSummarize
         productsDevolution={productsDevolution}
         productsReposition={productsReposition}
+        productsSample={productsSample}
         productsSale={productsSale}/>
     </View>
   );

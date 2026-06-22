@@ -83,6 +83,7 @@ import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 //   // return data;
 // }
 
+
 function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO[], productMovement: RouteTransactionDescriptionDTO) {
   const productToCommitForValidation: RouteTransactionDescriptionDTO[] = [];
   const { id_product_inventory } = productMovement;
@@ -104,6 +105,32 @@ function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO
 
   return productToCommitForValidation;
 }
+
+function mergeProductToCommitFromDifferentContext(
+  contextA: RouteTransactionDescriptionDTO[], 
+  contextB: RouteTransactionDescriptionDTO[]
+): RouteTransactionDescriptionDTO[] {
+  const mergedByProductInventory = new Map<string, RouteTransactionDescriptionDTO>();
+
+  for (const movement of contextA) {
+    mergedByProductInventory.set(movement.id_product_inventory, { ...movement });
+  }
+
+  for (const movement of contextB) {
+    const currentMovement = mergedByProductInventory.get(movement.id_product_inventory);
+    if (currentMovement === undefined) {
+      mergedByProductInventory.set(movement.id_product_inventory, { ...movement });
+    } else {
+      mergedByProductInventory.set(movement.id_product_inventory, {
+        ...currentMovement,
+        amount: currentMovement.amount + movement.amount,
+      });
+    }
+  }
+
+  return [...mergedByProductInventory.values()];
+}
+
 
 function getPricesForStartedRouteTransaction(
   routeTransactionDescriptions: RouteTransactionDescriptionDTO[], 
@@ -163,6 +190,7 @@ const salesLayout = () => {
   /* States to store the current product according with their context. */
   const [productDevolution, setProductDevolution] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productSample, setProductSample] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
   const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // id product, Product class
@@ -172,6 +200,7 @@ const salesLayout = () => {
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
   const productRepositionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
+  const productSampleRef = useRef<RouteTransactionDescriptionDTO[]>([]);
   const productSaleRef = useRef<RouteTransactionDescriptionDTO[]>([]);
 
 
@@ -183,9 +212,11 @@ const salesLayout = () => {
 // BackHandler now reads from refs (always latest)
 useEffect(() => {
   const backAction = (): boolean => {
+    console.log("To REDUX; ", productSampleRef.current)
     dispatch(setRouteTransactionDescription([
       ...productDevolutionRef.current,
       ...productRepositionRef.current,
+      ...productSampleRef.current,
       ...productSaleRef.current
     ]));
     return false; // Allow default back behavior after saving
@@ -205,6 +236,10 @@ useEffect(() => {
   }, [productReposition]);
 
   useEffect(() => {
+    productSampleRef.current = productSample;
+  }, [productSample]);
+
+  useEffect(() => {
     productSaleRef.current = productSale;
   }, [productSale]);
 
@@ -216,6 +251,7 @@ useEffect(() => {
   const setpUpSalesLayout = async () => {
     let devolutionMovements:RouteTransactionDescriptionDTO[] = [];
     let repositionMovements:RouteTransactionDescriptionDTO[] = [];
+    let sampleMovements:RouteTransactionDescriptionDTO[] = [];
     let saleMovements:RouteTransactionDescriptionDTO[] = [];
     let idClient: string|undefined = undefined;
     let idRouteDay: string|undefined = undefined;
@@ -252,7 +288,14 @@ useEffect(() => {
 
       setProductClassMap(productClassMap);
 
+
       if (id_route_transaction_search_param !== undefined) { // Start transaction from another route transaction.
+        /*
+          Note about the samples in the setup (06-21-26)
+          
+          Since samples is an strategy for sellings, this is not an operational
+          action, so setting this field for a new transaction will not make sense.
+        */
         const retrieve_route_transaction_by_id = di_container.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
         const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
   
@@ -267,8 +310,11 @@ useEffect(() => {
         } else { /* Do nothing: Route transaction doesn't have any movement. */}
       } else { // Start transaction from redux state
         if (routeTransactionDescriptionTempReduxState !== null) {
+          console.log("Redux: ", routeTransactionDescriptionTempReduxState)
+          console.log("Target: ", DAY_OPERATIONS.sample)
           devolutionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_devolution);
           repositionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_reposition);
+          sampleMovements     = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.sample);
           saleMovements       = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.sales);
         } else { /* Do nothing: There was not a previous route transaction movement. */ }
       }
@@ -287,8 +333,7 @@ useEffect(() => {
           productCommitedValidation(
             productInventoryMapLocal, 
             repositionMovements, 
-            saleMovements, 
-            true
+            mergeProductToCommitFromDifferentContext(saleMovements, sampleMovements)
           ),
           productClassMap,
           id_store_search_param,
@@ -297,13 +342,20 @@ useEffect(() => {
         )
       );
 
+      setProductSample(
+        productCommitedValidation(
+          productInventoryMapLocal, 
+          sampleMovements, 
+          mergeProductToCommitFromDifferentContext(repositionMovements, saleMovements)
+        ),
+      );
+
       setProductSale(
         getPricesForStartedRouteTransaction(
           productCommitedValidation(
             productInventoryMapLocal, 
             saleMovements, 
-            repositionMovements, 
-            false
+            mergeProductToCommitFromDifferentContext(repositionMovements, sampleMovements)
           ),
           productClassMap,
           id_store_search_param,
@@ -342,7 +394,7 @@ useEffect(() => {
   };
 
   const handleOnGoBack = () => {
-    dispatch(setRouteTransactionDescription([...productDevolution, ...productReposition, ...productSale]));
+    dispatch(setRouteTransactionDescription([...productDevolution, ...productReposition, ...productSample, ...productSale]));
     router.back(); 
   };
 
@@ -405,7 +457,7 @@ useEffect(() => {
         return;
       }
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
-        [...productDevolution, ...productReposition, ...productSale],
+        [...productDevolution, ...productReposition, ...productSample, ...productSale],
         workDayInformation!,
         paymentMethod,
         receivedCash,
@@ -464,7 +516,7 @@ useEffect(() => {
       return;
     }
 
-    if (productDevolution.length === 0 && productReposition.length === 0 && productSale.length === 0) {
+    if (productDevolution.length === 0 && productReposition.length === 0 && productSample.length === 0 && productSale.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'No hay movimientos para imprimir el ticket de la venta.',
@@ -485,6 +537,7 @@ useEffect(() => {
             productInventoryMap,
             productDevolution,
             productReposition,
+            productSample,
             productSale,
             newRouteTransaction === null ? undefined : newRouteTransaction,
             storeToConsult,
@@ -495,6 +548,7 @@ useEffect(() => {
           productInventoryMap,
           productDevolution,
           productReposition,
+          productSample,
           productSale,
           undefined, // At this point, the route transacion doesn't exist, it only exsits the movements of the route transaction.
           storeToConsult,
@@ -569,9 +623,9 @@ useEffect(() => {
           setProductReposition(
             productCommitedValidation(
               productInventoryMap, 
-              productsToCommit, 
-              productSale, 
-              false));
+              productsToCommit,
+              mergeProductToCommitFromDifferentContext(productSale, productSample)
+            ));
         } else {
           const {id_product, id_product_inventory} = item;
           const price_at_moment:number = getPriceForAProduct(item, currentStore);
@@ -590,8 +644,7 @@ useEffect(() => {
             productCommitedValidation(
               productInventoryMap, 
               pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
-              productSale, 
-              true
+              mergeProductToCommitFromDifferentContext(productSale, productSample)
             )
           );
         }
@@ -599,7 +652,7 @@ useEffect(() => {
     // TODO: Validate if there will be necessary to provide feedback to the user about the product reposition.
     // if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
     //   setProductReposition(
-    //     productCommitedValidation(productInventoryMap, productsToCommit, productSale, true));
+    //     productCommitedValidation(productInventoryMap, productsToCommit, productSale));
     // } else {
     //   if (productDevolution.length > 0) {
     //     // Toast.show({type: 'error', text1: "Propuesta de cambio imposible.", 
@@ -616,6 +669,44 @@ useEffect(() => {
     // }
   };
 
+  const handleSetSampleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
+    if (productInventoryMap !== undefined) {
+      if (item === null) {
+        setProductSample(
+          productCommitedValidation(
+            productInventoryMap, 
+            productsToCommit, 
+            mergeProductToCommitFromDifferentContext(productSale, productReposition)
+          ));
+      } else {
+        const {id_product, id_product_inventory} = item;
+        /*
+          Since this is a sample for the client, this sample is not sold, it's just a gift for the client to try the product. 
+        */
+        const price_at_moment:number = 3;
+
+        // Creating movement with the new amount.
+        const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
+            id_route_transaction_description: '',
+            price_at_moment: price_at_moment,
+            amount: amountToSet,
+            created_at: new Date(),
+            id_transaction_operation_type: DAY_OPERATIONS.sample,
+            id_product: id_product,
+            id_route_transaction: '',
+            id_product_inventory: id_product_inventory,
+        };
+
+        setProductSample(
+          productCommitedValidation(
+            productInventoryMap, 
+            pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
+            mergeProductToCommitFromDifferentContext(productSale, productReposition)
+          ));
+      }
+    }
+  };
+
   const handleSetSaleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
     if (productInventoryMap !== undefined) {
       if (item === null) {
@@ -623,8 +714,8 @@ useEffect(() => {
           productCommitedValidation(
             productInventoryMap, 
             productsToCommit, 
-            productReposition, 
-            false));
+            mergeProductToCommitFromDifferentContext(productSample, productReposition)
+          ));
       } else {
         const {id_product, id_product_inventory} = item;
         const price_at_moment:number = getPriceForAProduct(item, currentStore);
@@ -645,8 +736,8 @@ useEffect(() => {
           productCommitedValidation(
             productInventoryMap, 
             pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
-            productReposition, 
-            false));
+            mergeProductToCommitFromDifferentContext(productSample, productReposition)
+          ));
       }
     }
   };
@@ -677,7 +768,7 @@ useEffect(() => {
               */}
               <PaymentProcess
                 transactionIdentifier   = { workDayInformation?.id_work_day || '' }
-                totalToPay              = { getGreatTotal(productDevolution, productReposition, productSale) }
+                totalToPay              = { getGreatTotal(productDevolution, productSample, productReposition, productSale) }
                 paymentProcess          = { startPaymentProcess }
                 onCancelPaymentProcess  = { setStartPaymentProcess }
                 onPaySale               = {(receivedCash:number, paymnetMethod:PAYMENT_METHODS) => handlePaySale(receivedCash, paymnetMethod)}/>
@@ -721,17 +812,29 @@ useEffect(() => {
                 <TableProduct
                   avialableProducts   = { availableProducts || [] }
                   productInventory    = { productInventory || [] }
+                  commitedProducts    = { productSample }
+                  setCommitedProduct  = { handleSetSampleProduct }
+                  sectionTitle        = { 'Cortesias' }
+                  sectionCaption      = { '' }
+                  totalMessage        = { 'Total cortesia' }
+                  />
+              </View>
+              <View style={tw`w-full flex flex-row`}>
+                <TableProduct
+                  avialableProducts   = { availableProducts || [] }
+                  productInventory    = { productInventory || [] }
                   commitedProducts    = { productSale }
                   setCommitedProduct  = { handleSetSaleProduct }
                   sectionTitle        = { 'Productos para vender' }
-                  sectionCaption      = { '(Venta sugerida: Última venta)' }
+                  sectionCaption      = { '' }
                   totalMessage        = { 'Total de la venta:' }
                   />
               </View>
-              <View style={tw`w-full flex flex-row justify-center my-5`}>
+               <View style={tw`w-full flex flex-row justify-center my-5`}>
                 <SaleSummarize
                   productsDevolution  = { productDevolution }
                   productsReposition  = { productReposition }
+                  productsSample      = { productSample }
                   productsSale        = { productSale }
                   productInventoryMap = { productInventoryMap }/>
               </View>
@@ -748,6 +851,13 @@ useEffect(() => {
               textOnCancel    = { 'Cancelar operación' }
               handleOnAccept  = { handleSalePaymentProcess }
               handleOnCancel  = { handleCancelSale }/>
+            <View style={tw`w-full flex flex-row justify-center my-3`}>
+              <ProjectButton
+                title={'Visita sin ticket'}
+                onPress={() => { handlePrintTicket() }}
+                buttonVariant={'indigo'}
+                buttonStyle={tw`h-14 max-w-32 rounded flex flex-row basis-1/2  justify-center items-center`}/>
+            </View>
             <View style={tw`flex flex-row mt-10`} />
           </ScrollView> 
         }

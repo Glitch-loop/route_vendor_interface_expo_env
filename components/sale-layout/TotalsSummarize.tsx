@@ -19,20 +19,23 @@ const TotalsSummarize = ({
   routeTransaction,
   productsDevolution,
   productsReposition,
+  productsSample,
   productsSale
 }:{
   routeTransaction?:RouteTransactionDTO
   productsDevolution:RouteTransactionDescriptionDTO[],
   productsReposition:RouteTransactionDescriptionDTO[],
+  productsSample:RouteTransactionDescriptionDTO[],
   productsSale:RouteTransactionDescriptionDTO[],
 }) => {
   let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
   let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
   let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
+  let subtotalSampleProduct     = getProductDevolutionBalance(productsSample, []);
   let productDevolutionBalance  = '$0';
   let greatTotal                = '$0';
   let cashReceived              = '$0';
-  let greatTotalNumber          = (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution);
+  let greatTotalNumber          = (subtotalSaleProduct + subtotalSampleProduct + subtotalProductReposition - subtotalProductDevolution);
   
   // Getting product devolution balance
   if (subtotalProductReposition - subtotalProductDevolution < 0) {
@@ -92,6 +95,14 @@ const TotalsSummarize = ({
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           { formatNumberAsAccountingCurrency(subtotalProductReposition - subtotalProductDevolution) }
+        </Text>
+      </View>
+      <View style={tw`w-full flex flex-row`}>
+        <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
+          Total de cortesia:
+        </Text>
+        <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
+          { formatNumberAsAccountingCurrency(subtotalSampleProduct) }
         </Text>
       </View>
       <View style={tw`w-full flex flex-row`}>

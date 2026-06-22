@@ -82,10 +82,12 @@ const SummarizeTransaction = ({
   const { transaction_description } = routeTransaction;
 
   // Variables for displaying information
-  const productsDevolution: RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_devolution)
-
-  const productsReposition:RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_reposition);
-
+  const productsDevolution: RouteTransactionDescriptionDTO[] = transaction_description
+    .filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_devolution)
+  const productsReposition:RouteTransactionDescriptionDTO[] = transaction_description
+    .filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_reposition);
+  const productsSample:RouteTransactionDescriptionDTO[] = transaction_description
+    .filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.sample);
   const productsSale:RouteTransactionDescriptionDTO[] = transaction_description.filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.sales);
 
   // States regarded to the logic of the component
@@ -114,6 +116,7 @@ const SummarizeTransaction = ({
             productInventoryMap,
             productsDevolution,
             productsReposition,
+            productsSample,
             productsSale,
             currentTransaction,
             storeToConsult,
@@ -271,6 +274,17 @@ const SummarizeTransaction = ({
               transactionMovements={productsReposition}
               totalSectionCaptionMessage={'Valor total de reposición: '}/>
             <View style={tw`w-full border`}/>
+            {/* Product sample section */}
+            <SectionTitle
+              title={'Cortesias'}
+              caption={''}
+              titlePositionStyle={'text-center w-full flex flex-row justify-center'}
+              />
+            <SummarizeFormat
+              productInventoryMap={productInventoryMap}
+              transactionMovements={productsSample}
+              totalSectionCaptionMessage={'Total cortesia: '}/>
+            <View style={tw`w-full border`}/>
             {/* Product sale section */}
             <SectionTitle
               title={'Venta'}
@@ -288,6 +302,7 @@ const SummarizeTransaction = ({
                 routeTransaction={currentTransaction}
                 productsDevolution={productsDevolution}
                 productsReposition={productsReposition}
+                productsSample={productsSample}
                 productsSale={productsSale}
             />
             <View style={tw`w-full flex flex-row`}>

@@ -62,19 +62,20 @@ export function getMessageForProductDevolutionOperation(
 export function getGreatTotal(
   productsDevolution:RouteTransactionDescriptionDTO[],
   productsReposition:RouteTransactionDescriptionDTO[],
+  productsSample:RouteTransactionDescriptionDTO[],
   salesProduct:RouteTransactionDescriptionDTO[]
 ):number {
   let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
   let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  let subtotalSampleProduct = getProductDevolutionBalance(productsSample, []);
   let subtotalSaleProduct = getProductDevolutionBalance(salesProduct, []);
-  return subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
+  return subtotalSaleProduct + subtotalSampleProduct + subtotalProductReposition - subtotalProductDevolution;
 }
 
 export function productCommitedValidation(
     productInventory: Map<string, ProductInventoryDTO>,
     productsToCommit: RouteTransactionDescriptionDTO[],
-    productSharingInventory: RouteTransactionDescriptionDTO[],
-    isProductReposition:boolean
+    productSharingInventory: RouteTransactionDescriptionDTO[]
 ): RouteTransactionDescriptionDTO[] {
     let isNewAmountAllowed:boolean = true;
     let errorCaption:string|undefined = undefined;
@@ -128,15 +129,14 @@ export function productCommitedValidation(
                 // Determine what is the problem with the stock.
                 if (amountInStockOfCurrentProduct - amountShared > 0) {
                     // There is not enough product to fullfill the current movement. So, it will add the information with the maximum amount possible.
-                    errorCaption = `No hay suficiente stock para completar la reposición y venta. Stock: ${amountInStockOfCurrentProduct}`;
+                    errorCaption = `No hay suficiente stock para completar la reposición, venta y/o cortesia. Stock: ${amountInStockOfCurrentProduct}`;
                     reviewedProducts.push({
                         ...productToCommit,
                         amount: amountInStockOfCurrentProduct - amountShared,
                     });
                 } else { /* All the stock is already being used by shared inventory*/
                     // Prouct is not being added because there is no stock available.
-                    if(isProductReposition) errorCaption = `Actualmente la totalidad del stock esta siendo usado para la venta. Stock: ${amountInStockOfCurrentProduct}`;
-                    else errorCaption = `Actualmente la totalidad del stock esta siendo usado para la reposición de producto. Stock: ${amountInStockOfCurrentProduct}`;
+                    errorCaption = `Actualmente la totalidad del stock esta siendo usado para las otras operaciones. Stock: ${amountInStockOfCurrentProduct}`;
                 }
             }
         } else { /* It means that only one concept (product reposition or sale) is outflowing product. */
@@ -326,6 +326,7 @@ export function getTicketSale(
     productInventory: Map<string, ProductInventoryDTO&ProductDTO>,
     productsDevolution:RouteTransactionDescriptionDTO[],
     productsReposition:RouteTransactionDescriptionDTO[],
+    productsSample: RouteTransactionDescriptionDTO[],
     productsSale: RouteTransactionDescriptionDTO[],
     routeTransacion?:RouteTransactionDTO,
     storeTransaction?:StoreDTO,
@@ -337,6 +338,7 @@ export function getTicketSale(
   // Getting Subtotals of each concept
   let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
   let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  let subtotalSampleProduct       = getProductDevolutionBalance(productsSample, []);
   let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
   let productDevolutionBalance  = '$0';
   let greatTotal                = '$0';
@@ -398,7 +400,7 @@ export function getTicketSale(
 
   if (storeTransaction !== undefined) {
     const { store_name } = storeTransaction;
-    storeName = store_name !== null ? store_name : 'No disponible'; 
+    storeName = store_name !== undefined ? store_name : 'No disponible'; 
   }
 
   vendor = (userSession !== undefined && userSession !== null) ? userSession.name : 'No disponible';
@@ -429,6 +431,17 @@ export function getTicketSale(
     ticket += getTicketLine(`Valor total de reposicion: $${subtotalProductReposition}`,true);
   }
   ticket += getTicketLine('', true);
+
+  // Writing product of the sample section
+  ticket += getTicketLine('Cortesia', true, 13);
+  ticket += getTicketLine('Cantidad Producto Precio Total',true);
+  ticket += getListSectionTicket(productInventory, productsSample, 'No hubo movmimentos en la seccion de ventas');
+  if (productsSample.length > 0) {
+    ticket += getTicketLine('Total venta:', false); // 12-lenght characters string
+    ticket += getTicketLine(`$${subtotalSampleProduct}`,true, (showTotalPosition - 12));
+  } else {
+    ticket += getTicketLine('',true);
+  }
 
   // Writing product of the sale section
   ticket += getTicketLine('Venta', true, 13);

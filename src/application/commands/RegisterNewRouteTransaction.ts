@@ -100,7 +100,10 @@ export default class RegisterNewRouteTransaction {
         // Update product inventory
         for (const description of routeTransactionDescription) {
             const { amount, id_product_inventory, id_transaction_operation_type } = description;
-            if (id_transaction_operation_type === DAY_OPERATIONS.sales || id_transaction_operation_type === DAY_OPERATIONS.product_reposition) {
+            if (id_transaction_operation_type === DAY_OPERATIONS.sales 
+            || id_transaction_operation_type === DAY_OPERATIONS.product_reposition
+            || id_transaction_operation_type === DAY_OPERATIONS.sample
+            ) {
                 productInventoryAggregate.decreaseStock(id_product_inventory, amount);
             } else {
                 /* Product devolution does not affect inventory */
