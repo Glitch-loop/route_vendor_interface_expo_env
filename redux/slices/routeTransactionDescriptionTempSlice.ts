@@ -17,6 +17,7 @@ const routeTransactionDescriptionTempSlice = createSlice({
                 return {
                     id_route_transaction_description: routeTransactionDescription.id_route_transaction_description,
                     price_at_moment: routeTransactionDescription.price_at_moment,
+                    cost_at_moment: routeTransactionDescription.cost_at_moment,
                     amount: routeTransactionDescription.amount,
                     created_at: routeTransactionDescription.created_at,
                     id_transaction_operation_type: routeTransactionDescription.id_transaction_operation_type,

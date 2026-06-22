@@ -278,6 +278,8 @@ export class MapperDTO {
             date: entity.date.toISOString(),
             state: entity.state as any,
             cash_received: entity.cash_received,
+            latitude: entity.latitude,
+            longitude: entity.longitude,
             id_work_day: entity.id_work_day,
             id_store: entity.id_store,
             payment_method: entity.payment_method,
@@ -300,6 +302,7 @@ export class MapperDTO {
         return {
             id_route_transaction_description: desc.id_route_transaction_description,
             price_at_moment: desc.price_at_moment,
+            cost_at_moment: desc.cost_at_moment,
             amount: desc.amount,
             created_at: desc.created_at,
             id_transaction_operation_type: desc.id_transaction_operation_type,
@@ -460,7 +463,17 @@ export class MapperDTO {
 
     // RouteTransactionDTO -> RouteTransaction (domain)
     private routeTransactionDTOToEntity(dto: RouteTransactionDTO): RouteTransaction {
-        const { id_route_transaction, date, state, cash_received, id_work_day, id_store, payment_method, transaction_description } = dto;
+        const { 
+            id_route_transaction, 
+            date, state, 
+            cash_received,
+            latitude,
+            longitude, 
+            id_work_day, 
+            id_store, 
+            payment_method, 
+            transaction_description 
+        } = dto;
         const dateObj = typeof date === 'string' ? new Date(date) : new Date(date as any);
         return new RouteTransaction(
             id_route_transaction,
@@ -469,6 +482,8 @@ export class MapperDTO {
             cash_received,
             id_work_day,
             id_store,
+            latitude,
+            longitude,
             payment_method as PAYMENT_METHODS,
             (transaction_description || []).map(d => this.routeTransactionDescriptionDTOToEntity(d))
         );
@@ -480,6 +495,7 @@ export class MapperDTO {
         return new RouteTransactionDescription(
             dto.id_route_transaction_description,
             dto.price_at_moment,
+            dto.cost_at_moment,
             dto.amount,
             createdAt,
             dto.id_product_inventory,

@@ -56,6 +56,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 date,
                 state,
                 cash_received,
+                latitude,
+                longitude,
                 id_work_day,
                 id_store,
                 payment_method,
@@ -71,15 +73,19 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     date, 
                     state, 
                     cash_received, 
+                    latitude,
+                    longitude,
                     id_work_day, 
                     id_payment_method, 
-                    id_store) VALUES (?, ?, ?, ?, ?, ?, ?);
+                    id_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                 `,
                 [
                     id_route_transaction,
                     date.toISOString(),
                     state,
                     cash_received,
+                    latitude,
+                    longitude,
                     id_work_day,
                     payment_method,
                     id_store,
@@ -89,6 +95,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     const {
                         id_route_transaction_description,
                         price_at_moment,
+                        cost_at_moment,
                         amount,
                         created_at,
                         id_product_inventory,
@@ -100,16 +107,18 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} 
                         (id_route_transaction_description, 
                         price_at_moment, 
+                        cost_at_moment, 
                         amount, 
                         created_at,
                         id_product_inventory,
                         id_transaction_operation_type, 
                         id_product, 
-                        id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                        id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                     `,
                     [
                         id_route_transaction_description,
                         price_at_moment,
+                        cost_at_moment,
                         amount,
                         created_at.toISOString(),
                         id_product_inventory,
@@ -210,6 +219,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['cash_received'],
                         transaction['id_work_day'],
                         transaction['id_store'],
+                        transaction['latitude'],
+                        transaction['longiture'],
                         transaction['id_payment_method'],
                         resultRouteTransactionDescriptions
                     )
@@ -249,6 +260,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['cash_received'],
                         transaction['id_work_day'],
                         transaction['id_store'],
+                        transaction['latitude'],
+                        transaction['longiture'],
                         transaction['id_payment_method'],
                         resultRouteTransactionDescriptions
                     )
@@ -297,6 +310,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['cash_received'],
                         transaction['id_work_day'],
                         transaction['id_store'],
+                        transaction['latitude'],
+                        transaction['longiture'],
                         transaction['id_payment_method'],
                         descriptions
                     )
@@ -323,6 +338,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     new RouteTransactionDescription(
                         description['id_route_transaction_description'],
                         description['price_at_moment'],
+                        description['cost_at_moment'],
                         description['amount'],
                         new Date(description['created_at']),
                         description['id_product_inventory'],
@@ -356,6 +372,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     new RouteTransactionDescription(
                         description.id_route_transaction_description,
                         description.price_at_moment,
+                        description.cost_at_moment,
                         description.amount,
                         new Date(description.created_at),
                         description.id_product_inventory,

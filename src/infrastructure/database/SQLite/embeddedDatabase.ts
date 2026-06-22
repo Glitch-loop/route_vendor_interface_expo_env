@@ -117,6 +117,8 @@ export const routeTransactionsEmbeddedTable = `
     date                    TEXT NOT NULL,
     state                   INT NOT NULL,
     cash_received           INT NOT NULL,
+    latitude                TEXT,
+    longitude               TEXT,
     id_work_day             TEXT NOT NULL,
     id_payment_method       TEXT NOT NULL,
     id_store                TEXT NOT NULL,
@@ -130,6 +132,7 @@ export const routeTransactionnDescriptionsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} (
     id_route_transaction_description  TEXT NOT NULL UNIQUE,
     price_at_moment                   NUMERIC(6,3) NOT NULL,
+    cost_at_moment                    NUMERIC(6,3) NOT NULL,
     amount                            INT NOT NULL,
     created_at                        DATETIME NOT NULL,
     id_product_inventory              TEXT NOT NULL,

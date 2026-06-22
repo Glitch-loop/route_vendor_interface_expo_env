@@ -34,6 +34,7 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
 import RouteTransactionDTO from '../dto/RouteTransactionDTO';
+import { LocationService } from '@/src/core/interfaces/LocationService';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
@@ -43,10 +44,11 @@ export default class RegisterNewRouteTransaction {
         @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
         @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
         @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
-
+        
         // Services
         @inject(TOKENS.IDService) private readonly idService: IDService,
         @inject(TOKENS.DateService) private readonly dateService: DateService,
+        @inject(TOKENS.LocationService) private readonly locationService: LocationService,
     ) { }
 
     private async executeUseCase(
@@ -63,11 +65,21 @@ export default class RegisterNewRouteTransaction {
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
         const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
 
+        let latitude: string = "0";
+        let longitude: string = "0";
+
         if (storesRetrieved.length === 0) throw new Error("The store where the route transaction is being registered does not exist.");
 
         const { status_store } = storesRetrieved[0];
 
         if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
+
+        const retrieveCoordinates = await this.locationService.getCurrentLocation();
+
+        if (retrieveCoordinates !== null) {
+            latitude = retrieveCoordinates.latitude.toString();
+            longitude = retrieveCoordinates.longitude.toString();
+        }
 
 
         const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
@@ -81,14 +93,25 @@ export default class RegisterNewRouteTransaction {
             cashReceived,
             id_work_day,
             id_store,
+            latitude,
+            longitude,
             paymentMethod
         );
 
         for (const description of routeTransactionDescription) {
-            const { price_at_moment, amount, created_at, id_product_inventory, id_transaction_operation_type, id_product } = description;
+            const { 
+                price_at_moment, 
+                cost_at_moment,
+                amount, 
+                created_at, 
+                id_product_inventory, 
+                id_transaction_operation_type, 
+                id_product
+             } = description;
             routeTransactionAggregate.addRouteTransactionDescription(
                 this.idService.generateID(),
                 price_at_moment,
+                cost_at_moment,
                 amount,
                 created_at,
                 id_product_inventory,

@@ -24,6 +24,8 @@ export class RouteTransactionAggregate {
         cash_received: number,
         id_work_day: string,
         id_store: string,
+        latitude: string,
+        longitude: string,
         payment_method: PAYMENT_METHODS
     ): void {
         this._routeTransaction = new RouteTransaction(
@@ -33,6 +35,8 @@ export class RouteTransactionAggregate {
             cash_received,
             id_work_day,
             id_store,
+            latitude,
+            longitude,
             payment_method,
             new Array<RouteTransactionDescription>()
         );
@@ -41,6 +45,7 @@ export class RouteTransactionAggregate {
     addRouteTransactionDescription(
         id_route_transaction_description: string,
         price_at_moment: number,
+        cost_at_moment: number,
         amount: number,
         created_at: Date,
         id_product_inventory: string,
@@ -56,6 +61,7 @@ export class RouteTransactionAggregate {
         const route_transaction_description = new RouteTransactionDescription(
             id_route_transaction_description,
             price_at_moment,
+            cost_at_moment,
             amount,
             created_at,
             id_product_inventory,
@@ -77,6 +83,8 @@ export class RouteTransactionAggregate {
             this._routeTransaction.cash_received,
             this._routeTransaction.id_work_day,
             this._routeTransaction.id_store,
+            this._routeTransaction.latitude,
+            this._routeTransaction.longitude,
             this._routeTransaction.payment_method,
             this._routeTransaction.transaction_description
         );

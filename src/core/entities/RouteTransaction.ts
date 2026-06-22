@@ -13,6 +13,8 @@ export class RouteTransaction {
     public readonly cash_received: number,
     public readonly id_work_day: string,
     public readonly id_store: string,
+    public readonly latitude: string,
+    public readonly longitude: string,
     public readonly payment_method: PAYMENT_METHODS,
     public readonly transaction_description: RouteTransactionDescription[]
   ) {}

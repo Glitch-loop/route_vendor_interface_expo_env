@@ -48,7 +48,7 @@ import { SQLiteProductInventoryRepository } from '@/src/infrastructure/repositor
 import { SQLiteProductRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteProductRepository';
 import { SQLiteStoreRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteStoreRepository'
 import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteShiftOrganizationRepository'
-import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransaction'
+import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransactionRepository'
 import { SQLiteUserRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteUserRepository'
 
 

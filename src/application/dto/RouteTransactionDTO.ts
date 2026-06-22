@@ -8,6 +8,8 @@ export default interface RouteTransactionDTO {
     date: string,
     state: ROUTE_TRANSACTION_STATE,
     cash_received: number,
+    latitude: string,
+    longitude: string,
     id_work_day: string,
     id_store: string,
     payment_method: PAYMENT_METHODS,

@@ -212,7 +212,6 @@ const salesLayout = () => {
 // BackHandler now reads from refs (always latest)
 useEffect(() => {
   const backAction = (): boolean => {
-    console.log("To REDUX; ", productSampleRef.current)
     dispatch(setRouteTransactionDescription([
       ...productDevolutionRef.current,
       ...productRepositionRef.current,
@@ -310,8 +309,6 @@ useEffect(() => {
         } else { /* Do nothing: Route transaction doesn't have any movement. */}
       } else { // Start transaction from redux state
         if (routeTransactionDescriptionTempReduxState !== null) {
-          console.log("Redux: ", routeTransactionDescriptionTempReduxState)
-          console.log("Target: ", DAY_OPERATIONS.sample)
           devolutionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_devolution);
           repositionMovements = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.product_reposition);
           sampleMovements     = getRouteTransactionDescriptionsFromRouteTransactionOfParticularType([...routeTransactionDescriptionTempReduxState], DAY_OPERATIONS.sample);
@@ -374,8 +371,9 @@ useEffect(() => {
   const getPriceForAProduct = (item: ProductDTO, store: StoreDTO | null): number => {
     const {id_product} = item;
     const priceToFind = productClassMap.get(id_product);
+    const idStore: string | undefined = store === null ? undefined : store.id_store;
     const idClient: string | undefined = store === null ? undefined : store.id_client;
-    console.log("productClassMap: ", productClassMap);
+    
     if(priceToFind === undefined) {
       Toast.show({
         type: 'error',
@@ -384,7 +382,7 @@ useEffect(() => {
       return 0;
     }
 
-    return priceToFind.getPrice(id_store_search_param, workDayInformation?.id_route_day, idClient);
+    return priceToFind.getPrice(idStore, workDayInformation?.id_route_day, idClient);
   }
 
   // Handlers
@@ -456,6 +454,7 @@ useEffect(() => {
           text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
         return;
       }
+
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSample, ...productSale],
         workDayInformation!,
@@ -464,6 +463,7 @@ useEffect(() => {
         id_store_search_param,
         id_day_operation_dependent
       );
+
       setNewRouteTransaction(newRouteTransaction);
 
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
@@ -587,11 +587,12 @@ useEffect(() => {
     if (item === null) {
       setProductDevolution(declaredProductDevolution);
     } else {
-      const {id_product, id_product_inventory} = item;
+      const { id_product, id_product_inventory, cost } = item;
       const price_at_moment:number = getPriceForAProduct(item, currentStore);
       const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
           id_route_transaction_description: '',
           price_at_moment: price_at_moment,
+          cost_at_moment: cost,
           amount: amountToSet,
           created_at: new Date(),
           id_transaction_operation_type: DAY_OPERATIONS.product_devolution,
@@ -627,11 +628,12 @@ useEffect(() => {
               mergeProductToCommitFromDifferentContext(productSale, productSample)
             ));
         } else {
-          const {id_product, id_product_inventory} = item;
+        const { id_product, id_product_inventory, cost } = item;
           const price_at_moment:number = getPriceForAProduct(item, currentStore);
           const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
               id_route_transaction_description: '',
               price_at_moment: price_at_moment,
+              cost_at_moment: cost,
               amount: amountToSet,
               created_at: new Date(),
               id_transaction_operation_type: DAY_OPERATIONS.product_reposition,
@@ -679,16 +681,20 @@ useEffect(() => {
             mergeProductToCommitFromDifferentContext(productSale, productReposition)
           ));
       } else {
-        const {id_product, id_product_inventory} = item;
         /*
-          Since this is a sample for the client, this sample is not sold, it's just a gift for the client to try the product. 
+          Business rule: 
+          Samples are not charged to the client. 
+          
+          The reason is that this is method to let the client to test the product in his store with out incurring 
+          in an expense.
         */
-        const price_at_moment:number = 3;
-
+        const { id_product, id_product_inventory, cost } = item;
+        const price_at_moment:number = 0;
         // Creating movement with the new amount.
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',
             price_at_moment: price_at_moment,
+            cost_at_moment: cost,
             amount: amountToSet,
             created_at: new Date(),
             id_transaction_operation_type: DAY_OPERATIONS.sample,
@@ -717,13 +723,12 @@ useEffect(() => {
             mergeProductToCommitFromDifferentContext(productSample, productReposition)
           ));
       } else {
-        const {id_product, id_product_inventory} = item;
+        const { id_product, id_product_inventory, cost } = item;
         const price_at_moment:number = getPriceForAProduct(item, currentStore);
-
-        // Creating movement with the new amount.
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',
             price_at_moment: price_at_moment,
+            cost_at_moment: cost,
             amount: amountToSet,
             created_at: new Date(),
             id_transaction_operation_type: DAY_OPERATIONS.sales,
@@ -853,7 +858,7 @@ useEffect(() => {
               handleOnCancel  = { handleCancelSale }/>
             <View style={tw`w-full flex flex-row justify-center my-3`}>
               <ProjectButton
-                title={'Visita sin ticket'}
+                title={'Visita sin venta'}
                 onPress={() => { handlePrintTicket() }}
                 buttonVariant={'indigo'}
                 buttonStyle={tw`h-14 max-w-32 rounded flex flex-row basis-1/2  justify-center items-center`}/>
