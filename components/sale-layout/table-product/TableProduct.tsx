@@ -22,7 +22,6 @@ import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 function createCatalog(avialableProducts:ProductDTO[], productsInventory:ProductInventoryDTO[]):(ProductDTO&ProductInventoryDTO)[] {
   const catalog:(ProductDTO&ProductInventoryDTO)[] = [];
   let id_product_inventory:string = '';
-  let price_at_moment:number = 0;
   let stock:number = 0;
 
   const arrAvailableProducts = avialableProducts.map(prod => prod);
@@ -30,34 +29,22 @@ function createCatalog(avialableProducts:ProductDTO[], productsInventory:Product
   const availableProductsOrdered = arrAvailableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
 
   for (const availableProduct of availableProductsOrdered) {
-    const { id_product, product_name, barcode, weight, unit, comission, price, product_status, order_to_show } = availableProduct;
+    const { id_product, } = availableProduct;
 
     const productInInventory = productsInventory.find(prodInv => prodInv.id_product === availableProduct.id_product);
 
     if (productInInventory === undefined) {
       id_product_inventory = id_product;
-      price_at_moment = price;
       stock = 0;
     } else {
       id_product_inventory = productInInventory.id_product_inventory;
-      price_at_moment = productInInventory.price_at_moment;
       stock = productInInventory.stock;
     }
 
-
     catalog.push({
-      id_product: id_product,
-      product_name: product_name,
-      barcode: barcode,
-      weight: weight,
-      unit: unit,
-      comission: comission,
-      price: price,
-      product_status: product_status,
-      order_to_show: order_to_show,
       id_product_inventory: id_product_inventory,
-      price_at_moment: price_at_moment,
       stock: stock,
+      ...availableProduct
     })
 
   }
@@ -108,12 +95,11 @@ const TableProduct = ({
     sectionCaption: string,
     totalMessage: string,
   }) => {
+    console.log("Available products: ", productInventory)
     const catalog:(ProductDTO&ProductInventoryDTO)[] = createCatalog(avialableProducts, productInventory);
     const catalogMap: Map<string, ProductDTO&ProductInventoryDTO> = converCatalogToMap(catalog); // <id_product_inventory, ProductDTO&ProductInventoryDTO>
     
     const [catalogToShow, setCatalogToShow] = useState<(ProductDTO&ProductInventoryDTO)[]>(catalog);  
-
-
 
     useEffect(() => {
       const newCatalogToShow:(ProductDTO&ProductInventoryDTO)[] = catalog.filter(product => {
@@ -178,19 +164,19 @@ const TableProduct = ({
         titlePositionStyle  = { 'justify-center items-center' }/>
       <View style={tw`w-full mt-3 flex flex-row justify-center my-2`}>
         <SearchBarWithSuggestions
-          selectedCatalog = { commitedProducts }
-          catalog         = { catalogToShow }
-          fieldToSearch   = { 'product_name' }
-          keyField        = { 'id_product_inventory' }
-          onSelectHandler = { onSelectAnItem }
-          criteriaForValidQuery = { validatorCriteriaByProductInventoryForSearchBar }
-          criteriaForSelectedItems = { criteriaForSelectedItemsByProductInventoryForSearchBar }
+          selectedCatalog           = { commitedProducts }
+          catalog                   = { catalogToShow }
+          fieldToSearch             = { 'product_name' }
+          keyField                  = { 'id_product_inventory' }
+          onSelectHandler           = { onSelectAnItem }
+          criteriaForValidQuery     = { validatorCriteriaByProductInventoryForSearchBar }
+          criteriaForSelectedItems  = { criteriaForSelectedItemsByProductInventoryForSearchBar }
           />
       </View>
       <HeaderProduct />
       { commitedProducts.length > 0 &&
         commitedProducts.map(commitedProduct => {
-          const { amount, id_product_inventory } = commitedProduct;
+          const { amount, id_product_inventory, price_at_moment } = commitedProduct;
           let productCatalog: ProductDTO&ProductInventoryDTO|undefined = undefined
           
 
@@ -204,7 +190,7 @@ const TableProduct = ({
           
           if (productCatalog === undefined) return null;
           
-          const { price_at_moment, product_name } = productCatalog;
+          const { product_name } = productCatalog;
           
 
           return (
@@ -231,11 +217,9 @@ const TableProduct = ({
           total={
             commitedProducts.reduce((accumulator, currentValue) => {
             let price:number = 0;
-            const { amount, id_product_inventory } = currentValue;
+            const { amount, id_product_inventory, price_at_moment } = currentValue;
 
             if (catalogMap.has(id_product_inventory)) {
-              const productCatalog = catalogMap.get(id_product_inventory)!;
-              const { price_at_moment } = productCatalog;
               price = price_at_moment;
             }
             

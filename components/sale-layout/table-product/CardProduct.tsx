@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ActionButton from '@/components/sale-layout/table-product/ActionButton';
 import AutomatedCorrectionNumberInput from '@/components/shared-components/AutomatedCorrectionInput';
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
 const CardProduct = ({
     productName,
@@ -25,7 +26,7 @@ const CardProduct = ({
     price:number,
     amount:number,
     subtotal:number,
-    item: RouteTransactionDescription,
+    item: RouteTransactionDescriptionDTO,
     onChangeAmount:any,
     onDeleteItem: any,
   }) => {

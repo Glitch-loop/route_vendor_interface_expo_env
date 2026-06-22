@@ -18,6 +18,7 @@ import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setRouteTransactionDescription, clearRouteTransactionDescription } from '@/redux/slices/routeTransactionDescriptionTempSlice';
 
 // UI Components
+import { ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import TableProduct from '@/components/sale-layout/table-product/TableProduct';
@@ -63,8 +64,6 @@ import {
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
-import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { ActivityIndicator } from 'react-native-paper';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -212,7 +211,7 @@ useEffect(() => {
       // Creating product class for retrieving prices
       for (const [currentIdProductInventory, currentProductInventory] of productInventoryMapLocal) {
         productClassMap.set(
-          currentIdProductInventory, 
+          currentProductInventory.id_product, 
           new ProductClass(currentProductInventory)
         )
       }
@@ -270,7 +269,8 @@ useEffect(() => {
   const getPriceForAProduct = (item: ProductDTO, store: StoreDTO | null): number => {
     const {id_product} = item;
     const priceToFind = productClassMap.get(id_product);
-    const idClient: string | undefined = store === null ? undefined : store.id_client
+    const idClient: string | undefined = store === null ? undefined : store.id_client;
+    console.log("productClassMap: ", productClassMap);
     if(priceToFind === undefined) {
       Toast.show({
         type: 'error',
@@ -575,6 +575,7 @@ useEffect(() => {
       } else {
         const {id_product, id_product_inventory} = item;
         const price_at_moment:number = getPriceForAProduct(item, currentStore);
+
         // Creating movement with the new amount.
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',
