@@ -620,37 +620,37 @@ useEffect(() => {
     }
     
     if (productInventoryMap !== undefined) {
-        if (item === null) {
-          setProductReposition(
-            productCommitedValidation(
-              productInventoryMap, 
-              productsToCommit,
-              mergeProductToCommitFromDifferentContext(productSale, productSample)
-            ));
-        } else {
+      if (item === null) {
+        setProductReposition(
+          productCommitedValidation(
+            productInventoryMap, 
+            productsToCommit,
+            mergeProductToCommitFromDifferentContext(productSale, productSample)
+          ));
+      } else {
         const { id_product, id_product_inventory, cost } = item;
-          const price_at_moment:number = getPriceForAProduct(item, currentStore);
-          const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
-              id_route_transaction_description: '',
-              price_at_moment: price_at_moment,
-              cost_at_moment: cost,
-              amount: amountToSet,
-              created_at: new Date(),
-              id_transaction_operation_type: DAY_OPERATIONS.product_reposition,
-              id_product: id_product,
-              id_route_transaction: '',
-              id_product_inventory: id_product_inventory,
-          };
+        const price_at_moment:number = getPriceForAProduct(item, currentStore);
+        const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
+          id_route_transaction_description: '',
+          price_at_moment: price_at_moment,
+          cost_at_moment: cost,
+          amount: amountToSet,
+          created_at: new Date(),
+          id_transaction_operation_type: DAY_OPERATIONS.product_reposition,
+          id_product: id_product,
+          id_route_transaction: '',
+          id_product_inventory: id_product_inventory,
+        };
 
-          setProductReposition(
-            productCommitedValidation(
-              productInventoryMap, 
-              pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
-              mergeProductToCommitFromDifferentContext(productSale, productSample)
-            )
-          );
-        }
+        setProductReposition(
+          productCommitedValidation(
+            productInventoryMap, 
+            pushProductToCommitList(productsToCommit, newRouteTransactionDescription), 
+            mergeProductToCommitFromDifferentContext(productSale, productSample)
+          )
+        );
       }
+    }
     // TODO: Validate if there will be necessary to provide feedback to the user about the product reposition.
     // if (validatingIfRepositionIsValid(productsToCommit, productDevolution, productReposition)) {
     //   setProductReposition(

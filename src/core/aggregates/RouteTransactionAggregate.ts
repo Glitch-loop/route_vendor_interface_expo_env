@@ -40,7 +40,7 @@ export class RouteTransactionAggregate {
             payment_method,
             new Array<RouteTransactionDescription>()
         );
-   }
+    }
 
     addRouteTransactionDescription(
         id_route_transaction_description: string,
