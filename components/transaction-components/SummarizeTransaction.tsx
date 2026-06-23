@@ -163,7 +163,6 @@ const SummarizeTransaction = ({
         const updatedRouteTransaction:RouteTransactionDTO = retrieveRouteTransactionByIdResult[0];
 
         // Updating state
-        console.log('Updated route transaction: ', updatedRouteTransaction);
         setCurrentTransaction(updatedRouteTransaction);
 
         Toast.show({type: 'success',

@@ -428,7 +428,6 @@ useEffect(() => {
       await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_search_param);
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
-      console.log(newDayOperationsList)
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(clearRouteTransactionDescription());
       
@@ -493,7 +492,7 @@ useEffect(() => {
         id_store_search_param,
         id_day_operation_dependent
       );
-      
+
       await confirmClientProscpectAsClient.execute(id_store_search_param);
       
       setNewRouteTransaction(newRouteTransaction);

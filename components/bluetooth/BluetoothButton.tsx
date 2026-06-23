@@ -296,7 +296,6 @@ const BluetoothButton = () => {
         text2: 'Puedes volver a registrarla después.'});
 
         const result = await printerService.unpairDevice(device);
-        console.log("Unpairing printer result; ", result)
         if (result) {
           Toast.show({type: 'success',
           text1:'Impresora removida del registro',

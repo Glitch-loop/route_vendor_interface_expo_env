@@ -347,8 +347,7 @@ const routeOperationMenuLayout = () => {
           text1:'Se ha cancelado la descarga.',
           text2: 'Si quieres intentar de nuevo, da click en descargar'});
       }
-      console.log(result.fileName)
-      console.log(result.fileUri)
+
     } catch (error) {
       Toast.show({
         type: 'error',

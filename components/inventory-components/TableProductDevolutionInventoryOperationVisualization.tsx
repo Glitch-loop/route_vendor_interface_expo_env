@@ -51,8 +51,6 @@ const TableProductDevolutionInventoryOperationVisualization = (
   }) => {
 
   const availableProductsStored: ProductDTO[] = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
-  console.log("devolutionInventory component: ", devolutionInventory.length)
-  console.log("routeTransactionOperations component: ", routeTransactionOperations.length)
   const mapDevolutionInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', devolutionInventory);
   const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', routeTransactionOperations);
 

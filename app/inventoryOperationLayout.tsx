@@ -427,10 +427,8 @@ const inventoryOperationLayout = () => {
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
         const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);
         const devolutionInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.product_devolution_inventory);
-        console.log("This is the PRODUCT DEVOLUTION ACTION: ", DAY_OPERATIONS.product_devolution_inventory)
-        console.log("All inventory operations: ", allInventoryOperations)
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
-        console.log("Product devolution inventory operation: ", devolutionInventoryOperationsDescriptions.length, "-----------------------------")
+
         setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory(startInventoryOperationDescriptions[0]);
         setRestockInventories(restockInventoryOperationsDescriptions);
@@ -628,7 +626,6 @@ const inventoryOperationLayout = () => {
         });
         
         try {
-          console.log("Product to register: ", availableProducts)
           const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
           await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),
