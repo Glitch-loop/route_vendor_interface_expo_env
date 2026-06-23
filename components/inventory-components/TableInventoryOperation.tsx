@@ -32,6 +32,7 @@ import {
 // Utils
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
+import ProductClass from '@/classes/ProductClass';
 
 /*
   The intnetion of this component is to provide an interface to perform an inventory operation.
@@ -122,6 +123,7 @@ function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
 const TableInventoryOperation = (
   {
     availableProducts,
+    productWithPrices,
     suggestedInventory,
     currentInventory,
     movementsOfOperation,
@@ -129,6 +131,7 @@ const TableInventoryOperation = (
     id_type_of_operation,
   }:{
     availableProducts: ProductDTO[]
+    productWithPrices: Map<String, ProductClass>,
     suggestedInventory:ProductInventoryDTO[],
     currentInventory:ProductInventoryDTO[],
     movementsOfOperation: InventoryOperationDescriptionDTO[],
@@ -191,10 +194,17 @@ const TableInventoryOperation = (
               {/* Body section*/}
               { orderedAvailableProducts.length > 0 &&
                 orderedAvailableProducts.map((product) => {
-                  const { id_product, price } = product;
+                  const { id_product, cost } = product;
                   let amount:number = 0;
                   let suggestedAmount:number = 0;
                   let currentInventoryAmount:number = 0;
+                  let price_at_moment: number = 0;
+                  let cost_at_moment: number = cost;
+
+                  if (productWithPrices.has(id_product)) {
+                    const currentProduct = productWithPrices.get(id_product)!;
+                    price_at_moment = currentProduct.getPrice();
+                  }                  
 
                   amount = getAmountOfProductInArray(movementsOfOperation, id_product);
                   suggestedAmount = getAmountOfProductInArray(suggestedInventory, id_product);
@@ -207,7 +217,8 @@ const TableInventoryOperation = (
                         ...movementsOfOperation.filter((productOperationInventory) => { return productOperationInventory.id_product !== id_product; }),
                         { 
                           id_product_operation_description: '',
-                          price_at_moment: price,
+                          price_at_moment: price_at_moment,
+                          cost_at_moment: cost_at_moment,
                           amount: input,
                           id_inventory_operation: '',
                           id_product: id_product

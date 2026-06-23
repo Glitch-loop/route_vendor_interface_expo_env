@@ -121,6 +121,7 @@ export default class StartWorkDayUseCase {
         inventoryOperationAggregate.addInventoryOperationDescription(
             this.idService.generateID(),
             availableProductsMap.get(id_product)!.getPrice(), // For inventory operations, use by default base price.
+            availableProductsMap.get(id_product)!.cost,
             amount,
             new Date(this.dateService.getCurrentTimestamp()),
             id_product

@@ -7,10 +7,21 @@ import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 import { InventoryOperation } from '@/src/core/entities/InventoryOperation';
 import { ProductInventory } from '@/src/core/entities/ProductInventory';
 import { DayOperation } from '@/src/core/entities/DayOperation';
+
+
+// Enums
+import { PAYMENT_METHODS } from '@/src/core/enums/PaymentMethod';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+
+// Object values
+import { RouteDay } from '@/src/core/object-values/RouteDay';
+import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
+import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
 import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 import { ProductPrice } from '@/src/core/object-values/ProductPrice';
-import { PaymentMethod } from '@/src/core/object-values/PaymentMethod';
-import { PAYMENT_METHODS } from '@/src/core/enums/PaymentMethod';
+
+// Classes
+import ProductClass from '@/classes/ProductClass';
 
 // DTOs
 import RouteDTO from '@/src/application/dto/RouteDTO';
@@ -26,9 +37,6 @@ import WorkDayInformationDTO  from '@/src/application/dto/WorkdayInformationDTO'
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import { InventoryOperationDescription } from '@/src/core/object-values/InventoryOperationDescription';
-import { RouteDay } from '@/src/core/object-values/RouteDay';
-import { RouteDayStore } from '@/src/core/object-values/RouteDayStore';
 
 // dto guards
 import { 
@@ -55,7 +63,7 @@ import {
     isDayOperation,
     isTransactionDescription
 } from '@/src/application/guards/entityGuards';
-import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+
 
 export class MapperDTO {
     constructor() {}
@@ -294,6 +302,7 @@ export class MapperDTO {
         return {
             id_product_operation_description: desc.id_inventory_operation_description,
             price_at_moment: desc.price_at_moment,
+            cost_at_moment: desc.cost_at_moment,
             amount: desc.amount,
             id_inventory_operation: desc.id_inventory_operation,
             id_product: desc.id_product,
@@ -388,6 +397,7 @@ export class MapperDTO {
         return new InventoryOperationDescription(
             dto.id_product_operation_description,
             dto.price_at_moment,
+            dto.cost_at_moment,
             dto.amount,
             new Date(),
             dto.id_inventory_operation,

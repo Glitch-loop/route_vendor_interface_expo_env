@@ -79,10 +79,11 @@ export default class RegisterRestockOfProductUseCase {
         );
 
         for (const description of inventoryOperationDescriptions) {
-            const { price_at_moment, amount, id_product } = description;
+            const { price_at_moment, amount, id_product, cost_at_moment } = description;
             inventoryOperationAggregate.addInventoryOperationDescription(
                 this.idService.generateID(),
                 price_at_moment,
+                cost_at_moment,
                 amount,
                 new Date(this.dateService.getCurrentTimestamp()),
                 id_product
@@ -96,7 +97,6 @@ export default class RegisterRestockOfProductUseCase {
             if (productInventoryAggregate.isNewProductInventory(id_product)) { // There is not a inventory record for this product.
                 productInventoryAggregate.insertProductToInventory(
                     this.idService.generateID(),
-                    price_at_moment,
                     amount,
                     id_product
                 )

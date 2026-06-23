@@ -75,21 +75,25 @@ import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransacti
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
-
 // Data source
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Utils
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 import { getTitleDayOperation, orderDayOperationsForDisplaying } from '@/utils/day-operation/utils'; 
-import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
+import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement, createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
 
-// Service
+// Classes
+import ProductClass from '@/classes/ProductClass';
+
+// Services
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
+import { Product } from '@/src/core/entities/Product';
+
 
 
 // Auxiliar functions
@@ -223,6 +227,7 @@ const inventoryOperationLayout = () => {
   const [routeTransactions, setRouteTransactions] = useState<RouteTransactionDTO[]>([]);
   const [storesToConsult, setStoresToConsult] = useState<StoreDTO[]>([]);
   const [orderedStoreForPrinting, setOrderedStoreForPrinting] = useState<DayOperationDTO[]>([]);
+  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // id product, Product class
 
   // States related to UI logic
   const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -269,7 +274,8 @@ const inventoryOperationLayout = () => {
   // ======= Auxiliar functions ======
   const setEnvironmentForInventoryOperation = async () => {
     let availableProductsForInventoryOperation: ProductDTO[] = []
-    
+    let auxiliarProductClassMap: Map<string, ProductClass> = new Map<string, ProductClass>();
+
     // TODO: Validate if this sqlite initialization is actually useful.
     const sqliteDataSource = container.resolve<SQLiteDataSource>(TOKENS.SQLiteDataSource);
     await sqliteDataSource.initialize();
@@ -322,6 +328,16 @@ const inventoryOperationLayout = () => {
     let inventoryOperationToConsult:InventoryOperationDTO[] = [];
     let isCancelable: boolean = false;
 
+    // Creating product class for retrieving prices
+    for (const currentProduct of availableProductsForInventoryOperation) {
+      auxiliarProductClassMap.set(
+        currentProduct.id_product, 
+        new ProductClass(currentProduct)
+      )
+    }
+
+    setProductClassMap(auxiliarProductClassMap);
+    
     if (id_inventory_operation_search_param === undefined) {
       inventoryOperationToConsult = [];
     } else {
@@ -1018,6 +1034,7 @@ const inventoryOperationLayout = () => {
             <View style={tw`flex basis-auto w-full mt-3`}>
               <TableInventoryOperations
                   availableProducts={availableProducts}
+                  productWithPrices={productClassMap}
                   suggestedInventory={suggestedInventory}
                   currentInventory={currentShiftInventory}
                   movementsOfOperation={inventoryOperationMovements}

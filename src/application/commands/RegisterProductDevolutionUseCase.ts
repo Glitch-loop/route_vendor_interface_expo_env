@@ -65,10 +65,11 @@ export default class RegisterProductDevolutionUseCase {
         );
 
         for (const description of inventoryOperationDescriptions) {
-            const { price_at_moment, amount, id_product } = description;
+            const { price_at_moment, cost_at_moment, amount, id_product } = description;
             inventoryOperationAggregate.addInventoryOperationDescription(
                 this.idService.generateID(),
                 price_at_moment,
+                cost_at_moment,
                 amount,
                 new Date(this.dateService.getCurrentTimestamp()),
                 id_product

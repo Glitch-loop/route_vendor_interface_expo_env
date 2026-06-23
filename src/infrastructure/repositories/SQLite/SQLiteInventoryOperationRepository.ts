@@ -65,19 +65,21 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 
                 // Insert InventoryOperationDescriptions
                 for (const desc of inventory_operation.inventory_operation_descriptions) {
-                    console.log("Inserting description: ");
+                    console.log("Inserting description: ", desc);
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
                             (id_inventory_operation_description,
                             price_at_moment, 
+                            cost_at_moment, 
                             amount, 
                             created_at, 
                             id_inventory_operation, 
                             id_product)
-                            VALUES (?, ?, ?, ?, ?, ?);
+                            VALUES (?, ?, ?, ?, ?, ?, ?);
                     `, [
                         desc.id_inventory_operation_description,
                         desc.price_at_moment,
+                        desc.cost_at_moment,
                         desc.amount,
                         desc.created_at.toISOString(),
                         desc.id_inventory_operation,
@@ -139,11 +141,19 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 for (const desc of inventoryOperation.inventory_operation_descriptions) {
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
-                            (id_inventory_operation_description, price_at_moment, amount, created_at, id_inventory_operation, id_product)
-                            VALUES (?, ?, ?, ?, ?, ?);
+                            (
+                                id_inventory_operation_description, 
+                                price_at_moment, 
+                                cost_at_moment, 
+                                amount, 
+                                created_at, 
+                                id_inventory_operation, 
+                                id_product)
+                            VALUES (?, ?, ?, ?, ?, ?, ?);
                     `, [
                         desc.id_inventory_operation_description,
                         desc.price_at_moment,
+                        desc.cost_at_moment,
                         desc.amount,
                         desc.created_at.toISOString(),
                         desc.id_inventory_operation,
@@ -268,6 +278,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
                 const description = new InventoryOperationDescription(
                     row.id_inventory_operation_description,
                     row.price_at_moment,
+                    row.cost_at_moment,
                     row.amount,
                     new Date(row.created_at),
                     row.id_inventory_operation,

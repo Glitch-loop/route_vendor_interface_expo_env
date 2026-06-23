@@ -10,6 +10,7 @@ const inventoryOperationDescriptionTempSlice = createSlice({
                 return {
                     id_product_operation_description: inventoryOperationDescription.id_product_operation_description,
                     price_at_moment: inventoryOperationDescription.price_at_moment,
+                    cost_at_moment: inventoryOperationDescription.cost_at_moment,
                     amount: inventoryOperationDescription.amount,
                     id_inventory_operation: inventoryOperationDescription.id_inventory_operation,
                     id_product: inventoryOperationDescription.id_product,

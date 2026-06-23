@@ -40,6 +40,7 @@ export class InventoryOperationAggregate {
     addInventoryOperationDescription(
         id_inventory_operation_description: string,
         price_at_moment: number,
+        cost_at_moment: number,
         amount: number,
         created_at: Date,
         id_product: string
@@ -55,6 +56,7 @@ export class InventoryOperationAggregate {
         const inventory_operation_description = new InventoryOperationDescription(
             id_inventory_operation_description,
             price_at_moment,
+            cost_at_moment,
             amount,
             created_at, 
             id_inventory_operation,
