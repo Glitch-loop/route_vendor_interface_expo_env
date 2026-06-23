@@ -93,6 +93,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
 import { Product } from '@/src/core/entities/Product';
+import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
 
 
 
@@ -218,7 +219,9 @@ const inventoryOperationLayout = () => {
   const [devolutionInventory, setDevolutionInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [finalShiftInventory, setFinalShiftInventory] = useState<InventoryOperationDescriptionDTO[]>([]);
   const [productRepositionTransactions, setProductRepositionTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productSampleTransactions, setProductSampleTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSoldTransactions, setProductSoldTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
+  const [productDevolutionTransactions, setProductDevolutionTransactions] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [inventoryWithdrawal, setInventoryWithdrawal] = useState<boolean>(false);
   const [inventoryOutflow, setInventoryOutflow] = useState<boolean>(false);
   const [finalOperation, setFinalOperation] = useState<boolean>(false);
@@ -388,6 +391,7 @@ const inventoryOperationLayout = () => {
         setDevolutionInventory([]);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
+        setProductSampleTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
         setAvailableProducts(availableProductsForInventoryOperation);
@@ -396,6 +400,7 @@ const inventoryOperationLayout = () => {
         setDevolutionInventory([]);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
+        setProductSampleTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
         setAvailableProducts(availableProductsForInventoryOperation);
@@ -404,6 +409,7 @@ const inventoryOperationLayout = () => {
         setDevolutionInventory(inventory_operation_descriptions);
         setFinalShiftInventory([]);
         setProductRepositionTransactions([]);
+        setProductSampleTransactions([]);
         setProductSoldTransactions([]);
       } else if (id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
         if (dayOperationReduxState === null) {
@@ -420,16 +426,21 @@ const inventoryOperationLayout = () => {
         const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
         const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);
-        
+        const devolutionInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.product_devolution_inventory);
+        console.log("This is the PRODUCT DEVOLUTION ACTION: ", DAY_OPERATIONS.product_devolution_inventory)
+        console.log("All inventory operations: ", allInventoryOperations)
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
-
+        console.log("Product devolution inventory operation: ", devolutionInventoryOperationsDescriptions.length, "-----------------------------")
         setAvailableProducts(availableProductsForInventoryOperation);
         setInitialShiftInventory(startInventoryOperationDescriptions[0]);
         setRestockInventories(restockInventoryOperationsDescriptions);
+        setDevolutionInventory(devolutionInventoryOperationsDescriptions[0]);
         setFinalShiftInventory([]);
         setFinalShiftInventory(inventory_operation_descriptions);
         setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_reposition));
+        setProductSampleTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sample));
         setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sales));
+        setProductDevolutionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_devolution));
 
         setRouteTransactions(allActiveRouteTransactions);
         setStoresToConsult(await listRegisteredStoresQuery.execute());        
@@ -990,6 +1001,7 @@ const inventoryOperationLayout = () => {
                 devolutionInventory             = {devolutionInventory}
                 soldOperations                  = {productSoldTransactions}
                 repositionsOperations           = {productRepositionTransactions}
+                samplesOperations               = {productSampleTransactions}
                 returnedInventory               = {finalShiftInventory}
                 inventoryWithdrawal             = {inventoryWithdrawal}
                 inventoryOutflow                = {inventoryOutflow}
@@ -998,6 +1010,14 @@ const inventoryOperationLayout = () => {
                 />
               { (inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && inventoryOperationToConsult.state === 1) &&
                 <View style={tw`flex basis-auto w-full mt-3`}>
+                  <Text style={tw`w-full text-center text-black text-2xl`}>
+                    Inventario de devoluciones
+                  </Text>
+                  <TableProductDevolutionInventoryOperationVisualization
+                    availableProducts={availableProducts}
+                    devolutionInventory={devolutionInventory}
+                    routeTransactionOperations={productDevolutionTransactions}
+                  />
                   <Text style={tw`w-full text-center text-black text-2xl`}>
                     Devuelto por tienda
                   </Text>
@@ -1016,6 +1036,16 @@ const inventoryOperationLayout = () => {
                       stores                          = {storesToConsult}
                       routeTransactions               = {routeTransactions}
                       idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_reposition }
+                      calculateTotalOfProduct         = {true}
+                      dayOperations                   = {orderedStoreForPrinting} />
+                  <Text style={tw`w-full text-center text-black text-2xl`}>
+                    Cortesia de producto por tienda
+                  </Text>
+                  <TableRouteTransactionProductVisualization
+                      availableProducts               = {availableProducts}
+                      stores                          = {storesToConsult}
+                      routeTransactions               = {routeTransactions}
+                      idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sample }
                       calculateTotalOfProduct         = {true}
                       dayOperations                   = {orderedStoreForPrinting} />
                   <Text style={tw`w-full text-center text-black text-2xl`}>

@@ -53,6 +53,7 @@ const TableInventoryOperationVisualization = (
     devolutionInventory,
     soldOperations,
     repositionsOperations,
+    samplesOperations,
     returnedInventory,
     inventoryWithdrawal = false,
     inventoryOutflow = false,
@@ -66,6 +67,7 @@ const TableInventoryOperationVisualization = (
     devolutionInventory: InventoryOperationDescriptionDTO[], // It could be many "restock" inventories
     soldOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of selling
     repositionsOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of repositions
+    samplesOperations: RouteTransactionDescriptionDTO[], // Outflow in concept of repositions
     returnedInventory: InventoryOperationDescriptionDTO[], // Refers to the final inventory
     inventoryWithdrawal: boolean,
     inventoryOutflow: boolean,
@@ -88,6 +90,7 @@ const TableInventoryOperationVisualization = (
   const mapReturnedInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', returnedInventory);
   const mapSoldOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', soldOperations);
   const mapRepositionsOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', repositionsOperations);
+  const mapSamplesOperations: Map<string, RouteTransactionDescriptionDTO[]> = convertArrayOfInterfacesToMapOfArraysOfInterfaces('id_product', samplesOperations);
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -153,9 +156,14 @@ const TableInventoryOperationVisualization = (
                     <Text style={tw`${textHeaderTableStyle}`}>Cambio</Text>
                   </DataTable.Title>
                 }
+                { samplesOperations.length > 0 &&
+                  <DataTable.Title style={tw`${determineHeaderStyle('Cortesia', true, undefined)} w-24`}>
+                    <Text style={tw`${textHeaderTableStyle}`}>Cortesia</Text>
+                  </DataTable.Title>
+                }
                 { inventoryOutflow &&
-                  <DataTable.Title style={tw`${determineHeaderStyle('Total vendido y cambiado', true, undefined)}  w-48`}>
-                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Total vendido y cambiado</Text>
+                  <DataTable.Title style={tw`${determineHeaderStyle('Total egreso inventario', true, undefined)}  w-48`}>
+                      <Text style={tw`${textHeaderTableStyle} font-bold underline`}>Total egreso inventario</Text>
                   </DataTable.Title>
                 }
                 { finalOperation &&
@@ -201,6 +209,7 @@ const TableInventoryOperationVisualization = (
                   let restockInventoryOperationAmount:number[] = [];
                   let soldInventoryOperationAmount = 0;
                   let repositionInventoryOperationAmount = 0;
+                  let sampleInventoryOperationAmount = 0;
 
                   // Special calculations variables
                   let withdrawalAmount = 0;
@@ -215,6 +224,7 @@ const TableInventoryOperationVisualization = (
                   returnedInventoryOperationAmount    = mapReturnedInventory.has(id_product) ? mapReturnedInventory.get(id_product)!.amount : 0;
                   soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
                   repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
+                  sampleInventoryOperationAmount     = mapSamplesOperations.has(id_product) ? mapSamplesOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
               
                   restockInventoriesMaps.forEach((mapRestockInventory:Map<string, InventoryOperationDescriptionDTO>) => {
                     const currentRestockProductAmount = mapRestockInventory.has(id_product) ? mapRestockInventory.get(id_product)!.amount : 0;
@@ -224,7 +234,7 @@ const TableInventoryOperationVisualization = (
 
                   // Special calculations
                   withdrawalAmount += initialInventoryOperationAmount;
-                  inventoryOutflowAmount = soldInventoryOperationAmount + repositionInventoryOperationAmount;
+                  inventoryOutflowAmount = soldInventoryOperationAmount + repositionInventoryOperationAmount + sampleInventoryOperationAmount;
 
                   finalOperationAmount = withdrawalAmount - inventoryOutflowAmount;
 
@@ -287,8 +297,18 @@ const TableInventoryOperationVisualization = (
                         </DataTable.Cell>
                       }
 
+                      { samplesOperations.length > 0 &&
+                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, sampleInventoryOperationAmount > 0, true, 'Cortesias', undefined)} w-24`}>
+                          <View style={tw`${viewTagRowTableStyle}`}>
+                            <Text style={tw`${textRowTableStyle}`}>
+                              {sampleInventoryOperationAmount}
+                            </Text>
+                          </View>
+                        </DataTable.Cell>
+                      }
+
                       { inventoryOutflow === true &&
-                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, inventoryOutflowAmount > 0, true, 'Salida de inventario', undefined)}  w-48`}>
+                        <DataTable.Cell style={tw`${determineRowStyle(indexAvailableProducts, inventoryOutflowAmount > 0, true, 'Total egreso inventario', undefined)}  w-48`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
                               {inventoryOutflowAmount}
