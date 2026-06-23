@@ -59,6 +59,7 @@ export const storesEmbeddedTable = `
     longitude         TEXT,
     id_creator        TEXT,
     id_client         TEXT,
+    id_location_type  TEXT NOT NULL,
     creation_date     TEXT,
     creation_context  TEXT,
     status_store      INT,

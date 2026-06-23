@@ -156,8 +156,6 @@ export default class RegisterNewRouteTransaction {
             latitude,
             longitude
         );
-
-
         
         // Persist all changes
         const routeTransaction: RouteTransaction = routeTransactionAggregate.getRouteTransaction()!;

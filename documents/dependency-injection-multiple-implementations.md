@@ -44,10 +44,10 @@ container.register<StoreRepository>(TOKENS.SQLiteStoreRepository, {
 
 ### Usage in Use Cases
 
-#### Example 1: RegisterNewClientUseCase (Uses Supabase)
+#### Example 1: RegisterClientProspectUseCase (Uses Supabase)
 ```typescript
 @injectable()
-export class RegisterNewClientUseCase {
+export class RegisterClientProspectUseCase {
     constructor(
         @inject(TOKENS.ServerStoreRepository) 
         private repo: StoreRepository

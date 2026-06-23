@@ -78,7 +78,7 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);    
   }
     
-  registerCreateNewClient(idDayOperation: string, idClient: string, createdAt: Date, latitude: string, longitude: string): void {
+  registerCreateNewClient(idDayOperation: string, idClient: string, createdAt: Date, latitude: string | undefined, longitude: string | undefined): void {
     /*
       Business rule:
       About "Create new client" operation:

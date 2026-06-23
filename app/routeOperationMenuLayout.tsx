@@ -387,8 +387,6 @@ const routeOperationMenuLayout = () => {
                 let isPrintableOperation = true;
                 const { id_day_operation, id_item, operation_type } = dayOperation;
 
-                if(operation_type === DAY_OPERATIONS.vist_to_client) console.log("HERE IS A VISIT ")                
-
                 // Inventory operations type
                 cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, false);
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
@@ -403,6 +401,7 @@ const routeOperationMenuLayout = () => {
                   || operation_type === DAY_OPERATIONS.attend_client_petition
                   || operation_type === DAY_OPERATIONS.new_client_registration
                   || operation_type === DAY_OPERATIONS.attention_out_of_route
+                  || operation_type === DAY_OPERATIONS.prospect_registration
                 ) {
                   isClientOperation = true;
                   isPrintableOperation = true;

@@ -13,6 +13,8 @@ export default interface StoreModel extends ReplicationDataInterface {
     latitude: string,
     longitude: string,
     id_creator: string,
+    id_client: string,
+    id_location_type: string,
     creation_date: string,
     creation_context: string,
     status_store: number,

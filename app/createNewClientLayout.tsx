@@ -1,11 +1,11 @@
 // Libraries
-import { container as di_container } from 'tsyringe';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TextInput, KeyboardAvoidingView } from 'react-native';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { Router, useRouter }  from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Button, Menu } from 'react-native-paper';
+import { container as di_container } from 'tsyringe';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, TextInput, KeyboardAvoidingView } from 'react-native';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,13 +17,19 @@ import { setStores } from '@/redux/slices/storesSlice';
 import { LocationObject, LocationObjectCoords } from 'expo-location';
 import { LatLng } from 'react-native-maps';
 
+
+// Constants
+import { LOCATION_TYPES_CONSTANTS } from '@/src/core/constants/locationTypesConstants';
+import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
+import POSTAL_CODE from '@/utils/constants/postalCodes';
+
 // Service
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
 
 // Use cases
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
+import { RegisterClientProspectUseCase } from '@/src/application/commands/RegisterClientProspectUseCase';
 
 // DTOs
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
@@ -33,18 +39,15 @@ import MenuHeader from '@/components/shared-components/MenuHeader';
 import RouteMap from '@/components/shared-components/RouteMap';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
+import Toast from 'react-native-toast-message';
 
 // Utils
 import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import { IStoreRouteMap, PostalCode } from '@/interfaces/interfaces';
-import Toast from 'react-native-toast-message';
-import { ActivityIndicator } from 'react-native-paper';
-import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
-import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
-import POSTAL_CODE from '@/utils/constants/postalCodes';
-
 
 interface NewClientFormData {
+  id_location_type: string;
   store_name: string;
   street: string;
   cross_street: string;
@@ -66,6 +69,12 @@ function criteriaForSelectedItems(item: PostalCode, selectedItems: PostalCode[])
 
 
 export default function CreateNewClientLayout() {
+  const locationTypeCatalog = Object.values(LOCATION_TYPES_CONSTANTS);
+  const defaultLocationTypeId =
+    locationTypeCatalog.find((item) => item.location_type_name === 'tienda')?.id_location_type
+    ?? locationTypeCatalog[0]?.id_location_type
+    ?? '';
+
   // Hooks
   const router: Router = useRouter();
   const userLocationHook = useCurrentLocation();
@@ -81,6 +90,7 @@ export default function CreateNewClientLayout() {
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
   const [nearStores, setNearStores] = useState<IStoreRouteMap[]>([]);
   const [formData, setFormData] = useState<NewClientFormData>({
+    id_location_type: defaultLocationTypeId,
     store_name: '',
     street: '',
     cross_street: '',
@@ -89,8 +99,12 @@ export default function CreateNewClientLayout() {
     postal_code: '',
     address_reference: ''
   });
+  const [isLocationTypeMenuVisible, setIsLocationTypeMenuVisible] = useState<boolean>(false);
 
   const [selectedItems, setSelectedItems] = useState<PostalCode[]>([]);  
+
+  const selectedLocationType = LOCATION_TYPES_CONSTANTS[formData.id_location_type];
+  const fullStoreName = `${selectedLocationType?.location_type_name ?? ''} ${formData.store_name.trim()}`.trim();
 
   useEffect(() => {
     setUpCreateNewClientLayout();
@@ -100,7 +114,6 @@ export default function CreateNewClientLayout() {
   const setUpCreateNewClientLayout = async ():Promise<void> => {
     if(storesRedux !== null && dayOperationsRedux !== null) {
       const storesRouteMap: IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap(storesRedux, dayOperationsRedux);
-      
       
       userLocationHook.getCurrentUserLocation().then((location: LocationObject|null) => {
         if (location !== null) {
@@ -145,10 +158,19 @@ export default function CreateNewClientLayout() {
   }
 
   const handleFormChange = (field: keyof NewClientFormData, value: string): void => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const nextState: NewClientFormData = {
+        ...prev,
+        [field]: value
+      };
+
+      // cross_street depends on street: when street is empty, clear cross_street.
+      if (field === 'street' && !value.trim()) {
+        nextState.cross_street = '';
+      }
+
+      return nextState;
+    });
   }
 
 
@@ -162,6 +184,10 @@ export default function CreateNewClientLayout() {
     // Validate required fields
     if (!formData.store_name.trim()) {
       Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El nombre de la tienda es obligatorio'});
+      return;
+    }
+    if (!formData.id_location_type.trim()) {
+      Toast.show({type: 'error', text1: 'Campo requerido', text2: 'Debes seleccionar el tipo de ubicación'});
       return;
     }
     if (!formData.street.trim()) {
@@ -191,15 +217,16 @@ export default function CreateNewClientLayout() {
       ...formData
     };
 
-    const { store_name, street, ext_number, colony, postal_code, address_reference } = newStoreData;
+    const { id_location_type, street, ext_number, colony, postal_code, address_reference } = newStoreData;
 
-    const registerNewClientUseCase = di_container.resolve<RegisterNewClientUseCase>(RegisterNewClientUseCase)
+    const registerNewClientUseCase = di_container.resolve<RegisterClientProspectUseCase>(RegisterClientProspectUseCase)
     const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
     const retrieveRegisteredStores = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
 
     try {
       const dayOperation:DayOperationDTO = await registerNewClientUseCase.execute(
-        store_name,
+        fullStoreName,
+        id_location_type,
         street,
         ext_number,
         colony,
@@ -266,6 +293,34 @@ export default function CreateNewClientLayout() {
         <View style={tw`px-4 mt-7`}>
           <Text style={tw`text-lg font-bold text-gray-900`}>Nuevo cliente</Text>
 
+          {/* location_type */}
+          <View style={tw`mt-4`}>
+            <Text style={tw`text-sm text-gray-700`}>Tipo de ubicación</Text>
+            <View style={tw`mt-2`}>
+              <Menu
+                visible={isLocationTypeMenuVisible}
+                onDismiss={() => setIsLocationTypeMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setIsLocationTypeMenuVisible(true)}>
+                    {selectedLocationType?.location_type_name ?? 'Seleccionar tipo'}
+                  </Button>
+                }>
+                {locationTypeCatalog.map((locationType) => (
+                  <Menu.Item
+                    key={locationType.id_location_type}
+                    onPress={() => {
+                      handleFormChange('id_location_type', locationType.id_location_type);
+                      setIsLocationTypeMenuVisible(false);
+                    }}
+                    title={locationType.location_type_name}
+                  />
+                ))}
+              </Menu>
+            </View>
+          </View>
+
           {/* store_name */}
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Nombre de la tienda</Text>
@@ -274,6 +329,11 @@ export default function CreateNewClientLayout() {
               value={formData.store_name}
               onChangeText={(text) => handleFormChange('store_name', text)}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
+            {Boolean(fullStoreName) && (
+              <Text style={tw`mt-2 text-xs text-gray-600`}>
+                Nombre completo: {fullStoreName}
+              </Text>
+            )}
           </View>
 
           {/* street */}
@@ -286,11 +346,12 @@ export default function CreateNewClientLayout() {
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
           <View style={tw`mt-4`}>
-            <Text style={tw`text-sm text-gray-700`}>Calle</Text>
+            <Text style={tw`text-sm text-gray-700`}>Esquina Calle</Text>
             <TextInput 
               placeholder="Esquina." 
               value={formData.cross_street}
               onChangeText={(text) => handleFormChange('cross_street', text)}
+              editable={Boolean(formData.street.trim())}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 

@@ -26,6 +26,7 @@ const storesSlice = createSlice({
             longitude: store.longitude,
             creation_date: store.creation_date,
             id_client: store.id_client,
+            id_location_type: store.id_location_type,
             status_store: store.status_store,
             is_new: store.is_new
           };

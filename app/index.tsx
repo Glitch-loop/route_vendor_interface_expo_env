@@ -23,7 +23,7 @@ import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService
 // hooks
 import useCurrentLocation from '@/hooks/useCurrentLocation';
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
-import { RegisterNewClientUseCase } from '@/src/application/commands/RegisterNewClientUseCase';
+import { RegisterClientProspectUseCase } from '@/src/application/commands/RegisterClientProspectUseCase';
 
 
 // Use case - queries

@@ -87,6 +87,9 @@ export function getDayOperationColor(dayOperation: DayOperationDTO|undefined, de
             case DAY_OPERATIONS.new_client_registration:
                 style ='bg-green-400';
                 break;
+            case DAY_OPERATIONS.new_client_registration:
+                style ='bg-blue-400';
+                break;
             case DAY_OPERATIONS.attention_out_of_route:
                 style = 'bg-orange-600';
                 break;

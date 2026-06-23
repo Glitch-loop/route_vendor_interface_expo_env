@@ -228,6 +228,7 @@ export class MapperDTO {
             longitude: entity.longitude,
             creation_date: creation_date,
             id_client: entity.id_client,
+            id_location_type: entity.id_location_type,
             status_store: entity.status_store,
             is_new: entity.is_new
         };
@@ -382,7 +383,8 @@ export class MapperDTO {
             dto.latitude,
             dto.longitude,
             '',
-            '',
+            dto.id_client,
+            dto.id_location_type,
             new Date(dto.creation_date),
             '',
             dto.status_store,

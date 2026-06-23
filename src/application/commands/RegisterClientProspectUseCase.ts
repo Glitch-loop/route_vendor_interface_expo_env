@@ -31,7 +31,7 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 import { cleanStringToStoreInDatabase } from "@/utils/string/utils";
 
 @injectable()
-export class RegisterNewClientUseCase {
+export class RegisterClientProspectUseCase {
     constructor(
         @inject(TOKENS.SQLiteStoreRepository) private storeRepository: StoreRepository,
         @inject(TOKENS.SQLiteDayOperationRepository) private dayOperationRepository: DayOperationRepository,
@@ -45,6 +45,7 @@ export class RegisterNewClientUseCase {
 
     async execute(
         storeName: string,
+        storeLocationTypeId: string,
         storeStreet: string,
         storeExteriorNumber: string,
         storeColony: string,
@@ -78,6 +79,8 @@ export class RegisterNewClientUseCase {
             latitude.toString(),
             longitude.toString(),
             id_vendor,
+            '',
+            storeLocationTypeId,
             new Date(this.dateService.getCurrentTimestamp()),
             'ruta',
         )
@@ -88,10 +91,12 @@ export class RegisterNewClientUseCase {
 
         const { id_store } = newStore;
 
-        operationDayAggregate.registerCreateNewClient(
+        operationDayAggregate.registerProspectClient(
             this.idService.generateID(),
             id_store,
-            new Date(this.dateService.getCurrentTimestamp())
+            new Date(this.dateService.getCurrentTimestamp()),
+            latitude.toString(),
+            longitude.toString(),
         )
 
         const newDayOperations: DayOperation[]|null = operationDayAggregate.getNewDayOperations();
