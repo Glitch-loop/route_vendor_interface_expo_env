@@ -1,0 +1,1 @@
+ adb exec-out run-as com.renet_perez.route_vendor_interface cat files/twister_manual_backup_20260623_110558.csv > twister_manual_backup_20260623_110558.csv

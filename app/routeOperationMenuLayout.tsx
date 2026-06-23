@@ -36,7 +36,7 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 
 // Use cases and queries
-import { container as di_container } from '@/src/infrastructure/di/container';
+import { container, container as di_container } from '@/src/infrastructure/di/container';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 import DetermineCurrentInventoryOperation from '@/src/application/queries/DetermineCurrentInventoryOperation';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
@@ -56,6 +56,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
+import SheetBackupService from '@/src/infrastructure/services/SheetBackupService';
 
 // Auxiliar functions
 const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
@@ -326,6 +327,38 @@ const routeOperationMenuLayout = () => {
 
   const handlerSearchClient = ():void => { router.push('/searchClientLayout'); };
 
+  const handleDownloadWorkDayInfo = async ():Promise<void> => {
+    const sheeBackupService = container.resolve<SheetBackupService>(SheetBackupService);
+
+    try {
+      const result = await sheeBackupService.createBackupSheetFile();
+      const destinationMessage = result.savedToDownloads
+        ? 'Descargas del dispositivo.'
+        : 'almacenamiento interno de la app (privado).';
+      
+      if (result.savedToDownloads) {
+        Toast.show({
+          type: 'success',
+          text1:'La descarga se ha hecho exitosamente.',
+          text2: 'El archivo se guardó en ' + destinationMessage + ' Nombre: ' + result.fileName});
+        } else {
+        Toast.show({
+          type: 'info',
+          text1:'Se ha cancelado la descarga.',
+          text2: 'Si quieres intentar de nuevo, da click en descargar'});
+      }
+      console.log(result.fileName)
+      console.log(result.fileUri)
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1:'Ha habido un error al momento de descar la información, intente nuevamente.',
+        text2: ''});
+    }
+    
+    
+  }
+
   return (
     <SafeAreaView>
       <View style={tw`w-full h-full`}>
@@ -342,19 +375,33 @@ const routeOperationMenuLayout = () => {
             </Text>
           </View>
         </ActionDialog>
-        <View style={tw`flex flex-row justify-center items-center`}>
-        <ProjectButton
-          title={'Buscar cliente'}
-          onPress={() => {
-            if (isDayWorkClosed) {
-              Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-            } else {
-              handlerSearchClient();
-            }
-          }}
-          buttonVariant= 'primary'
-          buttonStyle={tw`w-10/12 py-4 my-2 bg-blue-400 px-4 rounded`}
-        />
+        <View style={tw`flex flex-row justify-around items-center`}>
+          <ProjectButton
+            title={'Buscar cliente'}
+            onPress={() => {
+              if (isDayWorkClosed) {
+                Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+              } else {
+                handlerSearchClient();
+              }
+            }}
+            buttonVariant= 'primary'
+            buttonStyle={isDayWorkClosed ?  tw`flex basis-4/8 py-4 my-2 bg-blue-400 px-4 rounded` : tw`flex basis-7/8 py-4 my-2 bg-blue-400 px-4 rounded`}
+          />
+          {isDayWorkClosed &&
+            <ProjectButton
+              title={'Descargar'}
+              onPress={() => {
+                if (isDayWorkClosed) {
+                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+                } else {
+                  handleDownloadWorkDayInfo();
+                }
+              }}
+              buttonVariant= 'primary'
+              buttonStyle={tw`flex basis-3/8 py-4 my-2 bg-blue-400 px-4 rounded`}
+            />
+          }
         </View>
         <ScrollView
           ref={scrolldownRef}

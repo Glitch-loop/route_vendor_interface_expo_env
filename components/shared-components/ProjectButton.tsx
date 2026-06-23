@@ -48,7 +48,7 @@ const ProjectButton: React.FC<ButtonProps> = (
     >
       <Text style={textStyle === undefined ? tw`text-sm text-center ${classes.text}` : tw`${classes.text} ${textStyle}`}>
         {title}
-        </Text>
+      </Text>
     </Pressable>
   );
 };

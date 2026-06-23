@@ -52,7 +52,10 @@ export default class ConfirmClientProspectAsClientUseCase {
         
       const sellingToClient: DayOperation[] = dayOperations.filter((dayOperation) => {
         return dayOperation.id_item === id_store && dayOperation.operation_type === DAY_OPERATIONS.route_transaction;
-      })
+      });
+      const createNewClientDayOperation: DayOperation[] = dayOperations.filter((dayOperation) => {
+        return dayOperation.id_item === id_store && dayOperation.operation_type === DAY_OPERATIONS.new_client_registration;
+      });
 
       if (coordinates == null) {
         latitude = undefined;
@@ -69,7 +72,10 @@ export default class ConfirmClientProspectAsClientUseCase {
           - This selling must be made with one day of difference respected with 
           the creation of the store.
       */
-      if(sellingToClient[0] !== undefined && stores[0] !== undefined) {
+      if(sellingToClient[0] !== undefined  // Verify there is a route transaction for the confirmation.
+        && stores[0] !== undefined // Verify the store exists
+        && createNewClientDayOperation.length === 0 // Avoid duplication for create new client day operation.
+      ) {
         const routeTransactionDayOperation = sellingToClient[0];
         const currentStore = stores[0];
 

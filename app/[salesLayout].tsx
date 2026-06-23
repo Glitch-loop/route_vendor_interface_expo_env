@@ -66,6 +66,7 @@ import {
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
 import ActionDialog from '@/components/shared-components/ActionDialog';
+import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -443,6 +444,10 @@ useEffect(() => {
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
+    const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const confirmClientProscpectAsClient = di_container.resolve<ConfirmClientProspectAsClientUseCase>(ConfirmClientProspectAsClientUseCase);
+    
+    const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
     setFinishedSale(true); // Finishing sale payment process.
 
@@ -488,15 +493,17 @@ useEffect(() => {
         id_store_search_param,
         id_day_operation_dependent
       );
-
+      
+      await confirmClientProscpectAsClient.execute(id_store_search_param);
+      
       setNewRouteTransaction(newRouteTransaction);
 
-      const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-      const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
             
       const newInventory = await retrieveCurrentShiftInventory.execute();
-      const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
+      const newDayOperationsList = await retrieveDayOperationQuery.execute();
+
+
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(setProductInventory(newInventory));
 

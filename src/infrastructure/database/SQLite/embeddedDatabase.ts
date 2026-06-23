@@ -110,7 +110,10 @@ export const dayOperationsEmbeddedTable = `
     created_at          DATETIME NOT NULL,
     latitude            TEXT,
     longitude           TEXT,
-    id_dependency       TEXT
+    id_dependency       TEXT,
+    is_synced           INT NOT NULL DEFAULT 0,
+    updated_at          DATETIME NOT NULL DEFAULT (datetime('now')),
+    is_deleted          INT NOT NULL DEFAULT 0
   );
 `;
 

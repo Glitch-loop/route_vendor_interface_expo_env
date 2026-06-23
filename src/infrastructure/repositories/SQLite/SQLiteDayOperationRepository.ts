@@ -14,9 +14,11 @@ import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
+import { SyncDayOperationInformationRepository } from '../../persitence/interface/local-database/SyncDayOperationRepository';
+import DayOperationModel from '../../persitence/model/DayOperationModel';
 
 @injectable()
-export class SQLiteDayOperationRepository extends DayOperationRepository {
+export class SQLiteDayOperationRepository extends DayOperationRepository implements SyncDayOperationInformationRepository {
     constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {
         super();
     }
@@ -118,6 +120,56 @@ export class SQLiteDayOperationRepository extends DayOperationRepository {
             });
         } catch (error) {
             throw new Error(`Failed to delete day operations: ${error}`);
+        }
+    }
+
+    async listPendingDayOperationToSync(): Promise<DayOperationModel[]> {
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+
+            const rows = await db.getAllAsync<any>(`
+                SELECT *
+                FROM ${EMBEDDED_TABLES.DAY_OPERATIONS}
+                WHERE is_synced = 0 OR is_deleted = 1;
+            `);
+
+            return rows.map((row) => ({
+                id_day_operation: row.id_day_operation,
+                id_item: row.id_item,
+                operation_type: row.operation_type,
+                created_at: row.created_at,
+                id_dependency: row.id_dependency,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                is_synced: row.is_synced,
+                updated_at: row.updated_at,
+                is_deleted: row.is_deleted,
+            } as DayOperationModel));
+        } catch (error) {
+            throw new Error(`Failed to list pending day operations to sync: ${error}`);
+        }
+    }
+
+    async markDayOperationAsSynced(ids: string[]): Promise<void> {
+        if (!ids || ids.length === 0) return;
+
+        try {
+            await this.dataSource.initialize();
+            const db: SQLiteDatabase = await this.dataSource.getClient();
+
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                const placeholders = ids.map(() => '?').join(',');
+                await tx.runAsync(
+                    `UPDATE ${EMBEDDED_TABLES.DAY_OPERATIONS}
+                     SET is_synced = 1,
+                         updated_at = datetime('now')
+                     WHERE id_day_operation IN (${placeholders});`,
+                    ids
+                );
+            });
+        } catch (error) {
+            throw new Error(`Failed to mark day operations as synced: ${error}`);
         }
     }
 }

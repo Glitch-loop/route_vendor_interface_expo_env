@@ -3,6 +3,7 @@
 
 import { inject, injectable } from 'tsyringe';
 import * as FileSystem from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
@@ -26,6 +27,7 @@ export type SheetBackupResult = {
   fileUri: string;
   fileName: string;
   totalRows: number;
+  savedToDownloads: boolean;
 };
 
 @injectable()
@@ -86,24 +88,71 @@ export default class SheetBackupService {
     });
 
     const csv = this.buildCsv(rows);
-    const directory = FileSystem.documentDirectory;
-
-    if (!directory) {
-      throw new Error('Could not access device document directory.');
-    }
-
     const fileName = `twister_manual_backup_${this.getTimestampForFileName()}.csv`;
-    const fileUri = `${directory}${fileName}`;
+    const downloadDestination = await this.trySaveInDownloads(csv, fileName);
 
-    await FileSystem.writeAsStringAsync(fileUri, csv, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
+    let fileUri = downloadDestination?.fileUri;
+
+    if (!fileUri) {
+      const directory = FileSystem.documentDirectory;
+
+      if (!directory) {
+        throw new Error('Could not access device document directory.');
+      }
+
+      fileUri = `${directory}${fileName}`;
+
+      await FileSystem.writeAsStringAsync(fileUri, csv, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+    }
 
     return {
       fileUri,
       fileName,
       totalRows: rows.length,
+      savedToDownloads: downloadDestination?.savedToDownloads ?? false,
     };
+  }
+
+  private async trySaveInDownloads(
+    csv: string,
+    fileName: string,
+  ): Promise<{ fileUri: string; savedToDownloads: boolean } | null> {
+    if (Platform.OS !== 'android') {
+      return null;
+    }
+
+    try {
+      console.log("Starting process")
+      const initialDownloadsUri = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot('Downloads');
+      const permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(initialDownloadsUri);
+      console.log("Permision granted: ", permission.granted)
+      if (!permission.granted) {
+        return null;
+      }
+
+      const fileNameWithoutExtension = fileName.endsWith('.csv')
+        ? fileName.slice(0, -4)
+        : fileName;
+      console.log("Create file")
+      const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+        permission.directoryUri,
+        fileNameWithoutExtension,
+        'text/csv',
+      );
+
+      await FileSystem.writeAsStringAsync(fileUri, csv, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      console.log("Hello: ", fileUri)
+      return {
+        fileUri,
+        savedToDownloads: true,
+      };
+    } catch {
+      return null;
+    }
   }
 
   private createBackupRow(
