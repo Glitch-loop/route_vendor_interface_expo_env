@@ -1,5 +1,5 @@
-import StoreModel from "@/src/infrastructure/persitence/model/StoreModel";
+import StoreServerModel from "@/src/infrastructure/persitence/model/server-models/StoreServerModel";
 
 export abstract class SyncServerStoreRepository {
-    abstract upsertStores(stores: StoreModel[]): Promise<void>;
+    abstract upsertStores(stores: StoreServerModel[]): Promise<void>;
 }

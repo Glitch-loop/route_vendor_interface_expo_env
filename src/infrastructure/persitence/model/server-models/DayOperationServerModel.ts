@@ -1,6 +1,6 @@
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
-export default interface DayOperationModel extends ReplicationDataInterface {
+export default interface DayOperationServerModel extends ReplicationDataInterface {
   id_operation_type: string,
   created_at: Date,
   latitude: string,

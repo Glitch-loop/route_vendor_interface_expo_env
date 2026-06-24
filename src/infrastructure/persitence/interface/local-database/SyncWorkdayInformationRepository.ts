@@ -1,6 +1,6 @@
-import WorkDayInformationModel from "@/src/infrastructure/persitence/model/WorkdayInformationModel";
+import WorkDayInformationLocalModel from "@/src/infrastructure/persitence/model/local-models/WorkdayInformationLocalModel";
 
 export abstract class SyncWorkdayInformationRepository {
-    abstract listPendingWorkdayInformationToSync(): Promise<WorkDayInformationModel[]>;
+    abstract listPendingWorkdayInformationToSync(): Promise<WorkDayInformationLocalModel[]>;
     abstract markWorkdayInformationAsSynced(ids: string[]): Promise<void>;
 }

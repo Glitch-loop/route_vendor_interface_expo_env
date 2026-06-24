@@ -12,7 +12,7 @@ import { SyncServerStoreRepository } from '@/src/infrastructure/persitence/inter
 import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDataSource'; 
 
 // Models
-import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
+import StoreModel from '@/src/infrastructure/persitence/model/server-models/StoreServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';

@@ -1,6 +1,6 @@
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
-export default interface WorkDayInformationModel extends ReplicationDataInterface {
+export default interface WorkDayInformationServerModel extends ReplicationDataInterface {
     // Fields required for starting a work day.
     id_work_day: string;
     start_date: string,

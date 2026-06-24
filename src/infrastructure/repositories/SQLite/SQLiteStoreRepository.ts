@@ -10,7 +10,7 @@ import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/l
 import { Store } from "@/src/core/entities/Store";
 
 // Models
-import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
+import StoreLocalModel from '@/src/infrastructure/persitence/model/local-models/StoreLocalModel';
 
 // Database
 
@@ -102,15 +102,15 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
         }
     }
 
-    async listPendingStoreToSync(): Promise<StoreModel[]> {
+    async listPendingStoreToSync(): Promise<StoreLocalModel[]> {
       try {
         await this.dataSource.initialize();
         const db: SQLiteDatabase = await this.dataSource.getClient();
-        const pending: StoreModel[] = [];
+        const pending: StoreLocalModel[] = [];
         const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1 OR is_new = 1;`);
         const rows = stmt.executeSync<any>();
         for (const row of rows) {
-          pending.push(row as StoreModel);
+          pending.push(row as StoreLocalModel);
         }
         return pending;
       } catch (error) {

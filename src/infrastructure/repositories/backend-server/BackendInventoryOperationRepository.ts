@@ -8,8 +8,8 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 import { SyncServerInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerInventoryOperationRepository';
 
 // Models
-import InventoryOperationModel from '@/src/infrastructure/persitence/model/InventoryOperationModel';
-import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/InventoryOperationDescriptionModel';
+import InventoryOperationModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel';
+import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationDescriptionServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';

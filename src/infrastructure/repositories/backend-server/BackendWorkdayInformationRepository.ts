@@ -8,8 +8,8 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 import { SyncServerWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerWorkdayInformationRepository';
 
 // Models
-import WorkDayInformationModel from '@/src/infrastructure/persitence/model/WorkdayInformationModel';
-import UserModel from '@/src/infrastructure/persitence/model/UserModel';
+import UserModel from '@/src/infrastructure/persitence/model/server-models/UserModel';
+import WorkDayInformationServerModel from '@/src/infrastructure/persitence/model/server-models/WorkdayInformationServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
@@ -38,7 +38,7 @@ interface WorkDayResponseInterface {
 export class BackendWorkdayInformationRepository implements SyncServerWorkdayInformationRepository {
     constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) { }
 
-    async upsertWorkdayInformations(informations: (WorkDayInformationModel & UserModel)[], ): Promise<void> {
+    async upsertWorkdayInformations(informations: (WorkDayInformationServerModel & UserModel)[], ): Promise<void> {
         if (!informations || informations.length === 0) return;
         try {
             for (const info of informations) {
@@ -53,7 +53,7 @@ export class BackendWorkdayInformationRepository implements SyncServerWorkdayInf
         }
     }
 
-    private toStartWorkDayRequest(info: WorkDayInformationModel & UserModel): StartWorkDayRequestInterface {
+    private toStartWorkDayRequest(info: WorkDayInformationServerModel & UserModel): StartWorkDayRequestInterface {
         return {
             id_work_day: info.id_work_day,
             start_date: info.start_date,

@@ -8,8 +8,8 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 import { SyncServerRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository';
 
 // Models
-import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
-import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel';
+import RouteTransactionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel';
+import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionDescriptionServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';

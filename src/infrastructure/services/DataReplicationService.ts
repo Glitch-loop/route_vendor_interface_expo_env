@@ -13,8 +13,8 @@ import { SyncServerRouteTransactionRepository } from "../persitence/interface/se
 import { SyncServerInventoryOperationRepository } from "../persitence/interface/server-database/SyncServerInventoryOperationRepository";
 import { SyncServerDayOperationRepository } from "../persitence/interface/server-database/SyncServerDayOperationRepository";
 import UserDTO from "@/src/application/dto/UserDTO";
-import WorkDayInformationModel from "../persitence/model/WorkdayInformationModel";
-import UserModel from "../persitence/model/UserModel";
+import WorkDayInformationModel from "../persitence/model/server-models/WorkdayInformationServerModel";
+import UserModel from "../persitence/model/server-models/UserModel";
 
 
 @injectable()

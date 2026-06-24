@@ -9,7 +9,7 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 import { SyncServerDayOperationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerDayOperationRepository';
 
 // Models
-import DayOperationModel from '@/src/infrastructure/persitence/model/DayOperationModel';
+import DayOperationModel from '@/src/infrastructure/persitence/model/server-models/DayOperationServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';

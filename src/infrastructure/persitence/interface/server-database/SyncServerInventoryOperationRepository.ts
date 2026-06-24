@@ -1,5 +1,5 @@
-import InventoryOperationModel from "@/src/infrastructure/persitence/model/InventoryOperationModel";
-import InventoryOperationDescriptionModel from "@/src/infrastructure/persitence/model/InventoryOperationDescriptionModel";
+import InventoryOperationModel from "@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel";
+import InventoryOperationDescriptionModel from "@/src/infrastructure/persitence/model/server-models/InventoryOperationDescriptionServerModel";
 
 export abstract class SyncServerInventoryOperationRepository {
     abstract upsertInventoryOperations(operations: InventoryOperationModel[]): Promise<void>;

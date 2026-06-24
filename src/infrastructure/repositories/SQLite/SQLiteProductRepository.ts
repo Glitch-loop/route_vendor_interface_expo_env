@@ -113,6 +113,7 @@ export class SQLiteProductRepository implements ProductRepository {
             const result = statement.executeSync<any>();
 
             const products: Product[] = [];
+
             for (const row of result) {
                 const prices = await this.retrieveProductPrices(db, row.id_product);
                 products.push(new Product(
@@ -121,7 +122,7 @@ export class SQLiteProductRepository implements ProductRepository {
                     row.cost,
                     row.product_status,
                     row.quantity_presentation,
-                    row.order_to_show !== null ? String(row.order_to_show) : null,
+                    row.order_to_show,
                     row.id_measurement_unit ?? null,
                     prices,
                     row.barcode ?? null,

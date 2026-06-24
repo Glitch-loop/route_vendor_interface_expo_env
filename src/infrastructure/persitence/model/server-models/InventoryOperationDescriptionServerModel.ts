@@ -1,6 +1,6 @@
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
-export default interface InventoryOperationDescriptionModel extends ReplicationDataInterface {
+export default interface InventoryOperationDescriptionServerModel extends ReplicationDataInterface {
     id_inventory_operation_description: string;
     price_at_moment: number;
     cost_at_moment: number;

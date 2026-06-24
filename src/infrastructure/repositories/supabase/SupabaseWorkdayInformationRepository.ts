@@ -8,8 +8,8 @@ import { SupabaseDataSource } from '@/src/infrastructure/datasources/SupabaseDat
 import { SyncServerWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerWorkdayInformationRepository';
 
 // Models
-import WorkDayInformationModel from '@/src/infrastructure/persitence/model/WorkdayInformationModel';
-import UserModel from '@/src/infrastructure/persitence/model/UserModel';
+import WorkDayInformationModel from '@/src/infrastructure/persitence/model/server-models/WorkdayInformationServerModel';
+import UserModel from '@/src/infrastructure/persitence/model/server-models/UserModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';

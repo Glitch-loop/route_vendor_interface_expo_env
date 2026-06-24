@@ -19,12 +19,14 @@ import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
 
 // Models
-import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
-import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel';
+import RouteTransactionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel';
+import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionDescriptionServerModel';
 
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
+import RouteTransactionLocalModel from '../../persitence/model/local-models/RouteTransactionLocalModel';
+import RouteTransactionDescriptionLocalModel from '../../persitence/model/local-models/RouteTransactionDescriptionLocalModel';
 
 @injectable()
 export class SQLiteRouteTransactionRepository implements RouteTransactionRepository, SyncRouteTransactionRepository {
@@ -388,15 +390,15 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async listPendingRouteTransactionToSync(): Promise<RouteTransactionModel[]> {
+    async listPendingRouteTransactionToSync(): Promise<RouteTransactionLocalModel[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: RouteTransactionModel[] = [];
+            const pending: RouteTransactionLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                pending.push(row as RouteTransactionModel);
+                pending.push(row as RouteTransactionLocalModel);
             }
             return pending;
         } catch (error) {
@@ -404,11 +406,11 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionModel[]> {
+    async listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionLocalModel[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: RouteTransactionDescriptionModel[] = [];
+            const pending: RouteTransactionDescriptionLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
@@ -416,7 +418,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 if (row.created_at && typeof row.created_at === 'string') {
                     row.created_at = new Date(row.created_at);
                 }
-                pending.push(row as RouteTransactionDescriptionModel);
+                pending.push(row as RouteTransactionDescriptionLocalModel);
             }
             return pending;
         } catch (error) {

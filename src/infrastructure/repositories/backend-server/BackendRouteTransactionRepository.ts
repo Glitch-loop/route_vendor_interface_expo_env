@@ -8,8 +8,8 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 import { SyncServerRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository';
 
 // Models
-import RouteTransactionModel from '@/src/infrastructure/persitence/model/RouteTransactionModel';
-import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel';
+import RouteTransactionServerModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel';
+import RouteTransactionDescriptionServerModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionDescriptionServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
@@ -18,12 +18,12 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export class BackendRouteTransactionRepository implements SyncServerRouteTransactionRepository {
 	constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 
-	async upsertRouteTransactions(transactions: RouteTransactionModel[]): Promise<void> {
+	async upsertRouteTransactions(transactions: RouteTransactionServerModel[]): Promise<void> {
 		if (!transactions || transactions.length === 0) return;
 
 		try {
 			for (const transaction of transactions) {
-				await this.dataSource.post<unknown, RouteTransactionModel>(
+				await this.dataSource.post<unknown, RouteTransactionServerModel>(
 					'/sellings/transactions',
 					transaction
 				);
@@ -33,12 +33,12 @@ export class BackendRouteTransactionRepository implements SyncServerRouteTransac
 		}
 	}
 
-	async upsertRouteTransactionDescriptions(descriptions: RouteTransactionDescriptionModel[]): Promise<void> {
+	async upsertRouteTransactionDescriptions(descriptions: RouteTransactionDescriptionServerModel[]): Promise<void> {
 		if (!descriptions || descriptions.length === 0) return;
 
 		try {
 			for (const description of descriptions) {
-				await this.dataSource.post<unknown, RouteTransactionDescriptionModel>(
+				await this.dataSource.post<unknown, RouteTransactionDescriptionServerModel>(
 					'/sellings/transactions',
 					description
 				);

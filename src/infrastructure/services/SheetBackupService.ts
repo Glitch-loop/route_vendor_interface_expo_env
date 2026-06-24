@@ -55,7 +55,7 @@ export default class SheetBackupService {
     });
 
     pendingStores.forEach((record, index) => {
-      rows.push(this.createBackupRow(1, 'workday_and_stores', 'stores', pendingWorkDays.length + index + 1, record.id_store, record));
+      rows.push(this.createBackupRow(1, 'workday_and_stores', 'stores', pendingWorkDays.length + index + 1, record.id_location, record));
     });
 
     // Phase 2: Route transactions and inventory operations
@@ -63,7 +63,7 @@ export default class SheetBackupService {
     const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
 
     pendingRouteTx.forEach((record, index) => {
-      rows.push(this.createBackupRow(2, 'transactions_and_inventory', 'route_transactions', index + 1, record.id_route_transaction, record));
+      rows.push(this.createBackupRow(2, 'transactions_and_inventory', 'route_transactions', index + 1, record.id_transaction, record));
     });
 
     pendingInvOps.forEach((record, index) => {

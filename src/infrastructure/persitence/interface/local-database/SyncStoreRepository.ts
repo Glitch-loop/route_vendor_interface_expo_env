@@ -1,6 +1,6 @@
-import StoreModel from "@/src/infrastructure/persitence/model/StoreModel";
+import StoreLocalModel from "@/src/infrastructure/persitence/model/local-models/StoreLocalModel";
 
 export abstract class SyncStoreRepository {
-    abstract listPendingStoreToSync(): Promise<StoreModel[]>;
+    abstract listPendingStoreToSync(): Promise<StoreLocalModel[]>;
     abstract markStoreAsSynced(ids: string[]): Promise<void>;
 }

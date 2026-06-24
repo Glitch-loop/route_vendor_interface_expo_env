@@ -15,7 +15,7 @@ import { SyncServerStoreRepository } from '@/src/infrastructure/persitence/inter
 import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatasource';
 
 // Models
-import StoreModel from '@/src/infrastructure/persitence/model/StoreModel';
+import StoreServerModel from '@/src/infrastructure/persitence/model/server-models/StoreServerModel';
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
@@ -118,13 +118,13 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
       return;
     }
 
-    async upsertStores(stores: StoreModel[]): Promise<void> {
+    async upsertStores(stores: StoreServerModel[]): Promise<void> {
       if (!stores || stores.length === 0) return;
 
       try {
         // Upsert is handled as insert, per the current backend contract.
         for (const store of stores) {
-          await this.dataSource.post<LocationStoreResponseInterface, StoreModel>(
+          await this.dataSource.post<LocationStoreResponseInterface, StoreServerModel>(
             '/clients/locations',
             store
           );

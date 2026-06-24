@@ -1,6 +1,6 @@
-import WorkDayInformationModel from "@/src/infrastructure/persitence/model/WorkdayInformationModel";
-import UserModel from "@/src/infrastructure/persitence/model/UserModel";
+import UserModel from "@/src/infrastructure/persitence/model/server-models/UserModel";
+import WorkDayInformationServerModel from "@/src/infrastructure/persitence/model/server-models/WorkdayInformationServerModel";
 
 export abstract class SyncServerWorkdayInformationRepository {
-    abstract upsertWorkdayInformations(informations: (WorkDayInformationModel&UserModel)[]): Promise<void>;
+    abstract upsertWorkdayInformations(informations: (WorkDayInformationServerModel&UserModel)[]): Promise<void>;
 }

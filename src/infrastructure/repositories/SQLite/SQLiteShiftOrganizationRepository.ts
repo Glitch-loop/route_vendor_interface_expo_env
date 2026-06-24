@@ -10,7 +10,7 @@ import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitenc
 import { WorkDayInformation } from '@/src/core/entities/WorkDayInformation';
 
 // Models
-import WorkDayInformationModel from '@/src/infrastructure/persitence/model/WorkdayInformationModel';
+import WorkDayInformationLocalModel from '@/src/infrastructure/persitence/model/local-models/WorkdayInformationLocalModel';
 
 // DataSources
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
@@ -59,16 +59,16 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
         }
     }
 
-    async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationModel[]> {
+    async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationLocalModel[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
             console.log(db)
-            const pending: WorkDayInformationModel[] = [];
+            const pending: WorkDayInformationLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                pending.push(row as WorkDayInformationModel);
+                pending.push(row as WorkDayInformationLocalModel);
             }
 
             return pending;

@@ -15,13 +15,15 @@ import { InventoryOperationDescription } from '@/src/core/object-values/Inventor
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
 // Models
-import InventoryOperationModel from '@/src/infrastructure/persitence/model/InventoryOperationModel';
-import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/InventoryOperationDescriptionModel';
+import InventoryOperationModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel';
+import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationDescriptionServerModel';
 
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
+import InventoryOperationLocalModel from '../../persitence/model/local-models/InventoryOperationLocalModel';
+import InventoryOperationDescriptionLocalModel from '../../persitence/model/local-models/InventoryOperationDescriptionLocalModel';
 
 @injectable()
 export class SQLiteInventoryOperationRepository implements InventoryOperationRepository, SyncInventoryOperationRepository {
@@ -311,15 +313,15 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         }
     }
 
-    async listPendingInventoryOperationToSync(): Promise<InventoryOperationModel[]> {
+    async listPendingInventoryOperationToSync(): Promise<InventoryOperationLocalModel[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: InventoryOperationModel[] = [];
+            const pending: InventoryOperationLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                pending.push(row as InventoryOperationModel);
+                pending.push(row as InventoryOperationLocalModel);
             }
             return pending;
         } catch (error) {
@@ -327,15 +329,15 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
         }
     }
 
-    async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionModel[]> {
+    async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionLocalModel[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: InventoryOperationDescriptionModel[] = [];
+            const pending: InventoryOperationDescriptionLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                pending.push(row as InventoryOperationDescriptionModel);
+                pending.push(row as InventoryOperationDescriptionLocalModel);
             }
             return pending;
         } catch (error) {

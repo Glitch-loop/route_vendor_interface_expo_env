@@ -15,7 +15,9 @@ import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { SyncDayOperationInformationRepository } from '../../persitence/interface/local-database/SyncDayOperationRepository';
-import DayOperationModel from '../../persitence/model/DayOperationModel';
+import DayOperationModel from '../../persitence/model/server-models/DayOperationServerModel';
+import DayOperationLocalModel from '../../persitence/model/local-models/DayOperationLocalModel';
+import { ReplicationDataInterface } from '../../persitence/data-replication/ReplicationDataInterface';
 
 @injectable()
 export class SQLiteDayOperationRepository extends DayOperationRepository implements SyncDayOperationInformationRepository {
@@ -123,7 +125,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
         }
     }
 
-    async listPendingDayOperationToSync(): Promise<DayOperationModel[]> {
+    async listPendingDayOperationToSync(): Promise<(DayOperationLocalModel&ReplicationDataInterface)[]> {
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
@@ -134,18 +136,20 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
                 WHERE is_synced = 0 OR is_deleted = 1;
             `);
 
-            return rows.map((row) => ({
-                id_day_operation: row.id_day_operation,
-                id_item: row.id_item,
-                operation_type: row.operation_type,
-                created_at: row.created_at,
-                id_dependency: row.id_dependency,
-                latitude: row.latitude,
-                longitude: row.longitude,
-                is_synced: row.is_synced,
-                updated_at: row.updated_at,
-                is_deleted: row.is_deleted,
-            } as DayOperationModel));
+            return rows.map((row) => {
+                return {
+                    id_day_operation: row.id_day_operation,
+                    id_item: row.id_item,
+                    operation_type: row.operation_type,
+                    created_at: row.created_at,
+                    id_dependency: row.id_dependency,
+                    latitude: row.latitude,
+                    longitude: row.longitude,
+                    is_synced: row.is_synced,
+                    updated_at: row.updated_at,
+                    is_deleted: row.is_deleted,
+                } as DayOperationLocalModel&ReplicationDataInterface
+            } );
         } catch (error) {
             throw new Error(`Failed to list pending day operations to sync: ${error}`);
         }

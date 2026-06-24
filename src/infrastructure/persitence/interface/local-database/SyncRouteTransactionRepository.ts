@@ -1,9 +1,9 @@
-import RouteTransactionModel from "@/src/infrastructure/persitence/model/RouteTransactionModel";
-import RouteTransactionDescriptionModel from "@/src/infrastructure/persitence/model/RouteTransactionDescriptionModel";
+import RouteTransactionLocalModel from "@/src/infrastructure/persitence/model/local-models/RouteTransactionLocalModel";
+import RouteTransactionDescriptionLocalModel from "@/src/infrastructure/persitence/model/local-models/RouteTransactionDescriptionLocalModel";
 
 export abstract class SyncRouteTransactionRepository {
-    abstract listPendingRouteTransactionToSync(): Promise<RouteTransactionModel[]>;
-    abstract listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionModel[]>;
+    abstract listPendingRouteTransactionToSync(): Promise<RouteTransactionLocalModel[]>;
+    abstract listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionLocalModel[]>;
     abstract markRouteTransactionsAsSynced(ids: string[]): Promise<void>;
     abstract markRouteTransactionDescriptionsAsSynced(ids: string[]): Promise<void>;
 }
