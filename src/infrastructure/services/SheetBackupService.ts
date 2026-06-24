@@ -10,6 +10,8 @@ import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitenc
 import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
 import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
+import { SyncDayOperationInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository';
+import { MapperLocalServerModel } from '@/src/infrastructure/mappers/MapperLocalServerModel';
 
 type BackupRow = {
   phase_order: number;
@@ -41,6 +43,9 @@ export default class SheetBackupService {
     private readonly syncStoreRepo: SyncStoreRepository,
     @inject(TOKENS.SyncWorkdayInformationRepository)
     private readonly syncWorkdayInfoRepo: SyncWorkdayInformationRepository,
+    @inject(TOKENS.SyncDayOperationRepository)
+    private readonly syncDayOperationRepo: SyncDayOperationInformationRepository,
+    private readonly mapperLocalServerModel: MapperLocalServerModel,
   ) {}
 
   async createBackupSheetFile(): Promise<SheetBackupResult> {
@@ -49,37 +54,51 @@ export default class SheetBackupService {
     // Phase 1: Work day and stores
     const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
     const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
+    const workDaysToExport = pendingWorkDays.map((record) => this.mapperLocalServerModel.toDTO(record));
+    const storesToExport = pendingStores.map((record) => this.mapperLocalServerModel.toDTO(record));
 
-    pendingWorkDays.forEach((record, index) => {
+    workDaysToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(1, 'workday_and_stores', 'workday_information', index + 1, record.id_work_day, record));
     });
 
-    pendingStores.forEach((record, index) => {
+    storesToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(1, 'workday_and_stores', 'stores', pendingWorkDays.length + index + 1, record.id_location, record));
     });
 
     // Phase 2: Route transactions and inventory operations
     const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
     const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
+    const routeTransactionsToExport = pendingRouteTx.map((record) => this.mapperLocalServerModel.toDTO(record));
+    const inventoryOperationsToExport = pendingInvOps.map((record) => this.mapperLocalServerModel.toDTO(record));
 
-    pendingRouteTx.forEach((record, index) => {
+    routeTransactionsToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(2, 'transactions_and_inventory', 'route_transactions', index + 1, record.id_transaction, record));
     });
 
-    pendingInvOps.forEach((record, index) => {
+    inventoryOperationsToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(2, 'transactions_and_inventory', 'inventory_operations', pendingRouteTx.length + index + 1, record.id_inventory_operation, record));
     });
 
     // Phase 3: Route transaction descriptions and inventory descriptions
     const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
     const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
+    const routeTransactionDescriptionsToExport = pendingRouteTxDescs.map((record) => this.mapperLocalServerModel.toDTO(record));
+    const inventoryOperationDescriptionsToExport = pendingInvOpDescs.map((record) => this.mapperLocalServerModel.toDTO(record));
 
-    pendingRouteTxDescs.forEach((record, index) => {
+    routeTransactionDescriptionsToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(3, 'transaction_descriptions', 'route_transaction_descriptions', index + 1, record.id_route_transaction_description, record));
     });
 
-    pendingInvOpDescs.forEach((record, index) => {
+    inventoryOperationDescriptionsToExport.forEach((record, index) => {
       rows.push(this.createBackupRow(3, 'transaction_descriptions', 'inventory_operation_descriptions', pendingRouteTxDescs.length + index + 1, record.id_inventory_operation_description, record));
+    });
+
+    // Phase 4: Day operations
+    const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
+    const dayOperationsToExport = pendingDayOperations.map((record) => this.mapperLocalServerModel.toDTO(record));
+
+    dayOperationsToExport.forEach((record, index) => {
+      rows.push(this.createBackupRow(4, 'day_operations', 'day_operations', index + 1, record.id_day_operation, record));
     });
 
     rows.sort((a, b) => {

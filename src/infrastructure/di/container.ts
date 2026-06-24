@@ -71,6 +71,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 import { TOKENS } from '@/src/infrastructure/di/tokens'
 import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import { MapperLocalServerModel } from '@/src/infrastructure/mappers/MapperLocalServerModel';
 import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermissions';
 import { BackendRouteRepository } from '../repositories/backend-server/BackendRouteRepository';
 import { BackendProductRepository } from '../repositories/backend-server/BackendProductRepository';
@@ -93,6 +94,7 @@ container.register<SQLiteDataSource>(TOKENS.SQLiteDataSource,
 
 // =================== DTOs ====================
 container.registerSingleton<MapperDTO>(MapperDTO, MapperDTO);
+container.registerSingleton<MapperLocalServerModel>(MapperLocalServerModel, MapperLocalServerModel);
 
 // =================== Services ====================
 container.registerSingleton<IDService>(TOKENS.IDService, UUIDv4Service);

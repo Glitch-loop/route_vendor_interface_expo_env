@@ -9,8 +9,6 @@ export function isInventoryOperationDescriptionServerModel(model: unknown): mode
         'cost_at_moment' in model && typeof model.cost_at_moment === 'number' &&
         'amount' in model && typeof model.amount === 'number' &&
         'id_inventory_operation' in model && typeof model.id_inventory_operation === 'string' &&
-        'id_product' in model && typeof model.id_product === 'string' &&
-        'is_synced' in model && typeof model.is_synced === 'number' &&
-        'is_deleted' in model && typeof model.is_deleted === 'number'
+        'id_product' in model && typeof model.id_product === 'string'
     );
 }

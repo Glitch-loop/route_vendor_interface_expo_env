@@ -78,7 +78,7 @@ export class MapperDTO {
     toDTO(entity: DayOperation): DayOperationDTO;
     toDTO(entity: RouteTransaction): RouteTransactionDTO;
     toDTO(entity: RouteTransactionDescription): RouteTransactionDescriptionDTO;
-        toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation | DayOperation | RouteTransaction | RouteTransactionDescription): any {
+    toDTO(entity: Route | Product | Store | InventoryOperation | ProductInventory | WorkDayInformation | DayOperation | RouteTransaction | RouteTransactionDescription): any {
         // Route
         if (isRoute(entity)) {
             return this.routeToDTO(entity);

@@ -1,21 +1,30 @@
-
+// Libraries
 import { inject, injectable } from "tsyringe";
 
-import { TOKENS } from "../di/tokens";
-import { SyncInventoryOperationRepository } from "../persitence/interface/local-database/SyncInventoryOperationRepository";
-import { SyncRouteTransactionRepository } from "../persitence/interface/local-database/SyncRouteTransactionRepository";
-import { SyncStoreRepository } from "../persitence/interface/local-database/SyncStoreRepository";
-import { SyncWorkdayInformationRepository } from "../persitence/interface/local-database/SyncWorkdayInformationRepository";
-import { SyncDayOperationInformationRepository } from "../persitence/interface/local-database/SyncDayOperationRepository";
-import { SyncServerStoreRepository } from "../persitence/interface/server-database/SyncServerStoreRepository";
-import { SyncServerWorkdayInformationRepository } from "../persitence/interface/server-database/SyncServerWorkdayInformationRepository";
-import { SyncServerRouteTransactionRepository } from "../persitence/interface/server-database/SyncServerRouteTransactionRepository";
-import { SyncServerInventoryOperationRepository } from "../persitence/interface/server-database/SyncServerInventoryOperationRepository";
-import { SyncServerDayOperationRepository } from "../persitence/interface/server-database/SyncServerDayOperationRepository";
-import UserDTO from "@/src/application/dto/UserDTO";
-import WorkDayInformationModel from "../persitence/model/server-models/WorkdayInformationServerModel";
-import UserModel from "../persitence/model/server-models/UserModel";
+// Repository
+import { SyncInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository";
+import { SyncRouteTransactionRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository";
+import { SyncStoreRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository";
+import { SyncWorkdayInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository";
+import { SyncDayOperationInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository";
+import { SyncServerStoreRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerStoreRepository";
+import { SyncServerWorkdayInformationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerWorkdayInformationRepository";
+import { SyncServerRouteTransactionRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository";
+import { SyncServerInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerInventoryOperationRepository";
+import { SyncServerDayOperationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerDayOperationRepository";
 
+// di container
+import { TOKENS } from "@/src/infrastructure/di/tokens";
+
+// DTOs
+import UserDTO from "@/src/application/dto/UserDTO";
+
+// Models
+import WorkDayInformationModel from "@/src/infrastructure/persitence/model/server-models/WorkdayInformationServerModel";
+import UserModel from "@/src/infrastructure/persitence/model/server-models/UserModel";
+
+// Mappers
+import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocalServerModel";
 
 @injectable()
 export default class DataReplicationService {
@@ -33,6 +42,7 @@ export default class DataReplicationService {
         @inject(TOKENS.SyncServerRouteTransactionRepository) private readonly serverRouteTxRepo: SyncServerRouteTransactionRepository,
         @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
         @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
+        private readonly mapperLocalServerModel: MapperLocalServerModel,
     ) { }   
     
     async executeReplicationSession(userSession: UserDTO): Promise<void> {
@@ -40,48 +50,45 @@ export default class DataReplicationService {
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
-            console.log("Pending stores: ", pendingStores)
-            const workDaysWithUser:(WorkDayInformationModel&UserModel)[] = pendingWorkDays.map(wd => ({ ...wd, ...userSession as UserModel }));
+            const workDaysWithUser:(WorkDayInformationModel&UserModel)[] = pendingWorkDays.map(wd => ({
+                ...this.mapperLocalServerModel.toDTO(wd),
+                ...userSession as UserModel,
+            }));
+            const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toDTO(store));
 
             console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
             console.log(`Pending stores to sync: ${pendingStores.length}`);
 
-            console.log("Pending work day: ", pendingWorkDays)
             if (pendingWorkDays.length > 0) {
                 await this.serverWorkdayRepo.upsertWorkdayInformations(workDaysWithUser);
                 await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(pendingWorkDays.map(w => w.id_work_day));
             }
             if (pendingStores.length > 0) {
-                await this.serverStoreRepo.upsertStores(pendingStores);
-                await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_location));
+                await this.serverStoreRepo.upsertStores(storesToSync);
+                await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
             }
         } catch (error) {
             console.error("Phase 1 error: ", error);
             // Do not mark as synced on failure; let future session retry
         }
 
-        // Phase 2: Route transactions, inventory operations and day operations
+        // Phase 2: Route transactions and inventory operations
         try {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();            
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
-            const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
+            const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toDTO(transaction));
+            const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toDTO(operation));
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
-            console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
 
             if (pendingRouteTx.length > 0) {
-                await this.serverRouteTxRepo.upsertRouteTransactions(pendingRouteTx);
-                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_transaction));
+                await this.serverRouteTxRepo.upsertRouteTransactions(routeTransactionsToSync);
+                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_route_transaction));
             }
             if (pendingInvOps.length > 0) {
-                await this.serverInventoryRepo.upsertInventoryOperations(pendingInvOps);
+                await this.serverInventoryRepo.upsertInventoryOperations(inventoryOperationsToSync);
                 await this.syncInventoryOpRepo.markInventoryOperationsAsSynced(pendingInvOps.map(o => o.id_inventory_operation));
-            }
-
-            if (pendingDayOperations.length > 0) {
-                await this.serverDayOperationRepo.upsertDayOperations(pendingDayOperations);
-                await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
             }
         } catch (error) {
             console.error("Phase 2 error: ", error);
@@ -91,22 +98,39 @@ export default class DataReplicationService {
         try {
             const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
             const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
+            const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toDTO(description));
+            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toDTO(description));
 
             console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
             console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
 
             if (pendingRouteTxDescs.length > 0) {
-                await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(pendingRouteTxDescs);
+                await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(routeTransactionDescriptionsToSync);
                 await this.syncRouteTxRepo.markRouteTransactionDescriptionsAsSynced(pendingRouteTxDescs.map(d => d.id_route_transaction_description));
             }
 
             if (pendingInvOpDescs.length > 0) {
-                await this.serverInventoryRepo.upsertInventoryOperationDescriptions(pendingInvOpDescs);
+                await this.serverInventoryRepo.upsertInventoryOperationDescriptions(inventoryOperationDescriptionsToSync);
                 await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
             }
         } catch (error) {
             console.error("Phase 3 error: ", error);
             // Do not mark as synced on failure; let future session retry
+        }
+
+        // Phase 4: Day operations
+        try {
+            const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
+            const dayOperationsToSync = pendingDayOperations.map((operation) => this.mapperLocalServerModel.toDTO(operation));
+
+            console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
+
+            if (pendingDayOperations.length > 0) {
+                await this.serverDayOperationRepo.upsertDayOperations(dayOperationsToSync);
+                await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
+            }
+        } catch (error) {
+            console.error("Phase 4 error: ", error);
         }
     }
 }

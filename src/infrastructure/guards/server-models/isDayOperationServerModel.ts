@@ -13,8 +13,6 @@ export function isDayOperationServerModel(model: unknown): model is DayOperation
         'id_route_day' in model && typeof model.id_route_day === 'string' &&
         'id_day_operation' in model && typeof model.id_day_operation === 'string' &&
         'id_day_operation_dependent' in model && typeof model.id_day_operation_dependent === 'string' &&
-        'id_work_day_operation' in model && typeof model.id_work_day_operation === 'string' &&
-        'is_synced' in model && typeof model.is_synced === 'number' &&
-        'is_deleted' in model && typeof model.is_deleted === 'number'
+        'id_work_day_operation' in model && typeof model.id_work_day_operation === 'string'
     );
 }
