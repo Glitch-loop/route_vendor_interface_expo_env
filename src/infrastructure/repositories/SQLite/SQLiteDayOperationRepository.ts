@@ -95,6 +95,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
                 new DayOperation(
                     row.id_day_operation,
                     row.id_item,
+                    row.id_route_day,
                     row.operation_type,
                     new Date(row.created_at),
                     row.id_dependency,
@@ -140,6 +141,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
                 return {
                     id_day_operation: row.id_day_operation,
                     id_item: row.id_item,
+                    id_route_day: row.id_route_day,
                     operation_type: row.operation_type,
                     created_at: row.created_at,
                     id_dependency: row.id_dependency,

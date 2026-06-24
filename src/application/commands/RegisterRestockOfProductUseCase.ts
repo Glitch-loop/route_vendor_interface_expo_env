@@ -57,7 +57,7 @@ export default class RegisterRestockOfProductUseCase {
     ): Promise<void> {
         if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for a restock operation.");
 
-        const { id_work_day } = workdayInformation;
+        const { id_work_day, id_route_day } = workdayInformation;
         const newProducts: Product[] = [];
 
         const currentInventory:ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
@@ -114,6 +114,7 @@ export default class RegisterRestockOfProductUseCase {
         dayOperationAggregate.registerRestockInventory(
             this.idService.generateID(),
             id_inventory_operation,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
         );
                 

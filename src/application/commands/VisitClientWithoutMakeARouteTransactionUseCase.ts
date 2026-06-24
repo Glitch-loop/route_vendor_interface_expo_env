@@ -38,6 +38,7 @@ export class VisitClientWithoutMakeARouteTransactionUseCase {
   async execute(
     id_store: string,
     id_day_operation_dependent: string,
+    id_route_day: string,
   ): Promise<DayOperationDTO|null> {
     const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
@@ -67,6 +68,7 @@ export class VisitClientWithoutMakeARouteTransactionUseCase {
     dayOperationAggregate.registerVisitToClient(
         this.idService.generateID(),
         id_store,
+        id_route_day,
         new Date(this.dateService.getCurrentTimestamp()),
         id_day_operation_dependent,
         latitude,

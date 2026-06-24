@@ -47,7 +47,7 @@ export default class RegisterProductDevolutionUseCase {
         inventoryOperationDescriptions: InventoryOperationDescription[],
         workdayInformation: WorkDayInformation
     ): Promise<void> {
-        const { id_work_day } = workdayInformation;
+        const { id_work_day, id_route_day } = workdayInformation;
         const dayOperations:DayOperation[] = await this.localDayOperationRepo.listDayOperations();
 
         const inventoryOperationAggregate: InventoryOperationAggregate = new InventoryOperationAggregate(null);
@@ -84,6 +84,7 @@ export default class RegisterProductDevolutionUseCase {
         dayOperationAggregate.registerProductDevolutionInventory(
             this.idService.generateID(),
             id_inventory_operation,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
         );
 

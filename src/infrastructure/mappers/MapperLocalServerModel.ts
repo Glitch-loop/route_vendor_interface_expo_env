@@ -31,6 +31,9 @@ import { isRouteTransactionDescriptionServerModel } from '@/src/infrastructure/g
 import { isRouteTransactionServerModel } from '@/src/infrastructure/guards/server-models/isRouteTransactionServerModel';
 import { isStoreServerModel } from '@/src/infrastructure/guards/server-models/isStoreServerModel';
 import { isWorkDayInformationServerModel } from '@/src/infrastructure/guards/server-models/isWorkDayInformationServerModel';
+import PAYMENT_SCHEMAS from '@/src/core/enums/PaymentSchemaEnum';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { useDebugValue } from 'react';
 
 @injectable()
 export class MapperLocalServerModel {
@@ -92,23 +95,52 @@ export class MapperLocalServerModel {
 		throw new Error('Unknown server model type at moment of transforming to local model.');
 	}
 
+  // ---------------------- Transformation from local model to server model. ----------------------
 	private dayOperationLocalToServer(model: DayOperationLocalModel): DayOperationServerModel {
+    const { operation_type, id_item } = model;
+    let id_location:string|undefined = undefined;
+    let id_route_transaction:string|undefined = undefined;
+    let id_inventory_operation:string|undefined = undefined;
+    
+    
+    if(operation_type === DAY_OPERATIONS.route_transaction 
+    || operation_type === DAY_OPERATIONS.cancel_route_transaction
+    ) {
+      id_route_transaction = id_item;
+    } else if (
+       operation_type === DAY_OPERATIONS.cancel_inventory_operation
+    || operation_type === DAY_OPERATIONS.restock_inventory
+    || operation_type === DAY_OPERATIONS.start_shift_inventory
+    || operation_type === DAY_OPERATIONS.end_shift_inventory
+    || operation_type === DAY_OPERATIONS.product_devolution_inventory
+    ) {
+      id_inventory_operation = id_item;
+    } else if(
+      operation_type === DAY_OPERATIONS.prospect_registration
+      || operation_type === DAY_OPERATIONS.new_client_registration
+      || operation_type === DAY_OPERATIONS.attend_client_petition
+      || operation_type === DAY_OPERATIONS.attention_out_of_route
+      || operation_type === DAY_OPERATIONS.route_client_attention
+      || operation_type === DAY_OPERATIONS.vist_to_client
+    ) {
+      id_inventory_operation = id_item;
+    }
+    
 		return {
-			id_operation_type: model.operation_type,
-			created_at: new Date(model.created_at),
-			latitude: model.latitude,
-			longitude: model.longitude,
-			id_location: model.id_item,
-			id_route_transaction: '',
-			id_inventory_operation: '',
-			id_route_day: '',
-			id_day_operation: model.id_day_operation,
-			id_day_operation_dependent: model.id_dependency,
-			id_work_day_operation: '',
-			is_synced: 0,
-			updated_at: model.created_at,
-			is_deleted: 0,
-		};
+      id_operation_type: model.operation_type,
+      created_at: new Date(model.created_at),
+      latitude: model.latitude,
+      longitude: model.longitude,
+      id_location: id_location,
+      id_route_transaction: id_route_transaction,
+      id_inventory_operation: id_inventory_operation,
+      id_route_day: '',
+      id_day_operation_dependent: model.id_dependency,
+      id_work_day_operation: model.id_day_operation,
+      is_synced: 0,
+      updated_at: model.created_at,
+      is_deleted: 0,
+    };
 	}
 
 	private inventoryOperationDescriptionLocalToServer(model: InventoryOperationDescriptionLocalModel): InventoryOperationDescriptionServerModel {
@@ -158,17 +190,17 @@ export class MapperLocalServerModel {
 	private routeTransactionLocalToServer(model: RouteTransactionLocalModel): RouteTransactionServerModel {
 		return {
 			id_transaction: model.id_route_transaction,
-			cfdi: '',
+			// cfdi: '', // Note (06-24-26): At moment this field is not necessary.
 			received_amount: model.cash_received,
-			id_invoice_concept: '',
+			// id_invoice_concept: '', // Note (06-24-26): At moment this field is not necessary.
 			created_at: model.date,
 			latitude: model.latitude,
 			longitude: model.longitude,
 			id_location: model.id_store,
-			id_client: '',
+			// id_client: '', // Note (06-24-26): At moment this field is not necessary.
 			id_work_day: model.id_work_day,
 			id_payment_method: model.id_payment_method,
-			id_payment_schema: '',
+			id_payment_schema: PAYMENT_SCHEMAS.IMMEDIATE, // Note (06-24-26): At moment, it's the unique valid type of schema.
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
 			is_deleted: model.is_deleted,
@@ -211,11 +243,14 @@ export class MapperLocalServerModel {
 		};
 	}
 
+  // ---------------------- Transformation from server model to local model. ----------------------
+
 	private dayOperationServerToLocal(model: DayOperationServerModel): DayOperationLocalModel {
 		return {
-			id_day_operation: model.id_day_operation,
+			id_day_operation: model.id_work_day_operation,
 			id_item: model.id_location || model.id_route_transaction || model.id_inventory_operation || '',
 			operation_type: model.id_operation_type,
+			id_route_day: model.id_route_day,
 			created_at: model.created_at instanceof Date ? model.created_at.toISOString() : model.created_at,
 			id_dependency: model.id_day_operation_dependent,
 			latitude: model.latitude,

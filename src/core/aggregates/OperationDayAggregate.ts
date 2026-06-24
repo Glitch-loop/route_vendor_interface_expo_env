@@ -1,6 +1,5 @@
 // Entities
 import { DayOperation } from "@/src/core/entities/DayOperation";
-import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 
 // Enums
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
@@ -19,7 +18,7 @@ export class OperationDayAggregate {
     }
   }
 
-  registerAttendTodaysClient(idDayOperation: string, idClient: string, createdAt: Date): void {
+  registerAttendTodaysClient(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date): void {
     /*
       Business rule for route client attention:
         - This operation day is used to register all the clients the user must visit. These clients althogheter compose the route day.
@@ -32,6 +31,7 @@ export class OperationDayAggregate {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idClient,
+      idRouteDay,
       DAY_OPERATIONS.route_client_attention,
       createdAt,
       null,
@@ -42,10 +42,11 @@ export class OperationDayAggregate {
     this.dayOperations.push(newDayOperation);
   }
 
-  registerVisitToClient(idDayOperation: string, idClient: string, createdAt: Date, id_day_operation_dependent: string, latitude?: string, longitude?: string): void {
+  registerVisitToClient(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date, id_day_operation_dependent: string, latitude?: string, longitude?: string): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idClient,
+      idRouteDay,
       DAY_OPERATIONS.vist_to_client,
       createdAt,
       id_day_operation_dependent,
@@ -56,7 +57,7 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
   
-  registerClientAttentionOutOfRoute(idDayOperation: string, idClient: string, createdAt: Date): void {
+  registerClientAttentionOutOfRoute(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date): void {
     /*
       Business rule:
       About "Client attention out-of-route" operation:
@@ -67,6 +68,7 @@ export class OperationDayAggregate {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idClient,
+      idRouteDay,
       DAY_OPERATIONS.attention_out_of_route,
       createdAt,
       null,
@@ -78,7 +80,7 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);    
   }
     
-  registerCreateNewClient(idDayOperation: string, idClient: string, createdAt: Date, latitude: string | undefined, longitude: string | undefined): void {
+  registerCreateNewClient(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date, latitude: string | undefined, longitude: string | undefined): void {
     /*
       Business rule:
       About "Create new client" operation:
@@ -89,6 +91,7 @@ export class OperationDayAggregate {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idClient,
+      idRouteDay,
       DAY_OPERATIONS.new_client_registration,
       createdAt,
       null,
@@ -100,7 +103,7 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
 
-  registerProspectClient(idDayOperation: string, idClient: string, createdAt: Date, latitude?: string, longitude?: string): void {
+  registerProspectClient(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date, latitude?: string, longitude?: string): void {
     /*
       Business rule:
       About "Create new client" operation:
@@ -111,6 +114,7 @@ export class OperationDayAggregate {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idClient,
+      idRouteDay,
       DAY_OPERATIONS.prospect_registration,
       createdAt,
       null,
@@ -126,10 +130,11 @@ export class OperationDayAggregate {
     /*TODO: First, Implement the manager application before this*/
   }
     
-  registerRouteTransaction(idDayOperation: string, idRouteTransaction: string, createdAt: Date, idDayOperationDependent: string, latitude?: string, longitude?: string): void {
+  registerRouteTransaction(idDayOperation: string, idRouteTransaction: string, idRouteDay: string, createdAt: Date, idDayOperationDependent: string, latitude?: string, longitude?: string): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idRouteTransaction,
+      idRouteDay,
       DAY_OPERATIONS.route_transaction,
       createdAt,
       idDayOperationDependent, // This is the id of the day operation that represents a store or client on which is going to be registered the route transaction.
@@ -140,10 +145,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
     
-  registerCancelRouteTransaction(idDayOperation: string, idRouteTransaction: string, createdAt: Date): void { 
+  registerCancelRouteTransaction(idDayOperation: string, idRouteTransaction: string, idRouteDay: string, createdAt: Date): void { 
     const newDayOperation = new DayOperation(
       idDayOperation,
       idRouteTransaction,
+      idRouteDay,
       DAY_OPERATIONS.cancel_route_transaction,
       createdAt,
       null,
@@ -154,10 +160,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
     
-  registerStartShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+  registerStartShiftInventory(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idInventoryOperation,
+      idRouteDay,
       DAY_OPERATIONS.start_shift_inventory,
       createdAt,
       null,
@@ -168,10 +175,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
 
-  registerRestockInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+  registerRestockInventory(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idInventoryOperation,
+      idRouteDay,
       DAY_OPERATIONS.restock_inventory,
       createdAt,
       null,
@@ -182,10 +190,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
 
-  registerProductDevolutionInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+  registerProductDevolutionInventory(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idInventoryOperation,
+      idRouteDay,
       DAY_OPERATIONS.product_devolution_inventory,
       createdAt,
       null,
@@ -196,10 +205,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
 
-  registerEndShiftInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+  registerEndShiftInventory(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idInventoryOperation,
+      idRouteDay,
       DAY_OPERATIONS.end_shift_inventory,
       createdAt,
       null,
@@ -210,10 +220,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
 
-  registerConsultInventory(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void {
+  registerConsultInventory(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void {
     const newDayOperation = new DayOperation(
       idDayOperation,
       idInventoryOperation,
+      idRouteDay,
       DAY_OPERATIONS.consult_inventory,
       createdAt,
       null,
@@ -224,10 +235,11 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
     
-    registerCancelInventoryOperation(idDayOperation: string, idInventoryOperation: string, createdAt: Date): void { 
+    registerCancelInventoryOperation(idDayOperation: string, idInventoryOperation: string, idRouteDay: string, createdAt: Date): void { 
         const newDayOperation = new DayOperation(
             idDayOperation,
             idInventoryOperation,
+            idRouteDay,
             DAY_OPERATIONS.cancel_inventory_operation,
             createdAt,
             null,

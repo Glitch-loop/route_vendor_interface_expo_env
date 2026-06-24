@@ -49,6 +49,10 @@ export default class CancelInventoryOperationUseCase {
     const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
 
+    const dayOperationOfInventory = dayOperations.find((dayOp) => { dayOp.id_item === id_inventory_operation && dayOp.operation_type !== DAY_OPERATIONS.cancel_inventory_operation})
+
+    if(dayOperationOfInventory === undefined) throw new Error('The inventory operation you are trying to cancel, it does not have its day operation.');
+
     // Build aggregates
     const inventoryAgg = new InventoryOperationAggregate(inventoryOperation);
     const dayAgg = new OperationDayAggregate(dayOperations);
@@ -75,6 +79,7 @@ export default class CancelInventoryOperationUseCase {
     dayAgg.registerCancelInventoryOperation(
       this.idService.generateID(),
       id_inventory_operation,
+      dayOperationOfInventory.id_route_day,
       new Date(this.dateService.getCurrentTimestamp()),
     );
 

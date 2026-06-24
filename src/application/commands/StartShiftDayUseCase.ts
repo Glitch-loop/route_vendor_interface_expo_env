@@ -172,6 +172,7 @@ export default class StartWorkDayUseCase {
     dayOperationAggregate.registerStartShiftInventory(
         this.idService.generateID(),
         id_inventory_operation,
+        id_route_day,
         new Date(this.dateService.getCurrentTimestamp())
     );
 
@@ -184,6 +185,7 @@ export default class StartWorkDayUseCase {
         dayOperationAggregate.registerAttendTodaysClient(
             this.idService.generateID(),
             id_store,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
         )
     }

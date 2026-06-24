@@ -38,28 +38,25 @@ interface WorkDayResponseInterface {
 export class BackendWorkdayInformationRepository implements SyncServerWorkdayInformationRepository {
     constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) { }
 
-    async upsertWorkdayInformations(informations: (WorkDayInformationServerModel & UserModel)[], ): Promise<void> {
+    async upsertWorkdayInformations(informations: (WorkDayInformationServerModel)[], ): Promise<void> {
         if (!informations || informations.length === 0) return;
         try {
-            for (const info of informations) {
-                const request: StartWorkDayRequestInterface = this.toStartWorkDayRequest(info);
-                await this.dataSource.post<WorkDayResponseInterface, StartWorkDayRequestInterface>(
+            console.log("Work day records: ", informations.length)
+            const workdayToUpsert = informations[0]
+
+            if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
+                await this.dataSource.post<WorkDayInformationServerModel, StartWorkDayRequestInterface>(
                     '/business-operation-route/work-days',
-                    request
+                    workdayToUpsert
+                );
+            } else {
+                await this.dataSource.patch<WorkDayInformationServerModel, StartWorkDayRequestInterface>(
+                    `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
+                    workdayToUpsert
                 );
             }
         } catch (error: any) {
             throw new Error(`Failed to upsert workday information: ${error.message}`);
         }
-    }
-
-    private toStartWorkDayRequest(info: WorkDayInformationServerModel & UserModel): StartWorkDayRequestInterface {
-        return {
-            id_work_day: info.id_work_day,
-            start_date: info.start_date,
-            start_petty_cash: info.start_petty_cash,
-            id_route_day: info.id_route_day,
-            id_user: info.id_vendor,
-        };
     }
 }

@@ -275,6 +275,7 @@ export class MapperDTO {
         return {
             id_day_operation: entity.id_day_operation,
             id_item: entity.id_item,
+            id_route_day: entity.id_route_day,
             operation_type: entity.operation_type,
             created_at: entity.created_at.toISOString(),
             id_dependency: entity.id_dependency,
@@ -469,6 +470,7 @@ export class MapperDTO {
         return new DayOperation(
             dto.id_day_operation,
             dto.id_item,
+            dto.id_route_day,
             dto.operation_type,
             createdAt,
             dto.id_dependency,

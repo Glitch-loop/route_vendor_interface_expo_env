@@ -39,7 +39,10 @@ export default class CancelRouteTransaction {
         const routeTransactions: RouteTransaction[] = await this.localRouteTransactionRepository.retrieveRouteTransactionById([ id_route_transaction ]);
 
         if (routeTransactions.length === 0) throw new Error("The route transaction to cancel does not exist.");
-
+        
+        const dayOperationOfTransaction = dayOperations.find((dayOp) => { dayOp.id_item === id_route_transaction && dayOp.operation_type !== DAY_OPERATIONS.cancel_route_transaction})
+        if(dayOperationOfTransaction === undefined) throw new Error('The route transaction you are trying to cancel, it does not have its day operation.');
+        
         const routeTransaction:RouteTransaction = routeTransactions[0];
 
         const { state } = routeTransaction;
@@ -70,6 +73,7 @@ export default class CancelRouteTransaction {
         dayOperationAggregate.registerCancelRouteTransaction(
             this.idService.generateID(),
             id_route_transaction,
+            dayOperationOfTransaction.id_route_day,
             new Date(this.dateService.getCurrentTimestamp())
         );
 

@@ -111,6 +111,7 @@ export default class ConfirmClientProspectAsClientUseCase {
           dayOperationAggregate.registerCreateNewClient(
             this.idService.generateID(),
             id_store,
+            sellingToClient[0].id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
             latitude,
             longitude

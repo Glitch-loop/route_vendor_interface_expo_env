@@ -9,6 +9,7 @@ const dayOperationsSlice = createSlice({
       return action.payload.map((operation) => ({
         id_day_operation: operation.id_day_operation,
         id_item: operation.id_item,
+        id_route_day: operation.id_route_day,
         operation_type: operation.operation_type,
         created_at: operation.created_at,
         id_dependency: operation.id_dependency,

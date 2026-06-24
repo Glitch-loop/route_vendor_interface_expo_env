@@ -85,6 +85,7 @@ export default function CreateNewClientLayout() {
   const storesRedux = useSelector((state: RootState) => state.stores);
   const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
+  const workDayReduxState = useSelector((state: RootState) => state.workDayInformation);
 
   // States
   const [userLocation, setUserLocation] = useState<LocationObjectCoords|LatLng|undefined>(undefined);
@@ -181,6 +182,11 @@ export default function CreateNewClientLayout() {
       return;
     }
 
+    if (workDayReduxState === null) {
+      Toast.show({type: 'error', text1: 'Ha habido un error.', text2: 'Recarga la pagina nuevamente.'});
+      return;
+    }
+
     // Validate required fields
     if (!formData.store_name.trim()) {
       Toast.show({type: 'error', text1: 'Campo requerido', text2: 'El nombre de la tienda es obligatorio'});
@@ -232,6 +238,7 @@ export default function CreateNewClientLayout() {
         colony,
         postal_code,
         address_reference,
+        workDayReduxState.id_route_day,
         { ...userSessionReduxState }
       )
 

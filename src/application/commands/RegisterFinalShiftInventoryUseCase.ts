@@ -72,7 +72,7 @@ export default class RegisterFinalShiftInventoryUseCase {
         const finalWorkDayInformation: WorkDayInformation = shiftORganizationAggregate.getWorkDayInformation();
 
         // Create inventory operation for finishing work day.
-        const { id_work_day } = finalWorkDayInformation;
+        const { id_work_day, id_route_day } = finalWorkDayInformation;
 
         inventoryOperationAggregate.createInventoryOperation(
             this.idService.generateID(),
@@ -102,6 +102,7 @@ export default class RegisterFinalShiftInventoryUseCase {
         dayOperationAggregate.registerEndShiftInventory(
             this.idService.generateID(),
             id_inventory_operation,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
         )
 

@@ -62,7 +62,7 @@ export default class RegisterNewRouteTransaction {
         id_store: string,
         id_day_operation_dependent: string,
     ):Promise<RouteTransaction> {
-        const { id_work_day } = workDayInformation;
+        const { id_work_day, id_route_day } = workDayInformation;
         
         const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
         const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
@@ -142,6 +142,7 @@ export default class RegisterNewRouteTransaction {
         dayOperationAggregate.registerRouteTransaction(
             this.idService.generateID(),
             id_route_transaction,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
             id_day_operation_dependent,
             latitude,
@@ -151,6 +152,7 @@ export default class RegisterNewRouteTransaction {
         dayOperationAggregate.registerVisitToClient(
             this.idService.generateID(),
             id_store,
+            id_route_day,
             new Date(this.dateService.getCurrentTimestamp()),
             id_day_operation_dependent,
             latitude,

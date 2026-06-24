@@ -51,6 +51,7 @@ export class RegisterClientProspectUseCase {
         storeColony: string,
         storePostalCode: string,
         storeAddressReference: string,
+        idWorkDay: string,
         useSession: UserDTO
     ): Promise<DayOperationDTO> {
         const { id_vendor} = useSession;
@@ -94,6 +95,7 @@ export class RegisterClientProspectUseCase {
         operationDayAggregate.registerProspectClient(
             this.idService.generateID(),
             id_store,
+            idWorkDay,
             new Date(this.dateService.getCurrentTimestamp()),
             latitude.toString(),
             longitude.toString(),

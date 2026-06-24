@@ -416,7 +416,7 @@ useEffect(() => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
-    if (currentStore === null || id_day_operation_dependent_search_param === undefined) {
+    if (currentStore === null || id_day_operation_dependent_search_param === undefined || workDayInformation === null) {
       Toast.show({
         type: 'error',
         text1:'Ha ocurrido un error.',
@@ -425,7 +425,7 @@ useEffect(() => {
       const visitWithoutSelling = container.resolve<VisitClientWithoutMakeARouteTransactionUseCase>(VisitClientWithoutMakeARouteTransactionUseCase);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       
-      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_search_param);
+      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_search_param, workDayInformation.id_route_day);
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
       dispatch(setDayOperations(newDayOperationsList));
@@ -467,7 +467,7 @@ useEffect(() => {
       try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param);
+        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
           id_day_operation_dependent = id_day_operation;
@@ -514,6 +514,7 @@ useEffect(() => {
       // Syncing with central database
       if (userSessionReduxState !== null) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+        workDayInformation
         syncingService.executeReplicationSession(userSessionReduxState);
       }
       setResultSaleState(true);

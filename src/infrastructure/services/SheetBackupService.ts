@@ -98,7 +98,7 @@ export default class SheetBackupService {
     const dayOperationsToExport = pendingDayOperations.map((record) => this.mapperLocalServerModel.toDTO(record));
 
     dayOperationsToExport.forEach((record, index) => {
-      rows.push(this.createBackupRow(4, 'day_operations', 'day_operations', index + 1, record.id_day_operation, record));
+      rows.push(this.createBackupRow(4, 'day_operations', 'day_operations', index + 1, record.id_work_day_operation, record));
     });
 
     rows.sort((a, b) => {
