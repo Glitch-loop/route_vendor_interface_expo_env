@@ -1,4 +1,6 @@
-export default interface DayOperationLocalModel {
+import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
+
+export default interface DayOperationLocalModel extends ReplicationDataInterface {
   id_day_operation: string,
   id_item: string,
   operation_type: string,
