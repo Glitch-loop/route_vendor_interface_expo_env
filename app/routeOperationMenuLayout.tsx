@@ -385,7 +385,7 @@ const routeOperationMenuLayout = () => {
               }
             }}
             buttonVariant= 'primary'
-            buttonStyle={isDayWorkClosed ?  tw`flex basis-4/8 py-4 my-2 bg-blue-400 px-4 rounded` : tw`flex basis-7/8 py-4 my-2 bg-blue-400 px-4 rounded`}
+            buttonStyle={tw`flex ${isDayWorkClosed ? `basis-4/8` : `basis-4/8`} py-4 my-2 bg-blue-400 px-4 rounded`}
           />
           {isDayWorkClosed &&
             <ProjectButton
@@ -397,7 +397,7 @@ const routeOperationMenuLayout = () => {
                   handleDownloadWorkDayInfo();
                 }
               }}
-              buttonVariant= 'primary'
+              buttonVariant= 'neutral'
               buttonStyle={tw`flex basis-3/8 py-4 my-2 bg-blue-400 px-4 rounded`}
             />
           }

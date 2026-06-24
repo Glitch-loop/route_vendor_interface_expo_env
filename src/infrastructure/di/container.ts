@@ -26,6 +26,8 @@ import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/l
 import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
 import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
+import { SyncDayOperationInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository';
+import { SyncServerDayOperationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerDayOperationRepository';
 
 
 // Interfaces
@@ -73,6 +75,9 @@ import { PlatformPermissionsService } from '@/src/core/interfaces/PlatformPermis
 import { BackendRouteRepository } from '../repositories/backend-server/BackendRouteRepository';
 import { BackendProductRepository } from '../repositories/backend-server/BackendProductRepository';
 import { BackendStoreRepository } from '../repositories/backend-server/BackendStoreRepository';
+import { BackendDayOperationRepository } from '../repositories/backend-server/BackendDayOperationRepository';
+import { BackendRouteTransactionRepository } from '../repositories/backend-server/BackendRouteTransactionRepository';
+import { BackendInventoryOperationRepository } from '../repositories/backend-server/BackendInventoryOperationRepository';
 
 
 
@@ -162,6 +167,10 @@ container.register<SyncInventoryOperationRepository>(TOKENS.SyncInventoryOperati
     useClass: SQLiteInventoryOperationRepository
 });
 
+container.register<SyncDayOperationInformationRepository>(TOKENS.SyncDayOperationRepository, {
+    useClass: SQLiteDayOperationRepository
+});
+
 
 // =================== Implementation of repositories - Supabase ====================
 container.register<StoreRepository>(TOKENS.ServerStoreRepository, {
@@ -207,13 +216,17 @@ container.register(TOKENS.SyncServerStoreRepository, {
     useClass: SupabaseStoreRepository
 });
 container.register(TOKENS.SyncServerRouteTransactionRepository, {
-    useClass: SupabaseRouteTransactionRepository
+    useClass: BackendRouteTransactionRepository
 });
 container.register(TOKENS.SyncServerInventoryOperationRepository, {
-    useClass: SupabaseInventoryOperationRepository
+    useClass: BackendInventoryOperationRepository
 });
 container.register(TOKENS.SyncServerWorkdayInformationRepository, {
     useClass: BackendWorkdayInformationRepository
+});
+
+container.register<SyncServerDayOperationRepository>(TOKENS.SyncServerDayOperationRepository, {
+    useClass: BackendDayOperationRepository
 });
 
 export { container }

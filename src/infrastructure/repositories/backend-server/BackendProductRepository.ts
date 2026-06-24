@@ -95,9 +95,19 @@ export class BackendProductRepository implements ProductRepository {
   }
 
   private toProductEntity(response: ProductResponseInterface): Product {
+    let order_to_show: number = 0;
     const prices: ProductPrice[] = (response.product_price ?? []).map((price) =>
       this.toProductPriceObjectValue(price)
     ); 
+
+    if (response.order_to_show !== null) {
+      if(typeof response.order_to_show === "string") {
+        order_to_show = Number(response.order_to_show)
+      } else {
+        order_to_show = response.order_to_show
+      }
+
+    }
 
     return new Product(
       response.id_product,
@@ -105,7 +115,7 @@ export class BackendProductRepository implements ProductRepository {
       response.cost,
       response.product_status,
       response.quantity_presentation,
-      response.order_to_show === null ? null : String(response.order_to_show),
+      order_to_show,
       response.id_measurement_unit,
       prices,
       response.barcode

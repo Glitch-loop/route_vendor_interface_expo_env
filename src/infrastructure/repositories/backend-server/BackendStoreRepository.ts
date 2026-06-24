@@ -74,17 +74,8 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
     constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 
     async insertStores(stores: Store[]): Promise<void> {
-      try {
-        for (const store of stores) {
-          const request: CreateLocationRequestInterface = this.toCreateLocationRequest(store);
-          await this.dataSource.post<LocationStoreResponseInterface, CreateLocationRequestInterface>(
-            '/clients/locations',
-            request
-          );
-        }
-      } catch (error: any) {
-        throw new Error(`Failed to insert stores: ${error.message}`);
-      }
+      // Note (06-20-26): Backend does not expose an update endpoint for locations in this repository.
+      return;
     }
 
     async updateStore(store: Store): Promise<void> {
@@ -132,127 +123,46 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
 
       try {
         // Upsert is handled as insert, per the current backend contract.
-        const entities = stores.map((store) => this.toStoreEntityFromModel(store));
-        await this.insertStores(entities);
+        for (const store of stores) {
+          await this.dataSource.post<LocationStoreResponseInterface, StoreModel>(
+            '/clients/locations',
+            store
+          );
+        }
+    
       } catch (error: any) {
         throw new Error(`Failed to upsert stores: ${error.message}`);
       }
     }
 
-        private mapResponseToStores(
-            response: LocationsCollectionResponseInterface | LocationStoreResponseInterface[]
-        ): Store[] {
-            const locations = Array.isArray(response)
-                ? response
-                : response.data ?? response.items ?? response.collection ?? response.locations ?? [];
+    private mapResponseToStores(
+        response: LocationsCollectionResponseInterface | LocationStoreResponseInterface[]
+    ): Store[] {
+        const locations = Array.isArray(response)
+            ? response
+            : response.data ?? response.items ?? response.collection ?? response.locations ?? [];
 
-            return locations.map((location) => (
-              new Store(
-                location.id_location,
-                location.street,
-                location.ext_number,
-                location.colony,
-                location.postal_code,
-                location.address_reference,
-                location.location_name,
-                null, // Note (06-21-26): No provided by the server
-                null, // Note (06-21-26): No provided by the server
-                location.latitude,
-                location.longitude,
-                location.id_creator,
-                location.id_client,
-                location.id_location_type,
-                new Date(location.created_at),
-                'On route', 
-                location.status_location,
-                0 // By default this is False.
-              )
-            ));
-        }
-
-        private toStoreDTO(location: LocationStoreResponseInterface): StoreDTO {
-            return {
-                id_store: location.id_location,
-                street: location.street,
-                ext_number: location.ext_number === null ? undefined : location.ext_number,
-                colony: location.colony,
-                postal_code: location.postal_code,
-                address_reference: location.address_reference === null ? undefined : location.address_reference,
-                store_name: location.location_name,
-                latitude: location.latitude,
-                longitude: location.longitude,
-                creation_date: location.created_at,
-                id_client: location.id_client,
-                id_location_type: location.id_location_type,
-                status_store: location.status_location,
-                is_new: 0,
-            };
-        }
-
-        private toStoreEntity(storeDTO: StoreDTO): Store {
-            return new Store(
-                storeDTO.id_store,
-                storeDTO.street,
-                storeDTO.ext_number === undefined ? null : storeDTO.ext_number,
-                storeDTO.colony,
-                storeDTO.postal_code,
-                storeDTO.address_reference === undefined ? null : storeDTO.address_reference,
-                storeDTO.store_name === undefined ? null : storeDTO.store_name,
-                null,
-                null,
-                storeDTO.latitude,
-                storeDTO.longitude,
-                '',
-                storeDTO.id_client,
-                storeDTO.id_location_type,
-                new Date(storeDTO.creation_date),
-                '',
-                storeDTO.status_store,
-                storeDTO.is_new,
-            );
-        }
-
-        private toStoreEntityFromModel(store: StoreModel): Store {
-            return new Store(
-                store.id_store,
-                store.street,
-                store.ext_number === undefined ? null : store.ext_number,
-                store.colony,
-                store.postal_code,
-                store.address_reference === undefined ? null : store.address_reference,
-                store.store_name === undefined ? null : store.store_name,
-                null,
-                null,
-                store.latitude,
-                store.longitude,
-                '',
-                store.id_client,
-                store.id_location_type,
-                new Date(store.creation_date),
-                '',
-                store.status_store,
-                store.is_new,
-            );
-        }
-
-        private toCreateLocationRequest(store: Store): CreateLocationRequestInterface {
-            return {
-                id_location: store.id_store,
-                street: store.street,
-                ext_number: store.ext_number,
-                colony: store.colony,
-                postal_code: store.postal_code,
-                address_reference: store.address_reference,
-                location_name: store.store_name ?? '',
-                latitude: store.latitude,
-                longitude: store.longitude,
-                id_creator: store.id_creator,
-                id_client: store.id_client,
-                status_location: store.status_store,
-                id_location_type: '',
-                created_at: store.creation_date.toISOString(),
-                updated_at: store.creation_date.toISOString(),
-                notes: [],
-            };
-        }
+        return locations.map((location) => (
+          new Store(
+            location.id_location,
+            location.street,
+            location.ext_number,
+            location.colony,
+            location.postal_code,
+            location.address_reference,
+            location.location_name,
+            null, // Note (06-21-26): No provided by the server
+            null, // Note (06-21-26): No provided by the server
+            location.latitude,
+            location.longitude,
+            location.id_creator,
+            location.id_client,
+            location.id_location_type,
+            new Date(location.created_at),
+            'On route', 
+            location.status_location,
+            0 // By default this is False.
+          )
+        ));
+    }
 }

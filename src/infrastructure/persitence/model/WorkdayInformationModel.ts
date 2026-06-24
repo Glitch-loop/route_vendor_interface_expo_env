@@ -1,15 +1,14 @@
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
 export default interface WorkDayInformationModel extends ReplicationDataInterface {
+    // Fields required for starting a work day.
     id_work_day: string;
     start_date: string,
-    finish_date: string | null,
     start_petty_cash: number,
-    final_petty_cash: number | null,
-    id_route: string,
-    route_name: string,
-    description: string,
-    route_status: boolean,
-    id_day: string,
     id_route_day: string,
+    id_user: string,
+    
+    // Fields required for finishing a work day.
+    finish_date: string | null,
+    final_petty_cash: number | null,
 }

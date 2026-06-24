@@ -6,10 +6,12 @@ import { SyncInventoryOperationRepository } from "../persitence/interface/local-
 import { SyncRouteTransactionRepository } from "../persitence/interface/local-database/SyncRouteTransactionRepository";
 import { SyncStoreRepository } from "../persitence/interface/local-database/SyncStoreRepository";
 import { SyncWorkdayInformationRepository } from "../persitence/interface/local-database/SyncWorkdayInformationRepository";
+import { SyncDayOperationInformationRepository } from "../persitence/interface/local-database/SyncDayOperationRepository";
 import { SyncServerStoreRepository } from "../persitence/interface/server-database/SyncServerStoreRepository";
 import { SyncServerWorkdayInformationRepository } from "../persitence/interface/server-database/SyncServerWorkdayInformationRepository";
 import { SyncServerRouteTransactionRepository } from "../persitence/interface/server-database/SyncServerRouteTransactionRepository";
 import { SyncServerInventoryOperationRepository } from "../persitence/interface/server-database/SyncServerInventoryOperationRepository";
+import { SyncServerDayOperationRepository } from "../persitence/interface/server-database/SyncServerDayOperationRepository";
 import UserDTO from "@/src/application/dto/UserDTO";
 import WorkDayInformationModel from "../persitence/model/WorkdayInformationModel";
 import UserModel from "../persitence/model/UserModel";
@@ -23,16 +25,17 @@ export default class DataReplicationService {
         @inject(TOKENS.SyncRouteTransactionRepository) private readonly syncRouteTxRepo: SyncRouteTransactionRepository,
         @inject(TOKENS.SyncStoreRepository) private readonly syncStoreRepo: SyncStoreRepository,
         @inject(TOKENS.SyncWorkdayInformationRepository) private readonly syncWorkdayInfoRepo: SyncWorkdayInformationRepository,
+        @inject(TOKENS.SyncDayOperationRepository) private readonly syncDayOperationRepo: SyncDayOperationInformationRepository,
 
         // Server database dependencies
         @inject(TOKENS.SyncServerStoreRepository) private readonly serverStoreRepo: SyncServerStoreRepository,
         @inject(TOKENS.SyncServerWorkdayInformationRepository) private readonly serverWorkdayRepo: SyncServerWorkdayInformationRepository,
         @inject(TOKENS.SyncServerRouteTransactionRepository) private readonly serverRouteTxRepo: SyncServerRouteTransactionRepository,
         @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
+        @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
     ) { }   
     
     async executeReplicationSession(userSession: UserDTO): Promise<void> {
-        return // While Development (21-06-26)
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
@@ -50,28 +53,35 @@ export default class DataReplicationService {
             }
             if (pendingStores.length > 0) {
                 await this.serverStoreRepo.upsertStores(pendingStores);
-                await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
+                await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_location));
             }
         } catch (error) {
             console.error("Phase 1 error: ", error);
             // Do not mark as synced on failure; let future session retry
         }
 
-        // Phase 2: Route transactions and inventory operations
+        // Phase 2: Route transactions, inventory operations and day operations
         try {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();            
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
+            const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
+            console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
 
             if (pendingRouteTx.length > 0) {
                 await this.serverRouteTxRepo.upsertRouteTransactions(pendingRouteTx);
-                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_route_transaction));
+                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_transaction));
             }
             if (pendingInvOps.length > 0) {
                 await this.serverInventoryRepo.upsertInventoryOperations(pendingInvOps);
                 await this.syncInventoryOpRepo.markInventoryOperationsAsSynced(pendingInvOps.map(o => o.id_inventory_operation));
+            }
+
+            if (pendingDayOperations.length > 0) {
+                await this.serverDayOperationRepo.upsertDayOperations(pendingDayOperations);
+                await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
             }
         } catch (error) {
             console.error("Phase 2 error: ", error);
