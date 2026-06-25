@@ -234,14 +234,12 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> {
+    async listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]> {
         try {
             await this.dataSource.initialize();
             const transactions:RouteTransaction[] = [];
-            const { id_store } = store;
 
             // Retrieve all route transaction descriptions
-
             const db: SQLiteDatabase = this.dataSource.getClient();
             
             // Retrieve all route transactions

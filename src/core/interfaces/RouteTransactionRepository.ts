@@ -9,7 +9,7 @@ export abstract class RouteTransactionRepository {
   abstract insertRouteTransaction(route_transaction: RouteTransaction): Promise<void>;
   abstract updateRouteTransaction(route_transaction: RouteTransaction): Promise<void>;
   abstract deleteRouteTransactions(route_transactions: RouteTransaction[]): Promise<void>;
-  abstract listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]>;
+  abstract listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]>;
   abstract listRouteTransactions(): Promise<RouteTransaction[]>;
   abstract retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]>;
   abstract listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]>;

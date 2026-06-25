@@ -26,7 +26,7 @@ export default class ListRouteTransactionsOfStoreQuery {
 
   // Accepts StoreDTO to align with UI usage (storeMenuLayout)
   async execute(store: StoreDTO): Promise<RouteTransactionDTO[]> {    
-    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactionByStore(this.mapperDTO.toEntity(store));
+    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactionByStore(store.id_store);
     return transactions.map((t) => this.mapperDTO.toDTO(t));
   }
 }

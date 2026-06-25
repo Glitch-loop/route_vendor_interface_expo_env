@@ -38,6 +38,8 @@ import { MapperDTO } from "@/src/application/mappers/MapperDTO";
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
+import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
@@ -51,11 +53,13 @@ export default class StartWorkDayUseCase {
     @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
     @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
     @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+    @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
     @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
     @inject(TOKENS.SQLiteProductRepository) private readonly localProductRepo: ProductRepository,
     
     // Remote repositories dependencies
     @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
+    @inject(TOKENS.ServerStoreRepository) private readonly remoteRouteTransactionRepo: RouteTransactionRepository,
     
     // Services depdendencies
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -70,6 +74,7 @@ export default class StartWorkDayUseCase {
     routeDaySelected: RouteDay): Promise<void> {
     
     const availableProductsMap: Map<string, Product> = new Map<string, Product>();
+    const historicRouteTransactions: RouteTransaction[] = []; 
 
     if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for start shift.");
     
@@ -192,6 +197,15 @@ export default class StartWorkDayUseCase {
 
     const newDayOperations = dayOperationAggregate.getDayOperations();
 
+    // Retrieve past route transactions of the stores that belongs to the current route.
+    // This information is going to be used for insights.
+    for (const store of orderedStores) {
+        const { id_store } = store;
+        historicRouteTransactions.concat(
+            await this.remoteRouteTransactionRepo.listRouteTransactionByStore(id_store)
+        );
+    }
+
     // Store information in local database.
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     console.log("Inserting stores")
@@ -209,6 +223,11 @@ export default class StartWorkDayUseCase {
     await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
     console.log("Inserting day operations")
     await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
+    
+    console.log("Inserting historic route transactions")
+    for (const routeTransaction of historicRouteTransactions) {
+        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
+    }
   }
 
   async execute(

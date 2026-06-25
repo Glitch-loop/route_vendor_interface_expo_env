@@ -59,7 +59,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 		return; 
 	};
 	
-	async listRouteTransactionByStore(store: Store): Promise<RouteTransaction[]> { 
+	async listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]> { 
 		/*
 			Note (06-25-26)
 
@@ -69,7 +69,6 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 		try {
 
 			const routeTransaction: RouteTransaction[] = [];
-			const { id_store } = store;
 			const response = await this.dataSource.get<RouteTransactionWithRouteDescriptions[]>(
 				`/sellings/transactions?limit=4&transaction_status=1&id_location=${id_store}`
 			);

@@ -174,7 +174,7 @@ container.register<SyncDayOperationInformationRepository>(TOKENS.SyncDayOperatio
 });
 
 
-// =================== Implementation of repositories - Supabase ====================
+// =================== Implementation of repositories - Backend server ====================
 container.register<StoreRepository>(TOKENS.ServerStoreRepository, {
     useClass: BackendStoreRepository
 });
@@ -204,6 +204,11 @@ Alternative:
 
 */
 
+container.register<RouteTransactionRepository>(TOKENS.ServerProductRepository, {
+    useClass: BackendRouteTransactionRepository
+});
+
+
 container.register<ServerUserRepository>(TOKENS.ServerAuthenticationRepository, {
     useClass: BackendUserRepository
 });
@@ -215,7 +220,7 @@ Alternative:
 
 // =================== Implementation of repositories - SyncServer (Supabase) ====================
 container.register(TOKENS.SyncServerStoreRepository, {
-    useClass: SupabaseStoreRepository
+    useClass: BackendStoreRepository
 });
 container.register(TOKENS.SyncServerRouteTransactionRepository, {
     useClass: BackendRouteTransactionRepository

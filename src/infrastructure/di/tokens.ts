@@ -34,6 +34,10 @@ export const TOKENS = {
     SQLiteRouteTransactionRepository: Symbol('SQLiteRouteTransactionRepository'),
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
+
+    // Backend
+    BackendRouteTransactionRepository: Symbol('BackendRouteTransactionRepository'),
+
     //Sync Repositories
     SyncInventoryOperationRepository: Symbol('SyncInventoryOperationRepository'),
     SyncDayOperationRepository: Symbol('SyncDayOperationRepository'),

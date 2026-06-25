@@ -120,7 +120,7 @@ const storeMenuLayout = () => {
     
     try {
       /* Getting all the transaciton of the store of today. */
-      if (consultedStore === undefined || consultedStore === null) {
+      if (consultedStore === undefined || consultedStore === null || workDay === null) {
         Toast.show({type: 'error',
           text1:'Error al consultar las transacciones de la tienda',
           text2: 'Ha habido un error durante la consulta. Reinicie la aplicación e intente nuevamente.'});
@@ -129,7 +129,12 @@ const storeMenuLayout = () => {
 
       const listRouteTransactionByStore: ListRouteTransactionsOfStoreQuery = conatiner_di.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
     
-      setRouteTransactions(await listRouteTransactionByStore.execute(consultedStore));
+      // User can only see route transactions that belongs to the current day.
+      setRouteTransactions(
+        (await listRouteTransactionByStore.execute(consultedStore))
+        .filter((transaction) => { return transaction.id_work_day === workDay.id_work_day})
+        
+      );
       // setRouteTransactionOperations(mapTransactionOperations);
       // setRouteTransactionOperationDescriptions(mapTransactionOperationDescriptions);
 
