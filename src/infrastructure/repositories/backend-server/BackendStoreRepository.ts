@@ -150,6 +150,7 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
         urlToRequest
       );
 
+      console.log("Recursive call: ", response)
       if (response.meta === undefined) {
         return response.data;
       } else {
