@@ -54,10 +54,10 @@ export default class DataReplicationService {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
             const workDaysWithUser:(WorkDayInformationModel)[] = pendingWorkDays.map(wd => ({
-                ...this.mapperLocalServerModel.toDTO(wd),
+                ...this.mapperLocalServerModel.toServerModel(wd),
                 id_user: userSession.id_vendor
             }));
-            const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toDTO(store));
+            const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toServerModel(store));
             
             console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
             console.log(`Pending stores to sync: ${pendingStores.length}`);
@@ -79,8 +79,8 @@ export default class DataReplicationService {
         try {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();            
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
-            const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toDTO(transaction));
-            const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toDTO(operation));
+            const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toServerModel(transaction));
+            const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toServerModel(operation));
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
@@ -101,8 +101,8 @@ export default class DataReplicationService {
         try {
             const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
             const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
-            const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toDTO(description));
-            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toDTO(description));
+            const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
+            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
 
             console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
             console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
@@ -124,7 +124,7 @@ export default class DataReplicationService {
         // Phase 4: Day operations
         try {
             const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
-            const dayOperationsToSync = pendingDayOperations.map((operation) => this.mapperLocalServerModel.toDTO(operation));
+            const dayOperationsToSync = pendingDayOperations.map((operation) => this.mapperLocalServerModel.toServerModel(operation));
 
             console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
 

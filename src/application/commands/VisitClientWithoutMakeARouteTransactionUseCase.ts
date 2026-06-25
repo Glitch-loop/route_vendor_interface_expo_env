@@ -77,7 +77,6 @@ export class VisitClientWithoutMakeARouteTransactionUseCase {
 
     // Persist all changes
     const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
-    console.log("Inserting day operation: ", newListdayOperations)
     await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
 
     // Extract new day operation

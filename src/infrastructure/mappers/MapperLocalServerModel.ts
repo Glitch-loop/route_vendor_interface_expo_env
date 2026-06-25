@@ -39,14 +39,14 @@ import { useDebugValue } from 'react';
 export class MapperLocalServerModel {
 	constructor() {}
 
-	toDTO(model: DayOperationLocalModel): DayOperationServerModel;
-	toDTO(model: InventoryOperationDescriptionLocalModel): InventoryOperationDescriptionServerModel;
-	toDTO(model: InventoryOperationLocalModel): InventoryOperationServerModel;
-	toDTO(model: RouteTransactionDescriptionLocalModel): RouteTransactionDescriptionServerModel;
-	toDTO(model: RouteTransactionLocalModel): RouteTransactionServerModel;
-	toDTO(model: StoreLocalModel): StoreServerModel;
-	toDTO(model: WorkDayInformationLocalModel): WorkDayInformationServerModel;
-	toDTO(
+	toServerModel(model: DayOperationLocalModel): DayOperationServerModel;
+	toServerModel(model: InventoryOperationDescriptionLocalModel): InventoryOperationDescriptionServerModel;
+	toServerModel(model: InventoryOperationLocalModel): InventoryOperationServerModel;
+	toServerModel(model: RouteTransactionDescriptionLocalModel): RouteTransactionDescriptionServerModel;
+	toServerModel(model: RouteTransactionLocalModel): RouteTransactionServerModel;
+	toServerModel(model: StoreLocalModel): StoreServerModel;
+	toServerModel(model: WorkDayInformationLocalModel): WorkDayInformationServerModel;
+	toServerModel(
 		model:
 			| DayOperationLocalModel
 			| InventoryOperationDescriptionLocalModel
@@ -63,18 +63,18 @@ export class MapperLocalServerModel {
 		if (isRouteTransactionLocalModel(model)) return this.routeTransactionLocalToServer(model);
 		if (isStoreLocalModel(model)) return this.storeLocalToServer(model);
 		if (isWorkDayInformationLocalModel(model)) return this.workDayInformationLocalToServer(model);
-
+    console.log("Model to convert: ", model)
 		throw new Error('Unknown local model type at moment of transforming to server model.');
 	}
 
-	toEntity(model: DayOperationServerModel): DayOperationLocalModel;
-	toEntity(model: InventoryOperationDescriptionServerModel): InventoryOperationDescriptionLocalModel;
-	toEntity(model: InventoryOperationServerModel): InventoryOperationLocalModel;
-	toEntity(model: RouteTransactionDescriptionServerModel): RouteTransactionDescriptionLocalModel;
-	toEntity(model: RouteTransactionServerModel): RouteTransactionLocalModel;
-	toEntity(model: StoreServerModel): StoreLocalModel;
-	toEntity(model: WorkDayInformationServerModel): WorkDayInformationLocalModel;
-	toEntity(
+	toLocalModel(model: DayOperationServerModel): DayOperationLocalModel;
+	toLocalModel(model: InventoryOperationDescriptionServerModel): InventoryOperationDescriptionLocalModel;
+	toLocalModel(model: InventoryOperationServerModel): InventoryOperationLocalModel;
+	toLocalModel(model: RouteTransactionDescriptionServerModel): RouteTransactionDescriptionLocalModel;
+	toLocalModel(model: RouteTransactionServerModel): RouteTransactionLocalModel;
+	toLocalModel(model: StoreServerModel): StoreLocalModel;
+	toLocalModel(model: WorkDayInformationServerModel): WorkDayInformationLocalModel;
+	toLocalModel(
 		model:
 			| DayOperationServerModel
 			| InventoryOperationDescriptionServerModel
@@ -91,7 +91,7 @@ export class MapperLocalServerModel {
 		if (isRouteTransactionServerModel(model)) return this.routeTransactionServerToLocal(model);
 		if (isStoreServerModel(model)) return this.storeServerToLocal(model);
 		if (isWorkDayInformationServerModel(model)) return this.workDayInformationServerToLocal(model);
-
+    
 		throw new Error('Unknown server model type at moment of transforming to local model.');
 	}
 
@@ -311,7 +311,7 @@ export class MapperLocalServerModel {
 		return {
 			id_route_transaction: model.id_transaction,
 			date: model.created_at,
-			state: 0,
+			state: "ACTIVE",
 			cash_received: model.received_amount,
 			latitude: model.latitude,
 			longitude: model.longitude,

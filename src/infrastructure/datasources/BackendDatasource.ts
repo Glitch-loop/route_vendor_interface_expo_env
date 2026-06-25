@@ -57,6 +57,7 @@ export class BackendDataSource {
       const response = await this.client.post<BackendResponse<TResponse>>(path, body, this.buildConfig(config));
       return response.data.data;
     } catch (error) {
+      console.log(error)
       throw this.toDatasourceError(error);
     }
   }

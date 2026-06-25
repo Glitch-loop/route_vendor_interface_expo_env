@@ -106,6 +106,7 @@ export const dayOperationsEmbeddedTable = `
   CREATE TABLE IF NOT EXISTS ${EMBEDDED_TABLES.DAY_OPERATIONS} (
     id_day_operation    TEXT NOT NULL UNIQUE,
     id_item             TEXT NOT NULL,
+    id_route_day        TEXT NOT NULL,
     operation_type      TEXT NOT NULL,
     created_at          DATETIME NOT NULL,
     latitude            TEXT,

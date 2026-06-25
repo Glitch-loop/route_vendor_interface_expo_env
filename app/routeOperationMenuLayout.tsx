@@ -349,6 +349,7 @@ const routeOperationMenuLayout = () => {
       }
 
     } catch (error) {
+      console.error(error)
       Toast.show({
         type: 'error',
         text1:'Ha habido un error al momento de descar la información, intente nuevamente.',
@@ -390,13 +391,7 @@ const routeOperationMenuLayout = () => {
           {isDayWorkClosed &&
             <ProjectButton
               title={'Descargar'}
-              onPress={() => {
-                if (isDayWorkClosed) {
-                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-                } else {
-                  handleDownloadWorkDayInfo();
-                }
-              }}
+              onPress={() => { handleDownloadWorkDayInfo(); }}
               buttonVariant= 'neutral'
               buttonStyle={tw`flex basis-3/8 py-4 my-2 bg-blue-400 px-4 rounded`}
             />

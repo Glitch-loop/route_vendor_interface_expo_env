@@ -37,16 +37,18 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
                     await tx.runAsync(`
                         INSERT INTO ${EMBEDDED_TABLES.DAY_OPERATIONS}
                             (id_day_operation, 
-                            id_item, 
+                            id_item,
+                            id_route_day,
                             operation_type, 
                             created_at, 
                             id_dependency,
                             latitude,
                             longitude)
-                            VALUES (?, ?, ?, ?, ?, ?, ?);
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     `, [
                         dayOperation.id_day_operation,
                         dayOperation.id_item,
+                        dayOperation.id_route_day,
                         dayOperation.operation_type,
                         dayOperation.created_at.toISOString(),
                         dayOperation.id_dependency,
@@ -138,6 +140,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
             `);
 
             return rows.map((row) => {
+                console.log("id_route_day: ", row.id_route_day)
                 return {
                     id_day_operation: row.id_day_operation,
                     id_item: row.id_item,

@@ -58,21 +58,23 @@ export class BackendUserRepository implements ServerUserRepository {
 	}
 
 	async login(cellphone: string, password: string): Promise<string|null> {
-			const body: LoginRequestInterface = {
-				cellphone: cellphone,
-				password: password
-			}
+		console.log("Starting login")
+		const body: LoginRequestInterface = {
+			cellphone: cellphone,
+			password: password
+		}
 
-			try {
-				const access_token = await this.dataSource.post<string|undefined>(
-					'/security/login',
-					body
-				);
+		try {
+			const access_token = await this.dataSource.post<string|undefined>(
+				'/security/login',
+				body
+			);
+			console.log("access_token: ", access_token)
+			return access_token ? access_token : null;
 
-				return access_token ? access_token : null;
-
-			} catch (error) {
-				return null;
-			}
+		} catch (error) {
+			console.log(error)
+			return null;
+		}
 	}
 }

@@ -80,7 +80,7 @@ export default class StartWorkDayUseCase {
 
     const { id_route, route_name, description, route_status } = routeSelected;
     const { id_day, id_route_day} = routeDaySelected;
-    
+
     // Setting auxiliar variables.
     for (const product of productToRegister) {
       const { id_product } = product;

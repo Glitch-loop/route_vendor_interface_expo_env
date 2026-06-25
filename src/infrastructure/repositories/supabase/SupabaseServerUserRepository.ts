@@ -46,4 +46,7 @@ export class SupabaseServerUserRepository implements ServerUserRepository {
 			throw new Error(`Failed to retrieve user by cellphone: ${error.message}`);
 		}
 	}
+
+
+	
 }
