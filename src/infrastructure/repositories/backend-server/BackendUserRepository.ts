@@ -36,12 +36,18 @@ export class BackendUserRepository implements ServerUserRepository {
 
 	async getUserByPhoneNumber(cellphone: string): Promise<User[]> {
 		try {
-				const response = await this.dataSource.get<UserInterface[]>(
-					'/users'
-				);
+			/*
+        Note (06-25-26)
+        Endpoint doesn't provide a way to retrieve all the routes.
+        There is not an "next_item" field for knowing if there is more information
+        for retrieving.
+      */
+			const response = await this.dataSource.get<UserInterface[]>(
+				'/users'
+			);
 
 			const users: User[] = [];
-			for (const record of response || []) {
+			for (const record of response.data || []) {
 				users.push({
 					id_vendor: record.id_user,
 					cellphone: record.cellphone ?? null,

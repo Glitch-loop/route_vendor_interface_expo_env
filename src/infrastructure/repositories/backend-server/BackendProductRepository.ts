@@ -62,19 +62,28 @@ export class BackendProductRepository implements ProductRepository {
   }
 
   async retrieveAllProducts(): Promise<Product[]> {
+    
     try {
-      const request: ListProductsRequestInterface = {
-        limit: '100',
-      };
+      // const response = await this.dataSource.get<ProductResponseInterface[]>(
+      //   '/products',
+      //   {
+      //     params: request,
+      //   }
+      // );
 
-      const response = await this.dataSource.get<ProductResponseInterface[] | PaginatedProductsResponseInterface>(
-        '/products',
-        {
-          params: request,
-        }
-      );
-      console.log("Products retrieved: ", response)
-      const products = this.extractProductsCollection(response);
+      const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);
+
+      
+      /*
+        Note (06-25-26):
+
+        Backend doesn't provide a param to list only active ones, so this repo will filter 
+        the products to let only the active ones. 
+
+        Active product: product_status = 1
+      */
+      const products = this.extractProductsCollection(allProducts)
+      .filter((store) => { return store.product_status === 1});
 
       return products.map((product) => this.toProductEntity(product));
     } catch (error) {
@@ -85,6 +94,38 @@ export class BackendProductRepository implements ProductRepository {
   async deleteProduct(product: Product): Promise<void> {
     // Note (06-18-26): Vendor's app must not perform this operation.
     return;
+  }
+
+  private async recursiveListStore(next_item: string|undefined): Promise<ProductResponseInterface[]> {
+    const listedStores:ProductResponseInterface[] = [];
+    let urlToRequest:string = `/products?limit=100&next_item=${next_item}`
+    try {
+      if(next_item === undefined) {
+        urlToRequest = `/products?limit=100`
+      } else {
+        urlToRequest = `/products?limit=100&next_item=${next_item}`
+      }
+
+      const response = await this.dataSource.get<ProductResponseInterface[]>(
+        urlToRequest
+      );
+
+      if (response.meta === undefined) {
+        return response.data;
+      } else {
+        if (response.meta.has_next_page === false) {
+          return response.data;
+        } else {
+          return listedStores.concat(
+            await this.recursiveListStore(response.meta.next_item)
+          )
+
+        }
+      }
+      
+    } catch (error: any) {
+      throw new Error(`Failed to list stores: ${error.message}`);
+    }
   }
 
   private extractProductsCollection(

@@ -48,7 +48,13 @@ export class BackendInventoryRepository implements InventoryRepository {
         '/inventories'
       );
 
-      return this.mapResponseToInventories(response);
+      /*
+        Note (06-25-26):
+        Still building. This method doesn't have a recursive function that retrieves all the inventories 
+        since requirements are being defined.
+      */
+
+      return this.mapResponseToInventories(response.data);
     } catch (error: any) {
       throw new Error(`Failed to list inventories: ${error.message}`);
     }

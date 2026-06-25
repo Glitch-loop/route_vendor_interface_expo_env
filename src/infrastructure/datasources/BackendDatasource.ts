@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import { BackendResponseInterface } from '../interfaces/BackendResponseInterface';
 
 type BackendRequestConfig = AxiosRequestConfig & {
   token?: string;
@@ -35,14 +36,13 @@ export class BackendDataSource {
   setAuthToken(token: string | null): void {
     this.authToken = token;
   }
-
   async get<TResponse>(
     path: string,
     config?: BackendRequestConfig
-  ): Promise<TResponse> {
+  ): Promise<BackendResponseInterface<TResponse>> {
     try {
-      const response = await this.client.get<BackendResponse<TResponse>>(path, this.buildConfig(config));
-      return response.data.data;
+      const response = await this.client.get<BackendResponseInterface<TResponse>>(path, this.buildConfig(config));
+      return response.data;
     } catch (error) {
       throw this.toDatasourceError(error);
     }
@@ -54,7 +54,7 @@ export class BackendDataSource {
     config?: BackendRequestConfig
   ): Promise<TResponse> {
     try {
-      const response = await this.client.post<BackendResponse<TResponse>>(path, body, this.buildConfig(config));
+      const response = await this.client.post<BackendResponseInterface<TResponse>>(path, body, this.buildConfig(config));
       return response.data.data;
     } catch (error) {
       console.log(error)
@@ -68,7 +68,7 @@ export class BackendDataSource {
     config?: BackendRequestConfig
   ): Promise<TResponse> {
     try {
-      const response = await this.client.put<BackendResponse<TResponse>>(path, body, this.buildConfig(config));
+      const response = await this.client.put<BackendResponseInterface<TResponse>>(path, body, this.buildConfig(config));
       return response.data.data;
     } catch (error) {
       throw this.toDatasourceError(error);
@@ -81,7 +81,7 @@ export class BackendDataSource {
     config?: BackendRequestConfig
   ): Promise<TResponse> {
     try {
-      const response = await this.client.patch<BackendResponse<TResponse>>(path, body, this.buildConfig(config));
+      const response = await this.client.patch<BackendResponseInterface<TResponse>>(path, body, this.buildConfig(config));
       return response.data.data;
     } catch (error) {
       throw this.toDatasourceError(error);

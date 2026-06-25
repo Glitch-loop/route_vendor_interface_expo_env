@@ -75,12 +75,19 @@ export class BackendRouteRepository implements RouteRepository {
         routesId.add(id_route)
       });
 
+
+      /*
+        Note (06-25-26)
+        Endpoint doesn't provide a way to retrieve all the routes.
+        There is not an "next_item" field for knowing if there is more information
+        for retrieving.
+      */
       const responseRoutes = await this.dataSource.get<RouteInterface[]>(
         '/route-organization/routes'
       );
-
+      
       // Organizing the information
-      responseRoutes.forEach((route) => {
+      responseRoutes.data.forEach((route: RouteInterface) => {
         const { id_route, route_name, description } = route;
         if (routesId.has(id_route)) {
           const newRoute: Route = new Route(
