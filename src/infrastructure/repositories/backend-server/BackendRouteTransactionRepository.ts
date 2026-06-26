@@ -181,7 +181,6 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 
 				if (state === 0) { // Route transaction cancelled.
 					const transactionToVerify: RouteTransaction[] = await this.retrieveRouteTransactionById([ id_transaction ]);
-
 					if (transactionToVerify.length === 0) { 
 						/* It's a cancelled route transaction that has not been created with the server. */
 						await this.dataSource.post<unknown, RouteTransactionServerModel>(
@@ -197,7 +196,6 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 							`/sellings/transactions/${id_transaction}/cancel`,
 						)
 					}
-
 				} else {
 					await this.dataSource.post<unknown, RouteTransactionServerModel>(
 						'/sellings/transactions',
