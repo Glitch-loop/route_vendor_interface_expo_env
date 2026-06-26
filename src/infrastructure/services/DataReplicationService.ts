@@ -78,8 +78,6 @@ export default class DataReplicationService {
         // Phase 2: Route transactions and inventory operations
         try {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
-            // const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
-
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
             const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
 
@@ -89,7 +87,6 @@ export default class DataReplicationService {
             const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
-            // console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
 
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
             console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);

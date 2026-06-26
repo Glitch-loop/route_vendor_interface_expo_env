@@ -123,7 +123,7 @@ export class MapperLocalServerModel {
       || operation_type === DAY_OPERATIONS.route_client_attention
       || operation_type === DAY_OPERATIONS.client_visited
     ) {
-      id_inventory_operation = id_item;
+      id_location = id_item;
     }
     
 		return {

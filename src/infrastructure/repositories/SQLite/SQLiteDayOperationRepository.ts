@@ -2,22 +2,28 @@
 import { injectable, inject } from 'tsyringe';
 import { SQLiteDatabase } from 'expo-sqlite';
 
-// Interfaces
+// Interfaces - Core
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
+
+// Interface - Infrastructure
+import { SyncDayOperationInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository';
 
 // Entities
 import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // DataSources
-import { SQLiteDataSource } from '../../datasources/SQLiteDataSource';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+
+// Container
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+
+// Models
+import DayOperationLocalModel from '@/src/infrastructure/persitence/model/local-models/DayOperationLocalModel';
+import { ReplicationDataInterface } from '@/src/infrastructure/persitence/data-replication/ReplicationDataInterface';
 
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
-import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { SyncDayOperationInformationRepository } from '../../persitence/interface/local-database/SyncDayOperationRepository';
-import DayOperationModel from '../../persitence/model/server-models/DayOperationServerModel';
-import DayOperationLocalModel from '../../persitence/model/local-models/DayOperationLocalModel';
-import { ReplicationDataInterface } from '../../persitence/data-replication/ReplicationDataInterface';
+
 
 @injectable()
 export class SQLiteDayOperationRepository extends DayOperationRepository implements SyncDayOperationInformationRepository {
