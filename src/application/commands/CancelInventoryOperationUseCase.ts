@@ -49,7 +49,7 @@ export default class CancelInventoryOperationUseCase {
     const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
 
-    const dayOperationOfInventory = dayOperations.find((dayOp) => { dayOp.id_item === id_inventory_operation && dayOp.operation_type !== DAY_OPERATIONS.cancel_inventory_operation})
+    const dayOperationOfInventory = dayOperations.find((dayOp) => { return dayOp.id_item === id_inventory_operation && dayOp.operation_type !== DAY_OPERATIONS.cancel_inventory_operation})
 
     if(dayOperationOfInventory === undefined) throw new Error('The inventory operation you are trying to cancel, it does not have its day operation.');
 
@@ -58,18 +58,15 @@ export default class CancelInventoryOperationUseCase {
     const dayAgg = new OperationDayAggregate(dayOperations);
     const inventoryAggProducts = new ProductInventoryAggregate(currentInventory);
 
-    console.log('Cancelling inventory operation:', id_inventory_operation);
     // Mark operation as cancelled
     inventoryAgg.cancelInventoryOperation();
     const cancelledOperation: InventoryOperation = inventoryAgg.getInventoryOperation();
     
-    console.log('Reverting stock effects if needed...');
     // Revert stock effects for restock inventory
     if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
       console.log(inventory_operation_descriptions)  
       for (const desc of inventory_operation_descriptions) {
         const found = currentInventory.find((pi) => pi.get_id_product() === desc.id_product);
-        console.log('Reverting stock for product:', desc.id_product);
         if (!found) throw new Error('Unexpected error: Product inventory not found for cancellation.');
         inventoryAggProducts.decreaseStock(found.get_id_product_inventory(), desc.amount);
       }
@@ -83,17 +80,13 @@ export default class CancelInventoryOperationUseCase {
       new Date(this.dateService.getCurrentTimestamp()),
     );
 
-    console.log('Persist information');
     // Persist changes
     const modifiedInventory: ProductInventory[] = inventoryAggProducts.getModifiedProductInventory();
     const updatedProducts: ProductInventory[] = modifiedInventory;
     const newDayOps: DayOperation[] | null = dayAgg.getNewDayOperations();
 
-    console.log("Update inventory operation: ", cancelledOperation)
     await this.localInventoryOperationRepo.updateInventoryOperation(cancelledOperation);
-    console.log("Update product")
     if (updatedProducts.length > 0) await this.localProductInventoryRepo.updateInventory(updatedProducts);
-    console.log("Update day ops")
     if (newDayOps && newDayOps.length > 0) await this.localDayOperationRepo.insertDayOperations(newDayOps);
   }
 }
