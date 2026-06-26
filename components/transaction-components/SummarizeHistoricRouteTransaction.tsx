@@ -11,13 +11,31 @@ import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 import { getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from "@/utils/product-inventory/utils";
 import ProductClass from '@/classes/ProductClass';
 
+interface TransactionDescriptionWithDate extends RouteTransactionDescriptionDTO {
+    transaction_date: string;
+}
+
+const getDateKey = (dateValue: string | Date): string => {
+    if (typeof dateValue === 'string') {
+        const match = dateValue.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (match) return match[1];
+    }
+
+    const date = new Date(dateValue);
+    return [
+        date.getUTCFullYear(),
+        String(date.getUTCMonth() + 1).padStart(2, '0'),
+        String(date.getUTCDate()).padStart(2, '0')
+    ].join('-');
+};
+
 /**
  * Helper: Get unique transaction dates sorted in ascending order (earliest first)
  */
-const getUniqueSortedDates = (descriptions: RouteTransactionDescriptionDTO[]): Date[] => {
+const getUniqueSortedDates = (descriptions: TransactionDescriptionWithDate[]): Date[] => {
     const uniqueDates = new Set<string>();
     descriptions.forEach(desc => {
-        const dateStr = new Date(desc.created_at).toISOString().split('T')[0];
+        const dateStr = getDateKey(desc.transaction_date);
         uniqueDates.add(dateStr);
     });
     return Array.from(uniqueDates)
@@ -29,14 +47,14 @@ const getUniqueSortedDates = (descriptions: RouteTransactionDescriptionDTO[]): D
  * Helper: Get total amount for a product on a specific date
  */
 const getProductAmountByDate = (
-    descriptions: RouteTransactionDescriptionDTO[],
+    descriptions: TransactionDescriptionWithDate[],
     productId: string,
     date: Date
 ): number => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getDateKey(date);
     return descriptions
         .filter(desc => {
-            const descDateStr = new Date(desc.created_at).toISOString().split('T')[0];
+            const descDateStr = getDateKey(desc.transaction_date);
             return desc.id_product === productId && descDateStr === dateStr;
         })
         .reduce((sum, desc) => sum + desc.amount, 0);
@@ -47,7 +65,7 @@ const getProductAmountByDate = (
  */
 const renderTransactionTable = (
     title: string,
-    descriptions: RouteTransactionDescriptionDTO[],
+    descriptions: TransactionDescriptionWithDate[],
     productInventoryMap: Map<string, ProductClass>
 ) => {
     const dates = getUniqueSortedDates(descriptions);
@@ -127,17 +145,30 @@ const SummarizeHistoricRouteTransaction = ({
     routeTransactions: RouteTransactionDTO[],
     productInventoryMap: Map<string, ProductClass>
 }) => {
-    const salesTransactionDescriptions: RouteTransactionDescriptionDTO[] = 
+    const transactionDateById = new Map<string, string>(
+        routeTransactions.map((transaction) => [
+            transaction.id_route_transaction,
+            getDateKey(transaction.date)
+        ])
+    );
+
+    const salesTransactionDescriptions: TransactionDescriptionWithDate[] = 
         getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(
             routeTransactions,
             DAY_OPERATIONS.sales
-        );
+        ).map((description) => ({
+            ...description,
+            transaction_date: transactionDateById.get(description.id_route_transaction) ?? getDateKey(description.created_at)
+        }));
 
-    const devolutionTransactionDescriptions: RouteTransactionDescriptionDTO[] = 
+    const devolutionTransactionDescriptions: TransactionDescriptionWithDate[] = 
         getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(
             routeTransactions,
             DAY_OPERATIONS.product_devolution
-        );
+        ).map((description) => ({
+            ...description,
+            transaction_date: transactionDateById.get(description.id_route_transaction) ?? getDateKey(description.created_at)
+        }));
 
     // Products that had at least one sale
     const productsInStore: Set<string> = new Set(
@@ -172,7 +203,7 @@ const SummarizeHistoricRouteTransaction = ({
             {/* Products Not in Store */}
             {productsNotInStore.length > 0 && (
                 <View style={tw`mb-6`}>
-                    <Text style={tw`text-lg font-bold mb-2`}>Productos Sin Venta</Text>
+                    <Text style={tw`text-lg font-bold mb-2`}>Productos que no estan en tienda</Text>
                     <View style={tw`bg-gray-50 border border-gray-300 rounded p-3`}>
                         {productsNotInStore.map((productId) => {
                             const product = productInventoryMap.get(productId);

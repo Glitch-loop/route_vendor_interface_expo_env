@@ -385,12 +385,11 @@ useEffect(() => {
     if (id_store_search_param) {
       const retrieveRouteTransactionsFromServer: RetrieveHistoricRouteTransactionByStoreQuery = container.resolve<RetrieveHistoricRouteTransactionByStoreQuery>(RetrieveHistoricRouteTransactionByStoreQuery);
       const retrieveRouteTransacionFromLocal: ListRouteTransactionsOfStoreQuery = container.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
-      const allRouteTransactions: ListAllRouteTransactionsQuery = container.resolve<ListAllRouteTransactionsQuery>(ListAllRouteTransactionsQuery);
-      
-      console.log("allRouteTransactions: ", await allRouteTransactions.execute())
+
       const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
       
       if (routeTransactionFromLocal.length > 0) {
+        console.log("historic info from local db. Records: ", routeTransactionFromLocal.length)
         setHistoricRouteTransactions(routeTransactionFromLocal)
       } else {
         console.log("id_store_search_param: ", id_store_search_param)
