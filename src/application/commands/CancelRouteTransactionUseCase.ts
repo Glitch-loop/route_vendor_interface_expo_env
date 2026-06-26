@@ -16,9 +16,6 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { DateService } from '@/src/infrastructure/services/DateService';
 import { inject, injectable } from 'tsyringe';
 
-// Interfaces
-
-
 @injectable()
 export default class CancelRouteTransaction {
     constructor(
@@ -39,9 +36,8 @@ export default class CancelRouteTransaction {
         const routeTransactions: RouteTransaction[] = await this.localRouteTransactionRepository.retrieveRouteTransactionById([ id_route_transaction ]);
 
         if (routeTransactions.length === 0) throw new Error("The route transaction to cancel does not exist.");
-        
-        const dayOperationOfTransaction = dayOperations.find((dayOp) => { dayOp.id_item === id_route_transaction && dayOp.operation_type !== DAY_OPERATIONS.cancel_route_transaction})
-        if(dayOperationOfTransaction === undefined) throw new Error('The route transaction you are trying to cancel, it does not have its day operation.');
+        const dayOperationOfTransaction = dayOperations.find((dayOp) => { return dayOp.id_item === id_route_transaction && dayOp.operation_type === DAY_OPERATIONS.route_transaction })
+        if (dayOperationOfTransaction === undefined) throw new Error('The route transaction you are trying to cancel, it does not have its day operation.');
         
         const routeTransaction:RouteTransaction = routeTransactions[0];
 

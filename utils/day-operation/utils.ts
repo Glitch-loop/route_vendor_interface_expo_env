@@ -97,7 +97,7 @@ export function getDayOperationColor(dayOperation: DayOperationDTO|undefined, de
                 style = 'bg-amber-500';
                 break;
             case DAY_OPERATIONS.route_client_attention:
-                if (dependencyMap.has(id_day_operation)) style = 'bg-amber-300/75';
+                if (dependencyMap.has(id_day_operation)) style = 'bg-amber-100';
                 else style = 'bg-amber-300';
                 break;
             default: 
