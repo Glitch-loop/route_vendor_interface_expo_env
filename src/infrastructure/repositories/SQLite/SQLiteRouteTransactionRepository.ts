@@ -404,16 +404,55 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     }
 
     async listPendingRouteTransactionToSync(): Promise<RouteTransactionLocalModel[]> {
+        const routeTransactionMap: Map<string, RouteTransactionLocalModel> = new Map<string, RouteTransactionLocalModel>();
+        const idRouteTransaction:string[] = [];
+        const routeTransactionToSync: RouteTransactionLocalModel[] = [];
+        const routeTransactionToSyncWithoutDesc: RouteTransactionLocalModel[] = [];
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: RouteTransactionLocalModel[] = [];
+
+            // Retrieving route transactions pending to sync
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                pending.push(row as RouteTransactionLocalModel);
+                routeTransactionToSyncWithoutDesc.push(row as RouteTransactionLocalModel);
             }
-            return pending;
+
+            // Retrieving description of the route transactions.
+            for (const transaction of routeTransactionToSyncWithoutDesc) {
+                const { id_route_transaction } = transaction;
+                routeTransactionMap.set(id_route_transaction, transaction);
+                idRouteTransaction.push(id_route_transaction);
+            }
+
+            const routeTransactionDescriptions = await this.retrieveRouteTransactionDescriptionsByIds(idRouteTransaction);
+
+            for (const desc of routeTransactionDescriptions) {
+                const { id_route_transaction } = desc;
+                if (routeTransactionMap.has(id_route_transaction)) {
+                    routeTransactionMap.get(id_route_transaction)!
+                        .transaction_descriptions.push(
+                            {
+                                id_route_transaction_description: desc.id_route_transaction_description,
+                                price_at_moment: desc.price_at_moment,
+                                cost_at_moment: desc.cost_at_moment,
+                                amount: desc.amount,
+                                created_at: new Date(desc.created_at),
+                                id_product_inventory: desc.id_product_inventory,
+                                id_transaction_operation_type: desc.id_transaction_operation_type,
+                                id_product: desc.id_product,
+                                id_route_transaction: desc.id_route_transaction_description, 
+                            } as RouteTransactionDescriptionLocalModel
+                        );
+                }
+            }
+
+            for(const [idTransaction, routeTransaction] of routeTransactionMap) {
+                routeTransactionToSync.push(routeTransaction);
+            }
+
+            return routeTransactionToSync;
         } catch (error) {
             throw new Error('Failed to list pending route transactions to sync: ' + error);
         }
@@ -439,8 +478,20 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
         }
     }
 
-    async markRouteTransactionsAsSynced(ids: string[]): Promise<void> {
-        if (!ids || ids.length === 0) return;
+    async markRouteTransactionsAsSynced(routeTransactionSynced: RouteTransactionLocalModel[]): Promise<void> {
+        if (!routeTransactionSynced || routeTransactionSynced.length === 0) return;
+
+        const ids: string[] = routeTransactionSynced.map(t => t.id_route_transaction);
+        const idsDesc: string[] = [];
+
+        for (const routeTransaction of routeTransactionSynced) {
+            const { transaction_descriptions } = routeTransaction;
+            for (const desc of transaction_descriptions) {
+                const { id_route_transaction_description } = desc;
+                idsDesc.push(id_route_transaction_description)
+            }
+        }
+
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
@@ -451,6 +502,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     ids
                 );
             });
+
+            this.markRouteTransactionDescriptionsAsSynced(idsDesc);
         } catch (error) {
             throw new Error('Failed to mark route transactions as synced: ' + error);
         }

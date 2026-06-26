@@ -1,9 +1,6 @@
 // Libraries
 import { injectable, inject } from 'tsyringe';
 
-// DTOs
-import StoreDTO from '@/src/application/dto/StoreDTO';
-
 // Entities
 import { Store } from '@/src/core/entities/Store';
 
@@ -22,25 +19,6 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 interface RetrieveLocationsByIdsRequestInterface {
     id_locations: string[];
-}
-
-interface CreateLocationRequestInterface {
-    id_location?: string;
-  street: string;
-    ext_number: string | null;
-  colony: string;
-  postal_code: string;
-    address_reference: string | null;
-    location_name: string;
-    latitude: string;
-    longitude: string;
-    id_creator: string;
-    id_client: string|null;
-    status_location: number;
-    id_location_type: string;
-    created_at: string;
-    updated_at?: string;
-    notes?: any[];
 }
 
 interface LocationStoreResponseInterface {

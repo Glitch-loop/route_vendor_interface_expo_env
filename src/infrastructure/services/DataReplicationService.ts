@@ -44,12 +44,11 @@ export default class DataReplicationService {
         @inject(TOKENS.SyncServerWorkdayInformationRepository) private readonly serverWorkdayRepo: SyncServerWorkdayInformationRepository,
         @inject(TOKENS.SyncServerRouteTransactionRepository) private readonly serverRouteTxRepo: SyncServerRouteTransactionRepository,
         @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
-        @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
+    @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
         private readonly mapperLocalServerModel: MapperLocalServerModel,
     ) { }   
     
     async executeReplicationSession(userSession: UserDTO): Promise<void> {
-        return; 
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
@@ -78,17 +77,26 @@ export default class DataReplicationService {
 
         // Phase 2: Route transactions and inventory operations
         try {
-            const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();            
+            const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
+            // const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
+
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
+            const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
+
             const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toServerModel(transaction));
+            // const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
             const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toServerModel(operation));
-            
+            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
+
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
+            // console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
+
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
+            console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
 
             if (pendingRouteTx.length > 0) {
                 await this.serverRouteTxRepo.upsertRouteTransactions(routeTransactionsToSync);
-                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx.map(t => t.id_route_transaction));
+                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx);
             }
             if (pendingInvOps.length > 0) {
                 await this.serverInventoryRepo.upsertInventoryOperations(inventoryOperationsToSync);
@@ -98,29 +106,25 @@ export default class DataReplicationService {
             console.error("Phase 2 error: ", error);
         }
 
-        // Phase 3: Descriptions
-        try {
-            const pendingRouteTxDescs = await this.syncRouteTxRepo.listPendingRouteTransactionDescriptionToSync();
-            const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
-            const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
-            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
+        // try {
 
-            console.log(`Pending route transaction descriptions to sync: ${pendingRouteTxDescs.length}`);
-            console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
 
-            if (pendingRouteTxDescs.length > 0) {
-                await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(routeTransactionDescriptionsToSync);
-                await this.syncRouteTxRepo.markRouteTransactionDescriptionsAsSynced(pendingRouteTxDescs.map(d => d.id_route_transaction_description));
-            }
+            
 
-            if (pendingInvOpDescs.length > 0) {
-                await this.serverInventoryRepo.upsertInventoryOperationDescriptions(inventoryOperationDescriptionsToSync);
-                await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
-            }
-        } catch (error) {
-            console.error("Phase 3 error: ", error);
-            // Do not mark as synced on failure; let future session retry
-        }
+
+        //     if (pendingRouteTxDescs.length > 0) {
+        //         await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(routeTransactionDescriptionsToSync);
+        //         await this.syncRouteTxRepo.markRouteTransactionDescriptionsAsSynced(pendingRouteTxDescs.map(d => d.id_route_transaction_description));
+        //     }
+
+        //     if (pendingInvOpDescs.length > 0) {
+        //         await this.serverInventoryRepo.upsertInventoryOperationDescriptions(inventoryOperationDescriptionsToSync);
+        //         await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
+        //     }
+        // } catch (error) {
+        //     console.error("Phase 3 error: ", error);
+        //     // Do not mark as synced on failure; let future session retry
+        // }
 
         // Phase 4: Day operations
         try {

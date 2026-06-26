@@ -88,7 +88,7 @@ export class MapperLocalServerModel {
 		if (isInventoryOperationDescriptionServerModel(model)) return this.inventoryOperationDescriptionServerToLocal(model);
 		if (isInventoryOperationServerModel(model)) return this.inventoryOperationServerToLocal(model);
 		if (isRouteTransactionDescriptionServerModel(model)) return this.routeTransactionDescriptionServerToLocal(model);
-		if (isRouteTransactionServerModel(model)) return this.routeTransactionServerToLocal(model);
+		// if (isRouteTransactionServerModel(model)) return this.routeTransactionServerToLocal(model);
 		if (isStoreServerModel(model)) return this.storeServerToLocal(model);
 		if (isWorkDayInformationServerModel(model)) return this.workDayInformationServerToLocal(model);
     
@@ -201,6 +201,7 @@ export class MapperLocalServerModel {
 			id_work_day: model.id_work_day,
 			id_payment_method: model.id_payment_method,
 			id_payment_schema: PAYMENT_SCHEMAS.IMMEDIATE, // Note (06-24-26): At moment, it's the unique valid type of schema.
+			transaction_descriptions: model.transaction_descriptions.map((desc) => this.routeTransactionDescriptionLocalToServer(desc)),
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
 			is_deleted: model.is_deleted,
@@ -307,22 +308,23 @@ export class MapperLocalServerModel {
 		};
 	}
 
-	private routeTransactionServerToLocal(model: RouteTransactionServerModel): RouteTransactionLocalModel {
-		return {
-			id_route_transaction: model.id_transaction,
-			date: model.created_at,
-			state: "ACTIVE",
-			cash_received: model.received_amount,
-			latitude: model.latitude,
-			longitude: model.longitude,
-			id_work_day: model.id_work_day,
-			id_payment_method: model.id_payment_method,
-			id_store: model.id_location,
-			is_synced: model.is_synced,
-			updated_at: model.updated_at,
-			is_deleted: model.is_deleted,
-		};
-	}
+	// private routeTransactionServerToLocal(model: RouteTransactionServerModel): RouteTransactionLocalModel {
+	// 	return {
+	// 		id_route_transaction: model.id_transaction,
+	// 		date: model.created_at,
+	// 		state: "ACTIVE",
+	// 		cash_received: model.received_amount,
+	// 		latitude: model.latitude,
+	// 		longitude: model.longitude,
+	// 		id_work_day: model.id_work_day,
+	// 		id_payment_method: model.id_payment_method,
+	// 		id_store: model.id_location,
+	// 		transaction_descriptions: model.transaction_descriptions.map((desc) => this.routeTransactionDescriptionLocalToServer(desc)),
+	// 		is_synced: model.is_synced,
+	// 		updated_at: model.updated_at,
+	// 		is_deleted: model.is_deleted,
+	// 	};
+	// }
 
 	private storeServerToLocal(model: StoreServerModel): StoreLocalModel {
 		return {
