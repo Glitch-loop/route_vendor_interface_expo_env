@@ -199,7 +199,7 @@ export class MapperLocalServerModel {
 			id_location: model.id_store,
 			// id_client: '', // Note (06-24-26): At moment this field is not necessary.
 			id_work_day: model.id_work_day,
-			id_payment_method: model.pa.id_payment_method,
+			id_payment_method: model.id_payment_method,
 			id_payment_schema: PAYMENT_SCHEMAS.IMMEDIATE, // Note (06-24-26): At moment, it's the unique valid type of schema.
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
