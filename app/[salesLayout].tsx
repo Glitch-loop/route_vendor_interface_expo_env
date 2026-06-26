@@ -30,6 +30,8 @@ import PaymentProcess from '@/components/sale-layout/payment/PaymentProcess';
 import MenuHeader from '@/components/shared-components/MenuHeader';
 import ActionButton from '@/components/sale-layout/table-product/ActionButton';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import SummarizeHistoricRouteTransaction from '@/components/transaction-components/SummarizeHistoricRouteTransaction';
+import ActionDialog from '@/components/shared-components/ActionDialog';
 
 // Mapper and DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
@@ -46,6 +48,9 @@ import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/Retrie
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
 import VisitClientOutOfRouteUseCase from '@/src/application/commands/VisitClientOutOfRouteUseCase';
+import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
+import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
+import RetrieveHistoricRouteTransactionByStoreQuery from '@/src/application/queries/RetrieveHistoricRouteTransactionByStoreQuery';
 
 //Classes
 import ProductClass from '@/classes/ProductClass';
@@ -65,13 +70,6 @@ import {
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
-import ActionDialog from '@/components/shared-components/ActionDialog';
-import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
-import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
-import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import SummarizeHistoricRouteTransaction from '@/components/transaction-components/SummarizeHistoricRouteTransaction';
-import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
-import RetrieveHistoricRouteTransactionByStoreQuery from '@/src/application/queries/RetrieveHistoricRouteTransactionByStoreQuery';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
