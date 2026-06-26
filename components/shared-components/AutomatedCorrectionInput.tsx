@@ -49,9 +49,7 @@ const AutomatedCorrectionNumberInput = ({
   }
 
   const handleFocusInput = () => {
-    // console.log("On touch start")
     setInputValue('');
-    // if (inputValue === '0') { }
   }
 
   return (

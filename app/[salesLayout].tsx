@@ -387,10 +387,8 @@ useEffect(() => {
       const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
       
       if (routeTransactionFromLocal.length > 0) {
-        console.log("historic info from local db. Records: ", routeTransactionFromLocal.length)
         setHistoricRouteTransactions(routeTransactionFromLocal)
       } else {
-        console.log("id_store_search_param: ", id_store_search_param)
         const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_search_param);
         setHistoricRouteTransactions(routeTransactionFromServer);
       }
