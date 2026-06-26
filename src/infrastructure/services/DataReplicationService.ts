@@ -49,6 +49,7 @@ export default class DataReplicationService {
     ) { }   
     
     async executeReplicationSession(userSession: UserDTO): Promise<void> {
+        return; 
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
@@ -81,7 +82,7 @@ export default class DataReplicationService {
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
             const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toServerModel(transaction));
             const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toServerModel(operation));
-
+            
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
 

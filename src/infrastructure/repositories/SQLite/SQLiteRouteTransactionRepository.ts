@@ -49,7 +49,18 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     //     return new PaymentMethod(id_payment_method, name);
     // }
 
-    async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
+    async insertRouteTransaction(route_transaction: RouteTransaction, is_synced: boolean): Promise<void> {
+        let insertSyncedRecord = `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
+                    (id_route_transaction, 
+                    date, 
+                    state, 
+                    cash_received, 
+                    latitude,
+                    longitude,
+                    id_work_day, 
+                    id_payment_method,
+                    id_store
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
         try {
             await this.dataSource.initialize();
 
@@ -68,9 +79,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             
 
             const db: SQLiteDatabase = await this.dataSource.getClient();
-
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
+            if (is_synced) {
+                insertSyncedRecord = `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
                     (id_route_transaction, 
                     date, 
                     state, 
@@ -78,9 +88,14 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     latitude,
                     longitude,
                     id_work_day, 
-                    id_payment_method, 
-                    id_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-                `,
+                    id_payment_method,
+                    id_store,
+                    is_synced,
+                    is_deleted
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0);`;
+            }
+            await db.withExclusiveTransactionAsync(async (tx) => {
+                await tx.runAsync(insertSyncedRecord,
                 [
                     id_route_transaction,
                     date.toISOString(),

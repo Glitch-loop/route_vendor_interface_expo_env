@@ -165,7 +165,7 @@ export default class RegisterNewRouteTransaction {
         const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
         await this.localProductInventoryRepo.updateInventory(updatedInventory);
-        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
+        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
         await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
         
         return routeTransaction;

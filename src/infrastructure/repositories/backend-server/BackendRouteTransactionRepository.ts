@@ -25,17 +25,21 @@ import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransacti
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import PaymentMethodServerModel from '../../persitence/model/server-models/PaymentMethodServerModel';
+
+
 
 
 interface RouteTransactionWithRouteDescriptions extends RouteTransactionServerModel {
-	transaction_descriptions: RouteTransactionDescriptionServerModel[]
+	payment_method: PaymentMethodServerModel
+	transaction_descriptions: (RouteTransactionDescriptionServerModel&{id_transaction:string; id_transaction_description: string;})[]
 }
 
 @injectable()
 export class BackendRouteTransactionRepository implements RouteTransactionRepository, SyncServerRouteTransactionRepository {
 	constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 	
-	async insertRouteTransaction(route_transaction: RouteTransaction): Promise<void> { 
+	async insertRouteTransaction(route_transaction: RouteTransaction, is_synced: boolean): Promise<void> { 
 		/*
 			Note (06-25-26)
 			Vendor's app must not implement this method.
@@ -87,10 +91,10 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 						transaction.id_location,
 						transaction.latitude,
 						transaction.longitude,
-						transaction.id_payment_method as PAYMENT_METHODS, 
+						transaction.payment_method.id_payment_method as PAYMENT_METHODS, 
 						transaction_descriptions.map((descriptions) => {
 							return new RouteTransactionDescription(
-								descriptions.id_route_transaction_description,
+								descriptions.id_transaction_description,
 								descriptions.price_at_moment,
 								descriptions.cost_at_moment,
 								descriptions.quantity,
@@ -98,7 +102,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 								'', // Note (06-25-26): Since this route transaction doesn't belong to this day, it doesn't have a product inventory.
 								descriptions.id_transaction_operation_type as DAY_OPERATIONS,
 								descriptions.id_product,
-								descriptions.id_route_transaction_description
+								descriptions.id_transaction
 							)
 						}),
 					)

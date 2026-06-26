@@ -40,6 +40,7 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
 import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
+import RouteTransactionDTO from "../dto/RouteTransactionDTO";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
@@ -74,7 +75,7 @@ export default class StartWorkDayUseCase {
     routeDaySelected: RouteDay): Promise<void> {
     
     const availableProductsMap: Map<string, Product> = new Map<string, Product>();
-    const historicRouteTransactions: RouteTransaction[] = []; 
+    let historicRouteTransactions: RouteTransaction[] = []; 
 
     if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for start shift.");
     
@@ -201,11 +202,10 @@ export default class StartWorkDayUseCase {
     // This information is going to be used for insights.
     for (const store of orderedStores) {
         const { id_store } = store;
-        historicRouteTransactions.concat(
-            await this.remoteRouteTransactionRepo.listRouteTransactionByStore(id_store)
-        );
+        const historicRouteTransactionsOfCurrentStore:RouteTransaction[] = await this.remoteRouteTransactionRepo.listRouteTransactionByStore(id_store);
+        historicRouteTransactions = historicRouteTransactions.concat(historicRouteTransactionsOfCurrentStore);
     }
-
+    console.log("Historic data: ", historicRouteTransactions)
     // Store information in local database.
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     console.log("Inserting stores")
@@ -217,7 +217,6 @@ export default class StartWorkDayUseCase {
     }
     
     console.log("Inserting inventories")
-    console.log("New inventory: ")
     await this.localProductInventoryRepo.createInventory(newInventory);
     console.log("Inserting work days")
     await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
@@ -225,8 +224,10 @@ export default class StartWorkDayUseCase {
     await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
     
     console.log("Inserting historic route transactions")
+    console.log("HISTORIC data retrieved: ", historicRouteTransactions)
     for (const routeTransaction of historicRouteTransactions) {
-        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction);
+        console.log("Historic Transaction: ", routeTransaction)
+        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, true);
     }
   }
 
