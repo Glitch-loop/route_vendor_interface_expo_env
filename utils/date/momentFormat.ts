@@ -1,13 +1,15 @@
+// Libraries
+import 'dayjs/locale/es';
+import dayjs from 'dayjs';
+
+// Data types
 import DayType from '@/src/core/types/DaysType';
 
-import dayjs from 'dayjs';
-import 'dayjs/locale/es';
-import DAYS from '../../lib/days';
+// Constants
+import { DAYS } from '@/src/core/constants/Days';
 
 // Set the locale globally (similar to moment.locale('es'))
 dayjs.locale('es');
-
-
 
 export function timesamp_standard_format() {
   return dayjs().format('dddd, DD-MMM-YY');
