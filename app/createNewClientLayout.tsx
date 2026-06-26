@@ -223,7 +223,8 @@ export default function CreateNewClientLayout() {
       ...formData
     };
 
-    const { id_location_type, street, ext_number, colony, postal_code, address_reference } = newStoreData;
+    const { store_name, id_location_type, street, ext_number, colony, postal_code, address_reference } = newStoreData;
+    const locationTypeName = LOCATION_TYPES_CONSTANTS[id_location_type]
 
     const registerNewClientUseCase = di_container.resolve<RegisterClientProspectUseCase>(RegisterClientProspectUseCase)
     const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
@@ -231,7 +232,7 @@ export default function CreateNewClientLayout() {
 
     try {
       const dayOperation:DayOperationDTO = await registerNewClientUseCase.execute(
-        fullStoreName,
+        locationTypeName.location_type_name.trim() + ' ' + store_name,
         id_location_type,
         street,
         ext_number,
@@ -337,7 +338,7 @@ export default function CreateNewClientLayout() {
               onChangeText={(text) => handleFormChange('store_name', text)}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
             {Boolean(fullStoreName) && (
-              <Text style={tw`mt-2 text-xs text-gray-600`}>
+              <Text style={tw`mt-2 text-xs text-black italic underline`}>
                 Nombre completo: {fullStoreName}
               </Text>
             )}

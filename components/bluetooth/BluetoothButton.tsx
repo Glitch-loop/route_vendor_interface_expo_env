@@ -182,7 +182,6 @@ const BluetoothButton = () => {
     //If the device has a current connected printer, set the printer as the current one in the component
     //otherwise try to connect to the last printer.
     const connectedPrinter: BluetoothDevice|null = await printerService.getConnectedPrinter();
-    console.log("Initializing ble comoponent; ", currentPrinerSlice)
     if (connectedPrinter !== null) {
       setConnectedPrinter(connectedPrinter)
     } else {

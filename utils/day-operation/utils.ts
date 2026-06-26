@@ -85,10 +85,10 @@ export function getDayOperationColor(dayOperation: DayOperationDTO|undefined, de
                 style ='bg-red-300';
                 break;
             case DAY_OPERATIONS.new_client_registration:
-                style ='bg-green-400';
+                style ='bg-green-600';
                 break;
-            case DAY_OPERATIONS.new_client_registration:
-                style ='bg-blue-400';
+                case DAY_OPERATIONS.prospect_registration:
+                style ='bg-green-400';
                 break;
             case DAY_OPERATIONS.attention_out_of_route:
                 style = 'bg-orange-600';
@@ -118,6 +118,9 @@ export function getRouteStatusStore(day_operation_type: string|undefined): strin
     switch (day_operation_type) {
         case DAY_OPERATIONS.new_client_registration:
             style ='Nuevo cliente';
+            break;
+        case DAY_OPERATIONS.prospect_registration:
+            style ='Prospecto de cliente';
             break;
         case DAY_OPERATIONS.attention_out_of_route:
             style = 'Cliente fuera de ruta';

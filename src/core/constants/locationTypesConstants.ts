@@ -3,7 +3,7 @@ import LocationType from "@/src/core/types/LocationType";
 export const LOCATION_TYPES_CONSTANTS: Record<string, LocationType> = {
   "c272bb96-cf1a-4d8f-8598-179e6869847a": {
     id_location_type: "c272bb96-cf1a-4d8f-8598-179e6869847a",
-    location_type_name: "Tienda",
+    location_type_name: "Abarrotes",
     created_at: "2026-05-12 23:11:27.272537+00"
   },
   "d09bfbfe-e3bd-4ec8-a405-a94c8388965d": {

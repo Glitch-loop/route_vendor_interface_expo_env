@@ -492,6 +492,7 @@ useEffect(() => {
       try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
+        console.log("Selling out of route")
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;

@@ -20,6 +20,10 @@ const TypeOperationItem = () => {
       </View>
       <View style={tw`ml-2 mb-2 flex flex-row items-center`}>
         <View style={tw`flex flex-row h-8 w-8 bg-green-400 rounded-full`} />
+        <Text style={tw`ml-2 text-black flex flex-row items-center`}>Prospecto de cliente</Text>
+      </View>
+      <View style={tw`ml-2 mb-2 flex flex-row items-center`}>
+        <View style={tw`flex flex-row h-8 w-8 bg-green-600 rounded-full`} />
         <Text style={tw`ml-2 text-black flex flex-row items-center`}>Nuevo cliente</Text>
       </View>
       <View style={tw`ml-2 mb-2 flex flex-row items-center`}>

@@ -4,6 +4,7 @@ import { IStoreRouteMap } from "@/interfaces/interfaces";
 // DTOs
 import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 import StoreDTO from "@/src/application/dto/StoreDTO";
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 
 // Utils
 import { createDayOperationDependencyMap, getDayOperationColor, getRouteStatusStore } from "@/utils/day-operation/utils";
@@ -43,13 +44,21 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
     const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
     const dependencyMap = createDayOperationDependencyMap(dayOperations);
     dayOperations.forEach((dayOperation) => {
-        dayOperationMap.set(dayOperation.id_item, dayOperation);
+        if (dayOperation.operation_type !== DAY_OPERATIONS.vist_to_client) {
+            dayOperationMap.set(dayOperation.id_item, dayOperation);
+        }
     });
 
     stores.forEach((store) => {
         const dayOperation = dayOperationMap.get(store.id_store);
         let color = '';
         let status = '';
+        if (dayOperation) {
+            console.log("operation type: ", dayOperation.operation_type)
+            console.log("IS PROSCPECT RESGISTRATION: ", dayOperation.operation_type === DAY_OPERATIONS.prospect_registration)
+        } else {
+            console.log("Store to convert to map pin unavailable")
+        }
         if (dayOperation) {
             const { operation_type } = dayOperation;
             color = getDayOperationColor(dayOperation, dependencyMap, false);
