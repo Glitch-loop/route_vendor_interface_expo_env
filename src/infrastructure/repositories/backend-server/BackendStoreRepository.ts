@@ -138,7 +138,7 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
 
   private async recursiveListStore(next_item: string|undefined): Promise<LocationStoreResponseInterface[]> {
     const listedStores:LocationStoreResponseInterface[] = [];
-    let urlToRequest:string = `/clients/locations?status_location=[1]&limit=3&next_item=${next_item}`
+    let urlToRequest:string = `/clients/locations?status_location=[1]&limit=500&next_item=${next_item}`
     try {
       if(next_item === undefined) {
         urlToRequest = `/clients/locations?limit=500`
@@ -150,7 +150,6 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
         urlToRequest
       );
 
-      console.log("Recursive call: ", response)
       if (response.meta === undefined) {
         return response.data;
       } else {

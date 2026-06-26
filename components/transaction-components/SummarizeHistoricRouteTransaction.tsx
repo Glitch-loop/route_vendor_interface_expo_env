@@ -50,7 +50,6 @@ const renderTransactionTable = (
     descriptions: RouteTransactionDescriptionDTO[],
     productInventoryMap: Map<string, ProductClass>
 ) => {
-    console.log("renderTransactionTable: ", productInventoryMap)
     const dates = getUniqueSortedDates(descriptions);
     const uniqueProducts = new Set(descriptions.map(d => d.id_product));
     const productsWithAmount: string[] = [];
@@ -90,9 +89,7 @@ const renderTransactionTable = (
                     </DataTable.Header>
 
                     {productsWithAmount.map((productId) => {
-                        console.log("Product to display: ", productId)
                         const product = productInventoryMap.get(productId);
-                        console.log("Product retrieved: ", product)
                         const productName = product?.product.product_name
 
                         return (
@@ -130,7 +127,6 @@ const SummarizeHistoricRouteTransaction = ({
     routeTransactions: RouteTransactionDTO[],
     productInventoryMap: Map<string, ProductClass>
 }) => {
-    console.log("Catalog for retrieving: ", productInventoryMap)
     const salesTransactionDescriptions: RouteTransactionDescriptionDTO[] = 
         getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(
             routeTransactions,

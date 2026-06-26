@@ -254,6 +254,7 @@ useEffect(() => {
 
   useEffect(() => {
     setpUpSalesLayout();
+    setUpHistoricalData();
   }, [productInventory])
 
   // -- Auxiliar functions --
@@ -280,22 +281,6 @@ useEffect(() => {
         // Historic route transactions
       } else {
         setCurrentStore(null)
-      }
-    }
-
-    // Retrieving historical data
-    if (id_store_search_param) {
-      const retrieveRouteTransactionsFromServer: RetrieveHistoricRouteTransactionByStoreQuery = container.resolve<RetrieveHistoricRouteTransactionByStoreQuery>(RetrieveHistoricRouteTransactionByStoreQuery);
-      const retrieveRouteTransacionFromLocal: ListRouteTransactionsOfStoreQuery = container.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
-      
-      const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
-      
-      if (routeTransactionFromLocal.length > 0) {
-        setHistoricRouteTransactions(routeTransactionFromLocal)
-      } else {
-        console.log("id_store_search_param: ", id_store_search_param)
-        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_search_param);
-        setHistoricRouteTransactions(routeTransactionFromServer);
       }
     }
 
@@ -392,6 +377,26 @@ useEffect(() => {
         type: 'error',
         text1: 'Error cargando información del inventario.',
         text2: 'Intenta recargar la pagina nuevamente.'});
+    }
+  }
+
+  const setUpHistoricalData = async () => {
+    // Retrieving historical data
+    if (id_store_search_param) {
+      const retrieveRouteTransactionsFromServer: RetrieveHistoricRouteTransactionByStoreQuery = container.resolve<RetrieveHistoricRouteTransactionByStoreQuery>(RetrieveHistoricRouteTransactionByStoreQuery);
+      const retrieveRouteTransacionFromLocal: ListRouteTransactionsOfStoreQuery = container.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
+      const allRouteTransactions: ListAllRouteTransactionsQuery = container.resolve<ListAllRouteTransactionsQuery>(ListAllRouteTransactionsQuery);
+      
+      console.log("allRouteTransactions: ", await allRouteTransactions.execute())
+      const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
+      
+      if (routeTransactionFromLocal.length > 0) {
+        setHistoricRouteTransactions(routeTransactionFromLocal)
+      } else {
+        console.log("id_store_search_param: ", id_store_search_param)
+        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_search_param);
+        setHistoricRouteTransactions(routeTransactionFromServer);
+      }
     }
   }
 

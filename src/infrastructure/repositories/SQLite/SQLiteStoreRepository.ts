@@ -53,7 +53,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                     status_store,
                     is_new
                   } = store;
-                  console.log(store)
+
                   await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (
                     id_store, 
                     street, 
