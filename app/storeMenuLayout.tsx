@@ -131,7 +131,7 @@ const storeMenuLayout = () => {
     
       // User can only see route transactions that belongs to the current day.
       setRouteTransactions(
-        (await listRouteTransactionByStore.execute(consultedStore))
+        (await listRouteTransactionByStore.execute(consultedStore.id_store))
         .filter((transaction) => { return transaction.id_work_day === workDay.id_work_day})
         
       );

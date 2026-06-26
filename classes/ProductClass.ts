@@ -20,7 +20,7 @@ import ProductInventoryDTO from "@/src/application/dto/ProductInventoryDTO"
 
 
 export default class ProductClass {
-  private readonly product: ProductDTO;
+  public readonly product: ProductDTO;
   // private readonly productInventory: ProductInventory[];
   private readonly basePrice: ProductPriceDTO;
   // private readonly lastConsuledPrice: ProductPriceDTO|null;

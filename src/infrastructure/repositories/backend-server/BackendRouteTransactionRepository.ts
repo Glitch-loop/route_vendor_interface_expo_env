@@ -93,7 +93,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 								descriptions.id_route_transaction_description,
 								descriptions.price_at_moment,
 								descriptions.cost_at_moment,
-								descriptions.amount,
+								descriptions.quantity,
 								new Date(descriptions.created_at),
 								'', // Note (06-25-26): Since this route transaction doesn't belong to this day, it doesn't have a product inventory.
 								descriptions.id_transaction_operation_type as DAY_OPERATIONS,
@@ -107,7 +107,8 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 
 			return routeTransaction;
 		} catch(error) {
-			throw new Error('Something went wrong during route transaction retrieving by store: ' + error)
+			console.error('Something went wrong during route transaction retrieving by store: ' + error)
+			return [];
 		}
 	};
 

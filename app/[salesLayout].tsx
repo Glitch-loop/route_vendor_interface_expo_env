@@ -67,6 +67,11 @@ import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
 import ActionDialog from '@/components/shared-components/ActionDialog';
 import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
+import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
+import SummarizeHistoricRouteTransaction from '@/components/transaction-components/SummarizeHistoricRouteTransaction';
+import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
+import RetrieveHistoricRouteTransactionByStoreQuery from '@/src/application/queries/RetrieveHistoricRouteTransactionByStoreQuery';
 
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
@@ -195,11 +200,12 @@ const salesLayout = () => {
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSample, setProductSample] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
-  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined);
-  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // id product, Product class
+  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined); //<id_product_inventory, ProductInventoryDTO&ProductDTO>
+  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // <id product, Product class>
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
   const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
   const [showYesNoVisitWithoutSelling, setShowYesNoVisitWithoutSelling] = useState<boolean>(false);
+  const [historicRouteTransaction, setHistoricRouteTransactions] = useState<RouteTransactionDTO[]>([]);
 
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
@@ -265,14 +271,31 @@ useEffect(() => {
       idRouteDay = workDayInformation.id_route_day;
     }
 
-    // Finding the current store
+    // Finding the current store and retrieving historic route transactions
     if(stores !== null) {
       const currentStore = stores.find((store) => store.id_store === id_store_search_param)
       if (currentStore) {
         idClient = currentStore.id_client
         setCurrentStore(currentStore)
+        // Historic route transactions
       } else {
         setCurrentStore(null)
+      }
+    }
+
+    // Retrieving historical data
+    if (id_store_search_param) {
+      const retrieveRouteTransactionsFromServer: RetrieveHistoricRouteTransactionByStoreQuery = container.resolve<RetrieveHistoricRouteTransactionByStoreQuery>(RetrieveHistoricRouteTransactionByStoreQuery);
+      const retrieveRouteTransacionFromLocal: ListRouteTransactionsOfStoreQuery = container.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
+      
+      const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
+      
+      if (routeTransactionFromLocal.length > 0) {
+        setHistoricRouteTransactions(routeTransactionFromLocal)
+      } else {
+        console.log("id_store_search_param: ", id_store_search_param)
+        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_search_param);
+        setHistoricRouteTransactions(routeTransactionFromServer);
       }
     }
 
@@ -823,6 +846,10 @@ useEffect(() => {
                   onGoBack={handleOnGoBack}
                   />
               </View>
+              <SummarizeHistoricRouteTransaction 
+                routeTransactions={historicRouteTransaction}
+                productInventoryMap={productClassMap}
+              />
               <View style={tw`w-full flex flex-row`}>
                 <TableProduct
                   avialableProducts   = { availableProducts || [] }

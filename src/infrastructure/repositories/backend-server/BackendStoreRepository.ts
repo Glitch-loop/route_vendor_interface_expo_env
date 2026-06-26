@@ -141,9 +141,9 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
     let urlToRequest:string = `/clients/locations?status_location=[1]&limit=3&next_item=${next_item}`
     try {
       if(next_item === undefined) {
-        urlToRequest = `/clients/locations?limit=3`
+        urlToRequest = `/clients/locations?limit=500`
       } else {
-        urlToRequest = `/clients/locations?limit=3&next_item=${next_item}`
+        urlToRequest = `/clients/locations?limit=500&next_item=${next_item}`
       }
 
       const response = await this.dataSource.get<LocationStoreResponseInterface[]>(

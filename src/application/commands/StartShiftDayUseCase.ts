@@ -59,7 +59,7 @@ export default class StartWorkDayUseCase {
     
     // Remote repositories dependencies
     @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
-    @inject(TOKENS.ServerStoreRepository) private readonly remoteRouteTransactionRepo: RouteTransactionRepository,
+    @inject(TOKENS.ServerRouteTransactionRepository) private readonly remoteRouteTransactionRepo: RouteTransactionRepository,
     
     // Services depdendencies
     @inject(TOKENS.IDService) private readonly idService: IDService,

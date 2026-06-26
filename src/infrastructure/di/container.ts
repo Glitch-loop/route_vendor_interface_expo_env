@@ -204,7 +204,7 @@ Alternative:
 
 */
 
-container.register<RouteTransactionRepository>(TOKENS.ServerProductRepository, {
+container.register<RouteTransactionRepository>(TOKENS.ServerRouteTransactionRepository, {
     useClass: BackendRouteTransactionRepository
 });
 

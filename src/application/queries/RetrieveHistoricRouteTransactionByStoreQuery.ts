@@ -8,16 +8,16 @@ import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransacti
 import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
 // DTOs & Mapper
-import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import { MapperDTO } from '@/src/application/mappers/MapperDTO';
 
 // DI Tokens
 import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
-export default class ListRouteTransactionsOfStoreQuery {
+export default class RetrieveHistoricRouteTransactionByStoreQuery {
   constructor(
-    @inject(TOKENS.SQLiteRouteTransactionRepository)
+    @inject(TOKENS.ServerRouteTransactionRepository)
     private readonly routeTxRepo: RouteTransactionRepository,
     private readonly mapperDTO: MapperDTO,
   ) {}

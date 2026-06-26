@@ -70,7 +70,7 @@ export class BackendProductRepository implements ProductRepository {
       //     params: request,
       //   }
       // );
-
+      console.log("Retrieving info from recursive function")
       const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);
 
       
@@ -113,6 +113,7 @@ export class BackendProductRepository implements ProductRepository {
       if (response.meta === undefined) {
         return response.data;
       } else {
+        
         if (response.meta.has_next_page === false) {
           return response.data;
         } else {
