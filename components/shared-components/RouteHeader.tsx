@@ -15,7 +15,7 @@ import { RootState } from '../../redux/store';
 import GoButton from './GoButton';
 import BluetoothButton from '../bluetooth/BluetoothButton';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import { DAYS_ARRAY } from '@/src/core/constants/Days';
+import { DAYS_ARRAY } from '@/src/core/constants/days';
 
 const RouteHeader = ({onGoBack}:{onGoBack:any}) => {
   let routeName:string = 'Ruta';

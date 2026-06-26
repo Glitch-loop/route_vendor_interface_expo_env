@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import DayType from '@/src/core/types/DaysType';
 
 // Constants
-import { DAYS } from '@/src/core/constants/Days';
+import { DAYS } from '@/src/core/constants/days';
 
 // Set the locale globally (similar to moment.locale('es'))
 dayjs.locale('es');

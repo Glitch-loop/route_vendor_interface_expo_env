@@ -47,7 +47,7 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
 // Utils
-import { DAYS_ARRAY } from '@/src/core/constants/Days';
+import { DAYS_ARRAY } from '@/src/core/constants/days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
 import { logoutUser } from '@/redux/slices/userSlice';
 

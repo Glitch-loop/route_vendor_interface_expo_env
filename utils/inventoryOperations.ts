@@ -1,4 +1,4 @@
-import MXN_CURRENCY from '../lib/mxnCurrency';
+import MXN_CURRENCY from '@/src/core/constants/mxnCurrency';
 import { IProductInventory, ICurrency } from '../interfaces/interfaces';
 
 /*

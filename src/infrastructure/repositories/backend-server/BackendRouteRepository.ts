@@ -17,7 +17,7 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 
 // Utils
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { DAYS } from '@/src/core/constants/Days';
+import { DAYS } from '@/src/core/constants/days';
 
 interface RouteDayLocationInterface {
   position_in_route: number;
