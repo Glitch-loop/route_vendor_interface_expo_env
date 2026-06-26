@@ -121,7 +121,7 @@ export class MapperLocalServerModel {
       || operation_type === DAY_OPERATIONS.attend_client_petition
       || operation_type === DAY_OPERATIONS.attention_out_of_route
       || operation_type === DAY_OPERATIONS.route_client_attention
-      || operation_type === DAY_OPERATIONS.vist_to_client
+      || operation_type === DAY_OPERATIONS.client_visited
     ) {
       id_inventory_operation = id_item;
     }

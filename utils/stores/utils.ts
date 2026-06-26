@@ -44,7 +44,7 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
     const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
     const dependencyMap = createDayOperationDependencyMap(dayOperations);
     dayOperations.forEach((dayOperation) => {
-        if (dayOperation.operation_type !== DAY_OPERATIONS.vist_to_client) {
+        if (dayOperation.operation_type !== DAY_OPERATIONS.client_visited) {
             dayOperationMap.set(dayOperation.id_item, dayOperation);
         }
     });

@@ -47,7 +47,7 @@ export class OperationDayAggregate {
       idDayOperation,
       idClient,
       idRouteDay,
-      DAY_OPERATIONS.vist_to_client,
+      DAY_OPERATIONS.client_visited,
       createdAt,
       id_day_operation_dependent,
       latitude,

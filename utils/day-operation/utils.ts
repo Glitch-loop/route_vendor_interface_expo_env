@@ -215,7 +215,7 @@ export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]
         ) {
             dayOperationsOrdered.push(currentDayOperation);
         } else if(
-            operation_type === DAY_OPERATIONS.vist_to_client
+            operation_type === DAY_OPERATIONS.client_visited
         ) {
             if (id_dependency !== null) {
                 if (!routeClientAttentionSorted.has(id_dependency)) {
