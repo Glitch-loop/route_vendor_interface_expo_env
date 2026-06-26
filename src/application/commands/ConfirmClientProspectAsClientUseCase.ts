@@ -38,7 +38,7 @@ export default class ConfirmClientProspectAsClientUseCase {
         @inject(TOKENS.LocationService) private readonly locationService: LocationService,
     ) { }
 
-    async execute(id_store: string): Promise<DayOperationDTO|null> {
+    async execute(id_store: string, id_transaction: string): Promise<DayOperationDTO|null> {
       const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
       const stores: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
       const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
@@ -49,9 +49,9 @@ export default class ConfirmClientProspectAsClientUseCase {
       let storeDate:Date = new Date();
 
       const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
-        
+      console.log("dayOperations: ", dayOperations)
       const sellingToClient: DayOperation[] = dayOperations.filter((dayOperation) => {
-        return dayOperation.id_item === id_store && dayOperation.operation_type === DAY_OPERATIONS.route_transaction;
+        return dayOperation.id_item === id_transaction && dayOperation.operation_type === DAY_OPERATIONS.route_transaction;
       });
       const createNewClientDayOperation: DayOperation[] = dayOperations.filter((dayOperation) => {
         return dayOperation.id_item === id_store && dayOperation.operation_type === DAY_OPERATIONS.new_client_registration;
@@ -63,7 +63,6 @@ export default class ConfirmClientProspectAsClientUseCase {
       } else {
         latitude = coordinates.latitude.toString();
         longitude = coordinates.longitude.toString();
-        
       }
 
       /*
@@ -72,15 +71,21 @@ export default class ConfirmClientProspectAsClientUseCase {
           - This selling must be made with one day of difference respected with 
           the creation of the store.
       */
-      if(sellingToClient[0] !== undefined  // Verify there is a route transaction for the confirmation.
+      console.log("Sellings to the client to confirm: ", sellingToClient)
+      console.log("Store to confirm: ", stores)
+      console.log("Is there exist a client confirmation: ", createNewClientDayOperation)
+      if(sellingToClient[0] !== undefined  // Verify it is a route transaction for the confirmation.
         && stores[0] !== undefined // Verify the store exists
         && createNewClientDayOperation.length === 0 // Avoid duplication for create new client day operation.
       ) {
         const routeTransactionDayOperation = sellingToClient[0];
         const currentStore = stores[0];
 
+        console.log(routeTransactionDayOperation.created_at)
         if (typeof routeTransactionDayOperation.created_at === "string") {
-          sellingDate = new Date(routeTransactionDayOperation.created_at);
+          sellingDate = new Date(
+            routeTransactionDayOperation.created_at
+          );
         } else {
           sellingDate = routeTransactionDayOperation.created_at;
         }
@@ -102,7 +107,8 @@ export default class ConfirmClientProspectAsClientUseCase {
           storeDate.getUTCMonth(),
           storeDate.getUTCDate()
         );
-
+        console.log("sellingDateUTC: ", sellingDateUTC)
+        console.log("storeDateUTC: ", storeDateUTC)
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
         const dayDifference = (sellingDateUTC - storeDateUTC) / oneDayInMilliseconds;
 

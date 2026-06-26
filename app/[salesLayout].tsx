@@ -492,7 +492,6 @@ useEffect(() => {
       try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        console.log("Selling out of route")
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
@@ -519,7 +518,9 @@ useEffect(() => {
         id_day_operation_dependent
       );
 
-      await confirmClientProscpectAsClient.execute(id_store_search_param);
+      const { id_route_transaction } = newRouteTransaction;
+
+      await confirmClientProscpectAsClient.execute(id_store_search_param, id_route_transaction);
       
       setNewRouteTransaction(newRouteTransaction);
 
