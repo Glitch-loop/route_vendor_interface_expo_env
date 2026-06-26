@@ -192,6 +192,7 @@ export class MapperLocalServerModel {
 			id_transaction: model.id_route_transaction,
 			// cfdi: '', // Note (06-24-26): At moment this field is not necessary.
 			received_amount: model.cash_received,
+			state: model.state,
 			// id_invoice_concept: '', // Note (06-24-26): At moment this field is not necessary.
 			created_at: model.date,
 			latitude: model.latitude,

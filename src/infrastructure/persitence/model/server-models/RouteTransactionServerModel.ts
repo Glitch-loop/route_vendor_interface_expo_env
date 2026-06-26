@@ -4,6 +4,7 @@ import RouteTransactionDescriptionServerModel from "@/src/infrastructure/persite
 export default interface RouteTransactionServerModel extends ReplicationDataInterface {
   id_transaction: string,
   cfdi?: string,
+  state: number,
   received_amount: number,
   id_invoice_concept?: string,
   created_at: string,

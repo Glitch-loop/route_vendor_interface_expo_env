@@ -30,6 +30,10 @@ interface RouteTransactionWithRouteDescriptions extends RouteTransactionServerMo
 	transaction_descriptions: (RouteTransactionDescriptionServerModel&{id_transaction:string; id_transaction_description: string;})[]
 }
 
+interface RetrieveTransactionsRequest {
+	id_transactions: string[]
+}
+
 @injectable()
 export class BackendRouteTransactionRepository implements RouteTransactionRepository, SyncServerRouteTransactionRepository {
 	constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
@@ -120,11 +124,43 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 	};
 
 	async retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]> { 
-		/*
-			Note (06-25-26)
-			Vendor's app must not implement this method.
-		*/
-		return []; 
+		try {
+			const resultRouteTransaction: RouteTransactionServerModel[] = await this.dataSource.post<RouteTransactionServerModel[], RetrieveTransactionsRequest>(
+				'/sellings/transactions/ids',
+				{ id_transactions: id_route_transactions }
+			);
+
+			return resultRouteTransaction.map((routeTransaction) =>
+				new RouteTransaction(
+					routeTransaction.id_transaction,
+					new Date(routeTransaction.created_at),
+					routeTransaction.state === 0
+						? ROUTE_TRANSACTION_STATE.CANCELLED
+						: ROUTE_TRANSACTION_STATE.ACTIVE,
+					routeTransaction.received_amount,
+					routeTransaction.id_work_day,
+					routeTransaction.id_location,
+					routeTransaction.latitude,
+					routeTransaction.longitude,
+					routeTransaction.id_payment_method as PAYMENT_METHODS,
+					(routeTransaction.transaction_descriptions ?? []).map((description) =>
+						new RouteTransactionDescription(
+							description.id_route_transaction_description,
+							description.price_at_moment,
+							description.cost_at_moment,
+							description.quantity,
+							new Date(description.created_at),
+							'', // Note (06-26-26): Historical transactions may not have product inventory relation.
+							description.id_transaction_operation_type as DAY_OPERATIONS,
+							description.id_product,
+							routeTransaction.id_transaction
+						)
+					)
+				)
+			);
+		} catch (error: any) {
+			throw new Error(`Failed to upsert route transactions: ${error.message}`);
+		}
 	};
 
 	async listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]> { 
@@ -141,10 +177,33 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 
 		try {
 			for (const transaction of transactions) {
-				await this.dataSource.post<unknown, RouteTransactionServerModel>(
-					'/sellings/transactions',
-					transaction
-				);
+				const { state, id_transaction } = transaction;
+
+				if (state === 0) { // Route transaction cancelled.
+					const transactionToVerify: RouteTransaction[] = await this.retrieveRouteTransactionById([ id_transaction ]);
+
+					if (transactionToVerify.length === 0) { 
+						/* It's a cancelled route transaction that has not been created with the server. */
+						await this.dataSource.post<unknown, RouteTransactionServerModel>(
+							'/sellings/transactions',
+							transaction
+						);
+						await this.dataSource.patch<unknown, undefined>(
+							`/sellings/transactions/${id_transaction}/cancel`,
+						);
+					} else {
+						/* It's a route transaction that only needs to be synced with the server */
+						await this.dataSource.patch<unknown, undefined>(
+							`/sellings/transactions/${id_transaction}/cancel`,
+						)
+					}
+
+				} else {
+					await this.dataSource.post<unknown, RouteTransactionServerModel>(
+						'/sellings/transactions',
+						transaction
+					);
+				}
 			}
 		} catch (error: any) {
 			throw new Error(`Failed to upsert route transactions: ${error.message}`);

@@ -106,26 +106,6 @@ export default class DataReplicationService {
             console.error("Phase 2 error: ", error);
         }
 
-        // try {
-
-
-            
-
-
-        //     if (pendingRouteTxDescs.length > 0) {
-        //         await this.serverRouteTxRepo.upsertRouteTransactionDescriptions(routeTransactionDescriptionsToSync);
-        //         await this.syncRouteTxRepo.markRouteTransactionDescriptionsAsSynced(pendingRouteTxDescs.map(d => d.id_route_transaction_description));
-        //     }
-
-        //     if (pendingInvOpDescs.length > 0) {
-        //         await this.serverInventoryRepo.upsertInventoryOperationDescriptions(inventoryOperationDescriptionsToSync);
-        //         await this.syncInventoryOpRepo.markInventoryOperationDescriptionsAsSynced(pendingInvOpDescs.map(d => d.id_inventory_operation_description));
-        //     }
-        // } catch (error) {
-        //     console.error("Phase 3 error: ", error);
-        //     // Do not mark as synced on failure; let future session retry
-        // }
-
         // Phase 4: Day operations
         try {
             const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
