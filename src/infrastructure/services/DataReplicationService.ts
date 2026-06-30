@@ -28,6 +28,9 @@ import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocal
 import WorkDayInformationDTO from "@/src/application/dto/WorkdayInformationDTO";
 import { SQLiteShiftOrganizationRepository } from "../repositories/SQLite/SQLiteShiftOrganizationRepository";
 import InventoryOperationServerModel from "../persitence/model/server-models/InventoryOperationServerModel";
+import RouteTransactionServerModel from "../persitence/model/server-models/RouteTransactionServerModel";
+import RouteTransactionLocalModel from "../persitence/model/local-models/RouteTransactionLocalModel";
+import InventoryOperationLocalModel from "../persitence/model/local-models/InventoryOperationLocalModel";
 
 @injectable()
 export default class DataReplicationService {
@@ -85,25 +88,45 @@ export default class DataReplicationService {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
 
-            const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toServerModel(transaction));
-            const inventoryOperationsToSync = pendingInvOps.map((operation) => {
-                return {
-                    ...this.mapperLocalServerModel.toServerModel(operation),
-                    id_user: currnetWorkDay.id_user
-                } as InventoryOperationServerModel
-            });
-
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
 
-            if (pendingRouteTx.length > 0) {
-                await this.serverRouteTxRepo.upsertRouteTransactions(routeTransactionsToSync);
-                await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx);
+            if (pendingInvOps.length > 0 && !currnetWorkDay?.id_user) {
+                throw new Error("Current workday user is required to sync inventory operations.");
             }
-            if (pendingInvOps.length > 0) {
-                console.log(pendingInvOps)
-                await this.serverInventoryRepo.upsertInventoryOperations(inventoryOperationsToSync);
-                await this.syncInventoryOpRepo.markInventoryOperationsAsSynced(pendingInvOps.map(o => o.id_inventory_operation));
+
+            type PendingOperation =
+                | { type: "route-transaction"; date: string; data: RouteTransactionLocalModel }
+                | { type: "inventory-operation"; date: string; data: InventoryOperationLocalModel };
+
+            const operationsToSyncFIFO: PendingOperation[] = [
+                ...pendingRouteTx.map((routeTransaction) => ({
+                    type: "route-transaction" as const,
+                    date: routeTransaction.date,
+                    data: routeTransaction,
+                })),
+                ...pendingInvOps.map((inventoryOperation) => ({
+                    type: "inventory-operation" as const,
+                    date: inventoryOperation.date,
+                    data: inventoryOperation,
+                })),
+            ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            for (const operation of operationsToSyncFIFO) {
+                if (operation.type === "route-transaction") {
+                    const routeTransactionToSync = this.mapperLocalServerModel.toServerModel(operation.data) as RouteTransactionServerModel;
+                    await this.serverRouteTxRepo.upsertRouteTransactions([routeTransactionToSync]);
+                    await this.syncRouteTxRepo.markRouteTransactionsAsSynced([operation.data]);
+                    continue;
+                }
+
+                const inventoryOperationToSync = {
+                    ...this.mapperLocalServerModel.toServerModel(operation.data),
+                    id_user: currnetWorkDay.id_user,
+                } as InventoryOperationServerModel;
+
+                await this.serverInventoryRepo.upsertInventoryOperations([inventoryOperationToSync]);
+                await this.syncInventoryOpRepo.markInventoryOperationsAsSynced([operation.data.id_inventory_operation]);
             }
         } catch (error) {
             console.error("Phase 2 error: ", error);
