@@ -27,12 +27,13 @@ import UserModel from "@/src/infrastructure/persitence/model/server-models/UserM
 import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocalServerModel";
 import WorkDayInformationDTO from "@/src/application/dto/WorkdayInformationDTO";
 import { SQLiteShiftOrganizationRepository } from "../repositories/SQLite/SQLiteShiftOrganizationRepository";
+import InventoryOperationServerModel from "../persitence/model/server-models/InventoryOperationServerModel";
 
 @injectable()
 export default class DataReplicationService {
     constructor(
         // Local database dependencies
-        @inject(TOKENS.SyncInventoryOperationRepository) private readonly workDayInventories: SQLiteShiftOrganizationRepository,
+        @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly workDayInventories: SQLiteShiftOrganizationRepository,
         @inject(TOKENS.SyncInventoryOperationRepository) private readonly syncInventoryOpRepo: SyncInventoryOperationRepository,
         @inject(TOKENS.SyncRouteTransactionRepository) private readonly syncRouteTxRepo: SyncRouteTransactionRepository,
         @inject(TOKENS.SyncStoreRepository) private readonly syncStoreRepo: SyncStoreRepository,
@@ -79,23 +80,24 @@ export default class DataReplicationService {
         try {
             const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
             const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
-            const pendingInvOpDescs = await this.syncInventoryOpRepo.listPendingInventoryOperationDescriptionToSync();
 
             const routeTransactionsToSync = pendingRouteTx.map((transaction) => this.mapperLocalServerModel.toServerModel(transaction));
-            // const routeTransactionDescriptionsToSync = pendingRouteTxDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
-            const inventoryOperationsToSync = pendingInvOps.map((operation) => this.mapperLocalServerModel.toServerModel(operation));
-            const inventoryOperationDescriptionsToSync = pendingInvOpDescs.map((description) => this.mapperLocalServerModel.toServerModel(description));
+            const inventoryOperationsToSync = pendingInvOps.map((operation) => {
+                return {
+                    ...this.mapperLocalServerModel.toServerModel(operation),
+                    id_user: userSession.id_vendor
+                } as InventoryOperationServerModel
+            });
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
-
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
-            console.log(`Pending inventory operation descriptions to sync: ${pendingInvOpDescs.length}`);
 
             if (pendingRouteTx.length > 0) {
                 await this.serverRouteTxRepo.upsertRouteTransactions(routeTransactionsToSync);
                 await this.syncRouteTxRepo.markRouteTransactionsAsSynced(pendingRouteTx);
             }
             if (pendingInvOps.length > 0) {
+                console.log(pendingInvOps)
                 await this.serverInventoryRepo.upsertInventoryOperations(inventoryOperationsToSync);
                 await this.syncInventoryOpRepo.markInventoryOperationsAsSynced(pendingInvOps.map(o => o.id_inventory_operation));
             }
@@ -114,12 +116,12 @@ export default class DataReplicationService {
                 const workday = await this.workDayInventories.listWorkDays();
 
                 if(workday.length === 0) throw new Error("It doesn't exist a workday for replicate the information")
-
+                console.log(dayOperationsToSync)
                 await this.serverDayOperationRepo.upsertDayOperations(workday[0].id_work_day, dayOperationsToSync);
                 await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
             }
         } catch (error) {
-            console.error("Phase 4 error: ", error);
+            console.error("Phase 3 error: ", error);
         }
     }
 }

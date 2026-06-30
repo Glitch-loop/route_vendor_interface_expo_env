@@ -27,355 +27,375 @@ import InventoryOperationDescriptionLocalModel from '../../persitence/model/loca
 
 @injectable()
 export class SQLiteInventoryOperationRepository implements InventoryOperationRepository, SyncInventoryOperationRepository {
-    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) { }
+	constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) { }
 
-    async createInventoryOperation(inventory_operation: InventoryOperation): Promise<void> {
-        const {
-            id_inventory_operation,
-            sign_confirmation,
-            date,
-            state,
-            audit,
-            id_inventory_operation_type,
-            id_work_day,
-        } = inventory_operation;
+	async createInventoryOperation(inventory_operation: InventoryOperation): Promise<void> {
+		const {
+			id_inventory_operation,
+			sign_confirmation,
+			date,
+			state,
+			audit,
+			id_inventory_operation_type,
+			id_work_day,
+		} = inventory_operation;
 
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                // Insert InventoryOperation
-                await tx.runAsync(`
-                    INSERT INTO ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} 
-                        (id_inventory_operation, 
-                        sign_confirmation, 
-                        date, 
-                        state, 
-                        audit, 
-                        id_inventory_operation_type, 
-                        id_work_day) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?);
-                `, [
-                    id_inventory_operation,
-                    sign_confirmation,
-                    date.toISOString(),
-                    state,
-                    audit,
-                    id_inventory_operation_type,
-                    id_work_day,
-                ]);
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			await db.withExclusiveTransactionAsync(async (tx) => {
+				// Insert InventoryOperation
+				await tx.runAsync(`
+					INSERT INTO ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} 
+						(id_inventory_operation, 
+						sign_confirmation, 
+						date, 
+						state, 
+						audit, 
+						id_inventory_operation_type, 
+						id_work_day) 
+						VALUES (?, ?, ?, ?, ?, ?, ?);
+				`, [
+						id_inventory_operation,
+						sign_confirmation,
+						date.toISOString(),
+						state,
+						audit,
+						id_inventory_operation_type,
+						id_work_day,
+				]);
 
-                // Insert InventoryOperationDescriptions
-                for (const desc of inventory_operation.inventory_operation_descriptions) {
-                    console.log("Inserting description: ", desc);
-                    await tx.runAsync(`
-                        INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
-                            (id_inventory_operation_description,
-                            price_at_moment, 
-                            cost_at_moment, 
-                            amount, 
-                            created_at, 
-                            id_inventory_operation, 
-                            id_product)
-                            VALUES (?, ?, ?, ?, ?, ?, ?);
-                    `, [
-                        desc.id_inventory_operation_description,
-                        desc.price_at_moment,
-                        desc.cost_at_moment,
-                        desc.amount,
-                        desc.created_at.toISOString(),
-                        desc.id_inventory_operation,
-                        desc.id_product
-                    ]);
-                }
-            });
-            
-        } catch(error) {
-            console.error('Error in createInventoryOperation:', error);
-            throw new Error('Failed to create inventory operation: ' + error);
-        }
-    }
-    
-    async updateInventoryOperation(inventoryOperation: InventoryOperation): Promise<void> {
-        const {
-            id_inventory_operation,
-            sign_confirmation,
-            date,
-            audit,
-            state,
-            id_inventory_operation_type,
-            id_work_day,
-        } = inventoryOperation;
-            
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                await tx.runAsync(`
-                    UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
-                    sign_confirmation = ?, 
-                    date = ?, 
-                    audit = ?,
-                    state = ?, 
-                    id_inventory_operation_type = ?, 
-                    id_work_day = ?,
-                    is_synced = ?,
-                    updated_at = ?
-                    WHERE id_inventory_operation = ?;`, 
-                [
-                    sign_confirmation,
-                    date.toISOString(),
-                    audit,
-                    state,
-                    id_inventory_operation_type,
-                    id_work_day,
-                    0, // Mark as not synced
-                    new Date().toISOString(),
-                    id_inventory_operation,
-                ]);
+				// Insert InventoryOperationDescriptions
+				for (const desc of inventory_operation.inventory_operation_descriptions) {
+					await tx.runAsync(`
+							INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
+								(id_inventory_operation_description,
+								price_at_moment, 
+								cost_at_moment, 
+								amount, 
+								created_at, 
+								id_inventory_operation, 
+								id_product)
+								VALUES (?, ?, ?, ?, ?, ?, ?);
+					`, [
+							desc.id_inventory_operation_description,
+							desc.price_at_moment,
+							desc.cost_at_moment,
+							desc.amount,
+							desc.created_at.toISOString(),
+							desc.id_inventory_operation,
+							desc.id_product
+					]);
+				}
+			});
+		} catch(error) {
+			throw new Error('Failed to create inventory operation: ' + error);
+		}
+	}
+	
+	async updateInventoryOperation(inventoryOperation: InventoryOperation): Promise<void> {
+		const {
+			id_inventory_operation,
+			sign_confirmation,
+			date,
+			audit,
+			state,
+			id_inventory_operation_type,
+			id_work_day,
+		} = inventoryOperation;
+				
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			await db.withExclusiveTransactionAsync(async (tx) => {
+					await tx.runAsync(`
+						UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS}  SET 
+						sign_confirmation = ?, 
+						date = ?, 
+						audit = ?,
+						state = ?, 
+						id_inventory_operation_type = ?, 
+						id_work_day = ?,
+						is_synced = ?,
+						updated_at = ?
+						WHERE id_inventory_operation = ?;`, 
+					[
+						sign_confirmation,
+						date.toISOString(),
+						audit,
+						state,
+						id_inventory_operation_type,
+						id_work_day,
+						0, // Mark as not synced
+						new Date().toISOString(),
+						id_inventory_operation,
+					]);
 
-                // Update InventoryOperationDescriptions
-                // For simplicity, delete all and re-insert
-                await tx.runAsync(`
-                    DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;
-                `, [id_inventory_operation]);
+					// Update InventoryOperationDescriptions
+					// For simplicity, delete all and re-insert
+					await tx.runAsync(`
+						DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;
+					`, [id_inventory_operation]);
 
-                for (const desc of inventoryOperation.inventory_operation_descriptions) {
-                    await tx.runAsync(`
-                        INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
-                            (
-                                id_inventory_operation_description, 
-                                price_at_moment, 
-                                cost_at_moment, 
-                                amount, 
-                                created_at, 
-                                id_inventory_operation, 
-                                id_product)
-                            VALUES (?, ?, ?, ?, ?, ?, ?);
-                    `, [
-                        desc.id_inventory_operation_description,
-                        desc.price_at_moment,
-                        desc.cost_at_moment,
-                        desc.amount,
-                        desc.created_at.toISOString(),
-                        desc.id_inventory_operation,
-                        desc.id_product
-                    ]);
-                }
-            });
-        } catch(error) {
-            throw new Error('Failed to update inventory operation: ' + error);
-        }
-    }
+					for (const desc of inventoryOperation.inventory_operation_descriptions) {
+						await tx.runAsync(`
+							INSERT INTO ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS}
+									(
+											id_inventory_operation_description, 
+											price_at_moment, 
+											cost_at_moment, 
+											amount, 
+											created_at, 
+											id_inventory_operation, 
+											id_product)
+									VALUES (?, ?, ?, ?, ?, ?, ?);
+						`, 
+						[
+							desc.id_inventory_operation_description,
+							desc.price_at_moment,
+							desc.cost_at_moment,
+							desc.amount,
+							desc.created_at.toISOString(),
+							desc.id_inventory_operation,
+							desc.id_product
+						]);
+					}
+			});
+		} catch(error) {
+			throw new Error('Failed to update inventory operation: ' + error);
+		}
+	}
 
-    async listInventoryOperations(): Promise<InventoryOperation[]> {
-        const inventoryOperationsTemp:InventoryOperation[] = [];
-        const inventoryOperations:InventoryOperation[] = [];
+	async listInventoryOperations(): Promise<InventoryOperation[]> {
+		const inventoryOperationsTemp:InventoryOperation[] = [];
+		const inventoryOperations:InventoryOperation[] = [];
 
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
 
-            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
-            const result = statement.executeSync<InventoryOperation>();
-            
-            // Retrieve inventory operations
-            for(let row of result) {
-                const inventoryOperation = new InventoryOperation(
-                    row.id_inventory_operation,
-                    row.sign_confirmation,
-                    new Date(row.date),
-                    row.state,
-                    row.audit,
-                    row.id_inventory_operation_type,
-                    row.id_work_day,
-                    [] // Descriptions will be filled later
-                )
-                inventoryOperationsTemp.push(inventoryOperation);
-            }
-            
+			const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
+			const result = statement.executeSync<InventoryOperation>();
+			
+			// Retrieve inventory operations
+			for(let row of result) {
+				const inventoryOperation = new InventoryOperation(
+					row.id_inventory_operation,
+					row.sign_confirmation,
+					new Date(row.date),
+					row.state,
+					row.audit,
+					row.id_inventory_operation_type,
+					row.id_work_day,
+					[] // Descriptions will be filled later
+				)
+				inventoryOperationsTemp.push(inventoryOperation);
+			}
+			
 
-            // Retrieve descriptions for each inventory operation and fill them in the corresponding operation
-            for (const operation of inventoryOperationsTemp) {
-                const inventoryOperation = new InventoryOperation(
-                    operation.id_inventory_operation,
-                    operation.sign_confirmation,
-                    new Date(operation.date),
-                    operation.state,
-                    operation.audit,
-                    operation.id_inventory_operation_type,
-                    operation.id_work_day,
-                    await this.retrieveInventoryOperationDescription([operation])
-                )
-                inventoryOperations.push(inventoryOperation);
-            }
+			// Retrieve descriptions for each inventory operation and fill them in the corresponding operation
+			for (const operation of inventoryOperationsTemp) {
+				const inventoryOperation = new InventoryOperation(
+					operation.id_inventory_operation,
+					operation.sign_confirmation,
+					new Date(operation.date),
+					operation.state,
+					operation.audit,
+					operation.id_inventory_operation_type,
+					operation.id_work_day,
+					await this.retrieveInventoryOperationDescription([operation.id_inventory_operation])
+				)
+				inventoryOperations.push(inventoryOperation);
+			}
+			return inventoryOperations;
+		} catch (error) {
+			throw new Error('Failed to list inventory operations: ' + error);
+		}
+	}
 
+	async retrieveInventoryOperations(id_inventory_operation: string[]): Promise<InventoryOperation[]> {
+		const inventoryOperations: InventoryOperation[] = [];
+		const inventoryOperationsTemp:InventoryOperation[] = [];
 
-            return inventoryOperations;
-        } catch (error) {
-            throw new Error('Failed to list inventory operations: ' + error);
-        }
-    }
+		try {
+			await this.dataSource.initialize();
+			const db:SQLiteDatabase = this.dataSource.getClient();
 
-    async retrieveInventoryOperations(id_inventory_operation: string[]): Promise<InventoryOperation[]> {
-        const inventoryOperations: InventoryOperation[] = [];
-        const inventoryOperationsTemp:InventoryOperation[] = [];
+			const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
+			const result = statement.executeSync<InventoryOperation>();
 
-        try {
-            await this.dataSource.initialize();
-            const db:SQLiteDatabase = this.dataSource.getClient();
+			for (let row of result) {
+				const newInventoryOperation = new InventoryOperation(
+					row.id_inventory_operation,
+					row.sign_confirmation,
+					new Date(row.date),
+					row.state,
+					row.audit,
+					row.id_inventory_operation_type,
+					row.id_work_day,
+					[] // Descriptions will be filled later
+				);
+				inventoryOperationsTemp.push(newInventoryOperation);
+			}
+			
+			for (const operation of inventoryOperationsTemp) {
+				const inventoryOperation = new InventoryOperation(
+					operation.id_inventory_operation,
+					operation.sign_confirmation,
+					new Date(operation.date),
+					operation.state,
+					operation.audit,
+					operation.id_inventory_operation_type,
+					operation.id_work_day,
+					await this.retrieveInventoryOperationDescription([operation.id_inventory_operation])
+				);
+				inventoryOperations.push(inventoryOperation);
+			}
 
-            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
-            const result = statement.executeSync<InventoryOperation>();
+			return inventoryOperations;
+		} catch (error) {
+			throw new Error('Failed to retrieve inventory operations: ' + error);
+		}
+	}
 
-            for (let row of result) {
-                const newInventoryOperation = new InventoryOperation(
-                    row.id_inventory_operation,
-                    row.sign_confirmation,
-                    new Date(row.date),
-                    row.state,
-                    row.audit,
-                    row.id_inventory_operation_type,
-                    row.id_work_day,
-                    [] // Descriptions will be filled later
-                )
+	async retrieveInventoryOperationDescription(inventoryOperationsIds: string[]):Promise<InventoryOperationDescription[]> {
+		try {
+			await this.dataSource.initialize();
+			const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
+			
+			const db:SQLiteDatabase = this.dataSource.getClient();
+			const statement = await db.prepareAsync(`SELECT * 
+					FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} 
+					WHERE id_inventory_operation IN(${inventoryOperationsIds.map(op => `'${op}'`).join(', ')});`);
+				
+			const result = statement.executeSync<InventoryOperationDescription>();
 
-                inventoryOperationsTemp.push(newInventoryOperation);
+			for(let row of result) {
+				const description = new InventoryOperationDescription(
+					row.id_inventory_operation_description,
+					row.price_at_moment,
+					row.cost_at_moment,
+					row.amount,
+					new Date(row.created_at),
+					row.id_inventory_operation,
+					row.id_product
+				);
+				inventoryOperationsDescriptions.push(description);
+			}
+			return inventoryOperationsDescriptions;
+		} catch(error) {
+			throw new Error('Failed to retrieve inventory operation descriptions: ' + error);
+		}
+	}
 
-            }
-            
-            for (const operation of inventoryOperationsTemp) {
-                const inventoryOperation = new InventoryOperation(
-                    operation.id_inventory_operation,
-                    operation.sign_confirmation,
-                    new Date(operation.date),
-                    operation.state,
-                    operation.audit,
-                    operation.id_inventory_operation_type,
-                    operation.id_work_day,
-                    await this.retrieveInventoryOperationDescription([operation])
-                )
-                inventoryOperations.push(inventoryOperation);
-            }
+	async deleteInventoryOperations(inventory_operations: InventoryOperation[]): Promise<void> {
+		try {
+			await this.dataSource.initialize();
+			const db:SQLiteDatabase = this.dataSource.getClient();
 
-            return inventoryOperations;
-        } catch (error) {
-            throw new Error('Failed to retrieve inventory operations: ' + error);
-        }
-    }
+			await db.withExclusiveTransactionAsync(async (tx) => {
+				for (const operation of inventory_operations) {
+					await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
+					await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
+				}
+			});
+		} catch(error) {
+			throw new Error('Failed to delete inventory operations: ' + error);
+		}
+	}
 
-    async retrieveInventoryOperationDescription(inventoryOperations:InventoryOperation[]):Promise<InventoryOperationDescription[]> {
-        try {
-            await this.dataSource.initialize();
-            const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
-            
-            const db:SQLiteDatabase = this.dataSource.getClient();
-            const statement = await db.prepareAsync(`SELECT * 
-                FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} 
-                WHERE id_inventory_operation IN(${inventoryOperations.map(op => `'${op.id_inventory_operation}'`).join(', ')});`);
-            
-            const result = statement.executeSync<InventoryOperationDescription>();
+	async listPendingInventoryOperationToSync(): Promise<InventoryOperationLocalModel[]> {
+		const idInventoryOperation: Set<string> = new Set<string>();
+		const inventoryOperationMap: Map<string, InventoryOperationLocalModel> = new Map<string, InventoryOperationLocalModel>();
+		
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			
+			// Retrieving pending inventory operations.
+			const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+			const rows = stmt.executeSync<any>();
+			for (const row of rows) {
+				const { id_inventory_operation } = row as InventoryOperationLocalModel;
+				inventoryOperationMap.set(id_inventory_operation, {
+					...row,
+					inventory_operation_descriptions: []
+				});
+				idInventoryOperation.add(id_inventory_operation);
+			}
 
-            for(let row of result) {
-                const description = new InventoryOperationDescription(
-                    row.id_inventory_operation_description,
-                    row.price_at_moment,
-                    row.cost_at_moment,
-                    row.amount,
-                    new Date(row.created_at),
-                    row.id_inventory_operation,
-                    row.id_product
-                )
-                inventoryOperationsDescriptions.push(description);
-            }
+			// Retrieving the pending operation descriptions.
+			const inventoryOperationDescriptions: InventoryOperationDescription[] = await this.retrieveInventoryOperationDescription(Array.from(idInventoryOperation))
 
-            return inventoryOperationsDescriptions;
+			for (const invOpDesc of inventoryOperationDescriptions) {
+				const { id_inventory_operation } = invOpDesc;
+				if (inventoryOperationMap.has(id_inventory_operation)) {
+					inventoryOperationMap.get(id_inventory_operation)!.inventory_operation_descriptions.push(
+						{
+							id_inventory_operation_description: invOpDesc.id_inventory_operation_description,
+							price_at_moment: invOpDesc.price_at_moment,
+							cost_at_moment: invOpDesc.cost_at_moment,
+							amount: invOpDesc.amount,
+							id_inventory_operation: invOpDesc.id_inventory_operation,
+							id_product: invOpDesc.id_product
+						} as InventoryOperationDescriptionLocalModel
+					)
+				}
+			}
 
-        } catch(error) {
-            throw new Error('Failed to retrieve inventory operation descriptions: ' + error);
-        }
-    }
- 
-    async deleteInventoryOperations(inventory_operations: InventoryOperation[]): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db:SQLiteDatabase = this.dataSource.getClient();
+			return Array.from(inventoryOperationMap.values());
+		} catch (error) {
+			throw new Error('Failed to list pending inventory operations to sync: ' + error);
+		}
+	}
 
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                for (const operation of inventory_operations) {
-                    await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
-                    await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation = ?;`, [operation.id_inventory_operation]);
-                }
-            });
+	async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionLocalModel[]> {
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			const pending: InventoryOperationDescriptionLocalModel[] = [];
+			const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+			const rows = stmt.executeSync<any>();
+			for (const row of rows) {
+				pending.push(row as InventoryOperationDescriptionLocalModel);
+			}
+			return pending;
+		} catch (error) {
+			throw new Error('Failed to list pending inventory operation descriptions to sync: ' + error);
+		}
+	}
 
-        } catch(error) {
-            throw new Error('Failed to delete inventory operations: ' + error);
-        }
-    }
+	async markInventoryOperationsAsSynced(ids: string[]): Promise<void> {
+		if (!ids || ids.length === 0) return;
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			await db.withExclusiveTransactionAsync(async (tx) => {
+				const placeholders = ids.map(() => '?').join(',');
+				await tx.runAsync(
+					`UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} SET is_synced = 1 WHERE id_inventory_operation IN (${placeholders});`,
+					ids
+				);
+			});
+		} catch (error) {
+			throw new Error('Failed to mark inventory operations as synced: ' + error);
+		}
+	}
 
-    async listPendingInventoryOperationToSync(): Promise<InventoryOperationLocalModel[]> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: InventoryOperationLocalModel[] = [];
-            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
-            const rows = stmt.executeSync<any>();
-            for (const row of rows) {
-                pending.push(row as InventoryOperationLocalModel);
-            }
-            return pending;
-        } catch (error) {
-            throw new Error('Failed to list pending inventory operations to sync: ' + error);
-        }
-    }
-
-    async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionLocalModel[]> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: InventoryOperationDescriptionLocalModel[] = [];
-            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
-            const rows = stmt.executeSync<any>();
-            for (const row of rows) {
-                pending.push(row as InventoryOperationDescriptionLocalModel);
-            }
-            return pending;
-        } catch (error) {
-            throw new Error('Failed to list pending inventory operation descriptions to sync: ' + error);
-        }
-    }
-
-    async markInventoryOperationsAsSynced(ids: string[]): Promise<void> {
-        if (!ids || ids.length === 0) return;
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                const placeholders = ids.map(() => '?').join(',');
-                await tx.runAsync(
-                    `UPDATE ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} SET is_synced = 1 WHERE id_inventory_operation IN (${placeholders});`,
-                    ids
-                );
-            });
-        } catch (error) {
-            throw new Error('Failed to mark inventory operations as synced: ' + error);
-        }
-    }
-
-    async markInventoryOperationDescriptionsAsSynced(ids: string[]): Promise<void> {
-        if (!ids || ids.length === 0) return;
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                const placeholders = ids.map(() => '?').join(',');
-                await tx.runAsync(
-                    `UPDATE ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} SET is_synced = 1 WHERE id_inventory_operation_description IN (${placeholders});`,
-                    ids
-                );
-            });
-        } catch (error) {
-            throw new Error('Failed to mark inventory operation descriptions as synced: ' + error);
-        }
-    }
+	async markInventoryOperationDescriptionsAsSynced(ids: string[]): Promise<void> {
+		if (!ids || ids.length === 0) return;
+		try {
+			await this.dataSource.initialize();
+			const db: SQLiteDatabase = await this.dataSource.getClient();
+			await db.withExclusiveTransactionAsync(async (tx) => {
+				const placeholders = ids.map(() => '?').join(',');
+				await tx.runAsync(
+					`UPDATE ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} SET is_synced = 1 WHERE id_inventory_operation_description IN (${placeholders});`,
+					ids
+				);
+			});
+		} catch (error) {
+				throw new Error('Failed to mark inventory operation descriptions as synced: ' + error);
+		}
+	}
 }

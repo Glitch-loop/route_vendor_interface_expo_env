@@ -19,6 +19,7 @@ export class ShiftOrganizationAggregate {
         description: string,
         route_status: boolean,
         id_day: string,
+        id_user: string,
         id_route_day: string,
     ): void {
         
@@ -36,6 +37,7 @@ export class ShiftOrganizationAggregate {
             description,
             route_status,
             id_day,
+            id_user,
             id_route_day,
         );
 
@@ -66,6 +68,7 @@ export class ShiftOrganizationAggregate {
             this._workDayInformation.description,
             this._workDayInformation.route_status,
             this._workDayInformation.id_day,
+            this._workDayInformation.id_user,
             this._workDayInformation.id_route_day,
         );
 

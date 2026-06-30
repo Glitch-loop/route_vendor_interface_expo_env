@@ -1,11 +1,14 @@
+// Interfaces
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
+// Models
+import InventoryOperationDescriptionServerModel from "@/src/infrastructure/persitence/model/server-models/InventoryOperationDescriptionServerModel";
+
 export default interface InventoryOperationServerModel extends ReplicationDataInterface {
-    id_inventory_origin: string;
-    id_inventory_target: string;
-    created_by: string;
     id_inventory_operation: string,
-    created_at: string,
-    latitude: string
-    longitude: string
+    date: string;
+    id_inventory_operation_type: string,
+    id_work_day: string,
+    id_user: string,
+    inventory_operation_descriptions: InventoryOperationDescriptionServerModel[],
 }

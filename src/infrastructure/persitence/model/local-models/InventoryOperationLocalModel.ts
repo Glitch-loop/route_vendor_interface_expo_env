@@ -1,5 +1,5 @@
 import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
-import InventoryOperationDescriptionModel from "./InventoryOperationDescriptionLocalModel";
+import RouteTransactionDescriptionLocalModel from "@/src/infrastructure/persitence/model/local-models/InventoryOperationDescriptionLocalModel";
 
 
 export default interface InventoryOperationLocalModel extends ReplicationDataInterface {
@@ -10,4 +10,5 @@ export default interface InventoryOperationLocalModel extends ReplicationDataInt
     audit: number,
     id_inventory_operation_type: string,
     id_work_day: string,
+    inventory_operation_descriptions: RouteTransactionDescriptionLocalModel[]
 }

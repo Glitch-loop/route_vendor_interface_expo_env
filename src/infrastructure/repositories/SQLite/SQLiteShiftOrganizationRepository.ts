@@ -165,6 +165,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                     row.description,
                     row.route_status,
                     row.id_day,
+                    row.id_user,
                     row.id_route_day
                 ));
             }

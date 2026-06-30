@@ -12,5 +12,6 @@ export default interface WorkDayInformationLocalModel extends ReplicationDataInt
     description: string | null,
     route_status: string,
     id_day: string,
+    id_user: string,
     id_route_day: string,
 }

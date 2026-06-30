@@ -10,6 +10,7 @@ export class WorkDayInformation {
     public readonly description: string,
     public readonly route_status: boolean,
     public readonly id_day: string,
+    public readonly id_user: string,
     public readonly id_route_day: string,
   ) {}
 }

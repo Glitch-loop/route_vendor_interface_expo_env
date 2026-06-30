@@ -37,6 +37,7 @@ export const routeDayEmbeddedTable = `
     description       TEXT,
     route_status      TEXT NOT NULL,
     id_day            TEXT NOT NULL,
+    id_user           TEXT NOT NULL,
     id_route_day      TEXT NOT NULL,
     is_synced         INT NOT NULL DEFAULT 0,
     updated_at        DATETIME NOT NULL DEFAULT (datetime('now')),

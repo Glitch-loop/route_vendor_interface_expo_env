@@ -89,7 +89,9 @@ export default class AuthenticationService {
         const parsedSession = JSON.parse(session);
         this.dataSource.setAuthToken(parsedSession.user.token);
         const expiresAt = new Date(parsedSession.expires_at);
-        if (new Date() < expiresAt) {
+        console.log("User token", parsedSession.user.token)
+        console.log("Session expires at", expiresAt)
+        if (new Date() < expiresAt && parsedSession.user.token !== undefined ) {
             return this.mapUserToDTO(parsedSession.user as User);
         } else {
             await SecureStore.deleteItemAsync(useSessionKey);

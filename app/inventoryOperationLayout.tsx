@@ -616,6 +616,16 @@ const inventoryOperationLayout = () => {
           setIsInventoryAccepted(false);
           return;
         }
+
+        if (userSessionReduxState === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error durante la creación de la operación de inventario.',
+            text2: 'No se ha inicializado el día correctamente, por favor intente nuevamente.',
+          });
+          setIsInventoryAccepted(false);
+          return;
+        }
         
         Toast.show({
           type: 'info',
@@ -627,6 +637,7 @@ const inventoryOperationLayout = () => {
           const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
           await startShiftDayUseCaseCommand.execute(
              getTotalAmountFromCashInventory(cashInventory),
+             userSessionReduxState.id_vendor,
              route,
              availableProducts,
              inventoryOperationMovementWithoutZeroAmount,

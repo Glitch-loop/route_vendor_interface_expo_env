@@ -10,5 +10,6 @@ export default interface WorkDayInformationDTO {
     description: string,
     route_status: boolean,
     id_day: string,
+    id_user: string,
     id_route_day: string,
 }

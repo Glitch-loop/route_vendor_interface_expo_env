@@ -416,7 +416,10 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();
             for (const row of rows) {
-                routeTransactionToSyncWithoutDesc.push(row as RouteTransactionLocalModel);
+                routeTransactionToSyncWithoutDesc.push({
+                    ...row as RouteTransactionLocalModel,
+                    transaction_descriptions: []
+                });
             }
 
             // Retrieving description of the route transactions.

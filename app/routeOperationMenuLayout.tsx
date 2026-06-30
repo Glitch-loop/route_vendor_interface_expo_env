@@ -305,7 +305,7 @@ const routeOperationMenuLayout = () => {
         type: 'success',
         text1:'Ruta finalizada con éxito',
         text2: ''});
-
+      return;
       router.replace('/routeSelectionLayout');
 
     } catch (error) {
@@ -354,9 +354,7 @@ const routeOperationMenuLayout = () => {
         type: 'error',
         text1:'Ha habido un error al momento de descar la información, intente nuevamente.',
         text2: ''});
-    }
-    
-    
+    } 
   }
 
   return (

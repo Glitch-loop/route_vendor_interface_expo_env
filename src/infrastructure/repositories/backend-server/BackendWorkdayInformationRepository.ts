@@ -20,13 +20,16 @@ export class BackendWorkdayInformationRepository implements SyncServerWorkdayInf
     async upsertWorkdayInformations(informations: (WorkDayInformationServerModel)[], ): Promise<void> {
         if (!informations || informations.length === 0) return;
         try {
-            const workdayToUpsert = informations[0]
+            const workdayToUpsert = informations[0];
+            console.log("Work day to upsert: ", workdayToUpsert)
             if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
+                console.log("Start day")
                 await this.dataSource.post<WorkDayInformationServerModel, WorkDayInformationServerModel>(
                     '/business-operation-route/work-days',
                     workdayToUpsert
                 );
             } else {
+                console.log("Finsih day")
                 await this.dataSource.patch<WorkDayInformationServerModel, WorkDayInformationServerModel>(
                     `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
                     workdayToUpsert

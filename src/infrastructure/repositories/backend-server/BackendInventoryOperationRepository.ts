@@ -8,7 +8,7 @@ import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatas
 import { SyncServerInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerInventoryOperationRepository';
 
 // Models
-import InventoryOperationModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel';
+import InventoryOperationServerModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel';
 import InventoryOperationDescriptionModel from '@/src/infrastructure/persitence/model/server-models/InventoryOperationDescriptionServerModel';
 
 // Utils
@@ -18,33 +18,21 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export class BackendInventoryOperationRepository implements SyncServerInventoryOperationRepository {
     constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 
-    async upsertInventoryOperations(operations: InventoryOperationModel[]): Promise<void> {
+    async upsertInventoryOperations(operations: InventoryOperationServerModel[]): Promise<void> {
         if (!operations || operations.length === 0) return;
 
         try {
-            for (const operation of operations) {
-                await this.dataSource.post<unknown, InventoryOperationModel>(
-                    '/inventories/operations/internal',
-                    operation
-                );
-            }
+            await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
+                '/inventories/route',
+                operations
+            );
         } catch (error: any) {
             throw new Error(`Failed to upsert inventory operations: ${error.message}`);
         }
     }
 
     async upsertInventoryOperationDescriptions(descriptions: InventoryOperationDescriptionModel[]): Promise<void> {
-        if (!descriptions || descriptions.length === 0) return;
-
-        try {
-            for (const description of descriptions) {
-                await this.dataSource.post<unknown, InventoryOperationDescriptionModel>(
-                    '/inventories/operations/internal',
-                    description
-                );
-            }
-        } catch (error: any) {
-            throw new Error(`Failed to upsert inventory operation descriptions: ${error.message}`);
-        }
+        // Upsert inventory operation also synchronize inventory operation descriptions.
+        return;
     }
 }

@@ -146,7 +146,6 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
             `);
 
             return rows.map((row) => {
-                console.log("id_route_day: ", row.id_route_day)
                 return {
                     id_day_operation: row.id_day_operation,
                     id_item: row.id_item,

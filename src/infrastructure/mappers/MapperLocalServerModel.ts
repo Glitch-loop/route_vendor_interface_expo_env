@@ -85,8 +85,8 @@ export class MapperLocalServerModel {
 			| WorkDayInformationServerModel
 	): any {
 		if (isDayOperationServerModel(model)) return this.dayOperationServerToLocal(model);
-		if (isInventoryOperationDescriptionServerModel(model)) return this.inventoryOperationDescriptionServerToLocal(model);
-		if (isInventoryOperationServerModel(model)) return this.inventoryOperationServerToLocal(model);
+		// if (isInventoryOperationDescriptionServerModel(model)) return this.inventoryOperationDescriptionServerToLocal(model);
+		// if (isInventoryOperationServerModel(model)) return this.inventoryOperationServerToLocal(model);
 		if (isRouteTransactionDescriptionServerModel(model)) return this.routeTransactionDescriptionServerToLocal(model);
 		// if (isRouteTransactionServerModel(model)) return this.routeTransactionServerToLocal(model);
 		if (isStoreServerModel(model)) return this.storeServerToLocal(model);
@@ -145,10 +145,10 @@ export class MapperLocalServerModel {
 
 	private inventoryOperationDescriptionLocalToServer(model: InventoryOperationDescriptionLocalModel): InventoryOperationDescriptionServerModel {
 		return {
-			id_inventory_operation_description: model.id_inventory_operation_description,
+			id_product_operation_description: model.id_inventory_operation_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			amount: model.amount,
+			quntatity: model.amount,
 			id_inventory_operation: model.id_inventory_operation,
 			id_product: model.id_product,
 			is_synced: model.is_synced,
@@ -159,13 +159,12 @@ export class MapperLocalServerModel {
 
 	private inventoryOperationLocalToServer(model: InventoryOperationLocalModel): InventoryOperationServerModel {
 		return {
-			id_inventory_origin: '',
-			id_inventory_target: '',
-			created_by: '',
 			id_inventory_operation: model.id_inventory_operation,
-			created_at: model.date,
-			latitude: '',
-			longitude: '',
+			date: model.date,
+			id_inventory_operation_type: model.id_inventory_operation_type,
+			id_work_day: model.id_work_day,
+			id_user: '',
+			inventory_operation_descriptions: model.inventory_operation_descriptions.map((desc) => this.inventoryOperationDescriptionLocalToServer(desc)),
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
 			is_deleted: model.is_deleted,
@@ -263,34 +262,34 @@ export class MapperLocalServerModel {
 		};
 	}
 
-	private inventoryOperationDescriptionServerToLocal(model: InventoryOperationDescriptionServerModel): InventoryOperationDescriptionLocalModel {
-		return {
-			id_inventory_operation_description: model.id_inventory_operation_description,
-			price_at_moment: model.price_at_moment,
-			cost_at_moment: model.cost_at_moment,
-			amount: model.amount,
-			id_inventory_operation: model.id_inventory_operation,
-			id_product: model.id_product,
-			is_synced: model.is_synced,
-			updated_at: model.updated_at,
-			is_deleted: model.is_deleted,
-		};
-	}
+	// private inventoryOperationDescriptionServerToLocal(model: InventoryOperationDescriptionServerModel): InventoryOperationDescriptionLocalModel {
+	// 	return {
+	// 		id_inventory_operation_description: model.id_inventory_operation_description,
+	// 		price_at_moment: model.price_at_moment,
+	// 		cost_at_moment: model.cost_at_moment,
+	// 		amount: model.amount,
+	// 		id_inventory_operation: model.id_inventory_operation,
+	// 		id_product: model.id_product,
+	// 		is_synced: model.is_synced,
+	// 		updated_at: model.updated_at,
+	// 		is_deleted: model.is_deleted,
+	// 	};
+	// }
 
-	private inventoryOperationServerToLocal(model: InventoryOperationServerModel): InventoryOperationLocalModel {
-		return {
-			id_inventory_operation: model.id_inventory_operation,
-			sign_confirmation: '',
-			date: model.created_at,
-			state: 0,
-			audit: 0,
-			id_inventory_operation_type: '',
-			id_work_day: '',
-			is_synced: model.is_synced,
-			updated_at: model.updated_at,
-			is_deleted: model.is_deleted,
-		};
-	}
+	// private inventoryOperationServerToLocal(model: InventoryOperationServerModel): InventoryOperationLocalModel {
+	// 	return {
+	// 		id_inventory_operation: model.id_inventory_operation,
+	// 		sign_confirmation: '',
+	// 		date: model.created_at,
+	// 		state: 0,
+	// 		audit: 0,
+	// 		id_inventory_operation_type: '',
+	// 		id_work_day: '',
+	// 		is_synced: model.is_synced,
+	// 		updated_at: model.updated_at,
+	// 		is_deleted: model.is_deleted,
+	// 	};
+	// }
 
 	private routeTransactionDescriptionServerToLocal(model: RouteTransactionDescriptionServerModel): RouteTransactionDescriptionLocalModel {
 		return {
@@ -364,6 +363,7 @@ export class MapperLocalServerModel {
 			description: null,
 			route_status: '',
 			id_day: '',
+			id_user: model.id_user,
 			id_route_day: model.id_route_day,
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,

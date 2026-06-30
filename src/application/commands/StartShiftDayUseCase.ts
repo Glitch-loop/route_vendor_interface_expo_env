@@ -69,6 +69,7 @@ export default class StartWorkDayUseCase {
   // TODO: Add synchronization with central database when online.
   private async executeUseCase(
     petty_cash: number,
+    id_user: string,
     routeSelected: Route,
     productToRegister: Product[],
     inventoryOperationDescriptions: InventoryOperationDescription[],
@@ -103,6 +104,7 @@ export default class StartWorkDayUseCase {
         description,
         route_status,
         id_day,
+        id_user,
         id_route_day
     );
     
@@ -233,6 +235,7 @@ export default class StartWorkDayUseCase {
 
   async execute(
       petty_cash: number,
+      id_user: string,
       routeSelectedDTO: RouteDTO,
       productToRegisterDTO: ProductDTO[],
       inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
@@ -248,6 +251,7 @@ export default class StartWorkDayUseCase {
 
       return await this.executeUseCase(
           petty_cash,
+          id_user,
           routeSelected,
           productToRegister,
           inventoryOperationDescriptions,

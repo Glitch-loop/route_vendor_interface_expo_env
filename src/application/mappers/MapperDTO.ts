@@ -267,6 +267,7 @@ export class MapperDTO {
             description: entity.description,
             route_status: entity.route_status,
             id_day: entity.id_day,
+            id_user: entity.id_user,
             id_route_day: entity.id_route_day,
         };
     }
@@ -454,6 +455,7 @@ export class MapperDTO {
             dto.description,
             dto.route_status,
             dto.id_day,
+            dto.id_user,
             dto.id_route_day,
         );
     }
