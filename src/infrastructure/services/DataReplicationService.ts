@@ -47,16 +47,20 @@ export default class DataReplicationService {
         @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
     @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
         private readonly mapperLocalServerModel: MapperLocalServerModel,
-    ) { }   
+    ) { }
     
-    async executeReplicationSession(userSession: UserDTO): Promise<void> {
+    async executeReplicationSession(): Promise<void> {
+        // Retrieving current work day.
+        // Note (30-06-26): In theory, only may be 1 workday in the device.
+        const workday = await this.workDayInventories.listWorkDays();
+        const currnetWorkDay = workday[0];
+
         // Phase 1: Work day and stores
         try {
             const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
             const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
             const workDaysWithUser:(WorkDayInformationModel)[] = pendingWorkDays.map(wd => ({
-                ...this.mapperLocalServerModel.toServerModel(wd),
-                id_user: userSession.id_vendor
+                ...this.mapperLocalServerModel.toServerModel(wd)
             }));
             const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toServerModel(store));
             
@@ -85,7 +89,7 @@ export default class DataReplicationService {
             const inventoryOperationsToSync = pendingInvOps.map((operation) => {
                 return {
                     ...this.mapperLocalServerModel.toServerModel(operation),
-                    id_user: userSession.id_vendor
+                    id_user: currnetWorkDay.id_user
                 } as InventoryOperationServerModel
             });
 
@@ -113,8 +117,6 @@ export default class DataReplicationService {
             console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
 
             if (pendingDayOperations.length > 0) {
-                const workday = await this.workDayInventories.listWorkDays();
-
                 if(workday.length === 0) throw new Error("It doesn't exist a workday for replicate the information")
                 console.log(dayOperationsToSync)
                 await this.serverDayOperationRepo.upsertDayOperations(workday[0].id_work_day, dayOperationsToSync);

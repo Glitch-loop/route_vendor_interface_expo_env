@@ -537,11 +537,9 @@ useEffect(() => {
         text2: 'Se ha registrado la venta satisfactoriamente.'});
         
       // Syncing with central database
-      if (userSessionReduxState !== null) {
-        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-        workDayInformation
-        syncingService.executeReplicationSession(userSessionReduxState);
-      }
+      const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+      workDayInformation
+      syncingService.executeReplicationSession();
       setResultSaleState(true);
       } catch (error) {
         Toast.show({

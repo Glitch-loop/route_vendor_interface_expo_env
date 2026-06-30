@@ -850,7 +850,7 @@ const inventoryOperationLayout = () => {
       // Syncing with central database
       if (userSessionReduxState !== null) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-        syncingService.executeReplicationSession(userSessionReduxState);
+        syncingService.executeReplicationSession();
       }
   }
 
@@ -925,7 +925,7 @@ const inventoryOperationLayout = () => {
       // Syncing with central database
       if (userSessionReduxState !== null) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-        syncingService.executeReplicationSession(userSessionReduxState);
+        syncingService.executeReplicationSession();
       }
 
       router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      

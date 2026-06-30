@@ -256,7 +256,7 @@ export default function CreateNewClientLayout() {
 
       // Syncing with central database
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      syncingService.executeReplicationSession(userSessionReduxState);
+      syncingService.executeReplicationSession();
 
       router.push(`/salesLayout?id_store_search_param=${id_item}&id_day_operation_dependent_search_param=${id_day_operation}`);
     } catch (error) {

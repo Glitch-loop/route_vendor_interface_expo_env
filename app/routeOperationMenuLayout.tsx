@@ -276,15 +276,7 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      const userSession:UserDTO = {
-        id_vendor: 'b6665f54-37de-4991-a7c4-283599bb0658',
-        cellphone: '',
-        name: '',
-        password: '',
-        status: 1
-      }
-
-      await syncingService.executeReplicationSession(userSession);    
+      await syncingService.executeReplicationSession();    
     
       const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
 

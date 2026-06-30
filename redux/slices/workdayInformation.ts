@@ -20,6 +20,7 @@ const workDayInformationSlice = createSlice({
           description: action.payload.description,
           route_status: action.payload.route_status,
           id_day: action.payload.id_day,
+          id_user: action.payload.id_user,
           id_route_day: action.payload.id_route_day,
        }
     },

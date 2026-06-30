@@ -172,7 +172,7 @@ const SummarizeTransaction = ({
         // Syncing with central database
         if (userSessionReduxState !== null) {
           const syncingService = container_di.resolve<DataReplicationService>(DataReplicationService);
-          syncingService.executeReplicationSession(userSessionReduxState);
+          syncingService.executeReplicationSession();
         }
 
       } catch (error) {
