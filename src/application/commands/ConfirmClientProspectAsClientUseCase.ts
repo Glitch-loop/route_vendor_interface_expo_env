@@ -107,7 +107,7 @@ export default class ConfirmClientProspectAsClientUseCase {
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
         const dayDifference = (sellingDateUTC - storeDateUTC) / oneDayInMilliseconds;
 
-        if (dayDifference >= 1) {
+        if (dayDifference >= 1 && currentStore.status_store === -1) {
           // Add day operation
           dayOperationAggregate.registerCreateNewClient(
             this.idService.generateID(),
