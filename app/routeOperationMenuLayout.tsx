@@ -102,6 +102,7 @@ const routeOperationMenuLayout = () => {
 
   // States for logic of the layout
   const [isDayWorkClosed, setIsDayWorkClosed] = useState<boolean>(false);
+  const [wasBackupMade, setWasBackupMade] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
   const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
@@ -187,7 +188,6 @@ const routeOperationMenuLayout = () => {
   const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
 
   const createNewClient = ():void => { router.push('/createNewClientLayout'); };
-
 
   const onFinishInventory = async ():Promise<void> => {
     /*
@@ -276,13 +276,30 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      await syncingService.executeReplicationSession();    
+      const replicationSessionResult:boolean = await syncingService.executeReplicationSession()
+      if (!replicationSessionResult && !wasBackupMade) {
+        Toast.show({
+          type: 'error',
+          text1:'Error durante la sincronizacón',
+          text2: 'Descarga la información, he intenta nuevamente.'});
+          return;
+      }
+
+
+      if (replicationSessionResult) {
+        Toast.show({
+          type: 'success',
+          text1:'Sincronización completada exitosamente.',
+          text2: 'Se han registrado todos los datos en la base de datos'});
+      } else {
+        Toast.show({
+          type: 'info',
+          text1:'Quedan pendientes datos por sincronizar.',
+          text2: 'Opta por una sincronización manual usando la información descargada.'});
+      }
     
       const finishShiftDayUseCase = di_container.resolve<FinishShiftDayUseCase>(FinishShiftDayUseCase);
-
       await finishShiftDayUseCase.execute();
-
-
 
       // Clean redux states
       dispatch(clearDayOperations());
@@ -297,9 +314,10 @@ const routeOperationMenuLayout = () => {
         type: 'success',
         text1:'Ruta finalizada con éxito',
         text2: ''});
-      return;
-      router.replace('/routeSelectionLayout');
 
+      router.replace('/routeSelectionLayout');
+      
+      return;
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -308,7 +326,9 @@ const routeOperationMenuLayout = () => {
     }
   };
 
-  const onShowDialog = ():void => { setShowDialog(!showDialog); };
+  const onShowDialog = async ():Promise<void> => {
+    setShowDialog(!showDialog); 
+  };
 
   const onAcceptDialog = async ():Promise<void> => {
     setShowDialog(false);
@@ -320,15 +340,16 @@ const routeOperationMenuLayout = () => {
   const handlerSearchClient = ():void => { router.push('/searchClientLayout'); };
 
   const handleDownloadWorkDayInfo = async ():Promise<void> => {
-    const sheeBackupService = container.resolve<SheetBackupService>(SheetBackupService);
+    const sheetsBackupService = container.resolve<SheetBackupService>(SheetBackupService);
 
     try {
-      const result = await sheeBackupService.createBackupSheetFile();
+      const result = await sheetsBackupService.createBackupSheetFile();
       const destinationMessage = result.savedToDownloads
         ? 'Descargas del dispositivo.'
         : 'almacenamiento interno de la app (privado).';
       
       if (result.savedToDownloads) {
+        setWasBackupMade(true);
         Toast.show({
           type: 'success',
           text1:'La descarga se ha hecho exitosamente.',
@@ -516,7 +537,7 @@ const routeOperationMenuLayout = () => {
               buttonStyle={tw`h-full px-4 py-3 mx-2 rounded flex flex-row basis-1/3 justify-center`}/>
             <ProjectButton
               title={ isDayWorkClosed ? 'Finalizar ruta' : 'Finalizar ruta' }
-              onPress={() => { if (isDayWorkClosed) onShowDialog(); else onFinishInventory();}}
+              onPress={() => { if (isDayWorkClosed) onShowDialog(); else onFinishInventory(); }}
               buttonVariant='indigo'
               buttonStyle={tw`h-full px-4 py-3 rounded flex flex-row basis-1/3 justify-center items-center`}
             />
