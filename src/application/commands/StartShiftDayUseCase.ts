@@ -207,7 +207,7 @@ export default class StartWorkDayUseCase {
         const historicRouteTransactionsOfCurrentStore:RouteTransaction[] = await this.remoteRouteTransactionRepo.listRouteTransactionByStore(id_store);
         historicRouteTransactions = historicRouteTransactions.concat(historicRouteTransactionsOfCurrentStore);
     }
-    console.log("Historic data: ", historicRouteTransactions)
+
     // Store information in local database.
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     console.log("Inserting stores")
@@ -226,9 +226,7 @@ export default class StartWorkDayUseCase {
     await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
     
     console.log("Inserting historic route transactions")
-    console.log("HISTORIC data retrieved: ", historicRouteTransactions)
     for (const routeTransaction of historicRouteTransactions) {
-        console.log("Historic Transaction: ", routeTransaction)
         await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, true);
     }
   }

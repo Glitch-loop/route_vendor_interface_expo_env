@@ -11,7 +11,7 @@ import { SQLiteDatabase } from 'expo-sqlite';
 export class SQLiteDataSource {
     private client: SQLiteDatabase | null = null;
 
-    constructor() { 
+    constructor() {
         console.log('SQLiteDataSource constructor called');
     }
     

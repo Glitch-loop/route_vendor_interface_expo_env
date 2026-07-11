@@ -336,6 +336,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 							price_at_moment: invOpDesc.price_at_moment,
 							cost_at_moment: invOpDesc.cost_at_moment,
 							amount: invOpDesc.amount,
+							created_at: invOpDesc.created_at.toISOString(),
 							id_inventory_operation: invOpDesc.id_inventory_operation,
 							id_product: invOpDesc.id_product
 						} as InventoryOperationDescriptionLocalModel

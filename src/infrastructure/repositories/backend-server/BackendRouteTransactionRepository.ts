@@ -145,7 +145,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 					routeTransaction.id_payment_method as PAYMENT_METHODS,
 					(routeTransaction.transaction_descriptions ?? []).map((description) =>
 						new RouteTransactionDescription(
-							description.id_route_transaction_description,
+							description.id_transaction_description,
 							description.price_at_moment,
 							description.cost_at_moment,
 							description.quantity,

@@ -4,10 +4,11 @@ export function isInventoryOperationDescriptionServerModel(model: unknown): mode
     return (
         typeof model === 'object' &&
         model !== null &&
-        'id_inventory_operation_description' in model && typeof model.id_inventory_operation_description === 'string' &&
+        'id_product_operation_description' in model && typeof model.id_product_operation_description === 'string' &&
         'price_at_moment' in model && typeof model.price_at_moment === 'number' &&
         'cost_at_moment' in model && typeof model.cost_at_moment === 'number' &&
-        'amount' in model && typeof model.amount === 'number' &&
+        'quantity' in model && typeof model.quantity === 'number' &&
+        'created_at' in model && typeof model.created_at === 'string' &&
         'id_inventory_operation' in model && typeof model.id_inventory_operation === 'string' &&
         'id_product' in model && typeof model.id_product === 'string'
     );

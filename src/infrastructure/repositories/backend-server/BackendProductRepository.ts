@@ -72,7 +72,7 @@ export class BackendProductRepository implements ProductRepository {
       // );
       console.log("Retrieving info from recursive function")
       const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);
-
+      console.log("List of products: ", allProducts)
       
       /*
         Note (06-25-26):

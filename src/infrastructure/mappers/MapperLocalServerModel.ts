@@ -148,9 +148,10 @@ export class MapperLocalServerModel {
 			id_product_operation_description: model.id_inventory_operation_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			quntatity: model.amount,
+			quantity: model.amount,
 			id_inventory_operation: model.id_inventory_operation,
 			id_product: model.id_product,
+			created_at: model.created_at,
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
 			is_deleted: model.is_deleted,
@@ -173,7 +174,7 @@ export class MapperLocalServerModel {
 
 	private routeTransactionDescriptionLocalToServer(model: RouteTransactionDescriptionLocalModel): RouteTransactionDescriptionServerModel {
 		return {
-			id_route_transaction_description: model.id_route_transaction_description,
+			id_transaction_description: model.id_route_transaction_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
 			quantity: model.amount,
@@ -235,7 +236,7 @@ export class MapperLocalServerModel {
 			start_date: model.start_date,
 			start_petty_cash: model.start_petty_cash,
 			id_route_day: model.id_route_day,
-			id_user: '',
+			id_user: model.id_user,
 			finish_date: model.finish_date,
 			final_petty_cash: model.final_petty_cash,
 			is_synced: model.is_synced,

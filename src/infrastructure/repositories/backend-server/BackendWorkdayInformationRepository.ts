@@ -21,7 +21,6 @@ export class BackendWorkdayInformationRepository implements SyncServerWorkdayInf
         if (!informations || informations.length === 0) return;
         try {
             const workdayToUpsert = informations[0];
-            console.log("Work day to upsert: ", workdayToUpsert)
             if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
                 console.log("Start day")
                 await this.dataSource.post<WorkDayInformationServerModel, WorkDayInformationServerModel>(

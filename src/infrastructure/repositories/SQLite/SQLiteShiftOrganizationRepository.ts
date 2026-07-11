@@ -39,8 +39,9 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                     description,
                     route_status,
                     id_day,
+                    id_user,
                     id_route_day
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             `, [
                 workDay.id_work_day,
                 workDay.start_date.toISOString(),
@@ -52,6 +53,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
                 workDay.description,
                 workDay.route_status,
                 workDay.id_day,
+                workDay.id_user,
                 workDay.id_route_day
             ]);
         } catch (error) {
@@ -63,7 +65,6 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
         try {
             await this.dataSource.initialize();
             const db: SQLiteDatabase = await this.dataSource.getClient();
-            console.log(db)
             const pending: WorkDayInformationLocalModel[] = [];
             const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
             const rows = stmt.executeSync<any>();

@@ -56,7 +56,11 @@ export default class DataReplicationService {
         // Retrieving current work day.
         // Note (30-06-26): In theory, only may be 1 workday in the device.
         const workday = await this.workDayInventories.listWorkDays();
-        const currnetWorkDay = workday[0];
+        const currnetWorkDay:WorkDayInformationModel|undefined = workday.pop();
+
+        if (currnetWorkDay === undefined) {
+            throw new Error("Current workday user is required to sync inventory operations.");
+        }
 
         // Phase 1: Work day and stores
         try {
@@ -90,10 +94,6 @@ export default class DataReplicationService {
 
             console.log(`Pending route transactions to sync: ${pendingRouteTx.length}`);
             console.log(`Pending inventory operations to sync: ${pendingInvOps.length}`);
-
-            if (pendingInvOps.length > 0 && !currnetWorkDay?.id_user) {
-                throw new Error("Current workday user is required to sync inventory operations.");
-            }
 
             type PendingOperation =
                 | { type: "route-transaction"; date: string; data: RouteTransactionLocalModel }
@@ -142,7 +142,7 @@ export default class DataReplicationService {
             if (pendingDayOperations.length > 0) {
                 if(workday.length === 0) throw new Error("It doesn't exist a workday for replicate the information")
                 console.log(dayOperationsToSync)
-                await this.serverDayOperationRepo.upsertDayOperations(workday[0].id_work_day, dayOperationsToSync);
+                await this.serverDayOperationRepo.upsertDayOperations(currnetWorkDay.id_work_day, dayOperationsToSync);
                 await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
             }
         } catch (error) {

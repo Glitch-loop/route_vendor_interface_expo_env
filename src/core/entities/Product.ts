@@ -84,7 +84,7 @@ export class Product {
           return currentPrice;
         }
       }
-  
+      
       throw new Error("Product doesn't have base price.")
     }
 }

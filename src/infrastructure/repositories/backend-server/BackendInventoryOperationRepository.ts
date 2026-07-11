@@ -39,6 +39,11 @@ export class BackendInventoryOperationRepository implements SyncServerInventoryO
 		try {
 			for (const operation of operations) {
 				const { id_inventory_operation_type, id_inventory_operation } = operation;
+
+				console.log("Current inventory operation")
+				console.log(operation)
+				console.log("Current inventory operation desc")
+				console.log(operation.inventory_operation_descriptions)
 				if (id_inventory_operation_type === DAY_OPERATIONS.cancel_inventory_operation) {
 					await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
 						'/inventories/route',
