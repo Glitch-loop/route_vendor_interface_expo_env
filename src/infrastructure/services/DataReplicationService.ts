@@ -31,6 +31,7 @@ import InventoryOperationServerModel from "../persitence/model/server-models/Inv
 import RouteTransactionServerModel from "../persitence/model/server-models/RouteTransactionServerModel";
 import RouteTransactionLocalModel from "../persitence/model/local-models/RouteTransactionLocalModel";
 import InventoryOperationLocalModel from "../persitence/model/local-models/InventoryOperationLocalModel";
+import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 @injectable()
 export default class DataReplicationService {
@@ -55,8 +56,8 @@ export default class DataReplicationService {
     async executeReplicationSession(): Promise<void> {
         // Retrieving current work day.
         // Note (30-06-26): In theory, only may be 1 workday in the device.
-        const workday = await this.workDayInventories.listWorkDays();
-        const currnetWorkDay:WorkDayInformationModel|undefined = workday.pop();
+        const workday:WorkDayInformation[] = await this.workDayInventories.listWorkDays();
+        const currnetWorkDay:WorkDayInformation|undefined = workday.pop();
 
         if (currnetWorkDay === undefined) {
             throw new Error("Current workday user is required to sync inventory operations.");

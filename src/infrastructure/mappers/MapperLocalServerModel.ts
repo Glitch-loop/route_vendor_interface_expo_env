@@ -97,7 +97,17 @@ export class MapperLocalServerModel {
 
   // ---------------------- Transformation from local model to server model. ----------------------
 	private dayOperationLocalToServer(model: DayOperationLocalModel): DayOperationServerModel {
-    const { operation_type, id_item } = model;
+    const { 
+			operation_type, 
+			id_item, 
+			id_route_day,
+			created_at,
+			latitude,
+			longitude,
+			id_day_operation,
+			id_dependency
+		} = model;
+
     let id_location:string|null = null;
     let id_route_transaction:string|null = null;
     let id_inventory_operation:string|null = null;
@@ -127,18 +137,18 @@ export class MapperLocalServerModel {
     }
     
 		return {
-      id_operation_type: model.operation_type,
-      created_at: model.created_at,
-      latitude: model.latitude === undefined ? null : model.latitude,
-      longitude: model.longitude === undefined ? null : model.longitude,
+      id_operation_type: operation_type,
+      created_at: created_at,
+      latitude: latitude === undefined ? null : latitude,
+      longitude: longitude === undefined ? null : longitude,
       id_location: id_location,
       id_route_transaction: id_route_transaction,
       id_inventory_operation: id_inventory_operation,
-      id_route_day: '',
-      id_day_operation_dependent: model.id_dependency === undefined ? null : model.id_dependency,
-      id_work_day_operation: model.id_day_operation,
+      id_route_day: id_route_day,
+      id_day_operation_dependent: id_dependency === undefined ? null : id_dependency,
+      id_work_day_operation: id_day_operation,
       is_synced: 0,
-      updated_at: model.created_at,
+      updated_at: created_at,
       is_deleted: 0,
     };
 	}
@@ -195,7 +205,7 @@ export class MapperLocalServerModel {
 			latitude: model.latitude,
 			longitude: model.longitude,
 			id_location: model.id_store,
-			created_by: '',
+			created_by: model.created_by,
 			// id_client: '', // Note (06-24-26): At moment this field is not necessary.
 			id_work_day: model.id_work_day,
 			id_payment_method: model.id_payment_method,
