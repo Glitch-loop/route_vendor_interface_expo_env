@@ -9,6 +9,7 @@ export default interface RouteTransactionLocalModel extends ReplicationDataInter
   latitude: string,
   longitude: string,
   id_work_day: string,
+  created_by: string,
   id_payment_method: string,
   id_store: string,
   transaction_descriptions: RouteTransactionDescriptionLocalModel[],
