@@ -98,9 +98,9 @@ export class MapperLocalServerModel {
   // ---------------------- Transformation from local model to server model. ----------------------
 	private dayOperationLocalToServer(model: DayOperationLocalModel): DayOperationServerModel {
     const { operation_type, id_item } = model;
-    let id_location:string|undefined = undefined;
-    let id_route_transaction:string|undefined = undefined;
-    let id_inventory_operation:string|undefined = undefined;
+    let id_location:string|null = null;
+    let id_route_transaction:string|null = null;
+    let id_inventory_operation:string|null = null;
     
     
     if(operation_type === DAY_OPERATIONS.route_transaction 
@@ -128,14 +128,14 @@ export class MapperLocalServerModel {
     
 		return {
       id_operation_type: model.operation_type,
-      created_at: new Date(model.created_at),
-      latitude: model.latitude,
-      longitude: model.longitude,
+      created_at: model.created_at,
+      latitude: model.latitude === undefined ? null : model.latitude,
+      longitude: model.longitude === undefined ? null : model.longitude,
       id_location: id_location,
       id_route_transaction: id_route_transaction,
       id_inventory_operation: id_inventory_operation,
       id_route_day: '',
-      id_day_operation_dependent: model.id_dependency,
+      id_day_operation_dependent: model.id_dependency === undefined ? null : model.id_dependency,
       id_work_day_operation: model.id_day_operation,
       is_synced: 0,
       updated_at: model.created_at,
@@ -177,8 +177,8 @@ export class MapperLocalServerModel {
 			id_transaction_description: model.id_route_transaction_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			quantity: model.amount,
-			created_at: model.created_at instanceof Date ? model.created_at : new Date(model.created_at),
+			amount: model.amount,
+			created_at: model.created_at.toISOString(),
 			id_transaction_operation_type: model.id_transaction_operation_type,
 			id_product: model.id_product,
 			is_synced: model.is_synced,
@@ -198,6 +198,7 @@ export class MapperLocalServerModel {
 			latitude: model.latitude,
 			longitude: model.longitude,
 			id_location: model.id_store,
+			created_by: '',
 			// id_client: '', // Note (06-24-26): At moment this field is not necessary.
 			id_work_day: model.id_work_day,
 			id_payment_method: model.id_payment_method,
@@ -253,10 +254,10 @@ export class MapperLocalServerModel {
 			id_item: model.id_location || model.id_route_transaction || model.id_inventory_operation || '',
 			operation_type: model.id_operation_type,
 			id_route_day: model.id_route_day,
-			created_at: model.created_at instanceof Date ? model.created_at.toISOString() : model.created_at,
-			id_dependency: model.id_day_operation_dependent,
-			latitude: model.latitude,
-			longitude: model.longitude,
+			created_at: model.created_at,
+			id_dependency: model.id_day_operation_dependent === null ? undefined : model.id_day_operation_dependent,
+			latitude: model.latitude === null ? undefined : model.latitude,
+			longitude: model.longitude === null ? undefined : model.longitude,
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,
 			is_deleted: model.is_deleted,
@@ -294,11 +295,11 @@ export class MapperLocalServerModel {
 
 	private routeTransactionDescriptionServerToLocal(model: RouteTransactionDescriptionServerModel): RouteTransactionDescriptionLocalModel {
 		return {
-			id_route_transaction_description: model.id_route_transaction_description,
+			id_route_transaction_description: model.id_transaction_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			amount: model.quantity,
-			created_at: model.created_at instanceof Date ? model.created_at : new Date(model.created_at),
+			amount: model.amount,
+			created_at: new Date(model.created_at),
 			id_product_inventory: '',
 			id_transaction_operation_type: model.id_transaction_operation_type,
 			id_product: model.id_product,
