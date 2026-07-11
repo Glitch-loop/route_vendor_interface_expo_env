@@ -174,7 +174,7 @@ export class MapperLocalServerModel {
 			date: model.date,
 			id_inventory_operation_type: model.id_inventory_operation_type,
 			id_work_day: model.id_work_day,
-			id_user: '',
+			id_user: model.id_user,
 			inventory_operation_descriptions: model.inventory_operation_descriptions.map((desc) => this.inventoryOperationDescriptionLocalToServer(desc)),
 			is_synced: model.is_synced,
 			updated_at: model.updated_at,

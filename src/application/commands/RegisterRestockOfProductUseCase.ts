@@ -53,7 +53,8 @@ export default class RegisterRestockOfProductUseCase {
     private async executeUseCase(
         inventoryOperationDescriptions: InventoryOperationDescription[],
         availableProducts: Product[],
-        workdayInformation: WorkDayInformation
+        workdayInformation: WorkDayInformation,
+        id_user: string,
     ): Promise<void> {
         if (inventoryOperationDescriptions.length === 0) throw new Error("At least one inventory operation description is required for a restock operation.");
 
@@ -73,6 +74,7 @@ export default class RegisterRestockOfProductUseCase {
             this.idService.generateID(),
             '0', // signConfirmation
             new Date(this.dateService.getCurrentTimestamp()),
+            id_user,
             0, // audit
             DAY_OPERATIONS.restock_inventory,
             id_work_day
@@ -145,7 +147,8 @@ export default class RegisterRestockOfProductUseCase {
     async execute(
         inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
         availableProducts: ProductDTO[],
-        workdayInformationDTO: WorkDayInformationDTO
+        workdayInformationDTO: WorkDayInformationDTO,
+        id_user: string,
     ): Promise<void> {
         const mapper = new MapperDTO();
 
@@ -157,7 +160,8 @@ export default class RegisterRestockOfProductUseCase {
         return await this.executeUseCase(
             inventoryOperationDescriptions,
             availableProductsEntities,
-            workdayInformation
+            workdayInformation,
+            id_user
         );
     }
 }

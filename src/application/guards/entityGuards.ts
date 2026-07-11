@@ -42,35 +42,36 @@ export function isProduct(entity: any): entity is Product {
 
 export function isInventoryOperation(entity: any): entity is InventoryOperation {
   return (
-      entity instanceof InventoryOperation || 
-      (
-        'id_inventory_operation' in entity &&
-        'sign_confirmation' in entity &&
-        'date' in entity &&
-        'state' in entity &&
-        'audit' in entity &&
-        'id_inventory_operation_type' in entity &&
-        'id_work_day' in entity &&
-        'inventory_operation_descriptions' in entity
-      )
+    entity instanceof InventoryOperation || 
+    (
+      'id_inventory_operation' in entity &&
+      'sign_confirmation' in entity &&
+      'date' in entity &&
+      'id_user' in entity &&
+      'state' in entity &&
+      'audit' in entity &&
+      'id_inventory_operation_type' in entity &&
+      'id_work_day' in entity &&
+      'inventory_operation_descriptions' in entity
+    )
   );
 }
 
 export function isTransaction(entity: any): entity is RouteTransaction {
   return (
-      entity instanceof RouteTransaction || 
-      (
-      'id_route_transaction' in entity &&
-      'date' in entity &&
-      'state' in entity &&
-      'cash_received' in entity &&
-      'id_work_day' in entity &&
-      'id_store' in entity &&
-      'latitude' in entity &&
-      'longitude' in entity &&
-      'created_by' in entity &&
-      'transaction_description' in entity
-      )
+    entity instanceof RouteTransaction || 
+    (
+    'id_route_transaction' in entity &&
+    'date' in entity &&
+    'state' in entity &&
+    'cash_received' in entity &&
+    'id_work_day' in entity &&
+    'id_store' in entity &&
+    'latitude' in entity &&
+    'longitude' in entity &&
+    'created_by' in entity &&
+    'transaction_description' in entity
+    )
   );
 }
 
@@ -94,21 +95,21 @@ export function isStore(entity: any): entity is Store {
   return (
     entity instanceof Store || 
     (
-        'id_store' in entity &&
-        'street' in entity &&
-        'ext_number' in entity &&
-        'colony' in entity &&
-        'postal_code' in entity &&
-        'address_reference' in entity &&
-        'store_name' in entity &&
-        'owner_name' in entity &&
-        'cellphone' in entity &&
-        'latitude' in entity &&
-        'longitude' in entity &&
-        'id_creator' in entity &&
-        'id_client' in entity &&
-        'creation_date' in entity &&
-        'creation_context' in entity &&
+      'id_store' in entity &&
+      'street' in entity &&
+      'ext_number' in entity &&
+      'colony' in entity &&
+      'postal_code' in entity &&
+      'address_reference' in entity &&
+      'store_name' in entity &&
+      'owner_name' in entity &&
+      'cellphone' in entity &&
+      'latitude' in entity &&
+      'longitude' in entity &&
+      'id_creator' in entity &&
+      'id_client' in entity &&
+      'creation_date' in entity &&
+      'creation_context' in entity &&
         'status_store' in entity
     )
   );

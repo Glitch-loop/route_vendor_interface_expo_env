@@ -45,7 +45,8 @@ export default class RegisterProductDevolutionUseCase {
     // TODO: Add synchronization with central database when online.
     private async executeUseCase(
         inventoryOperationDescriptions: InventoryOperationDescription[],
-        workdayInformation: WorkDayInformation
+        workdayInformation: WorkDayInformation,
+        id_user: string,
     ): Promise<void> {
         const { id_work_day, id_route_day } = workdayInformation;
         const dayOperations:DayOperation[] = await this.localDayOperationRepo.listDayOperations();
@@ -59,6 +60,7 @@ export default class RegisterProductDevolutionUseCase {
             this.idService.generateID(),
             '0', // signConfirmation
             new Date(this.dateService.getCurrentTimestamp()),
+            id_user,
             0, // audit
             DAY_OPERATIONS.product_devolution_inventory,
             id_work_day
@@ -97,7 +99,8 @@ export default class RegisterProductDevolutionUseCase {
 
     async execute(
         inventoryOperationDescriptionDTO: InventoryOperationDescriptionDTO[],
-        workdayInformationDTO: WorkDayInformationDTO
+        workdayInformationDTO: WorkDayInformationDTO,
+        id_user: string,
     ): Promise<void> {
         const mapper = new MapperDTO();
 
@@ -107,7 +110,8 @@ export default class RegisterProductDevolutionUseCase {
 
         return await this.executeUseCase(
             inventoryOperationDescriptions,
-            workdayInformation
+            workdayInformation,
+            id_user
         );
     }
 }

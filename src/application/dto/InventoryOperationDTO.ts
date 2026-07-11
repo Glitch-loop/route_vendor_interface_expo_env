@@ -4,6 +4,7 @@ export default interface InventoryOperationDTO {
     id_inventory_operation: string;
     sign_confirmation: string;
     date: string;
+    id_user: string,
     state: number;
     audit: number;
     id_inventory_operation_type: string;

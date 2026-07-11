@@ -5,6 +5,7 @@ export class InventoryOperation {
     public readonly id_inventory_operation: string,
     public readonly sign_confirmation: string,
     public readonly date: Date,
+    public readonly id_user: string,
     public readonly state: number,
     public readonly audit: number,
     public readonly id_inventory_operation_type: string,

@@ -117,6 +117,7 @@ export default class StartWorkDayUseCase {
         this.idService.generateID(),
         '0', // signConfirmation
         new Date(this.dateService.getCurrentTimestamp()),
+        id_user,
         0, // audit
         DAY_OPERATIONS.start_shift_inventory,
         id_work_day

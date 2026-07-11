@@ -20,6 +20,7 @@ export class InventoryOperationAggregate {
         id_inventory_operation: string, 
         signConfirmation: string, 
         creationDate: Date, 
+        created_by: string,
         audit: number, 
         id_inventory_operation_type: string,
         id_work_day: string
@@ -29,6 +30,7 @@ export class InventoryOperationAggregate {
             id_inventory_operation,
             signConfirmation,
             creationDate,
+            created_by,
             INVENTORY_OPREATION_STATE.COMPLETED,
             audit,
             id_inventory_operation_type,
@@ -74,6 +76,7 @@ export class InventoryOperationAggregate {
             this._inventoryOperation.id_inventory_operation,
             this._inventoryOperation.sign_confirmation,
             this._inventoryOperation.date,
+            this._inventoryOperation.id_user,
             INVENTORY_OPREATION_STATE.CANCELLED,
             this._inventoryOperation.audit,
             this._inventoryOperation.id_inventory_operation_type,

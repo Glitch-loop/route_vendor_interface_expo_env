@@ -690,7 +690,7 @@ const inventoryOperationLayout = () => {
         }
 
       } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-        if (workDayInformation === null) {
+        if (workDayInformation === null || userSessionReduxState === null) {
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error.',
@@ -707,7 +707,7 @@ const inventoryOperationLayout = () => {
 
         try {
           const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation);
+          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation, userSessionReduxState.id_vendor);
           
           const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
           const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
@@ -733,7 +733,7 @@ const inventoryOperationLayout = () => {
           router.replace('/routeOperationMenuLayout');
         }
       } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
-        if (workDayInformation === null) {
+        if (workDayInformation === null || userSessionReduxState === null) {
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error.',
@@ -752,7 +752,8 @@ const inventoryOperationLayout = () => {
           const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
           await registerProductDevolutionCommand.execute(
             inventoryOperationMovementWithoutZeroAmount,
-            workDayInformation
+            workDayInformation,
+            userSessionReduxState.id_vendor
           );
 
           const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
@@ -788,7 +789,7 @@ const inventoryOperationLayout = () => {
           router.replace('/routeOperationMenuLayout');
         }          
       } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
-        if (workDayInformation === null) {
+        if (workDayInformation === null || userSessionReduxState === null) {
           Toast.show({
             type: 'error',
             text1: 'Ha ocurrido un error.',
@@ -808,7 +809,8 @@ const inventoryOperationLayout = () => {
           await registerEndShiftInventoryCommand.execute(
             getTotalAmountFromCashInventory(cashInventory),
             inventoryOperationMovementWithoutZeroAmount,
-            workDayInformation
+            workDayInformation,
+            userSessionReduxState.id_vendor,
           );
 
           const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
