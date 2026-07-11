@@ -128,6 +128,7 @@ export const routeTransactionsEmbeddedTable = `
     latitude                TEXT,
     longitude               TEXT,
     id_work_day             TEXT NOT NULL,
+    created_by              TEXT NOT NULL,
     id_payment_method       TEXT NOT NULL,
     id_store                TEXT NOT NULL,
     is_synced               INT NOT NULL DEFAULT 0,
