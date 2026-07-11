@@ -74,7 +74,7 @@ export default class StartWorkDayUseCase {
     productToRegister: Product[],
     inventoryOperationDescriptions: InventoryOperationDescription[],
     routeDaySelected: RouteDay): Promise<void> {
-    
+    console.log("id_user: ", id_user)
     const availableProductsMap: Map<string, Product> = new Map<string, Product>();
     let historicRouteTransactions: RouteTransaction[] = []; 
 
@@ -210,6 +210,8 @@ export default class StartWorkDayUseCase {
     }
 
     // Store information in local database.
+    console.log("Inserting inventory operation")
+    console.log("Inventory: ", newInventoryOperation)
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     console.log("Inserting stores")
     await this.localStoreRepo.insertStores(allStores);

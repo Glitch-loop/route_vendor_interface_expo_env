@@ -6,7 +6,7 @@ export function isWorkDayInformationLocalModel(model: unknown): model is WorkDay
         model !== null &&
         'id_work_day' in model && typeof model.id_work_day === 'string' &&
         'start_date' in model && typeof model.start_date === 'string' &&
-        'finish_date' in model && typeof model.finish_date === 'string' &&
+        'finish_date' in model && (typeof model.finish_date === 'string' || model.finish_date === null) &&
         'start_petty_cash' in model && typeof model.start_petty_cash === 'number' &&
         'final_petty_cash' in model && (typeof model.final_petty_cash === 'number' || model.final_petty_cash === null) &&
         'id_route' in model && typeof model.id_route === 'string' &&

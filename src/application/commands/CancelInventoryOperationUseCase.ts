@@ -39,7 +39,6 @@ export default class CancelInventoryOperationUseCase {
   async execute(id_inventory_operation: string): Promise<void> {
     // Load required state
     const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
-    console.log("Inventory operation to cancel: ", inventoryOperation)
     if (!inventoryOperation) throw new Error('The inventory operation to cancel does not exist.');
 
     const { inventory_operation_descriptions, id_inventory_operation_type, state } = inventoryOperation;
@@ -64,7 +63,6 @@ export default class CancelInventoryOperationUseCase {
     
     // Revert stock effects for restock inventory
     if (id_inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
-      console.log(inventory_operation_descriptions)  
       for (const desc of inventory_operation_descriptions) {
         const found = currentInventory.find((pi) => pi.get_id_product() === desc.id_product);
         if (!found) throw new Error('Unexpected error: Product inventory not found for cancellation.');

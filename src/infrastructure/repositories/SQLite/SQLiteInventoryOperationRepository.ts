@@ -34,6 +34,7 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			id_inventory_operation,
 			sign_confirmation,
 			date,
+			id_user,
 			state,
 			audit,
 			id_inventory_operation_type,
@@ -50,15 +51,17 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 						(id_inventory_operation, 
 						sign_confirmation, 
 						date, 
+						id_user,
 						state, 
 						audit, 
 						id_inventory_operation_type, 
 						id_work_day) 
-						VALUES (?, ?, ?, ?, ?, ?, ?);
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 				`, [
 						id_inventory_operation,
 						sign_confirmation,
 						date.toISOString(),
+						id_user,
 						state,
 						audit,
 						id_inventory_operation_type,

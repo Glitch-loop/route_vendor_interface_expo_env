@@ -4,7 +4,7 @@ export default interface WorkDayInformationLocalModel extends ReplicationDataInt
     // Fields required for starting a work day.
     id_work_day: string,
     start_date: string,
-    finish_date: string,
+    finish_date: string | null,
     start_petty_cash: number,
     final_petty_cash: number | null,
     id_route: string,

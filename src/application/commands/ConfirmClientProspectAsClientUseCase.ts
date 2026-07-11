@@ -49,7 +49,6 @@ export default class ConfirmClientProspectAsClientUseCase {
       let storeDate:Date = new Date();
 
       const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
-      console.log("dayOperations: ", dayOperations)
       const sellingToClient: DayOperation[] = dayOperations.filter((dayOperation) => {
         return dayOperation.id_item === id_transaction && dayOperation.operation_type === DAY_OPERATIONS.route_transaction;
       });
@@ -71,9 +70,7 @@ export default class ConfirmClientProspectAsClientUseCase {
           - This selling must be made with one day of difference respected with 
           the creation of the store.
       */
-      console.log("Sellings to the client to confirm: ", sellingToClient)
-      console.log("Store to confirm: ", stores)
-      console.log("Is there exist a client confirmation: ", createNewClientDayOperation)
+
       if(sellingToClient[0] !== undefined  // Verify it is a route transaction for the confirmation.
         && stores[0] !== undefined // Verify the store exists
         && createNewClientDayOperation.length === 0 // Avoid duplication for create new client day operation.
@@ -81,7 +78,6 @@ export default class ConfirmClientProspectAsClientUseCase {
         const routeTransactionDayOperation = sellingToClient[0];
         const currentStore = stores[0];
 
-        console.log(routeTransactionDayOperation.created_at)
         if (typeof routeTransactionDayOperation.created_at === "string") {
           sellingDate = new Date(
             routeTransactionDayOperation.created_at
@@ -107,13 +103,11 @@ export default class ConfirmClientProspectAsClientUseCase {
           storeDate.getUTCMonth(),
           storeDate.getUTCDate()
         );
-        console.log("sellingDateUTC: ", sellingDateUTC)
-        console.log("storeDateUTC: ", storeDateUTC)
+
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
         const dayDifference = (sellingDateUTC - storeDateUTC) / oneDayInMilliseconds;
 
         if (dayDifference >= 1) {
-          console.log("Register as new client")
           // Add day operation
           dayOperationAggregate.registerCreateNewClient(
             this.idService.generateID(),

@@ -58,6 +58,7 @@ export default class DataReplicationService {
     // Retrieving current work day.
     // Note (30-06-26): In theory, only may be 1 workday in the device.
     const workday:WorkDayInformation[] = await this.workDayInventories.listWorkDays();
+    console.log("Listing invenotry operations: ", workday)
     const currnetWorkDay:WorkDayInformation|undefined = workday.pop();
     let wasReplicationSessionCompletedSucessfully: boolean = true;
 
@@ -146,7 +147,7 @@ export default class DataReplicationService {
       console.log(`Pending day operations to sync: ${pendingDayOperations.length}`);
 
       if (pendingDayOperations.length > 0) {
-        if(workday.length === 0) throw new Error("It doesn't exist a workday for replicate the information");
+        if(currnetWorkDay === undefined) throw new Error("It doesn't exist a workday for replicate the information");
         await this.serverDayOperationRepo.upsertDayOperations(currnetWorkDay.id_work_day, dayOperationsToSync);
         await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
       }

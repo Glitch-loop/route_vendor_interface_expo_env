@@ -29,8 +29,6 @@ export default class ListRoutesByUserQuery {
         const vendorRoutes: Route[] = [];
         const routes: Route[] = await this.repo.listRoutesByUser(userId);
 
-        console.log("Number of stores", routes.at(0)?.route_day.at(0)?.stores.length)
-
         /*
             Note (06/18/26): About the routes assigned to users.
 

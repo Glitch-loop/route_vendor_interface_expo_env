@@ -6,7 +6,7 @@ export default interface DayOperationLocalModel extends ReplicationDataInterface
   id_route_day: string,
   operation_type: string,
   created_at: string,
-  id_dependency?: string,
-  latitude?: string,
-  longitude?: string
+  id_dependency: string | null,
+  latitude: string | null,
+  longitude: string | null
 }
