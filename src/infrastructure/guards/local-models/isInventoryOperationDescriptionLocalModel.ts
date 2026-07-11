@@ -8,6 +8,7 @@ export function isInventoryOperationDescriptionLocalModel(model: unknown): model
         'price_at_moment' in model && typeof model.price_at_moment === 'number' &&
         'cost_at_moment' in model && typeof model.cost_at_moment === 'number' &&
         'amount' in model && typeof model.amount === 'number' &&
+        'created_at' in model && typeof model.created_at === 'string' &&
         'id_inventory_operation' in model && typeof model.id_inventory_operation === 'string' &&
         'id_product' in model && typeof model.id_product === 'string'
       );

@@ -8,8 +8,8 @@ export function isDayOperationLocalModel(model: unknown): model is DayOperationL
     'id_item' in model && typeof model.id_item === 'string' &&
     'id_route_day' in model && typeof model.id_route_day === 'string' &&
     'operation_type' in model && typeof model.operation_type === 'string' &&
-    'id_dependency' in model && (typeof model.id_dependency === 'string' || model.id_dependency === null) &&
-    'latitude' in model && (typeof model.latitude === 'string' || model.latitude === undefined || model.latitude === null) &&
-    'longitude' in model && (typeof model.longitude === 'string' || model.latitude === undefined || model.latitude === null)
+    'id_dependency' in model && (typeof model.id_dependency === 'string' || model.id_dependency === undefined) &&
+    'latitude' in model && (typeof model.latitude === 'string' || model.latitude === undefined) &&
+    'longitude' in model && (typeof model.longitude === 'string' || model.latitude === undefined)
   );
 }

@@ -18,6 +18,7 @@ export function isStoreLocalModel(model: unknown): model is StoreLocalModel {
         'id_creator' in model && typeof model.id_creator === 'string' &&
         'id_client' in model && typeof model.id_client === 'string' &&
         'id_location_type' in model && typeof model.id_location_type === 'string' &&
+        'creation_date' in model && typeof model.creation_date === 'string' &&
         'creation_context' in model && typeof model.creation_context === 'string' &&
         'status_store' in model && typeof model.status_store === 'number'
     );
