@@ -90,6 +90,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 						transaction.id_location,
 						transaction.latitude,
 						transaction.longitude,
+						transaction.created_by,
 						transaction.payment_method.id_payment_method as PAYMENT_METHODS, 
 						transaction_descriptions.map((descriptions) => {
 							return new RouteTransactionDescription(
@@ -142,6 +143,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 					routeTransaction.id_location,
 					routeTransaction.latitude,
 					routeTransaction.longitude,
+					routeTransaction.created_by,
 					routeTransaction.id_payment_method as PAYMENT_METHODS,
 					(routeTransaction.transaction_descriptions ?? []).map((description) =>
 						new RouteTransactionDescription(

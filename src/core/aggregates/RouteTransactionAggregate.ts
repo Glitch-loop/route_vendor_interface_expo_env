@@ -23,6 +23,7 @@ export class RouteTransactionAggregate {
         creationDate: Date,
         cash_received: number,
         id_work_day: string,
+        created_by: string,
         id_store: string,
         latitude: string,
         longitude: string,
@@ -37,6 +38,7 @@ export class RouteTransactionAggregate {
             id_store,
             latitude,
             longitude,
+            created_by,
             payment_method,
             new Array<RouteTransactionDescription>()
         );
@@ -82,6 +84,7 @@ export class RouteTransactionAggregate {
             ROUTE_TRANSACTION_STATE.CANCELLED,
             this._routeTransaction.cash_received,
             this._routeTransaction.id_work_day,
+            this._routeTransaction.created_by,
             this._routeTransaction.id_store,
             this._routeTransaction.latitude,
             this._routeTransaction.longitude,

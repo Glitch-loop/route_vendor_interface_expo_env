@@ -61,6 +61,7 @@ export default class RegisterNewRouteTransaction {
         cashReceived: number,
         id_store: string,
         id_day_operation_dependent: string,
+        created_by: string,
     ):Promise<RouteTransaction> {
         const { id_work_day, id_route_day } = workDayInformation;
         
@@ -95,10 +96,11 @@ export default class RegisterNewRouteTransaction {
             new Date(this.dateService.getCurrentTimestamp()),
             cashReceived,
             id_work_day,
+            created_by,
             id_store,
             latitude,
             longitude,
-            paymentMethod
+            paymentMethod,
         );
 
         for (const description of routeTransactionDescription) {
@@ -177,7 +179,9 @@ export default class RegisterNewRouteTransaction {
         paymentMethod: PAYMENT_METHODS,
         cashReceived: number,
         id_store: string,
-        id_day_operation_dependent: string):Promise<RouteTransactionDTO> {
+        id_day_operation_dependent: string,
+        created_by: string
+    ):Promise<RouteTransactionDTO> {
             const mapper = new MapperDTO();
             const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
                 .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
@@ -190,7 +194,8 @@ export default class RegisterNewRouteTransaction {
                 paymentMethod,
                 cashReceived,
                 id_store,
-                id_day_operation_dependent
+                id_day_operation_dependent,
+                created_by,
             );
         
         return mapper.toDTO(newRouteTransaction);

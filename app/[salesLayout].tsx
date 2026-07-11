@@ -499,7 +499,7 @@ useEffect(() => {
         id_day_operation_dependent = id_day_operation_dependent_search_param;
       }
 
-      if (id_day_operation_dependent === null) {
+      if (id_day_operation_dependent === null || userSessionReduxState === null) {
          Toast.show({
           type: 'error',
           text1:'Error interno',
@@ -513,7 +513,8 @@ useEffect(() => {
         paymentMethod,
         receivedCash,
         id_store_search_param,
-        id_day_operation_dependent
+        id_day_operation_dependent,
+        userSessionReduxState.id_vendor
       );
 
       const { id_route_transaction } = newRouteTransaction;

@@ -180,10 +180,7 @@ export class MapperLocalServerModel {
 			amount: model.amount,
 			created_at: model.created_at,
 			id_transaction_operation_type: model.id_transaction_operation_type,
-			id_product: model.id_product,
-			is_synced: model.is_synced,
-			updated_at: model.updated_at,
-			is_deleted: model.is_deleted,
+			id_product: model.id_product
 		};
 	}
 
@@ -304,9 +301,6 @@ export class MapperLocalServerModel {
 			id_transaction_operation_type: model.id_transaction_operation_type,
 			id_product: model.id_product,
 			id_route_transaction: '',
-			is_synced: model.is_synced,
-			updated_at: model.updated_at,
-			is_deleted: model.is_deleted,
 		};
 	}
 

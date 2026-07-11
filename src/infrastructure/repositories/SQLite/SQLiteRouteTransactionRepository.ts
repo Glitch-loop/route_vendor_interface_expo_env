@@ -237,7 +237,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['id_work_day'],
                         transaction['id_store'],
                         transaction['latitude'],
-                        transaction['longiture'],
+                        transaction['longitude'],
+                        transaction['created_by'],
                         transaction['id_payment_method'],
                         resultRouteTransactionDescriptions
                     )
@@ -276,7 +277,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['id_work_day'],
                         transaction['id_store'],
                         transaction['latitude'],
-                        transaction['longiture'],
+                        transaction['longitude'],
+                        transaction['created_by'],
                         transaction['id_payment_method'],
                         resultRouteTransactionDescriptions
                     )
@@ -326,7 +328,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                         transaction['id_work_day'],
                         transaction['id_store'],
                         transaction['latitude'],
-                        transaction['longiture'],
+                        transaction['longitude'],
+                        transaction['created_by'],
                         transaction['id_payment_method'],
                         descriptions
                     )
@@ -441,12 +444,12 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                                 price_at_moment: desc.price_at_moment,
                                 cost_at_moment: desc.cost_at_moment,
                                 amount: desc.amount,
-                                created_at: new Date(desc.created_at),
+                                created_at: desc.created_at,
                                 id_product_inventory: desc.id_product_inventory,
                                 id_transaction_operation_type: desc.id_transaction_operation_type,
                                 id_product: desc.id_product,
-                                id_route_transaction: desc.id_route_transaction_description, 
-                            } as RouteTransactionDescriptionLocalModel
+                                id_route_transaction: desc.id_route_transaction_description,
+                            } as unknown as RouteTransactionDescriptionLocalModel
                         );
                 }
             }

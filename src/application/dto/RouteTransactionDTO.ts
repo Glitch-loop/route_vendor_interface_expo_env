@@ -11,6 +11,7 @@ export default interface RouteTransactionDTO {
     latitude: string,
     longitude: string,
     id_work_day: string,
+    created_by: string,
     id_store: string,
     payment_method: PAYMENT_METHODS,
     transaction_description: RouteTransactionDescriptionDTO[]

@@ -289,6 +289,7 @@ export class MapperDTO {
         return {
             id_route_transaction: entity.id_route_transaction,
             date: entity.date.toISOString(),
+            created_by: entity.created_by,
             state: entity.state as any,
             cash_received: entity.cash_received,
             latitude: entity.latitude,
@@ -485,11 +486,13 @@ export class MapperDTO {
     private routeTransactionDTOToEntity(dto: RouteTransactionDTO): RouteTransaction {
         const { 
             id_route_transaction, 
-            date, state, 
+            date, 
+            state, 
             cash_received,
             latitude,
             longitude, 
             id_work_day, 
+            created_by,
             id_store, 
             payment_method, 
             transaction_description 
@@ -497,13 +500,14 @@ export class MapperDTO {
         const dateObj = typeof date === 'string' ? new Date(date) : new Date(date as any);
         return new RouteTransaction(
             id_route_transaction,
-            dateObj,
+            new Date(dateObj),
             state as ROUTE_TRANSACTION_STATE,
             cash_received,
             id_work_day,
             id_store,
             latitude,
             longitude,
+            created_by,
             payment_method as PAYMENT_METHODS,
             (transaction_description || []).map(d => this.routeTransactionDescriptionDTOToEntity(d))
         );

@@ -1,6 +1,5 @@
-import { ReplicationDataInterface } from "@/src/infrastructure/persitence/data-replication/ReplicationDataInterface";
 
-export default interface RouteTransactionDescriptionServerModel extends ReplicationDataInterface {
+export default interface RouteTransactionDescriptionServerModel {
     id_transaction_description: string,
     price_at_moment: number,
     cost_at_moment: number,
