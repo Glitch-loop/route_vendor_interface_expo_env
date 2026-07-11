@@ -41,163 +41,164 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
 export default class RegisterNewRouteTransaction {
-    constructor(
-        // Repositories
-        @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-        @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
-        @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
-        @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
-        
-        // Services
-        @inject(TOKENS.IDService) private readonly idService: IDService,
-        @inject(TOKENS.DateService) private readonly dateService: DateService,
-        @inject(TOKENS.LocationService) private readonly locationService: LocationService,
-    ) { }
+  constructor(
+    // Repositories
+    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+    @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
+    @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
+    
+    // Services
+    @inject(TOKENS.IDService) private readonly idService: IDService,
+    @inject(TOKENS.DateService) private readonly dateService: DateService,
+    @inject(TOKENS.LocationService) private readonly locationService: LocationService,
+  ) { }
 
-    private async executeUseCase(
-        routeTransactionDescription: RouteTransactionDescription[],
-        workDayInformation: WorkDayInformation,
-        paymentMethod: PAYMENT_METHODS,
-        cashReceived: number,
-        id_store: string,
-        id_day_operation_dependent: string,
-        created_by: string,
-    ):Promise<RouteTransaction> {
-        const { id_work_day, id_route_day } = workDayInformation;
-        
-        const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
-        const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
-        const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
+  private async executeUseCase(
+    routeTransactionDescription: RouteTransactionDescription[],
+    workDayInformation: WorkDayInformation,
+    paymentMethod: PAYMENT_METHODS,
+    cashReceived: number,
+    id_store: string,
+    id_day_operation_dependent: string,
+    created_by: string,
+  ):Promise<RouteTransaction> {
+    const { id_work_day, id_route_day } = workDayInformation;
+    
+    const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
+    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
 
-        let latitude: string = "0";
-        let longitude: string = "0";
+    let latitude: string = "0";
+    let longitude: string = "0";
 
-        if (storesRetrieved.length === 0) throw new Error("The store where the route transaction is being registered does not exist.");
+    if (storesRetrieved.length === 0) throw new Error("The store where the route transaction is being registered does not exist.");
 
-        const { status_store } = storesRetrieved[0];
+    const { status_store } = storesRetrieved[0];
 
-        if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
+    if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
 
-        const retrieveCoordinates: Coordinates | null = await this.locationService.getCurrentLocation();
+    const retrieveCoordinates: Coordinates | null = await this.locationService.getCurrentLocation();
 
-        if (retrieveCoordinates !== null) {
-            latitude = retrieveCoordinates.latitude.toString();
-            longitude = retrieveCoordinates.longitude.toString();
-        }
-
-
-        const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
-        const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
-        const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
-
-        // Create route transaction
-        routeTransactionAggregate.createRouteTransaction(
-            this.idService.generateID(),
-            new Date(this.dateService.getCurrentTimestamp()),
-            cashReceived,
-            id_work_day,
-            created_by,
-            id_store,
-            latitude,
-            longitude,
-            paymentMethod,
-        );
-
-        for (const description of routeTransactionDescription) {
-            const { 
-                price_at_moment, 
-                cost_at_moment,
-                amount, 
-                created_at, 
-                id_product_inventory, 
-                id_transaction_operation_type, 
-                id_product
-             } = description;
-            routeTransactionAggregate.addRouteTransactionDescription(
-                this.idService.generateID(),
-                price_at_moment,
-                cost_at_moment,
-                amount,
-                created_at,
-                id_product_inventory,
-                id_transaction_operation_type,
-                id_product
-            );
-        }
-
-        // Update product inventory
-        for (const description of routeTransactionDescription) {
-            const { amount, id_product_inventory, id_transaction_operation_type } = description;
-            if (id_transaction_operation_type === DAY_OPERATIONS.sales 
-            || id_transaction_operation_type === DAY_OPERATIONS.product_reposition
-            || id_transaction_operation_type === DAY_OPERATIONS.sample
-            ) {
-                productInventoryAggregate.decreaseStock(id_product_inventory, amount);
-            } else {
-                /* Product devolution does not affect inventory */
-            }
-        }
-
-        const { id_route_transaction } = routeTransactionAggregate.getRouteTransaction()!;
-
-        // Add day operation
-        dayOperationAggregate.registerRouteTransaction(
-            this.idService.generateID(),
-            id_route_transaction,
-            id_route_day,
-            new Date(this.dateService.getCurrentTimestamp()),
-            id_day_operation_dependent,
-            latitude,
-            longitude
-        );
-
-        dayOperationAggregate.registerVisitToClient(
-            this.idService.generateID(),
-            id_store,
-            id_route_day,
-            new Date(this.dateService.getCurrentTimestamp()),
-            id_day_operation_dependent,
-            latitude,
-            longitude
-        );
-        
-        // Persist all changes
-        const routeTransaction: RouteTransaction = routeTransactionAggregate.getRouteTransaction()!;
-        const updatedInventory: ProductInventory[] = productInventoryAggregate.getModifiedProductInventory();
-        const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
-
-        await this.localProductInventoryRepo.updateInventory(updatedInventory);
-        await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
-        await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
-        
-        return routeTransaction;
+    if (retrieveCoordinates !== null) {
+      latitude = retrieveCoordinates.latitude.toString();
+      longitude = retrieveCoordinates.longitude.toString();
     }
 
-    async execute(
-        routeTransactionDescription: RouteTransactionDescriptionDTO[],
-        workDayInformation: WorkDayInformationDTO,
-        paymentMethod: PAYMENT_METHODS,
-        cashReceived: number,
-        id_store: string,
-        id_day_operation_dependent: string,
-        created_by: string
-    ):Promise<RouteTransactionDTO> {
-            const mapper = new MapperDTO();
-            const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
-                .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
 
-            const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
+    const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
+    const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
+    const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
 
-            const newRouteTransaction = await this.executeUseCase(
-                routeTransactionDescriptions,
-                workDayInformationEntity,
-                paymentMethod,
-                cashReceived,
-                id_store,
-                id_day_operation_dependent,
-                created_by,
-            );
-        
-        return mapper.toDTO(newRouteTransaction);
+    // Create route transaction
+    routeTransactionAggregate.createRouteTransaction(
+      this.idService.generateID(),
+      new Date(this.dateService.getCurrentTimestamp()),
+      cashReceived,
+      id_work_day,
+      created_by,
+      id_store,
+      latitude,
+      longitude,
+      paymentMethod,
+    );
+
+    for (const description of routeTransactionDescription) {
+      const { 
+        price_at_moment, 
+        cost_at_moment,
+        amount, 
+        created_at, 
+        id_product_inventory, 
+        id_transaction_operation_type, 
+        id_product
+      } = description;
+      routeTransactionAggregate.addRouteTransactionDescription(
+        this.idService.generateID(),
+        price_at_moment,
+        cost_at_moment,
+        amount,
+        created_at,
+        id_product_inventory,
+        id_transaction_operation_type,
+        id_product
+      );
     }
+
+    // Update product inventory
+    for (const description of routeTransactionDescription) {
+      const { amount, id_product_inventory, id_transaction_operation_type } = description;
+      if (id_transaction_operation_type === DAY_OPERATIONS.sales 
+      || id_transaction_operation_type === DAY_OPERATIONS.product_reposition
+      || id_transaction_operation_type === DAY_OPERATIONS.sample
+      ) {
+        productInventoryAggregate.decreaseStock(id_product_inventory, amount);
+      } else {
+        /* Product devolution does not affect inventory */
+      }
+    }
+
+    const { id_route_transaction } = routeTransactionAggregate.getRouteTransaction()!;
+
+    // Add day operation
+    dayOperationAggregate.registerRouteTransaction(
+      this.idService.generateID(),
+      id_route_transaction,
+      id_route_day,
+      new Date(this.dateService.getCurrentTimestamp()),
+      id_day_operation_dependent,
+      latitude,
+      longitude
+    );
+
+    dayOperationAggregate.registerVisitToClient(
+        this.idService.generateID(),
+        id_store,
+        id_route_day,
+        new Date(this.dateService.getCurrentTimestamp()),
+        id_day_operation_dependent,
+        latitude,
+        longitude
+    );
+    
+    // Persist all changes
+    const routeTransaction: RouteTransaction = routeTransactionAggregate.getRouteTransaction()!;
+    const updatedInventory: ProductInventory[] = productInventoryAggregate.getModifiedProductInventory();
+    const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
+
+    await this.localProductInventoryRepo.updateInventory(updatedInventory);
+    await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
+    await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+    
+    return routeTransaction;
+  }
+
+  async execute(
+      routeTransactionDescription: RouteTransactionDescriptionDTO[],
+      workDayInformation: WorkDayInformationDTO,
+      paymentMethod: PAYMENT_METHODS,
+      cashReceived: number,
+      id_store: string,
+      id_day_operation_dependent: string,
+      created_by: string
+  ):Promise<RouteTransactionDTO> {
+    const mapper = new MapperDTO();
+    const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
+      .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
+      
+    const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
+    console.log("Registering")
+    const newRouteTransaction = await this.executeUseCase(
+      routeTransactionDescriptions,
+      workDayInformationEntity,
+      paymentMethod,
+      cashReceived,
+      id_store,
+      id_day_operation_dependent,
+      created_by,
+    );
+    console.log("Finishing")
+    console.log(newRouteTransaction)
+    return mapper.toDTO(newRouteTransaction);
+  }
 }

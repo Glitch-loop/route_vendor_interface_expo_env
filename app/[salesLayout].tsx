@@ -434,7 +434,19 @@ useEffect(() => {
     //   setStartPaymentProcess(false);
     // } else {
     // }
-    setStartPaymentProcess(true);
+    if(
+      productDevolution.length === 0 &&
+      productReposition.length === 0 &&
+      productSample.length === 0 &&
+      productSale.length === 0
+    ) {
+      Toast.show({
+        type: 'info',
+        text1:'Sin movimientos',
+        text2: 'Si no hay ningún movimiento, opta por "Visita sin venta"'}); 
+      } else {
+        setStartPaymentProcess(true);
+      }
   };
 
   const handleVisitWithoutSelling = async () => {
@@ -543,6 +555,7 @@ useEffect(() => {
       syncingService.executeReplicationSession();
       setResultSaleState(true);
       } catch (error) {
+        console.log("Error: ", error)
         Toast.show({
           type: 'error',
           text1:'Hubo un problema durante el registro de la venta',

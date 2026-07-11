@@ -58,9 +58,10 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     latitude,
                     longitude,
                     id_work_day, 
+                    created_by, 
                     id_payment_method,
                     id_store
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
         try {
             await this.dataSource.initialize();
 
@@ -72,6 +73,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                 latitude,
                 longitude,
                 id_work_day,
+                created_by,
                 id_store,
                 payment_method,
                 transaction_description
@@ -88,11 +90,12 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     latitude,
                     longitude,
                     id_work_day, 
+                    created_by, 
                     id_payment_method,
                     id_store,
                     is_synced,
                     is_deleted
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0);`;
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0);`;
             }
             await db.withExclusiveTransactionAsync(async (tx) => {
                 await tx.runAsync(insertSyncedRecord,
@@ -104,6 +107,7 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
                     latitude,
                     longitude,
                     id_work_day,
+                    created_by,
                     payment_method,
                     id_store,
                 ]);

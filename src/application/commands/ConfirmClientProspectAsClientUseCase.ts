@@ -71,7 +71,7 @@ export default class ConfirmClientProspectAsClientUseCase {
           the creation of the store.
       */
 
-      if(sellingToClient[0] !== undefined  // Verify it is a route transaction for the confirmation.
+      if(sellingToClient[0] !== undefined  // Verify sellings a route transaction for the confirmation.
         && stores[0] !== undefined // Verify the store exists
         && createNewClientDayOperation.length === 0 // Avoid duplication for create new client day operation.
       ) {
