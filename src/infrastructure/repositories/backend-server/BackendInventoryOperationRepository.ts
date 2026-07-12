@@ -27,11 +27,23 @@ interface RequestCancelInventoryOperation {
   longitude?: string,
 }
 
+interface ReverseInventoryOperationInterface {
+	id_inventory_operation_to_reverse: string,
+	reversed_by: string,
+}
+
 @injectable()
 export class BackendInventoryOperationRepository implements SyncServerInventoryOperationRepository {
 	constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) {}
 
 
+	/*
+		Note (07-11-26)
+		For streamline the process of replication with the backend, it was created an 
+		special endpoint for handling the replication of all the inventory operation types.
+
+		Letting the reverse operation as the unique operation that has its unique endpoint. 
+	*/
 
 	async upsertInventoryOperations(operations: InventoryOperationServerModel[]): Promise<void> {
 		if (!operations || operations.length === 0) return;
@@ -40,58 +52,21 @@ export class BackendInventoryOperationRepository implements SyncServerInventoryO
 			for (const operation of operations) {
 				const { id_inventory_operation_type, id_inventory_operation } = operation;
 
-				console.log("Current inventory operation")
+				console.log("Current inventory operation-----")
 				console.log(operation)
-				console.log("Current inventory operation desc")
-				console.log(operation.inventory_operation_descriptions)
 				if (id_inventory_operation_type === DAY_OPERATIONS.cancel_inventory_operation) {
+					await this.dataSource.post<unknown, ReverseInventoryOperationInterface>(
+						'/inventories/operations/reverse',
+						{
+							id_inventory_operation_to_reverse: operation.id_inventory_operation,
+							reversed_by: operation.id_user
+						}
+					);
+				} else {
 					await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
 						'/inventories/route',
 						[ operation ]
 					);
-				} else {
-					let operationAlreadyExist = false;
-					const invOperations:InventoryOperationServerModel[] = await this.dataSource.post<InventoryOperationServerModel[], RequestInventoryOperations>(
-						'/inventories/operations/ids',
-						{ id_inventory_operation: [ id_inventory_operation ] }
-					);
-
-					for (const invOp of invOperations) {
-						if (invOp.id_inventory_operation === id_inventory_operation) {
-							operationAlreadyExist = true;	
-						}
-					}
-
-					if (operationAlreadyExist) {
-						await this.dataSource.post<unknown, RequestCancelInventoryOperation[]>(
-							'/inventories/operations/reverse',
-							[ 
-								{
-									id_inventory_operation_to_reverse: operation.id_inventory_operation,
-									reversed_by: operation.id_user,
-									created_at: operation.date
-								} 
-							]
-						);
-					} else {
-						// Create the operation, then reverse (cancel) it.
-						await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
-							'/inventories/route',
-							[ operation ]
-						);
-						await this.dataSource.post<unknown, RequestCancelInventoryOperation[]>(
-							'/inventories/operations/reverse',
-							[ 
-								{
-									id_inventory_operation_to_reverse: operation.id_inventory_operation,
-									reversed_by: operation.id_user,
-									created_at: operation.date
-								} 
-							]
-						);
-					}
-
-
 				}
 			}
 		} catch (error: any) {
