@@ -172,6 +172,7 @@ export class MapperLocalServerModel {
 		return {
 			id_inventory_operation: model.id_inventory_operation,
 			date: model.date,
+			state: model.state,
 			id_inventory_operation_type: model.id_inventory_operation_type,
 			id_work_day: model.id_work_day,
 			id_user: model.id_user,
