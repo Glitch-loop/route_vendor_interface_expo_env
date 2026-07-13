@@ -174,16 +174,12 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 
 	async upsertRouteTransactions(transactions: RouteTransactionServerModel[]): Promise<void> {
 		if (!transactions || transactions.length === 0) return;
-		console.log("transaction ------------------------------")
-		console.log(transactions)
 		try {
 			for (const transaction of transactions) {
 				const { state, id_transaction } = transaction;
 
 				if (state === ROUTE_TRANSACTION_STATE.CANCELLED) { // Route transaction cancelled.
-					console.log("Canel route transaction")
 					const transactionToVerify: RouteTransaction[] = await this.retrieveRouteTransactionById([ id_transaction ]);
-					console.log("transactionToVerify: ", transactionToVerify)
 					if (transactionToVerify.length === 0) { 
 						/* This case represents a route transaction that has not been registered and than needs to be cancelled. */
 						await this.dataSource.post<unknown, RouteTransactionServerModel>(
@@ -196,7 +192,6 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 						`/sellings/transactions/${id_transaction}/cancel`,
 					)
 				} else {
-					console.log("Register route transactionr")
 					await this.dataSource.post<unknown, RouteTransactionServerModel>(
 						'/sellings/transactions',
 						transaction

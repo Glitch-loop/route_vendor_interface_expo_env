@@ -170,7 +170,7 @@ export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]
     /*
         About this fucntion (06-22-26)
 
-        This function helps to orgnize the day operations in the correct chronological way.
+        This function helps to organize the day operations in the correct chronological way.
 
         To orgnize the operation days correctly, it is taken into account two aspects.
         
@@ -185,8 +185,10 @@ export function orderDayOperationsForDisplaying(dayOperations: DayOperationDTO[]
             - prospect_registration
             - attention_out_of_route
 
-        2. The organizaion of the route days are made around 'route_client_attention', in this way, if there is an day operation
-        between this type day operation, this other day operation will be placed between the 'route_client_attention' operations.
+        2. The day operation organization is around the day operation 'route_client_attention',
+        in this way, if there is another type of day operation between two route_client_attention days,
+        these will appear between the two route_client_attention operation; indicating that
+        between these two clients occuers that operation.
     */
 
     const dayOperationsOrdered: DayOperationDTO[] = [];

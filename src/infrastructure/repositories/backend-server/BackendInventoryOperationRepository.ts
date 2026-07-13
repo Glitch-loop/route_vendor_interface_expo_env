@@ -55,19 +55,16 @@ export class BackendInventoryOperationRepository implements SyncServerInventoryO
 		try {
 			for (const operation of operations) {
 				const { id_inventory_operation_type, id_inventory_operation, state } = operation;
-
-				console.log("Current inventory operation-----")
-				console.log(operation)
+				
 				if (state === 0) {
-					console.log("Cancel inventory operation +++++++++++++++")
 					const inventoryOperation: InventoryOperationServerModel[] = await this.dataSource.post<
-						InventoryOperationServerModel, 
+						InventoryOperationServerModel[], 
 						RetrieveInventoryOperationByIDRequest>('/inventories/operations/ids',
 						{
 							id_inventory_operation: [ id_inventory_operation ]
 						}
 					);
-					console.log("Retreving inventory operations: ", inventoryOperation)
+
 					if (inventoryOperation.length === 0) {
 						// Inventory operation has not been registered before, so registering the inventory operation before reversing it.
 						await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
@@ -84,7 +81,6 @@ export class BackendInventoryOperationRepository implements SyncServerInventoryO
 						}
 					);
 				} else {
-					console.log("register inventory operation +++++++++++++++")
 					await this.dataSource.post<unknown, InventoryOperationServerModel[]>(
 						'/inventories/route',
 						[ operation ]

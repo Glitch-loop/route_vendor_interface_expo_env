@@ -64,16 +64,7 @@ export class BackendProductRepository implements ProductRepository {
   async retrieveAllProducts(): Promise<Product[]> {
     
     try {
-      // const response = await this.dataSource.get<ProductResponseInterface[]>(
-      //   '/products',
-      //   {
-      //     params: request,
-      //   }
-      // );
-      console.log("Retrieving info from recursive function")
-      const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);
-      console.log("List of products: ", allProducts)
-      
+      const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);      
       /*
         Note (06-25-26):
 

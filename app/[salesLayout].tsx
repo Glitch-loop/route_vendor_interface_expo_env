@@ -466,6 +466,11 @@ useEffect(() => {
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(clearRouteTransactionDescription());
       
+      Toast.show({
+        type: 'success',
+        text1:'Se a registrado la visita sin venta correctamente.',
+        text2: ''});
+
       router.replace('/routeOperationMenuLayout');
     }
   };
