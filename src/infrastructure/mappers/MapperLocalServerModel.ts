@@ -188,10 +188,11 @@ export class MapperLocalServerModel {
 			id_transaction_description: model.id_route_transaction_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			amount: model.amount,
+			quantity: model.amount,
 			created_at: model.created_at,
 			id_transaction_operation_type: model.id_transaction_operation_type,
-			id_product: model.id_product
+			id_product: model.id_product,
+			id_transaction: model.id_route_transaction
 		};
 	}
 
@@ -306,12 +307,12 @@ export class MapperLocalServerModel {
 			id_route_transaction_description: model.id_transaction_description,
 			price_at_moment: model.price_at_moment,
 			cost_at_moment: model.cost_at_moment,
-			amount: model.amount,
+			amount: model.quantity,
 			created_at: model.created_at,
 			id_product_inventory: '',
 			id_transaction_operation_type: model.id_transaction_operation_type,
 			id_product: model.id_product,
-			id_route_transaction: '',
+			id_route_transaction: model.id_transaction,
 		};
 	}
 

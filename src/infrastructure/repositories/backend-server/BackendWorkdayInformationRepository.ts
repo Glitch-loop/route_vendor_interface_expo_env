@@ -30,6 +30,7 @@ export class BackendWorkdayInformationRepository implements SyncServerWorkdayInf
                 );
             } else {
                 console.log("Finsih day")
+                console.log(workdayToUpsert)
                 await this.dataSource.patch<WorkDayInformationServerModel, WorkDayInformationServerModel>(
                     `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
                     workdayToUpsert

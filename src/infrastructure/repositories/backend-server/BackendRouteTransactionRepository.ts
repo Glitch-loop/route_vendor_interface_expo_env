@@ -97,7 +97,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 								descriptions.id_transaction_description,
 								descriptions.price_at_moment,
 								descriptions.cost_at_moment,
-								descriptions.amount,
+								descriptions.quantity,
 								new Date(descriptions.created_at),
 								'', // Note (06-25-26): Since this route transaction doesn't belong to this day, it doesn't have a product inventory.
 								descriptions.id_transaction_operation_type as DAY_OPERATIONS,
@@ -148,7 +148,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 							description.id_transaction_description,
 							description.price_at_moment,
 							description.cost_at_moment,
-							description.amount,
+							description.quantity,
 							new Date(description.created_at),
 							'', // Note (06-26-26): Historical transactions may not have product inventory relation.
 							description.id_transaction_operation_type as DAY_OPERATIONS,

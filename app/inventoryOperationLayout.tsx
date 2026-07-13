@@ -549,6 +549,7 @@ const inventoryOperationLayout = () => {
   const handleConfirmInventoryOperation = async (): Promise<void> => {      
       const inventoryOperationMovementWithoutZeroAmount = inventoryOperationMovements.filter((inv) => inv.amount > 0);
       const hasInternetConnection = await refreshNetworkState();
+      let wasInventoryOperationSuccessful: boolean = false;
 
       setShowDialog(false);
         
@@ -676,10 +677,10 @@ const inventoryOperationLayout = () => {
             text1: 'Se ha registrado el inventario inicial con exito.',
             text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
           });
- 
+          wasInventoryOperationSuccessful = true;
+          
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.error(error)
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -722,6 +723,7 @@ const inventoryOperationLayout = () => {
                 text1: 'Se ha registrado el restock exitosamente.',
                 text2: 'Se ha actualizado el inventario actual.',
           });
+          wasInventoryOperationSuccessful = true;
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
@@ -778,6 +780,7 @@ const inventoryOperationLayout = () => {
           });
           router.replace('/routeOperationMenuLayout');
          } else {
+          wasInventoryOperationSuccessful = true;
           router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
          }
         } catch (error) {
@@ -835,6 +838,7 @@ const inventoryOperationLayout = () => {
                 text1: 'Se ha registrado el inventario final exitosamente.',
                 text2: '',
           });
+          wasInventoryOperationSuccessful = true;
 
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
@@ -852,7 +856,7 @@ const inventoryOperationLayout = () => {
       dispatch(clearTemporalInventoryOperationDescription());
 
       // Syncing with central database
-      if (userSessionReduxState !== null) {
+      if (userSessionReduxState !== null && wasInventoryOperationSuccessful) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
         syncingService.executeReplicationSession();
       }
