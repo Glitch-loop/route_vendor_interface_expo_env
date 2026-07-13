@@ -10,6 +10,7 @@ export function isRouteTransactionServerModel(model: unknown): model is RouteTra
         'id_invoice_concept' in model && (model.id_invoice_concept === undefined || typeof model.id_invoice_concept === 'string') &&
         'received_amount' in model && typeof model.received_amount === 'number' &&
         'created_at' in model && typeof model.created_at === 'string' &&
+        'state' in model && typeof model.state === 'string' &&
         'latitude' in model && typeof model.latitude === 'string' &&
         'longitude' in model && typeof model.longitude === 'string' &&
         'id_location' in model && typeof model.id_location === 'string' &&
@@ -19,6 +20,5 @@ export function isRouteTransactionServerModel(model: unknown): model is RouteTra
         'id_payment_method' in model && typeof model.id_payment_method === 'string' &&
         'id_payment_schema' in model && typeof model.id_payment_schema === 'string' &&
         'transaction_descriptions' in model && Array.isArray(model.transaction_descriptions) && model.transaction_descriptions.every(isRouteTransactionDescriptionServerModel)
-
     );
 }

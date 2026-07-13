@@ -84,10 +84,10 @@ export class RouteTransactionAggregate {
             ROUTE_TRANSACTION_STATE.CANCELLED,
             this._routeTransaction.cash_received,
             this._routeTransaction.id_work_day,
-            this._routeTransaction.created_by,
             this._routeTransaction.id_store,
             this._routeTransaction.latitude,
             this._routeTransaction.longitude,
+            this._routeTransaction.created_by,
             this._routeTransaction.payment_method,
             this._routeTransaction.transaction_description
         );

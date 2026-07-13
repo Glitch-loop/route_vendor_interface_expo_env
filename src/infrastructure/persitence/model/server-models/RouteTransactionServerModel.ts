@@ -15,6 +15,6 @@ export default interface RouteTransactionServerModel extends ReplicationDataInte
   id_work_day: string,
   id_payment_method: string,
   id_payment_schema: string,
-  state: number,
+  state: string,
   transaction_descriptions: RouteTransactionDescriptionServerModel[],
 }

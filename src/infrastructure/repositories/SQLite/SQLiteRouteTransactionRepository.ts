@@ -167,7 +167,6 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             } = route_transaction;
 
             const db: SQLiteDatabase = await this.dataSource.getClient();
-
             await db.withExclusiveTransactionAsync(async (tx) => {
             await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
             date = ?, 

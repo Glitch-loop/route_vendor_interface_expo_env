@@ -4,7 +4,7 @@ import RouteTransactionDescriptionLocalModel from "@/src/infrastructure/persiten
 export default interface RouteTransactionLocalModel extends ReplicationDataInterface {
   id_route_transaction: string,
   date: string,
-  state: number,
+  state: string,
   cash_received: number,
   latitude: string,
   longitude: string,

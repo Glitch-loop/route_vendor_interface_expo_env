@@ -135,9 +135,7 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 				new RouteTransaction(
 					routeTransaction.id_transaction,
 					new Date(routeTransaction.created_at),
-					routeTransaction.state === 0
-						? ROUTE_TRANSACTION_STATE.CANCELLED
-						: ROUTE_TRANSACTION_STATE.ACTIVE,
+					routeTransaction.state as ROUTE_TRANSACTION_STATE,
 					routeTransaction.received_amount,
 					routeTransaction.id_work_day,
 					routeTransaction.id_location,
@@ -182,24 +180,23 @@ export class BackendRouteTransactionRepository implements RouteTransactionReposi
 			for (const transaction of transactions) {
 				const { state, id_transaction } = transaction;
 
-				if (state === 0) { // Route transaction cancelled.
+				if (state === ROUTE_TRANSACTION_STATE.CANCELLED) { // Route transaction cancelled.
+					console.log("Canel route transaction")
 					const transactionToVerify: RouteTransaction[] = await this.retrieveRouteTransactionById([ id_transaction ]);
+					console.log("transactionToVerify: ", transactionToVerify)
 					if (transactionToVerify.length === 0) { 
 						/* This case represents a route transaction that has not been registered and than needs to be cancelled. */
 						await this.dataSource.post<unknown, RouteTransactionServerModel>(
 							'/sellings/transactions',
 							transaction
 						);
-						await this.dataSource.patch<unknown, undefined>(
-							`/sellings/transactions/${id_transaction}/cancel`,
-						);
-					} else {
-						/* This case represent a registered transaction that needs to be cancelled. */
-						await this.dataSource.patch<unknown, undefined>(
-							`/sellings/transactions/${id_transaction}/cancel`,
-						)
 					}
+
+					await this.dataSource.patch<unknown, undefined>(
+						`/sellings/transactions/${id_transaction}/cancel`,
+					)
 				} else {
+					console.log("Register route transactionr")
 					await this.dataSource.post<unknown, RouteTransactionServerModel>(
 						'/sellings/transactions',
 						transaction
