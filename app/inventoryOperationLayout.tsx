@@ -681,6 +681,7 @@ const inventoryOperationLayout = () => {
           
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
+          console.log(error)
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',

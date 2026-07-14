@@ -73,7 +73,7 @@ export class RegisterClientProspectUseCase {
             cleanStringToStoreInDatabase(storeExteriorNumber),
             cleanStringToStoreInDatabase(storeColony),
             cleanStringToStoreInDatabase(storePostalCode),
-            cleanStringToStoreInDatabase(storeAddressReference),
+            storeAddressReference === "" ? null : cleanStringToStoreInDatabase(storeAddressReference),
             cleanStringToStoreInDatabase(storeName),
             '',
             '',

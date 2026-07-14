@@ -66,23 +66,24 @@ export default class DataReplicationService {
       throw new Error("Current workday user is required to sync inventory operations.");
     }
 
-    // Phase 1: Work day and stores
+    // Phase 1: Start work day and stores
     try {
       const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
       const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
-      const workDaysWithUser:(WorkDayInformationModel)[] = pendingWorkDays.map(wd => ({
-        ...this.mapperLocalServerModel.toServerModel(wd)
-      }));
       const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toServerModel(store));
       
-      console.log(`Pending work days to sync: ${pendingWorkDays.length}`);
+      console.log(`Pending starting work days to sync: ${pendingWorkDays.length}`);
       console.log(`Pending stores to sync: ${pendingStores.length}`);
 
       if (pendingWorkDays.length > 0) {
-        await this.serverWorkdayRepo.upsertWorkdayInformations(workDaysWithUser);
-        await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(pendingWorkDays.map(w => w.id_work_day));
+        const startWorkDays = pendingWorkDays
+          .filter((workDay) => { return workDay.finish_date === null && workDay.final_petty_cash === null; });
+        await this.serverWorkdayRepo.upsertWorkdayInformations(startWorkDays);
+        await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(startWorkDays.map(w => w.id_work_day));
       }
       if (pendingStores.length > 0) {
+        console.log("PENDING STORES TO BE SYNCED")
+        console.log(storesToSync)
         await this.serverStoreRepo.upsertStores(storesToSync);
         await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
       }
@@ -155,6 +156,26 @@ export default class DataReplicationService {
       console.error("Phase 3 error: ", error);
       wasReplicationSessionCompletedSucessfully = false;
     }
+
+    // Phase 4 Finish work day
+    try {
+      const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
+      
+      console.log(`Pending finishing work days to sync: ${pendingWorkDays.length}`);
+
+      if (pendingWorkDays.length > 0) {
+        const endWorkDays = pendingWorkDays
+          .filter((workDay) => { return workDay.finish_date !== null && workDay.final_petty_cash !== null; });
+        await this.serverWorkdayRepo.upsertWorkdayInformations(endWorkDays);
+        await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(endWorkDays.map(w => w.id_work_day));
+      }
+
+    } catch (error) {
+      console.error("Phase 4 error: ", error);
+      wasReplicationSessionCompletedSucessfully = false;
+      // Do not mark as synced on failure; let future session retry
+    }    
+
 
     return wasReplicationSessionCompletedSucessfully;
   }

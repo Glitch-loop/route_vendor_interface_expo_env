@@ -40,6 +40,25 @@ interface LocationStoreResponseInterface {
     notes: any[];
 }
 
+interface LocationStoreRequestInterface {
+    id_location: string;
+    street: string;
+    ext_number: string;
+    colony: string;
+    postal_code: string;
+    address_reference: string | undefined;
+    location_name: string;
+    latitude: string;
+    longitude: string;
+    id_creator: string;
+    id_client: string | undefined;
+    id_location_type: string;
+    created_at: string;
+    updated_at: string;
+}
+
+
+
 interface LocationsCollectionResponseInterface {
     data?: LocationStoreResponseInterface[];
     items?: LocationStoreResponseInterface[];
@@ -103,9 +122,35 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
     try {
       // Upsert is handled as insert, per the current backend contract.
       for (const store of stores) {
-        await this.dataSource.post<LocationStoreResponseInterface, StoreServerModel>(
+
+        /*
+          Note for the correct request for this endpoint (14-07-26) (PATCH)
+
+          - To indicate there is not address reference, it has to be set as undefined.
+          - If not possible to indicate to which client a location belongs let the interfaces as null.
+        
+          
+        */
+        const body: LocationStoreRequestInterface = {
+            id_location: store.id_location,
+            street: store.street,
+            ext_number: store.ext_number === null ? '' : store.ext_number,
+            colony: store.colony,
+            postal_code: store.postal_code,
+            address_reference: store.address_reference === null ? undefined : store.address_reference,
+            location_name: store.location_name === null ? 'Nombre no disponible durnate sincronizacion' :  store.location_name,
+            latitude: store.latitude,
+            longitude: store.longitude,
+            id_creator: store.id_creator,
+            id_client: store.id_client === '' ? undefined : store.id_client,
+            id_location_type: store.id_location_type,
+            created_at: store.created_at,
+            updated_at: store.updated_at,
+          }
+
+        await this.dataSource.post<unknown, LocationStoreRequestInterface>(
           '/clients/locations',
-          store
+          body
         );
       }
   
@@ -141,6 +186,7 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
       }
       
     } catch (error: any) {
+      console.log(error)
       throw new Error(`Failed to list stores: ${error.message}`);
     }
   }
