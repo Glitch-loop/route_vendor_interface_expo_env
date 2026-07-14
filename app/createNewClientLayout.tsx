@@ -43,8 +43,9 @@ import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWi
 import Toast from 'react-native-toast-message';
 
 // Utils
-import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
+import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import { IStoreRouteMap, PostalCode } from '@/interfaces/interfaces';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 interface NewClientFormData {
   id_location_type: string;
@@ -65,6 +66,16 @@ function validatorCriteria(query: string, item: PostalCode):boolean {
 
 function criteriaForSelectedItems(item: PostalCode, selectedItems: PostalCode[]):boolean {
     return selectedItems.some(selectedItem => selectedItem.stablishment_name === item.stablishment_name);
+}
+
+function mergeStoresByIdStore(...storeGroups: IStoreRouteMap[][]): IStoreRouteMap[] {
+  const storesById = new Map<string, IStoreRouteMap>();
+
+  storeGroups.flat().forEach((store) => {
+    storesById.set(store.id_store, store);
+  });
+
+  return Array.from(storesById.values());
 }
 
 
@@ -113,9 +124,14 @@ export default function CreateNewClientLayout() {
 
   // Auxiliar functions
   const setUpCreateNewClientLayout = async ():Promise<void> => {
-    if(storesRedux !== null && dayOperationsRedux !== null) {
-      const storesRouteMap: IStoreRouteMap[] = convertStoreDTOToIStoreRouteMap(storesRedux, dayOperationsRedux);
-      
+    if(storesRedux !== null && dayOperationsRedux !== null && userSessionReduxState !== null) {
+      const { id_vendor } = userSessionReduxState;
+
+      const storesRouteMap = mergeStoresByIdStore(
+        convertStoreDTOToIStoreRouteMap(storesRedux, dayOperationsRedux),
+        convertUserClientsDTOToIStoreRouteMap([...storesRedux], id_vendor, -1, DAY_OPERATIONS.prospect_registration)
+      );
+
       userLocationHook.getCurrentUserLocation().then((location: LocationObject|null) => {
         if (location !== null) {
           const { coords } = location;

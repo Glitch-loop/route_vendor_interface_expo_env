@@ -177,7 +177,8 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             id_location_type = ?, 
             creation_date = ?, 
             creation_context = ?, 
-            status_store = ? 
+            status_store = ?,
+            is_synced = 0
             WHERE id_store = ?;`, 
             [
                 street,
@@ -190,13 +191,13 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
                 cellphone,
                 latitude,
                 longitude,
+                id_creator,
                 id_client,
                 id_location_type,
                 new Date(creation_date).toISOString(),
                 creation_context,
                 status_store,
-                id_store,
-                is_new
+                id_store
             ]);
         });
         } catch(error) {

@@ -16,6 +16,7 @@ import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/
 // DTOs
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
+import ProjectButton from './ProjectButton';
 
 const MenuHeader = ({
     showGoBackButton = true,
@@ -42,21 +43,21 @@ const MenuHeader = ({
   return (
     <View 
     // style={tw`flex flex-row items-center ${getJustifyContentConfiguration(showGoBackButton, showRouteName, showStoreName, showPrinterButton)}`}
-    style={tw`w-11/12 flex flex-row items-center justify-center`}>
+    style={tw`w-11/12 flex flex-row items-center justify-around`}>
 
       { showGoBackButton && 
-        <View style={tw`basis-1/6`}>
+        <View style={tw`flex basis-1/6`}>
           <GoButton iconName={'chevron-left'} onPressButton={onGoBack}/> 
         </View>
       }
-      <View style={tw`basis-4/6 mx-3`}>
+      <View style={tw`flex basis-4/6`}>
         <ScrollView
           showsHorizontalScrollIndicator={true}
           persistentScrollbar={true}
           horizontal={true}>
           { id_store === undefined ?
-            <View style={tw`flex flex-col items-start justify-center`}>
-              <Text style={tw`text-2xl text-black align-middle`}>{ capitalizeFirstLetter(routeName) }</Text>
+            <View style={tw`flex flex-col items-center justify-center`}>
+              <Text style={tw`text-2xl text-black`}>{ capitalizeFirstLetter(routeName) }</Text>
             </View>
             :
             <View style={tw`flex flex-col items-start justify-center`}>
@@ -67,7 +68,7 @@ const MenuHeader = ({
         </ScrollView>
       </View>
       { showPrinterButton && 
-        <View style={tw`basis-1/6`}>
+        <View style={tw`flex basis-1/6`}>
           <BluetoothButton /> 
         </View>
       }

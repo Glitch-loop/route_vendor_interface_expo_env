@@ -5,7 +5,6 @@ import { ActivityIndicator, Text } from 'react-native-paper';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 
-
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import store, { AppDispatch, RootState } from '@/redux/store';
@@ -16,6 +15,7 @@ import { clearRouteDay } from '@/redux/slices/routeDaySlice';
 import { clearRoute } from '@/redux/slices/routeSlice';
 import { clearStores } from '@/redux/slices/storesSlice';
 import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { logoutUser } from '@/redux/slices/userSlice';
 
 // UI components
 import RouteCard from '@/components/route-operation-menu/RouteCard';
@@ -57,6 +57,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
 import SheetBackupService from '@/src/infrastructure/services/SheetBackupService';
+import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
 
 // Auxiliar functions
 const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
@@ -335,7 +336,7 @@ const routeOperationMenuLayout = () => {
     finishWorkDay();
   };
 
-  const onDeclinedialog = ():void => { setShowDialog(false); };
+  const onDeclinedialog = (): void => { setShowDialog(false); };
 
   const handlerSearchClient = ():void => { router.push('/searchClientLayout'); };
 
@@ -370,6 +371,17 @@ const routeOperationMenuLayout = () => {
     } 
   }
 
+  const onSaleToProspectOfClient = (id_store: string): void => {
+    router.push(`/salesLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
+  }
+
+  const handleLogout = async () => {
+    const authenticationService = container.resolve(AuthenticationService);
+    await authenticationService.logoutUser();
+    dispatch(logoutUser(null));
+    router.replace('/loginLayout');
+  }
+
   return (
     <SafeAreaView>
       <View style={tw`w-full h-full`}>
@@ -387,26 +399,34 @@ const routeOperationMenuLayout = () => {
           </View>
         </ActionDialog>
         <View style={tw`flex flex-row justify-around items-center`}>
-          <ProjectButton
-            title={'Buscar cliente'}
-            onPress={() => {
-              if (isDayWorkClosed) {
-                Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
-              } else {
-                handlerSearchClient();
-              }
-            }}
-            buttonVariant= 'primary'
-            buttonStyle={tw`flex ${isDayWorkClosed ? `basis-4/8` : `basis-4/8`} py-4 my-2 bg-blue-400 px-4 rounded`}
-          />
-          {isDayWorkClosed &&
+          { isDayWorkClosed ?
             <ProjectButton
               title={'Descargar'}
               onPress={() => { handleDownloadWorkDayInfo(); }}
               buttonVariant= 'neutral'
               buttonStyle={tw`flex basis-3/8 py-4 my-2 bg-blue-400 px-4 rounded`}
+            /> 
+            :
+            <ProjectButton
+              title={'Buscar cliente'}
+              onPress={() => {
+                if (isDayWorkClosed) {
+                  Toast.show({type: 'error', text1:'Inventario final terminado', text2: 'No se pueden hacer mas operaciones'});
+                } else {
+                  handlerSearchClient();
+                }
+              }}
+              buttonVariant= 'primary'
+              buttonStyle={tw`flex ${isDayWorkClosed ? `basis-4/8` : `basis-4/8`} py-4 my-2 bg-blue-400 px-4 rounded`}
             />
           }
+          <ProjectButton
+              title='Cerrar sesión'
+              onPress={() => { handleLogout()}}
+              buttonVariant='neutral'
+              textStyle='text-gray-800'
+              buttonStyle={tw`px-4 py-4 rounded`}
+            />
         </View>
         <ScrollView
           ref={scrolldownRef}
@@ -531,9 +551,6 @@ const routeOperationMenuLayout = () => {
                 let itemName = '';
                 let description = '';
                 let totalValue = '';
-                let cardColor = '';
-                let isClientOperation = true; /*true = client, false = inventory operation*/
-                let isPrintableOperation = true;
                 const { id_store, status_store, store_name, street, ext_number, colony, id_creator } = storeRedux;
                 const { id_vendor } = userRedux;
 
@@ -551,10 +568,7 @@ const routeOperationMenuLayout = () => {
                       description={description}
                       totalValue={totalValue}
                       style={`my-2 bg-green-400 rounded w-11/12 h-16 flex flex-row justify-center items-center text-white`}
-                      onSelectItem={
-                        onDeclinedialog
-                      }
-                      // onSelectItem={ onSelectStore(dayOperation) }
+                      onSelectItem={() => { onSaleToProspectOfClient(id_store); }}
                       />
                     );
                 } else {
@@ -563,7 +577,6 @@ const routeOperationMenuLayout = () => {
               })}
               </View>
             }
-          
           </View>
           }
           <View style={tw`h-32`}/>

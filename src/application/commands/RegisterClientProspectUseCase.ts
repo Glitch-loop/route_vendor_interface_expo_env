@@ -86,7 +86,7 @@ export class RegisterClientProspectUseCase {
             'ruta',
         )
 
-        const newStore = storeAggregate.getStoreClients().pop();
+        const newStore = storeAggregate.getStoreClient();
 
         if (!newStore) throw new Error("Error registering new client. Please try again.");
 

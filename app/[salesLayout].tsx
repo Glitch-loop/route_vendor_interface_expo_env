@@ -76,6 +76,7 @@ type typeSearchParams = {
   id_day_operation_dependent_param?: string;
   id_route_transaction_param?: string;
   is_selling_out_of_route?: string;
+  is_prospect_of_client_confirmation?: string;
 }
 
 // function productCommitedValidation(
@@ -174,7 +175,8 @@ const salesLayout = () => {
     id_store_param,
     id_day_operation_dependent_param,
     id_route_transaction_param,
-    is_selling_out_of_route
+    is_selling_out_of_route,
+    is_prospect_of_client_confirmation
   } = params as typeSearchParams;
 
   const printerService = di_container.resolve<BluetoothPrinterService>(BluetoothPrinterService);
@@ -489,7 +491,10 @@ useEffect(() => {
 
     setFinishedSale(true); // Finishing sale payment process.
 
-    if (workDayInformation === null || id_store_param === undefined && (id_day_operation_dependent_param === undefined || is_selling_out_of_route === undefined)) {
+    if (workDayInformation === null 
+    || id_store_param === undefined 
+    && (id_day_operation_dependent_param === undefined || is_selling_out_of_route === undefined || is_prospect_of_client_confirmation === undefined)
+    ) {
       Toast.show({
         type: 'error',
         text1:'Error interno',
@@ -511,6 +516,8 @@ useEffect(() => {
           const { id_day_operation } = visitedClientOutOfRoute;
           id_day_operation_dependent = id_day_operation;
         }
+      } else if (is_prospect_of_client_confirmation === '1') {
+        
       } else if(id_day_operation_dependent_param !== undefined) {
         id_day_operation_dependent = id_day_operation_dependent_param;
       }
@@ -541,7 +548,6 @@ useEffect(() => {
 
             
       const newInventory = await retrieveCurrentShiftInventory.execute();
-      
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
 
 

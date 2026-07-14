@@ -13,6 +13,7 @@ import { setRouteDay } from '@/redux/slices/routeDaySlice';
 import { setRoute } from '@/redux/slices/routeSlice';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setStores } from '@/redux/slices/storesSlice';
+import { logoutUser } from '@/redux/slices/userSlice';
 
 // UI Components
 import RouteSelectionCard from '@/components/route-selection-components/RouteSelectionCard';
@@ -49,7 +50,7 @@ import { ActivityIndicator } from 'react-native-paper';
 // Utils
 import { DAYS_ARRAY } from '@/src/core/constants/days';
 import { determineIfCurrentDay } from '../utils/date/momentFormat';
-import { logoutUser } from '@/redux/slices/userSlice';
+
 
 const routeSelectionLayout = () => {
   // Redux
