@@ -210,7 +210,7 @@ const SummarizeTransaction = ({
       return;
     }
 
-    router.push(`/salesLayout?id_store_search_param=${id_store}&id_route_transaction_search_param=${id_route_transaction}&id_day_operation_dependent_search_param=${id_day_operation_dependent}`);
+    router.push(`/salesLayout?id_store_param=${id_store}&id_route_transaction_param=${id_route_transaction}&id_day_operation_dependent_param=${id_day_operation_dependent}`);
   };
 
   const handleOnShowDialog = () => { 

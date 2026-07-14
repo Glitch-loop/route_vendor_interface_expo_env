@@ -82,13 +82,13 @@ export function getDayOperationColor(dayOperation: DayOperationDTO|undefined, de
             case DAY_OPERATIONS.restock_inventory:
             case DAY_OPERATIONS.product_devolution_inventory:
             case DAY_OPERATIONS.end_shift_inventory:
-                style ='bg-red-300';
+                style = 'bg-red-300';
                 break;
             case DAY_OPERATIONS.new_client_registration:
-                style ='bg-green-600';
+                style = 'bg-green-600';
                 break;
                 case DAY_OPERATIONS.prospect_registration:
-                style ='bg-green-400';
+                style = 'bg-green-400';
                 break;
             case DAY_OPERATIONS.attention_out_of_route:
                 style = 'bg-orange-600';

@@ -8,7 +8,7 @@ import { Router, useRouter } from 'expo-router';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/store';
+import store, { AppDispatch, RootState } from '@/redux/store';
 import { clearDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { clearProductInventory } from '@/redux/slices/productsInventorySlice';
 import { clearProducts } from '@/redux/slices/productSlice';
@@ -94,8 +94,8 @@ const routeOperationMenuLayout = () => {
   const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
   const workdayInformationReduxState = useSelector((state: RootState) => state.workDayInformation);
   const routeDay = useSelector((state: RootState) => state.routeDay);
-  const stores = useSelector((state: RootState) => state.stores);
-  const user = useSelector((state: RootState) => state.user);
+  const storesRedux = useSelector((state: RootState) => state.stores);
+  const userRedux = useSelector((state: RootState) => state.user);
 
   // Routing
   const router:Router = useRouter();
@@ -181,7 +181,7 @@ const routeOperationMenuLayout = () => {
   }
 
   // Handlers
-  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_search_param=${dayOperation.id_item}&id_day_operation_dependent_search_param=${dayOperation.id_day_operation}`); };
+  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_param=${dayOperation.id_item}&id_day_operation_dependent_param=${dayOperation.id_day_operation}`); };
 
   const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
 
@@ -428,7 +428,7 @@ const routeOperationMenuLayout = () => {
             <View style={tw`h-64 flex flex-col justify-center items-center`}>
               <ActivityIndicator size={'large'} />
             </View> :
-            <View style={tw`w-full h-full flex flex-col items-center`}>
+            <View style={tw`w-full flex flex-col items-center`}>
               {dayOperations.map(dayOperation => {
                 let itemOrder = '';
                 let itemName = '';
@@ -442,8 +442,8 @@ const routeOperationMenuLayout = () => {
                 // Inventory operations type
                 cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, false);
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
-                  ||  operation_type === DAY_OPERATIONS.restock_inventory
-                  ||  operation_type === DAY_OPERATIONS.product_devolution_inventory
+                  || operation_type === DAY_OPERATIONS.restock_inventory
+                  || operation_type === DAY_OPERATIONS.product_devolution_inventory
                   || operation_type === DAY_OPERATIONS.end_shift_inventory
                 ) {
                   isClientOperation = false;
@@ -463,11 +463,11 @@ const routeOperationMenuLayout = () => {
                   }
 
                   totalValue = '';
-                  if (stores === null) {
+                  if (storesRedux === null) {
                     itemName = 'Nombre cliente desconocido.';
                     description = '';
                   } else {
-                    const foundStore:StoreDTO|undefined = stores.find(store => store.id_store === id_item);
+                    const foundStore:StoreDTO|undefined = storesRedux.find(store => store.id_store === id_item);
                     
                     if (foundStore === undefined) {
                       itemName = 'Nombre cliente desconocido.';
@@ -509,6 +509,62 @@ const routeOperationMenuLayout = () => {
                 }
               })}
             </View>
+          }
+          {/* List of vendor's prospect of clients */}
+          <View style={tw`mt-3 w-full flex flex-row justify-center`}>
+            <Text style={tw`text-xl text-black align-middle`}>Prospectos de cliente</Text>
+          </View>
+          { storesRedux === null ?
+          <View style={tw`h-64 flex flex-col justify-center items-center`}>
+            <ActivityIndicator size={'large'} />
+          </View> 
+          :
+          <View style={tw`w-full h-full flex flex-col items-center`}>
+            { storesRedux.length === null || userRedux === null ?
+              <View style={tw`h-64 flex flex-col justify-center items-center`}>
+                <Text style={tw`text-2xl text-black align-middle`}>Actualmente no tienes prospectos</Text>
+              </View> 
+              : 
+              <View style={tw`w-full h-full flex flex-col items-center`}>
+              {storesRedux.map(storeRedux => {
+                let itemOrder = '';
+                let itemName = '';
+                let description = '';
+                let totalValue = '';
+                let cardColor = '';
+                let isClientOperation = true; /*true = client, false = inventory operation*/
+                let isPrintableOperation = true;
+                const { id_store, status_store, store_name, street, ext_number, colony, id_creator } = storeRedux;
+                const { id_vendor } = userRedux;
+
+                itemName = store_name || 'Nombre cliente desconocido.';
+                description = street + ' #' + ext_number + ', ' + colony;
+                
+                if (status_store === -1 && id_vendor === id_creator) {
+                  return (
+                    <RouteCard
+                      // ref = {((ref: any) => { operationsDayRef.current.set(id_day_operation, ref);})}
+                      key= {id_store}
+                      // ref= {((ref) => { markerRefs.current[id_store] = ref; })}
+                      itemOrder={itemOrder}
+                      itemName={itemName}
+                      description={description}
+                      totalValue={totalValue}
+                      style={`my-2 bg-green-400 rounded w-11/12 h-16 flex flex-row justify-center items-center text-white`}
+                      onSelectItem={
+                        onDeclinedialog
+                      }
+                      // onSelectItem={ onSelectStore(dayOperation) }
+                      />
+                    );
+                } else {
+                  return null;
+                }
+              })}
+              </View>
+            }
+          
+          </View>
           }
           <View style={tw`h-32`}/>
         </ScrollView>

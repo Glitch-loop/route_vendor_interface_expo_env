@@ -42,16 +42,16 @@ import { getAddressOfStore } from '@/utils/stores/utils';
 import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
 
 type typeSearchParams = {
-  id_store_search_param: string;
-  id_day_operation_dependent_search_param: string;
+  id_store_param: string;
+  id_day_operation_dependent_param: string;
 }
 
 const storeMenuLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const { 
-    id_store_search_param,
-    id_day_operation_dependent_search_param
+    id_store_param,
+    id_day_operation_dependent_param
   } = params as typeSearchParams;
 
   //Defining redux context
@@ -86,7 +86,7 @@ const storeMenuLayout = () => {
       dispatch(setStores(allStores))
     }
     
-    const foundStore:StoreDTO|undefined = allStores.find(storeItem => storeItem.id_store === id_store_search_param);
+    const foundStore:StoreDTO|undefined = allStores.find(storeItem => storeItem.id_store === id_store_param);
 
     if (foundStore === undefined || dayOperationsReduxState === null) {
       setConsultedStore(null);
@@ -102,7 +102,7 @@ const storeMenuLayout = () => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => { router.replace('/routeOperationMenuLayout') };
 
-  const handlerGoBackToStoreMenu = () => { router.replace(`/storeMenuLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); };
+  const handlerGoBackToStoreMenu = () => { router.replace(`/storeMenuLayout?id_store_param=${id_store_param}&id_day_operation_dependent_param=${id_day_operation_dependent_param}`); };
 
   const handlerOnStartSale = () => { 
       if (workDay === null) {
@@ -113,7 +113,7 @@ const storeMenuLayout = () => {
       const { finish_date } = workDay;
   
     if (finish_date !== null) Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-    else router.push(`/salesLayout?id_store_search_param=${id_store_search_param}&id_day_operation_dependent_search_param=${id_day_operation_dependent_search_param}`); 
+    else router.push(`/salesLayout?id_store_param=${id_store_param}&id_day_operation_dependent_param=${id_day_operation_dependent_param}`); 
   };
 
   const handlerOnConsultTransactions = async() => {
@@ -154,7 +154,7 @@ const storeMenuLayout = () => {
       <View style={tw`w-full h-full flex items-center`}>
         <View style={tw`w-full flex basis-1/12 flex-row justify-center items-center`}>
           <MenuHeader 
-            id_store={id_store_search_param}
+            id_store={id_store_param}
             onGoBack={handlerGoBackToMainOperationMenu}/>
         </View>
         { consultedStore != null &&
@@ -222,7 +222,7 @@ const storeMenuLayout = () => {
       <View style={tw`w-full h-full flex-col justify-start items-center`}>
         <View style={tw`w-full flex my-5 flex-row justify-around items-center`}>
           <MenuHeader 
-            id_store={id_store_search_param}
+            id_store={id_store_param}
             onGoBack={handlerGoBackToStoreMenu}/>
         </View>
           { routeTransactions.length > 0 ? (

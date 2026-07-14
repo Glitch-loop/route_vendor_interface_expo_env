@@ -10,6 +10,7 @@ export default interface StoreDTO {
     longitude: string,
     creation_date: string,
     id_client: string,
+    id_creator: string,
     id_location_type: string,
     status_store: number,
     is_new: number

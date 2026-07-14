@@ -71,6 +71,13 @@ import {
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
 
+type typeSearchParams = {
+  id_store_param: string;
+  id_day_operation_dependent_param?: string;
+  id_route_transaction_param?: string;
+  is_selling_out_of_route?: string;
+}
+
 // function productCommitedValidation(
 //   productInventory: Map<string, ProductInventoryDTO>,
 //   productsToCommit:RouteTransactionDescriptionDTO[],
@@ -88,7 +95,6 @@ import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/applicatio
 //   // }
 //   // return data;
 // }
-
 
 function pushProductToCommitList(productsToCommit:RouteTransactionDescriptionDTO[], productMovement: RouteTransactionDescriptionDTO) {
   const productToCommitForValidation: RouteTransactionDescriptionDTO[] = [];
@@ -161,20 +167,13 @@ function getPricesForStartedRouteTransaction(
   )
 }
 
-type typeSearchParams = {
-  id_store_search_param: string;
-  id_day_operation_dependent_search_param?: string;
-  id_route_transaction_search_param?: string;
-  is_selling_out_of_route?: string;
-}
-
 const salesLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const {
-    id_store_search_param,
-    id_day_operation_dependent_search_param,
-    id_route_transaction_search_param,
+    id_store_param,
+    id_day_operation_dependent_param,
+    id_route_transaction_param,
     is_selling_out_of_route
   } = params as typeSearchParams;
 
@@ -272,7 +271,7 @@ useEffect(() => {
 
     // Finding the current store and retrieving historic route transactions
     if(stores !== null) {
-      const currentStore = stores.find((store) => store.id_store === id_store_search_param)
+      const currentStore = stores.find((store) => store.id_store === id_store_param)
       if (currentStore) {
         idClient = currentStore.id_client
         setCurrentStore(currentStore)
@@ -298,7 +297,7 @@ useEffect(() => {
       setProductClassMap(productClassMap);
 
 
-      if (id_route_transaction_search_param !== undefined) { // Start transaction from another route transaction.
+      if (id_route_transaction_param !== undefined) { // Start transaction from another route transaction.
         /*
           Note about the samples in the setup (06-21-26)
           
@@ -306,7 +305,7 @@ useEffect(() => {
           action, so setting this field for a new transaction will not make sense.
         */
         const retrieve_route_transaction_by_id = di_container.resolve<RetrieveRouteTransactionByIDQuery>(RetrieveRouteTransactionByIDQuery);
-        const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_search_param ]);
+        const routeTransactions = await retrieve_route_transaction_by_id.execute([ id_route_transaction_param ]);
   
         if (routeTransactions.length > 0) {
           const routeTransaction = routeTransactions[0];
@@ -330,7 +329,7 @@ useEffect(() => {
         getPricesForStartedRouteTransaction(
           devolutionMovements,
           productClassMap,
-          id_store_search_param,
+          id_store_param,
           idRouteDay,
           idClient,
         )
@@ -343,7 +342,7 @@ useEffect(() => {
             mergeProductToCommitFromDifferentContext(saleMovements, sampleMovements)
           ),
           productClassMap,
-          id_store_search_param,
+          id_store_param,
           idRouteDay,
           idClient,
         )
@@ -365,7 +364,7 @@ useEffect(() => {
             mergeProductToCommitFromDifferentContext(repositionMovements, sampleMovements)
           ),
           productClassMap,
-          id_store_search_param,
+          id_store_param,
           idRouteDay,
           idClient,
         )
@@ -380,16 +379,16 @@ useEffect(() => {
 
   const setUpHistoricalData = async () => {
     // Retrieving historical data
-    if (id_store_search_param) {
+    if (id_store_param) {
       const retrieveRouteTransactionsFromServer: RetrieveHistoricRouteTransactionByStoreQuery = container.resolve<RetrieveHistoricRouteTransactionByStoreQuery>(RetrieveHistoricRouteTransactionByStoreQuery);
       const retrieveRouteTransacionFromLocal: ListRouteTransactionsOfStoreQuery = container.resolve<ListRouteTransactionsOfStoreQuery>(ListRouteTransactionsOfStoreQuery);
 
-      const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_search_param);
+      const routeTransactionFromLocal: RouteTransactionDTO[] = await retrieveRouteTransacionFromLocal.execute(id_store_param);
       
       if (routeTransactionFromLocal.length > 0) {
         setHistoricRouteTransactions(routeTransactionFromLocal)
       } else {
-        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_search_param);
+        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_param);
         setHistoricRouteTransactions(routeTransactionFromServer);
       }
     }
@@ -451,7 +450,7 @@ useEffect(() => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
-    if (currentStore === null || id_day_operation_dependent_search_param === undefined || workDayInformation === null) {
+    if (currentStore === null || id_day_operation_dependent_param === undefined || workDayInformation === null) {
       Toast.show({
         type: 'error',
         text1:'Ha ocurrido un error.',
@@ -460,7 +459,7 @@ useEffect(() => {
       const visitWithoutSelling = container.resolve<VisitClientWithoutMakeARouteTransactionUseCase>(VisitClientWithoutMakeARouteTransactionUseCase);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       
-      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_search_param, workDayInformation.id_route_day);
+      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_param, workDayInformation.id_route_day);
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
       dispatch(setDayOperations(newDayOperationsList));
@@ -490,7 +489,7 @@ useEffect(() => {
 
     setFinishedSale(true); // Finishing sale payment process.
 
-    if (workDayInformation === null || id_store_search_param === undefined && (id_day_operation_dependent_search_param === undefined || is_selling_out_of_route === undefined)) {
+    if (workDayInformation === null || id_store_param === undefined && (id_day_operation_dependent_param === undefined || is_selling_out_of_route === undefined)) {
       Toast.show({
         type: 'error',
         text1:'Error interno',
@@ -507,13 +506,13 @@ useEffect(() => {
       try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_search_param, workDayInformation.id_route_day);
+        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
           id_day_operation_dependent = id_day_operation;
         }
-      } else if(id_day_operation_dependent_search_param !== undefined) {
-        id_day_operation_dependent = id_day_operation_dependent_search_param;
+      } else if(id_day_operation_dependent_param !== undefined) {
+        id_day_operation_dependent = id_day_operation_dependent_param;
       }
 
       if (id_day_operation_dependent === null || userSessionReduxState === null) {
@@ -529,14 +528,14 @@ useEffect(() => {
         workDayInformation!,
         paymentMethod,
         receivedCash,
-        id_store_search_param,
+        id_store_param,
         id_day_operation_dependent,
         userSessionReduxState.id_vendor
       );
 
       const { id_route_transaction } = newRouteTransaction;
 
-      await confirmClientProscpectAsClient.execute(id_store_search_param, id_route_transaction);
+      await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction);
       
       setNewRouteTransaction(newRouteTransaction);
 
@@ -604,7 +603,7 @@ useEffect(() => {
 
 
 
-      if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_search_param);
+      if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_param);
 
       if (finishedSale) {          
           ticketToPrint = getTicketSale(
@@ -861,7 +860,7 @@ useEffect(() => {
             <View style={tw`w-full flex flex-1 flex-col items-center justify-center`}>
               <View style={tw`my-3 w-full flex flex-row justify-center items-center`}>
                 <MenuHeader 
-                  id_store={id_store_search_param}
+                  id_store={id_store_param}
                   onGoBack={handleOnGoBack}
                   />
               </View>
