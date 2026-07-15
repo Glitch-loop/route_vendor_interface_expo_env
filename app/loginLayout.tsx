@@ -1,6 +1,6 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, KeyboardAvoidingView, Pressable, Text } from 'react-native';
+import { View, TextInput, KeyboardAvoidingView, Pressable, Text, BackHandler } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
 
@@ -28,7 +28,26 @@ export default function login() {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [signInAttempts, setSignInAttempts] = useState<number>(0);
 
-  useEffect(() => { setUpUserSession(); }, []);
+  useEffect(() => { 
+    setUpUserSession();
+    
+    const backAction = () => {
+      /*
+        In this particular case, the "back handler" of the phone should not do anything.
+        This because the "route store" becomes the new main menu of the vendor.
+
+        This will be true until the user finishes the route of the day.
+      */
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
   
   const setUpUserSession = async () => {
     const authenticationService = di_container.resolve(AuthenticationService);

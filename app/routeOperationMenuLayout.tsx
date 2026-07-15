@@ -542,7 +542,7 @@ const routeOperationMenuLayout = () => {
           <View style={tw`w-full h-full flex flex-col items-center`}>
             { storesRedux.length === null || userRedux === null ?
               <View style={tw`h-64 flex flex-col justify-center items-center`}>
-                <Text style={tw`text-2xl text-black align-middle`}>Actualmente no tienes prospectos</Text>
+                <Text style={tw`text-xl text-black align-middle`}>Actualmente no tienes prospectos</Text>
               </View> 
               : 
               <View style={tw`w-full h-full flex flex-col items-center`}>
