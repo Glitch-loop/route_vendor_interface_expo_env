@@ -70,6 +70,8 @@ import {
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import { setStores } from '@/redux/slices/storesSlice';
 
 type typeSearchParams = {
   id_store_param: string;
@@ -486,6 +488,7 @@ useEffect(() => {
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
     const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
     const confirmClientProscpectAsClient = di_container.resolve<ConfirmClientProspectAsClientUseCase>(ConfirmClientProspectAsClientUseCase);
+    const listAllRegisterdStoresQuery = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
     
     const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
@@ -508,9 +511,10 @@ useEffect(() => {
       text1:'Comenzando proceso para registrar la venta',
       text2: 'Iniciando proceso para registrar la venta'});
     
-      try {
+    try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
+        console.log("Register DAY OPERATION: Selling out of route")
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
@@ -523,7 +527,7 @@ useEffect(() => {
       }
 
       if (id_day_operation_dependent === null || userSessionReduxState === null) {
-         Toast.show({
+        Toast.show({
           type: 'error',
           text1:'Error interno',
           text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
@@ -541,18 +545,16 @@ useEffect(() => {
       );
 
       const { id_route_transaction } = newRouteTransaction;
-
       await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction);
-      
       setNewRouteTransaction(newRouteTransaction);
 
-            
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
-
+      const registeredStoresList = await listAllRegisterdStoresQuery.execute();
 
       dispatch(setDayOperations(newDayOperationsList));
       dispatch(setProductInventory(newInventory));
+      dispatch(setStores(registeredStoresList));
 
       Toast.show({
         type: 'success',
@@ -564,14 +566,14 @@ useEffect(() => {
       workDayInformation
       syncingService.executeReplicationSession();
       setResultSaleState(true);
-      } catch (error) {
-        console.log("Error: ", error)
-        Toast.show({
-          type: 'error',
-          text1:'Hubo un problema durante el registro de la venta',
-          text2: 'Hubo un problema durante el registro de la venta, porfavor, intente nuevamente.'});
-        
-        setResultSaleState(false);
+    } catch (error) {
+      console.log("Error: ", error)
+      Toast.show({
+        type: 'error',
+        text1:'Hubo un problema durante el registro de la venta',
+        text2: 'Hubo un problema durante el registro de la venta, porfavor, intente nuevamente.'});
+      
+      setResultSaleState(false);
     }
 
   }
@@ -606,8 +608,6 @@ useEffect(() => {
     try {      
       let storeToConsult:StoreDTO|undefined = undefined;
       let ticketToPrint: string = '';
-
-
 
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_param);
 
