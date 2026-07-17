@@ -15,6 +15,8 @@ import AuthenticationService from '@/src/infrastructure/services/AuthenticationS
 // Componentes
 import Toast from 'react-native-toast-message';
 import UserDTO from '@/src/application/dto/UserDTO';
+import useNetworkState from '@/hooks/useNetworkState';
+
 
 export default function login() {
   // Redux states
@@ -27,6 +29,9 @@ export default function login() {
   const [inputCellphone, setInputCellphone] = useState<string>('');
   const [inputPassword, setInputPassword] = useState<string>('');
   const [signInAttempts, setSignInAttempts] = useState<number>(0);
+
+  // Hooks
+  const { refreshNetworkState } = useNetworkState();
 
   useEffect(() => { 
     setUpUserSession();
@@ -59,10 +64,24 @@ export default function login() {
 
   // Handlers
   const handlerLogin = async (cellphone:string, password:string) => {
-    Toast.show({type: 'info',
-      text1:'Validando información.',
-      text2: 'Validando credenciales para acceder.',
-    });
+    if (await refreshNetworkState() === true) {
+      Toast.show({type: 'info',
+        text1:'Validando información con el servidor.',
+        text2: 'Validando credenciales para acceder. Puede tomar unos segundos.',
+      });
+    } else {
+      Toast.show({type: 'info',
+        text1:'Validando información.',
+        text2: 'Validando credenciales para acceder. Puede tomar unos segundos.',
+      });
+    }
+
+    if(cellphone.trim() === "" || password.trim() === "") {
+      Toast.show({type: 'error',
+        text1:'Campos invalidos.',
+        text2: 'Número de telefóno o contraseña no pueden estar vacíos.',
+      });
+    }
 
     try {
       const authenticationService = di_container.resolve(AuthenticationService);
@@ -101,28 +120,27 @@ export default function login() {
     }
   };
 
-
   return (
     <KeyboardAvoidingView>
-        <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
-            <TextInput
-            style={tw`w-3/4 h-10
-            border border-black rounded-lg px-4 bg-gray-100 
-            text-base text-black text-center`}
-            placeholder="Numero de telefóno"
-            onChangeText={(text) => { setInputCellphone(text); }}/>
-            <TextInput
-            style={tw`w-3/4 h-10 my-6 border border-black rounded-lg bg-gray-100 text-base text-black text-center`}
-            placeholder="Contraseña"
-            secureTextEntry={true}
-            onChangeText={(text) => { setInputPassword(text); }}
-            />
-            <Pressable
-            style={tw`w-3/4 h-10 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
-            onPress={() => { handlerLogin(inputCellphone, inputPassword); }}>
-            <Text style={tw`text-slate-100 text-center`}> Iniciar sesión </Text>
-            </Pressable>
-        </View>
+      <View style={tw`w-full h-full flex flex-col justify-center items-center`}>
+        <TextInput
+          style={tw`w-3/4 h-10
+          border border-black rounded-lg px-4 bg-gray-100 
+          text-base text-black text-center`}
+          placeholder="Número de telefóno"
+          onChangeText={(text) => { setInputCellphone(text); }}/>
+        <TextInput
+          style={tw`w-3/4 h-10 my-6 border border-black rounded-lg bg-gray-100 text-base text-black text-center`}
+          placeholder="Contraseña"
+          secureTextEntry={true}
+          onChangeText={(text) => { setInputPassword(text); }}
+        />
+        <Pressable
+          style={tw`w-3/4 h-10 bg-blue-400 px-4 py-3 rounded-md flex flex-row justify-center items-center`}
+          onPress={() => { handlerLogin(inputCellphone, inputPassword); }}>
+        <Text style={tw`text-slate-100 text-center`}> Iniciar sesión </Text>
+        </Pressable>
+      </View>
     </KeyboardAvoidingView>
   );
 };
