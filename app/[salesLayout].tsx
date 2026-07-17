@@ -16,6 +16,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setRouteTransactionDescription, clearRouteTransactionDescription } from '@/redux/slices/routeTransactionDescriptionTempSlice';
+import { setStores } from '@/redux/slices/storesSlice';
 
 // UI Components
 import { ActivityIndicator } from 'react-native-paper';
@@ -51,13 +52,18 @@ import VisitClientOutOfRouteUseCase from '@/src/application/commands/VisitClient
 import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
 import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
 import RetrieveHistoricRouteTransactionByStoreQuery from '@/src/application/queries/RetrieveHistoricRouteTransactionByStoreQuery';
+import VisitClientWithoutMakeARouteTransactionUseCase from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 
-//Classes
+// Classes
 import ProductClass from '@/classes/ProductClass';
 
 // Services
 import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+
+// Hooks
+import useNetworkState from '@/hooks/useNetworkState';
 
 // Utils
 import { 
@@ -69,9 +75,6 @@ import {
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
-import { VisitClientWithoutMakeARouteTransactionUseCase } from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
-import { setStores } from '@/redux/slices/storesSlice';
 
 type typeSearchParams = {
   id_store_param: string;
@@ -214,6 +217,8 @@ const salesLayout = () => {
   const productSampleRef = useRef<RouteTransactionDescriptionDTO[]>([]);
   const productSaleRef = useRef<RouteTransactionDescriptionDTO[]>([]);
 
+  // Custom hooks
+  const { refreshNetworkState } = useNetworkState();
 
   /* States used in the logic of the layout. */
   const [startPaymentProcess, setStartPaymentProcess] = useState<boolean>(false);
@@ -338,6 +343,7 @@ useEffect(() => {
           idClient,
         )
       );
+
       setProductReposition(
         getPricesForStartedRouteTransaction(
           productCommitedValidation(
@@ -392,8 +398,15 @@ useEffect(() => {
       if (routeTransactionFromLocal.length > 0) {
         setHistoricRouteTransactions(routeTransactionFromLocal)
       } else {
-        const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_param);
-        setHistoricRouteTransactions(routeTransactionFromServer);
+        if (await refreshNetworkState()) {
+          const routeTransactionFromServer: RouteTransactionDTO[] = await retrieveRouteTransactionsFromServer.execute(id_store_param);
+          setHistoricRouteTransactions(routeTransactionFromServer);
+        } else {
+          Toast.show({
+            type: 'info',
+            text1: 'No se ha podido recuperar la información historica de las ventas.',
+            text2: 'Esta información es meramente informativa (sin efectos en la venta actual).'});
+        }
       }
     }
   }

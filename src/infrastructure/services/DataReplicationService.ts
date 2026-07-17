@@ -1,5 +1,6 @@
 // Libraries
 import { inject, injectable } from "tsyringe";
+import * as Network from 'expo-network';
 
 // Repository
 import { SyncInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository";
@@ -16,16 +17,8 @@ import { SyncServerDayOperationRepository } from "@/src/infrastructure/persitenc
 // di container
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 
-// DTOs
-import UserDTO from "@/src/application/dto/UserDTO";
-
-// Models
-import WorkDayInformationModel from "@/src/infrastructure/persitence/model/server-models/WorkdayInformationServerModel";
-import UserModel from "@/src/infrastructure/persitence/model/server-models/UserModel";
-
 // Mappers
 import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocalServerModel";
-import WorkDayInformationDTO from "@/src/application/dto/WorkdayInformationDTO";
 import { SQLiteShiftOrganizationRepository } from "../repositories/SQLite/SQLiteShiftOrganizationRepository";
 import InventoryOperationServerModel from "../persitence/model/server-models/InventoryOperationServerModel";
 import RouteTransactionServerModel from "../persitence/model/server-models/RouteTransactionServerModel";
@@ -62,6 +55,11 @@ export default class DataReplicationService {
 
     if (currnetWorkDay === undefined) {
       throw new Error("Current workday user is required to sync inventory operations.");
+    }
+
+    if ((await Network.getNetworkStateAsync()).isConnected === true 
+    && (await Network.getNetworkStateAsync()).isInternetReachable === true) {
+      return false;
     }
 
     // Phase 1: Start work day and stores
