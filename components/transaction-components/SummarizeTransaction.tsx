@@ -45,6 +45,8 @@ import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState'
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 import { getTicketSale } from '@/utils/route-transaciton/utils';
 
+// Hooks
+import useNetworkState from '@/hooks/useNetworkState';
 
 const SummarizeTransaction = ({
   productInventoryMap,
@@ -62,7 +64,7 @@ const SummarizeTransaction = ({
   const stores = useSelector((state: RootState) => state.stores);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
   const shiftWorkDay = useSelector((state: RootState) => state.workDayInformation);
-
+  
   /*
     Declaring states to store the movements for each operations.
     At the moment there are only 3 type of operations that a transaction can contain.
@@ -79,9 +81,11 @@ const SummarizeTransaction = ({
   */
   const [currentTransaction, setCurrentTransaction] = useState<RouteTransactionDTO>(routeTransaction);
 
-  const { transaction_description } = routeTransaction;
+  // Custom hooks
+  const { refreshNetworkState } = useNetworkState();
 
   // Variables for displaying information
+  const { transaction_description } = routeTransaction;
   const productsDevolution: RouteTransactionDescriptionDTO[] = transaction_description
     .filter((description) => description.id_transaction_operation_type === DAY_OPERATIONS.product_devolution)
   const productsReposition:RouteTransactionDescriptionDTO[] = transaction_description
@@ -170,7 +174,7 @@ const SummarizeTransaction = ({
           text2: 'Se ha cancelado la transacción exitosamente.'});
 
         // Syncing with central database
-        if (userSessionReduxState !== null) {
+        if (await refreshNetworkState()) {
           const syncingService = container_di.resolve<DataReplicationService>(DataReplicationService);
           syncingService.executeReplicationSession();
         }
