@@ -63,22 +63,21 @@ export default class DataReplicationService {
 
     if ((await Network.getNetworkStateAsync()).isConnected === true 
     && (await Network.getNetworkStateAsync()).isInternetReachable === true) {
-      return false;
-    }
-
-    // Phase 1: Start work day and stores
-    // Phase 2: Route transactions and inventory operations
-    // Phase 3: Day operations
-    // Phase 4 Finish work day
-    if (await this.executePhase1()) {
-      if(await this.executePhase2(currnetWorkDay)) {
-        if (await this.executePhase3(currnetWorkDay)) {
-          if (await this.executePhase4()) {
-            return true;
+      // Phase 1: Start work day and stores
+      // Phase 2: Route transactions and inventory operations
+      // Phase 3: Day operations
+      // Phase 4 Finish work day
+      if (await this.executePhase1()) {
+        if(await this.executePhase2(currnetWorkDay)) {
+          if (await this.executePhase3(currnetWorkDay)) {
+            if (await this.executePhase4()) {
+              return true;
+            }
           }
         }
       }
     }
+
     return false;
   }
 
@@ -104,6 +103,7 @@ export default class DataReplicationService {
         await this.serverStoreRepo.upsertStores(storesToSync);
         await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
       }
+      console.log("Phase 1 finishing: ", true)
       return true;
     } catch (error) {
       console.error("Phase 1 error: ", error);

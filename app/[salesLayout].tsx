@@ -573,8 +573,8 @@ useEffect(() => {
         text2: 'Se ha registrado la venta satisfactoriamente.'});
         
       // Syncing with central database
+      console.log("Start replication")
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      workDayInformation
       syncingService.executeReplicationSession();
       setResultSaleState(true);
     } catch (error) {
