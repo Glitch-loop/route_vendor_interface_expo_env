@@ -108,6 +108,8 @@ const routeOperationMenuLayout = () => {
   const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
   const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
   const [dayOperations, setDayOperations] = useState<DayOperationDTO[]|null>(null);
+  const [clientConfirmationIds, setClientConfirmationIds] = useState<Set<string>>(new Set<string>());
+  const [clientAttentionIds, setclientAttentionIds] = useState<Set<string>>(new Set<string>());
 
   // Refs
   const operationsDayRef = useRef<Map<string, View|null>>(new Map());
@@ -154,6 +156,13 @@ const routeOperationMenuLayout = () => {
     if (dayOperationsReduxState !== null) {
       setDayOperationDependencyMap(createDayOperationDependencyMap([...dayOperationsReduxState]));
       setDayOperations(orderDayOperationsForDisplaying([...dayOperationsReduxState]));
+      dayOperationsReduxState.forEach((dayOperation) => {
+        if(dayOperation.operation_type === DAY_OPERATIONS.new_client_registration) {
+          setClientConfirmationIds((prev) => prev.add(dayOperation.id_item));
+        } else if(dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
+          setclientAttentionIds((prev) => prev.add(dayOperation.id_item));
+        }
+      });
     }
 
     if (workdayInformationReduxState === null) {
@@ -372,7 +381,8 @@ const routeOperationMenuLayout = () => {
   }
 
   const onSaleToProspectOfClient = (id_store: string): void => {
-    router.push(`/salesLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
+    router.push(`/storeMenuLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
+    // router.push(`/salesLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
   }
 
   const handleLogout = async () => {
@@ -480,6 +490,22 @@ const routeOperationMenuLayout = () => {
                   
                   if (operation_type === DAY_OPERATIONS.route_client_attention) {
                     itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperations]).toString();
+                    if(clientConfirmationIds.has(id_item)) isPrintableOperation = false;
+                  } else if (operation_type === DAY_OPERATIONS.attention_out_of_route) {
+                    /*
+                      Note (07-14-26)
+
+                      When new client is confirmed, and it was confirmed through a selling
+                      out of route, then an operation of this type will be created, 
+                      for avoiding user's confusion, if it is a new client confirmation
+                      day operation for a store with attention out of route this will be 
+                      set as not printable, letting the new client registration as
+                      the unique possible way for printing.
+                    */
+                    if(clientConfirmationIds.has(id_item)) isPrintableOperation = false;
+                  } else if(operation_type === DAY_OPERATIONS.new_client_registration) {
+                    if (clientAttentionIds.has(id_day_operation))
+                      itemOrder = determinePositionOrderToAttendOfStoreToAttend(id_day_operation, [...dayOperations]).toString();
                   }
 
                   totalValue = '';
@@ -506,7 +532,6 @@ const routeOperationMenuLayout = () => {
                   if (id_day_operation === currentInventoryOperation.id_day_operation && currentInventoryOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
                     cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, true);
                   }
-
                 }
 
                 if (isPrintableOperation) {

@@ -106,7 +106,9 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
       await this.dataSource.initialize();
       const db: SQLiteDatabase = await this.dataSource.getClient();
       const pending: StoreLocalModel[] = [];
-      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1 OR is_new = 1;`);
+      // PATCH: According with the desing, a record must be listed as pending to sync if is_syncde is 0 or  is_deleted is 1
+      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE status_store = -1 AND is_new = 1;`);
+      // const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1;`);
       const rows = stmt.executeSync<any>();
       for (const row of rows) {
         pending.push(row as StoreLocalModel);
@@ -125,7 +127,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
       await db.withExclusiveTransactionAsync(async (tx) => {
         const placeholders = ids.map(() => '?').join(',');
         await tx.runAsync(
-          `UPDATE ${EMBEDDED_TABLES.STORES} SET is_synced = 1 WHERE id_store IN (${placeholders});`,
+          `UPDATE ${EMBEDDED_TABLES.STORES} SET is_synced = 1, is_new = 0 WHERE id_store IN (${placeholders});`,
           ids
         );
       });
@@ -191,7 +193,7 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
         creation_date = ?, 
         creation_context = ?, 
         status_store = ?,
-        is_synced = 1
+        is_synced = 0
         WHERE id_store = ?;`, 
         [
           street,

@@ -58,15 +58,30 @@ export default class DataReplicationService {
     // Retrieving current work day.
     // Note (30-06-26): In theory, only may be 1 workday in the device.
     const workday:WorkDayInformation[] = await this.workDayInventories.listWorkDays();
-    console.log("Listing invenotry operations: ", workday)
     const currnetWorkDay:WorkDayInformation|undefined = workday.pop();
-    let wasReplicationSessionCompletedSucessfully: boolean = true;
 
     if (currnetWorkDay === undefined) {
       throw new Error("Current workday user is required to sync inventory operations.");
     }
 
     // Phase 1: Start work day and stores
+    // Phase 2: Route transactions and inventory operations
+    // Phase 3: Day operations
+    // Phase 4 Finish work day
+    if (await this.executePhase1()) {
+      if(await this.executePhase2(currnetWorkDay)) {
+        if (await this.executePhase3(currnetWorkDay)) {
+          if (await this.executePhase4()) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  // Each phase must be an method.
+  private async executePhase1(): Promise<boolean> {
     try {
       const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
       const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
@@ -87,13 +102,15 @@ export default class DataReplicationService {
         await this.serverStoreRepo.upsertStores(storesToSync);
         await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
       }
+      return true;
     } catch (error) {
       console.error("Phase 1 error: ", error);
-      wasReplicationSessionCompletedSucessfully = false;
+      return false;
       // Do not mark as synced on failure; let future session retry
     }
+  }
 
-    // Phase 2: Route transactions and inventory operations
+  private async executePhase2(currnetWorkDay: WorkDayInformation): Promise<boolean> { 
     try {
       const pendingRouteTx = await this.syncRouteTxRepo.listPendingRouteTransactionToSync();
       const pendingInvOps = await this.syncInventoryOpRepo.listPendingInventoryOperationToSync();
@@ -134,12 +151,16 @@ export default class DataReplicationService {
         await this.serverInventoryRepo.upsertInventoryOperations([inventoryOperationToSync]);
         await this.syncInventoryOpRepo.markInventoryOperationsAsSynced([operation.data.id_inventory_operation]);
       }
+
+      return true;
     } catch (error) {
       console.error("Phase 2 error: ", error);
-      wasReplicationSessionCompletedSucessfully = false;
+      return false;
     }
 
-    // Phase 3: Day operations
+  }
+  
+  private async executePhase3(currnetWorkDay: WorkDayInformation): Promise<boolean> { 
     try {
       const pendingDayOperations = await this.syncDayOperationRepo.listPendingDayOperationToSync();
 
@@ -152,12 +173,15 @@ export default class DataReplicationService {
         await this.serverDayOperationRepo.upsertDayOperations(currnetWorkDay.id_work_day, dayOperationsToSync);
         await this.syncDayOperationRepo.markDayOperationAsSynced(pendingDayOperations.map(o => o.id_day_operation));
       }
+
+      return true;
     } catch (error) {
       console.error("Phase 3 error: ", error);
-      wasReplicationSessionCompletedSucessfully = false;
+      return false;
     }
+  }
 
-    // Phase 4 Finish work day
+  private async executePhase4(): Promise<boolean> {
     try {
       const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
       
@@ -170,14 +194,13 @@ export default class DataReplicationService {
         await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(endWorkDays.map(w => w.id_work_day));
       }
 
+      return true;
+
     } catch (error) {
       console.error("Phase 4 error: ", error);
-      wasReplicationSessionCompletedSucessfully = false;
+      return false;
       // Do not mark as synced on failure; let future session retry
-    }    
-
-
-    return wasReplicationSessionCompletedSucessfully;
+    }
   }
 
   async areAllRecordsReplicated(): Promise<boolean> {

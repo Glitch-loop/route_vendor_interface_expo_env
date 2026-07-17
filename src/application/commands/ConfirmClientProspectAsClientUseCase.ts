@@ -98,6 +98,7 @@ export default class ConfirmClientProspectAsClientUseCase {
           this.idService.generateID(),
           id_store,
           sellingToClient[0].id_route_day,
+          id_transaction,
           new Date(this.dateService.getCurrentTimestamp()),
           latitude,
           longitude

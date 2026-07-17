@@ -84,6 +84,7 @@ export class OperationDayAggregate {
     idDayOperation: string, 
     idClient: string, 
     idRouteDay: string, 
+    idTransaction: string,
     createdAt: Date, 
     latitude: string | undefined, 
     longitude: string | undefined
@@ -97,18 +98,18 @@ export class OperationDayAggregate {
 
     const newDayOperation = new DayOperation(
       idDayOperation,
-      idClient,
+      idClient, // Id client (location) is set as id_item because it's the central entity of the operation.
       idRouteDay,
       DAY_OPERATIONS.new_client_registration,
       createdAt,
-      null,
+      idTransaction, // Id transaction is set as id_dependency_operation because this operation dependes on create a selling.
       latitude,
       longitude
     );
     
 
     /*
-      Note (14/07/26)
+      Note (07/14/26)
 
       A prospect of client can be confirmed as client in two scenerios:
         1. This is part of the current route.
@@ -119,9 +120,19 @@ export class OperationDayAggregate {
       
       So, this was the reason why for this particular case the "validation" for
       guarantee the uniqueness of client operation is disabled.
-
+      
+      this.verifyIdItemIsNotBeingRepeatedForClientOperations(idClient);
     */
-    // this.verifyIdItemIsNotBeingRepeatedForClientOperations(idClient);
+
+    /*
+      Note (07/15/26) - PATCH
+
+      According with the design of DayOperation, the field id_dependency should reference to another id_dependency,
+      not an "item" such like a transaction.
+
+      Due to dealines it's that for this particular case, id_dependency refers to another item (not a day operation),
+      to avoid bugs, mappers knows about this, transforming gracefully taking acccount this case.
+    */
 
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }

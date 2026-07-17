@@ -18,7 +18,8 @@ export class BackendDataSource {
   private authToken: string | null = null;
 
   constructor() {
-    this.url = process.env.EXPO_PUBLIC_BACKEND_URL;
+    // this.url = process.env.EXPO_PUBLIC_BACKEND_URL;
+    this.url = 'http://192.168.1.4:3000';
     console.log("Server: ", this.url)
     if (!this.url) {
       throw new Error('Backend URL not found in environment variables');
@@ -57,6 +58,8 @@ export class BackendDataSource {
       const response = await this.client.post<BackendResponseInterface<TResponse>>(path, body, this.buildConfig(config));
       return response.data.data;
     } catch (error) {
+      console.log(path)
+      console.log(error)
       throw this.toDatasourceError(error);
     }
   }

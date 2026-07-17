@@ -15,29 +15,27 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
 export class BackendWorkdayInformationRepository implements SyncServerWorkdayInformationRepository {
-    constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) { }
+  constructor(@inject(TOKENS.BackendDataSource) private readonly dataSource: BackendDataSource) { }
 
-    async upsertWorkdayInformations(informations: (WorkDayInformationServerModel)[], ): Promise<void> {
-        if (!informations || informations.length === 0) return;
-        try {
-            const workdayToUpsert = informations[0];
-            if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
-                console.log("Start day")
-                console.log("Work day to sync: ", workdayToUpsert)
-                await this.dataSource.post<WorkDayInformationServerModel, WorkDayInformationServerModel>(
-                    '/business-operation-route/work-days',
-                    workdayToUpsert
-                );
-            } else {
-                console.log("Finsih day")
-                console.log(workdayToUpsert)
-                await this.dataSource.patch<WorkDayInformationServerModel, WorkDayInformationServerModel>(
-                    `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
-                    workdayToUpsert
-                );
-            }
-        } catch (error: any) {
-            throw new Error(`Failed to upsert workday information: ${error.message}`);
-        }
+  async upsertWorkdayInformations(informations: (WorkDayInformationServerModel)[], ): Promise<void> {
+    if (!informations || informations.length === 0) return;
+    try {
+      const workdayToUpsert = informations[0];
+      if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
+        console.log("Start day")
+        await this.dataSource.post<WorkDayInformationServerModel, WorkDayInformationServerModel>(
+          '/business-operation-route/work-days',
+          workdayToUpsert
+        );
+      } else {
+        console.log("Finsih day")
+        await this.dataSource.patch<WorkDayInformationServerModel, WorkDayInformationServerModel>(
+          `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
+          workdayToUpsert
+        );
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to upsert workday information: ${error.message}`);
     }
+  }
 }

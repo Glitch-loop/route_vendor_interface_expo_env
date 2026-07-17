@@ -110,6 +110,7 @@ export class RegisterClientProspectUseCase {
         if (!newClientDayOperation) throw new Error("Error registering new client. Please try again.");
 
         // Persist all changes
+        console.log("Store to add: ", newStore)
         await this.storeRepository.insertStores([ newStore ]);
         await this.dayOperationRepository.insertDayOperations([ newClientDayOperation ]);
 

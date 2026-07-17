@@ -96,7 +96,7 @@ export class MapperLocalServerModel {
 	}
 
   // ---------------------- Transformation from local model to server model. ----------------------
-	private dayOperationLocalToServer(model: DayOperationLocalModel): DayOperationServerModel {
+	private dayOperationLocalToServer(model: DayOperationLocalModel): DayOperationServerModel { 
     const { 
 			operation_type, 
 			id_item, 
@@ -112,45 +112,67 @@ export class MapperLocalServerModel {
     let id_route_transaction:string|null = null;
     let id_inventory_operation:string|null = null;
     
-    
-    if(operation_type === DAY_OPERATIONS.route_transaction 
-    || operation_type === DAY_OPERATIONS.cancel_route_transaction
-    ) {
-      id_route_transaction = id_item;
-    } else if (
-       operation_type === DAY_OPERATIONS.cancel_inventory_operation
-    || operation_type === DAY_OPERATIONS.restock_inventory
-    || operation_type === DAY_OPERATIONS.start_shift_inventory
-    || operation_type === DAY_OPERATIONS.end_shift_inventory
-    || operation_type === DAY_OPERATIONS.product_devolution_inventory
-    ) {
-      id_inventory_operation = id_item;
-    } else if(
-      operation_type === DAY_OPERATIONS.prospect_registration
-      || operation_type === DAY_OPERATIONS.new_client_registration
-      || operation_type === DAY_OPERATIONS.attend_client_petition
-      || operation_type === DAY_OPERATIONS.attention_out_of_route
-      || operation_type === DAY_OPERATIONS.route_client_attention
-      || operation_type === DAY_OPERATIONS.client_visited
-    ) {
-      id_location = id_item;
-    }
-    
-		return {
-      id_operation_type: operation_type,
-      created_at: created_at,
-      latitude: latitude === undefined ? null : latitude,
-      longitude: longitude === undefined ? null : longitude,
-      id_location: id_location,
-      id_route_transaction: id_route_transaction,
-      id_inventory_operation: id_inventory_operation,
-      id_route_day: id_route_day,
-      id_day_operation_dependent: id_dependency === undefined ? null : id_dependency,
-      id_work_day_operation: id_day_operation,
-      is_synced: 0,
-      updated_at: created_at,
-      is_deleted: 0,
-    };
+    if (operation_type === DAY_OPERATIONS.new_client_registration) {
+			/*
+				Special case:
+
+				id_dependency not refers to another day operation instead it refers to 
+				a transaction (item).
+			*/
+			return {
+				id_operation_type: operation_type,
+				created_at: created_at,
+				latitude: latitude === undefined ? null : latitude,
+				longitude: longitude === undefined ? null : longitude,
+				id_location: id_item,
+				id_route_transaction: id_dependency,
+				id_inventory_operation: id_inventory_operation,
+				id_route_day: id_route_day,
+				id_day_operation_dependent: null,
+				id_work_day_operation: id_day_operation,
+				is_synced: 0,
+				updated_at: created_at,
+				is_deleted: 0,
+			}; 
+		} else {
+			if(operation_type === DAY_OPERATIONS.route_transaction 
+			|| operation_type === DAY_OPERATIONS.cancel_route_transaction
+			) {
+				id_route_transaction = id_item;
+			} else if (
+				 operation_type === DAY_OPERATIONS.cancel_inventory_operation
+			|| operation_type === DAY_OPERATIONS.restock_inventory
+			|| operation_type === DAY_OPERATIONS.start_shift_inventory
+			|| operation_type === DAY_OPERATIONS.end_shift_inventory
+			|| operation_type === DAY_OPERATIONS.product_devolution_inventory
+			) {
+				id_inventory_operation = id_item;
+			} else if(
+					 operation_type === DAY_OPERATIONS.prospect_registration
+				|| operation_type === DAY_OPERATIONS.attend_client_petition
+				|| operation_type === DAY_OPERATIONS.attention_out_of_route
+				|| operation_type === DAY_OPERATIONS.route_client_attention
+				|| operation_type === DAY_OPERATIONS.client_visited
+			) {
+				id_location = id_item;
+			}
+			
+			return {
+				id_operation_type: operation_type,
+				created_at: created_at,
+				latitude: latitude === undefined ? null : latitude,
+				longitude: longitude === undefined ? null : longitude,
+				id_location: id_location,
+				id_route_transaction: id_route_transaction,
+				id_inventory_operation: id_inventory_operation,
+				id_route_day: id_route_day,
+				id_day_operation_dependent: id_dependency === undefined ? null : id_dependency,
+				id_work_day_operation: id_day_operation,
+				is_synced: 0,
+				updated_at: created_at,
+				is_deleted: 0,
+			};
+		}
 	}
 
 	private inventoryOperationDescriptionLocalToServer(model: InventoryOperationDescriptionLocalModel): InventoryOperationDescriptionServerModel {
