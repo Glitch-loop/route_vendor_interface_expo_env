@@ -211,7 +211,7 @@ export default class StartWorkDayUseCase {
 
     // Store information in local database.
     console.log("Inserting inventory operation")
-    console.log("Inventory: ", newInventoryOperation)
+    console.log("Inventory")
     await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
     console.log("Inserting stores")
     await this.localStoreRepo.insertStores(allStores);
