@@ -314,9 +314,8 @@ const inventoryOperationLayout = () => {
       router.replace('/selectionRouteOperationLayout');
       return;
     }
-    console.log("Retrieving products")
+
     if (hasInternetConnection) {
-      console.log("From backend")
       try {
         availableProductsForInventoryOperation = await getProductOfCompany.execute();
       } catch (error) {
@@ -325,7 +324,6 @@ const inventoryOperationLayout = () => {
           text1: 'No se pudo establecer comunicación con el servidor. Por lo tanto usar inforamción local.',
           text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
         });
-      console.log("From local")
       availableProductsForInventoryOperation = await getProductsAllRegisterdProductsQuery.execute();
       }
     } else {
@@ -334,7 +332,6 @@ const inventoryOperationLayout = () => {
         text1: 'Estas haciendo la operación sin internet.',
         text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
       });
-      console.log("From local")
       availableProductsForInventoryOperation = await getProductsAllRegisterdProductsQuery.execute();
     }
     
@@ -691,7 +688,6 @@ const inventoryOperationLayout = () => {
           
           router.replace('/routeOperationMenuLayout');
         } catch (error) {
-          console.log(error)
           Toast.show({
             type: 'error',
             text1: 'Ha habido un error durante el registro del inventario inicial.',
