@@ -22,7 +22,7 @@ import { LatLng } from 'react-native-maps';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 // Utils
-import { convertStoreDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
+import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { getAddressOfStore } from '@/utils/stores/utils';
 
@@ -94,6 +94,7 @@ const searchClientLayout = () => {
   // Redux
   const storesRedux = useSelector((state: RootState) => state.stores);
   const dayOperationsRedux = useSelector((state: RootState) => state.dayOperations);
+  const userSessionRedux = useSelector((state: RootState) => state.user);
 
   // States
   const [storesToShow, setStoresToShow] = useState<IStoreRouteMap[]>([]);
@@ -119,7 +120,7 @@ const searchClientLayout = () => {
     }, [storesRedux, dayOperationsRedux]);
 
   const setUpSearchClientLayout = async() => {
-    if (dayOperationsRedux === null || storesRedux === null) {
+    if (dayOperationsRedux === null || storesRedux === null || userSessionRedux === null) {
       Toast.show({
         type: 'error',
         text1: 'Ha habido un error al cargar la información de las tiendas.',
@@ -127,6 +128,8 @@ const searchClientLayout = () => {
       });
       return;
     }
+
+    const {id_vendor } = userSessionRedux;
 
     const dayOperations: DayOperationDTO[] = [...dayOperationsRedux];
     const idStoresWithDayOperation: Map<string, DayOperationDTO> = new Map<string, DayOperationDTO>();
@@ -157,6 +160,26 @@ const searchClientLayout = () => {
       }
     });
     
+    /*
+      Note (16-07-26) Get prospects of client.
+
+      This is an special case because rather than use the "day operation"
+      to determine the state of a location, this uses a field of the 
+      entity to determine its status.
+
+      In addition, the user only will be able to see those prospect of client that he 
+      made
+    */
+    
+    const userProspectsOfClient = convertUserClientsDTOToIStoreRouteMap([...allStores], id_vendor, -1, DAY_OPERATIONS.prospect_registration);
+    
+    userProspectsOfClient.forEach((prospectOfClient) => {
+      const { id_store } = prospectOfClient;
+      if(!idStoresWithDayOperation.has(id_store)) {
+        storeWithRouteDay.push(prospectOfClient);
+      }
+    });
+
     setStoresWithStatus(storeWithRouteDay);
     
     // Starting map information.
