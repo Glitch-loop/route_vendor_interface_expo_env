@@ -159,7 +159,6 @@ export default class DataReplicationService {
       console.error("Phase 2 error: ", error);
       return false;
     }
-
   }
   
   private async executePhase3(currnetWorkDay: WorkDayInformation): Promise<boolean> { 

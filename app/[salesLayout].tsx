@@ -526,7 +526,6 @@ useEffect(() => {
     try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        console.log("Register DAY OPERATION: Selling out of route")
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
@@ -579,7 +578,6 @@ useEffect(() => {
       syncingService.executeReplicationSession();
       setResultSaleState(true);
     } catch (error) {
-      console.log("Error: ", error)
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',

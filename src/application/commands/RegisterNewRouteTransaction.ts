@@ -187,7 +187,6 @@ export default class RegisterNewRouteTransaction {
       .map((descriptionDTO) => mapper.toEntity(descriptionDTO));
       
     const workDayInformationEntity: WorkDayInformation = mapper.toEntity(workDayInformation);
-    console.log("Registering")
     const newRouteTransaction = await this.executeUseCase(
       routeTransactionDescriptions,
       workDayInformationEntity,
@@ -197,8 +196,7 @@ export default class RegisterNewRouteTransaction {
       id_day_operation_dependent,
       created_by,
     );
-    console.log("Finishing")
-    console.log(newRouteTransaction)
+
     return mapper.toDTO(newRouteTransaction);
   }
 }
