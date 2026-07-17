@@ -16,10 +16,11 @@ import { setTemporalInventoryOperationDescription, clearTemporalInventoryOperati
 
 // Components
 import RouteHeader from '@/components/shared-components/RouteHeader';
-import TableInventoryOperations from '../components/inventory-components/TableInventoryOperation';
 import VendorConfirmation from '../components/inventory-components/VendorConfirmation';
+import TableInventoryOperations from '../components/inventory-components/TableInventoryOperation';
 import TableInventoryVisualization from '../components/inventory-components/TableInventoryOperationVisualization';
 import TableRouteTransactionProductVisualization from '../components/inventory-components/TableRouteTransactionProductVisualization';
+import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 // UI
@@ -92,10 +93,6 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
-import { Product } from '@/src/core/entities/Product';
-import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
-
-
 
 // Auxiliar functions
 function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
@@ -863,7 +860,7 @@ const inventoryOperationLayout = () => {
       dispatch(clearTemporalInventoryOperationDescription());
 
       // Syncing with central database
-      if (userSessionReduxState !== null && wasInventoryOperationSuccessful) {
+      if (userSessionReduxState !== null && wasInventoryOperationSuccessful && await refreshNetworkState()) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
         syncingService.executeReplicationSession();
       }
@@ -938,7 +935,7 @@ const inventoryOperationLayout = () => {
       });
 
       // Syncing with central database
-      if (userSessionReduxState !== null) {
+      if (userSessionReduxState !== null && await refreshNetworkState()) {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
         syncingService.executeReplicationSession();
       }
