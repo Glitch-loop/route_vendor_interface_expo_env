@@ -38,8 +38,9 @@ import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRou
 // Utils
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
-import { getAddressOfStore } from '@/utils/stores/utils';
+import { convertUserClientsDTOToIStoreRouteMap, getAddressOfStore } from '@/utils/stores/utils';
 import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 type typeSearchParams = {
   id_store_param: string;
@@ -61,6 +62,7 @@ const storeMenuLayout = () => {
   const workDay = useSelector((state: RootState) => state.workDayInformation);
   const dayOperationsReduxState = useSelector((state: RootState) => state.dayOperations);
   const productsInventoryReduxState = useSelector((state: RootState) => state.productsInventory);
+  const userReduxSate = useSelector((state: RootState) => state.user);
 
   // Constants
 
@@ -88,10 +90,10 @@ const storeMenuLayout = () => {
     
     const foundStore:StoreDTO|undefined = allStores.find(storeItem => storeItem.id_store === id_store_param);
 
-    if (foundStore === undefined || dayOperationsReduxState === null) {
+    if (foundStore === undefined || dayOperationsReduxState === null || userReduxSate === null) {
       setConsultedStore(null);
     } else {
-      setConsultedStore(convertStoreDTOToIStoreRouteMap([foundStore], [...dayOperationsReduxState]).pop()!)
+      setConsultedStore(convertStoreDTOToIStoreRouteMap([foundStore], [...dayOperationsReduxState]).pop()!);
     }
 
     if (productsInventoryReduxState !== null && availableProducts !== null) {

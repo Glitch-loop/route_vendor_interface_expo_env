@@ -43,30 +43,40 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
   const storeRouteMap: IStoreRouteMap[] = [];
   const dayOperationMap = new Map<string, DayOperationDTO>(); // Accessing quickly to day operation by store id
   const dependencyMap = createDayOperationDependencyMap(dayOperations);
+  
+  // Removing unnecesary day operations
   dayOperations.forEach((dayOperation) => {
       if (dayOperation.operation_type !== DAY_OPERATIONS.client_visited) {
           dayOperationMap.set(dayOperation.id_item, dayOperation);
       }
   });
 
+  // Determining status and color of the store depending on the store status and the day operations.
   stores.forEach((store) => {
+    const { status_store } = store;    
+    let color = '';
+    let status = '';
+
+    if (status_store === -1) {
+      color = getDayOperationColorByDayOperationType(DAY_OPERATIONS.prospect_registration, false);
+      status = getRouteStatusStore(DAY_OPERATIONS.prospect_registration);                  
+    } else {
       const dayOperation = dayOperationMap.get(store.id_store);
-      let color = '';
-      let status = '';
       if (dayOperation) {
           const { operation_type } = dayOperation;
-          color = getDayOperationColor(dayOperation, dependencyMap, false);
+          color = getDayOperationColorByDayOperationType(operation_type, false);
           status = getRouteStatusStore(operation_type);            
       } else {
           color = getDayOperationColor(undefined, dependencyMap, false);
           status = getRouteStatusStore(undefined);
       }
+    }
 
-      storeRouteMap.push({
-          ...store,
-          tw_color: color,
-          route_status_store: status
-      });
+    storeRouteMap.push({
+        ...store,
+        tw_color: color,
+        route_status_store: status
+    });
   });
 
   return storeRouteMap;
@@ -77,8 +87,8 @@ export function convertUserClientsDTOToIStoreRouteMap(stores: StoreDTO[], idUser
   const userStores = stores.filter((store) => { return store.id_creator === idUser && store.status_store === clientStatus });
 
   userStores.forEach((userStore) => {
-    let color = getDayOperationColorByDayOperationType(dayOperation, false);
-    let status = getRouteStatusStore(dayOperation);
+    let color   = getDayOperationColorByDayOperationType(dayOperation, false);
+    let status  = getRouteStatusStore(dayOperation);
 
     storeRouteMap.push({
       ...userStore,

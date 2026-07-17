@@ -171,7 +171,10 @@ const searchClientLayout = () => {
       made
     */
     
-    const userProspectsOfClient = convertUserClientsDTOToIStoreRouteMap([...allStores], id_vendor, -1, DAY_OPERATIONS.prospect_registration);
+    const userProspectsOfClient = convertStoreDTOToIStoreRouteMap(
+      allStores.filter((store) => store.id_creator === userSessionRedux.id_vendor && store.status_store === -1), 
+      [...dayOperationsRedux]
+    );
     
     userProspectsOfClient.forEach((prospectOfClient) => {
       const { id_store } = prospectOfClient;
