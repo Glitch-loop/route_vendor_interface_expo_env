@@ -1,8 +1,14 @@
 // Libraries
 import { injectable, inject } from 'tsyringe';
 
-// Interfaces
+// Repository
+import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
 import { SyncServerRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository';
+
+// Enums
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
+import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 
 // Entities
 import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
@@ -14,16 +20,12 @@ import { RouteTransactionDescription } from '@/src/core/object-values/RouteTrans
 import { BackendDataSource } from '@/src/infrastructure/datasources/BackendDatasource';
 
 // Models
+import PaymentMethodServerModel from '@/src/infrastructure/persitence/model/server-models/PaymentMethodServerModel';
 import RouteTransactionServerModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel';
 import RouteTransactionDescriptionServerModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionDescriptionServerModel';
 
-// Utils
+// DI container
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
-import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
-import PAYMENT_METHODS from '@/src/core/enums/PaymentMethod';
-import PaymentMethodServerModel from '../../persitence/model/server-models/PaymentMethodServerModel';
 
 interface RouteTransactionWithRouteDescriptions extends RouteTransactionServerModel {
 	payment_method: PaymentMethodServerModel

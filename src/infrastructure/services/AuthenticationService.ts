@@ -5,8 +5,8 @@ import * as Crypto from 'expo-crypto';
 import * as Network from 'expo-network';
 
 // Interfaces
-import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
 import { LocalUserRepository } from '@/src/core/interfaces/LocalUserRepository';
+import { ServerUserRepository } from '@/src/core/interfaces/ServerUserRepository';
 
 // Tokens
 import { TOKENS } from "@/src/infrastructure/di/tokens";

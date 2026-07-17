@@ -10,8 +10,8 @@ import { View, Text, ScrollView, TextInput, KeyboardAvoidingView } from 'react-n
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { setStores } from '@/redux/slices/storesSlice';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
 
 // Interfaces
 import { LocationObject, LocationObjectCoords } from 'expo-location';
@@ -19,9 +19,9 @@ import { LatLng } from 'react-native-maps';
 
 
 // Constants
-import { LOCATION_TYPES_CONSTANTS } from '@/src/core/constants/locationTypesConstants';
-import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
 import POSTAL_CODE from '@/utils/constants/postalCodes';
+import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
+import { LOCATION_TYPES_CONSTANTS } from '@/src/core/constants/locationTypesConstants';
 
 // Service
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
@@ -35,17 +35,17 @@ import { RegisterClientProspectUseCase } from '@/src/application/commands/Regist
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 
 // UI components
-import MenuHeader from '@/components/shared-components/MenuHeader';
-import RouteMap from '@/components/shared-components/RouteMap';
+import Toast from 'react-native-toast-message';
 import useCurrentLocation from '@/hooks/useCurrentLocation';
+import RouteMap from '@/components/shared-components/RouteMap';
+import MenuHeader from '@/components/shared-components/MenuHeader';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
-import Toast from 'react-native-toast-message';
 
 // Utils
-import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import { IStoreRouteMap, PostalCode } from '@/interfaces/interfaces';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 
 // Hooks
 import useNetworkState from '@/hooks/useNetworkState';

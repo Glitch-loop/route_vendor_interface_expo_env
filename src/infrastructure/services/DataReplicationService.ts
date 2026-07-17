@@ -1,30 +1,34 @@
 // Libraries
-import { inject, injectable } from "tsyringe";
 import * as Network from 'expo-network';
+import { inject, injectable } from "tsyringe";
 
 // Repository
-import { SyncInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository";
-import { SyncRouteTransactionRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository";
 import { SyncStoreRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository";
-import { SyncWorkdayInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository";
-import { SyncDayOperationInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository";
+import { SQLiteShiftOrganizationRepository } from "@/src/infrastructure/repositories/SQLite/SQLiteShiftOrganizationRepository";
 import { SyncServerStoreRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerStoreRepository";
+import { SyncRouteTransactionRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository";
+import { SyncDayOperationInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository";
+import { SyncWorkdayInformationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository";
+import { SyncInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository";
+import { SyncServerDayOperationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerDayOperationRepository";
 import { SyncServerWorkdayInformationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerWorkdayInformationRepository";
 import { SyncServerRouteTransactionRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerRouteTransactionRepository";
 import { SyncServerInventoryOperationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerInventoryOperationRepository";
-import { SyncServerDayOperationRepository } from "@/src/infrastructure/persitence/interface/server-database/SyncServerDayOperationRepository";
+
+// Entities
+import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 // di container
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 
+// Models
+import RouteTransactionLocalModel from "@/src/infrastructure/persitence/model/local-models/RouteTransactionLocalModel";
+import RouteTransactionServerModel from "@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel";
+import InventoryOperationLocalModel from "@/src/infrastructure/persitence/model/local-models/InventoryOperationLocalModel";
+import InventoryOperationServerModel from "@/src/infrastructure/persitence/model/server-models/InventoryOperationServerModel";
+
 // Mappers
 import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocalServerModel";
-import { SQLiteShiftOrganizationRepository } from "../repositories/SQLite/SQLiteShiftOrganizationRepository";
-import InventoryOperationServerModel from "../persitence/model/server-models/InventoryOperationServerModel";
-import RouteTransactionServerModel from "../persitence/model/server-models/RouteTransactionServerModel";
-import RouteTransactionLocalModel from "../persitence/model/local-models/RouteTransactionLocalModel";
-import InventoryOperationLocalModel from "../persitence/model/local-models/InventoryOperationLocalModel";
-import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 @injectable()
 export default class DataReplicationService {

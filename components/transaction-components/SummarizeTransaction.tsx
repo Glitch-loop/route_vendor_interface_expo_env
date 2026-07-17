@@ -9,14 +9,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 
-// Interfaces
-
 // Components
 import SectionTitle from '@/components/sale-layout/SectionTitle';
-import SummarizeFormat from '@/components/transaction-components/SummarizeFormat';
 import TotalsSummarize from '@/components/sale-layout/TotalsSummarize';
 import DangerButton from '@/components/shared-components/DangerButton';
 import ActionDialog from '@/components/shared-components/ActionDialog';
+import SummarizeFormat from '@/components/transaction-components/SummarizeFormat';
 import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 
 // UI - components
@@ -29,21 +27,21 @@ import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/Retriev
 import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 
 // DTO
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import StoreDTO from '@/src/application/dto/StoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
-import StoreDTO from '@/src/application/dto/StoreDTO';
 
 // Services
-import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 // Utils
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
+import { getTicketSale } from '@/utils/route-transaciton/utils';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
-import { getTicketSale } from '@/utils/route-transaciton/utils';
 
 // Hooks
 import useNetworkState from '@/hooks/useNetworkState';

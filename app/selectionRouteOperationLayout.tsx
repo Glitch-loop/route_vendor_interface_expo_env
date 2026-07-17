@@ -1,12 +1,12 @@
 // Libraries
-import React from 'react';
-import { Router, useRouter } from 'expo-router';
-import { View } from 'react-native';
 import tw from 'twrnc';
+import React from 'react';
+import { View } from 'react-native';
+import { Router, useRouter } from 'expo-router';
 
 // UI
-import RouteHeader from '@/components/shared-components/RouteHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RouteHeader from '@/components/shared-components/RouteHeader';
 
 // Utils
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';

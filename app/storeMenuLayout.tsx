@@ -10,10 +10,10 @@ import { IStoreRouteMap } from '@/interfaces/interfaces';
 // Components
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SummarizeTransaction from '@/components/transaction-components/SummarizeTransaction';
-import MenuHeader from '@/components/shared-components/MenuHeader';
 import RouteMap from '@/components/shared-components/RouteMap';
+import MenuHeader from '@/components/shared-components/MenuHeader';
 import ProjectButton from '@/components/shared-components/ProjectButton';
+import SummarizeTransaction from '@/components/transaction-components/SummarizeTransaction';
 
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,21 +21,21 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { setStores } from '@/redux/slices/storesSlice';
 
 // Mappers and DTOs
-import { container as conatiner_di, container } from '@/src/infrastructure/di/container';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
-import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
+import ProductDTO from '@/src/application/dto/ProductDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import { container as conatiner_di, container } from '@/src/infrastructure/di/container';
 
 // Use cases
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
 
 // Utils
-import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
-import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 import { getAddressOfStore } from '@/utils/stores/utils';
 import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
+import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 
 type typeSearchParams = {
   id_store_param: string;

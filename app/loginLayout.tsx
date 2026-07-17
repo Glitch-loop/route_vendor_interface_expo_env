@@ -1,13 +1,14 @@
 // Libraries
-import React, { useEffect, useState } from 'react';
-import { View, TextInput, KeyboardAvoidingView, Pressable, Text, BackHandler } from 'react-native';
 import tw from 'twrnc';
 import { Router, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, TextInput, KeyboardAvoidingView, Pressable, Text, BackHandler } from 'react-native';
 
 // Redux states
 import { useDispatch } from 'react-redux';
-import { setUser } from '@/redux/slices/userSlice';
 import { AppDispatch } from '@/redux/store';
+import { setUser } from '@/redux/slices/userSlice';
+
 // Services
 import { container as di_container } from '@/src/infrastructure/di/container';
 import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';

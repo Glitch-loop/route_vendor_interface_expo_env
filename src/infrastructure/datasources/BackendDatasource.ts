@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { BackendResponseInterface } from '../interfaces/BackendResponseInterface';
+import { BackendResponseInterface } from '@/src/infrastructure/interfaces/BackendResponseInterface';
 
 type BackendRequestConfig = AxiosRequestConfig & {
   token?: string;

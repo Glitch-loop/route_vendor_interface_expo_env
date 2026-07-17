@@ -6,36 +6,34 @@ import { Router, useRouter, useLocalSearchParams } from 'expo-router';
 
 // Redux context
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../redux/store';
-import { setProductInventory } from '@/redux/slices/productsInventorySlice';
-import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { RootState, AppDispatch } from '@/redux/store';
 import { setStores } from '@/redux/slices/storesSlice';
 import { setProducts } from '@/redux/slices/productSlice';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setTemporalInventoryOperationDescription, clearTemporalInventoryOperationDescription } from '@/redux/slices/inventoryOperationDescriptionTempSlice';
 
 // Components
-import RouteHeader from '@/components/shared-components/RouteHeader';
-import VendorConfirmation from '../components/inventory-components/VendorConfirmation';
-import TableInventoryOperations from '../components/inventory-components/TableInventoryOperation';
-import TableInventoryVisualization from '../components/inventory-components/TableInventoryOperationVisualization';
-import TableRouteTransactionProductVisualization from '../components/inventory-components/TableRouteTransactionProductVisualization';
-import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-// UI
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import RouteHeader from '@/components/shared-components/RouteHeader';
+import ActionDialog from '@/components/shared-components/ActionDialog';
+import TableCashReception from '@/components/inventory-components/TableCashReception';
+import VendorConfirmation from '@/components/inventory-components/VendorConfirmation';
+import TableInventoryOperations from '@/components/inventory-components/TableInventoryOperation';
+import TableInventoryVisualization from '@/components/inventory-components/TableInventoryOperationVisualization';
+import TableRouteTransactionProductVisualization from '@/components/inventory-components/TableRouteTransactionProductVisualization';
+import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
 
 // Interfaces
 import {
   ICurrency,
- } from '../interfaces/interfaces';
+ } from '@/interfaces/interfaces';
 
- // Utils
-import TableCashReception from '../components/inventory-components/TableCashReception';
-import { initialMXNCurrencyState, } from '../utils/inventoryOperations';
-import ActionDialog from '@/components/shared-components/ActionDialog';
+// Utils
+import { initialMXNCurrencyState, } from '@/utils/inventoryOperations';
 
 // Enums
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
@@ -56,25 +54,25 @@ import DetermineIfInventoryOperationCancelableUseCase from '@/src/application/co
 import DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase from '@/src/application/commands/DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase';
 
 // Queries
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
-import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
-import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListAllRegisteredProductQuery from '@/src/application/queries/ListAllRegisteredProductQuery';
 import ListAllRouteTransactionsQuery from '@/src/application/queries/ListAllRouteTransactionsQuery';
 import ListAllInventoryOperationsQuery from '@/src/application/queries/ListAllInventoryOperationsQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
+import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 
 // Mapper and DTOs
 import ProductDTO from '@/src/application/dto/ProductDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
-import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
-import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
+import InventoryOperationDescriptionDTO from '@/src/application/dto/InventoryOperationDescriptionDTO';
 
 // Data source
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
@@ -82,7 +80,7 @@ import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSou
 // Utils
 import { formatNumberAsAccountingCurrency } from '@/utils/string/utils';
 import { getTitleDayOperation, orderDayOperationsForDisplaying } from '@/utils/day-operation/utils'; 
-import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement, createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import { getTotalAmountFromCashInventory, determineIfExistsOperationDescriptionMovement } from '@/utils/inventory/utils';
 import { getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations, getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations } from '@/utils/product-inventory/utils';
 
 // Classes

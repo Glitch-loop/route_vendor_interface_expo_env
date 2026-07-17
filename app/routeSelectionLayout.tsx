@@ -15,42 +15,43 @@ import { setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setStores } from '@/redux/slices/storesSlice';
 import { logoutUser } from '@/redux/slices/userSlice';
 
+// Constants
+import { DAYS_ARRAY } from '@/src/core/constants/days';
+
 // UI Components
-import RouteSelectionCard from '@/components/route-selection-components/RouteSelectionCard';
-import MainMenuHeader from '@/components/route-selection-components/MainMenuHeader';
 import ActionDialog from '@/components/shared-components/ActionDialog';
+import MainMenuHeader from '@/components/route-selection-components/MainMenuHeader';
+import RouteSelectionCard from '@/components/route-selection-components/RouteSelectionCard';
 
 // Use case - queries
 import { container } from '@/src/infrastructure/di/container';
-import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListRoutesByUserQuery from '@/src/application/queries/ListRouteByUserQuery';
-import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
 import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 import ListAllRegisteredProductQuery from '@/src/application/queries/ListAllRegisteredProductQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import RetrieveCurrentWorkdayInformationQuery from '@/src/application/queries/RetrieveCurrentWorkdayInformationQuery';
 
 // Services
 import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
 
 // DTOs
 import RouteDTO from '@/src/application/dto/RouteDTO';
-import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
-import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
-import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
 import StoreDTO from '@/src/application/dto/StoreDTO';
 import ProductDTO from '@/src/application/dto/ProductDTO';
+import RouteDayDTO from '@/src/application/dto/RouteDayDTO';
 import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
+import ProductInventoryDTO from '@/src/application/dto/ProductInventoryDTO';
+import WorkDayInformationDTO from '@/src/application/dto/WorkdayInformationDTO';
 
 // UI
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 
 // Utils
-import { DAYS_ARRAY } from '@/src/core/constants/days';
-import { determineIfCurrentDay } from '../utils/date/momentFormat';
-
+import { determineIfCurrentDay } from '@/utils/date/momentFormat';
 
 const routeSelectionLayout = () => {
   // Redux

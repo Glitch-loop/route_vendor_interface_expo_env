@@ -1,4 +1,3 @@
-
 export interface BackendMetadataResponseInterface {
   limit: number;
   has_next_page: boolean;

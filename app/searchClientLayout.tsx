@@ -1,6 +1,6 @@
 // Libraries
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import tw from 'twrnc';
 import { router } from 'expo-router';
 import { LocationObject, LocationObjectCoords } from 'expo-location';
@@ -27,17 +27,14 @@ import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { getAddressOfStore } from '@/utils/stores/utils';
 
 // UI - Components
-import RouteMap from '@/components/shared-components/RouteMap';
-import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
-import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
-import RouteHeader from '@/components/shared-components/RouteHeader';
-import RangeButtonSelection from '@/components/search-client/RangeButtonSelection';
 import Toast from 'react-native-toast-message';
-import { ActivityIndicator } from 'react-native-paper';
-import ProjectButton from '@/components/shared-components/ProjectButton';
+import RouteMap from '@/components/shared-components/RouteMap';
+import RouteHeader from '@/components/shared-components/RouteHeader';
 import INITIAL_COORDINATES from '@/utils/constants/initialCoordinates';
-
-
+import ProjectButton from '@/components/shared-components/ProjectButton';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
+import RangeButtonSelection from '@/components/search-client/RangeButtonSelection';
+import SearchBarWithSuggestions from '@/components/shared-components/SearchBarWithSuggestions';
 
 function mergeStoresToDisplay(storesWithStatus: IStoreRouteMap[], storesAround: IStoreRouteMap[], selectedStore: IStoreRouteMap|undefined): IStoreRouteMap[] {
   // Keep only nearby stores that already have a status (i.e., exist in storesWithStatus)

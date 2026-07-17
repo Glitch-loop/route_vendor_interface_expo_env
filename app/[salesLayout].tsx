@@ -13,26 +13,25 @@ import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 // Redux context.
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { setProductInventory } from '@/redux/slices/productsInventorySlice';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
-import { setRouteTransactionDescription, clearRouteTransactionDescription } from '@/redux/slices/routeTransactionDescriptionTempSlice';
 import { setStores } from '@/redux/slices/storesSlice';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+import { setRouteTransactionDescription, clearRouteTransactionDescription } from '@/redux/slices/routeTransactionDescriptionTempSlice';
 
 // UI Components
 import { ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import TableProduct from '@/components/sale-layout/table-product/TableProduct';
-import SaleSummarize from '@/components/sale-layout/SaleSummarize';
-import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
 import ResultSale from '@/components/sale-layout/ResultSale';
 import SubtotalLine from '@/components/sale-layout/SubtotalLine';
-import PaymentProcess from '@/components/sale-layout/payment/PaymentProcess';
 import MenuHeader from '@/components/shared-components/MenuHeader';
-import ActionButton from '@/components/sale-layout/table-product/ActionButton';
-import ProjectButton from '@/components/shared-components/ProjectButton';
-import SummarizeHistoricRouteTransaction from '@/components/transaction-components/SummarizeHistoricRouteTransaction';
+import SaleSummarize from '@/components/sale-layout/SaleSummarize';
 import ActionDialog from '@/components/shared-components/ActionDialog';
+import ProjectButton from '@/components/shared-components/ProjectButton';
+import PaymentProcess from '@/components/sale-layout/payment/PaymentProcess';
+import TableProduct from '@/components/sale-layout/table-product/TableProduct';
+import ConfirmationBand from '@/components/shared-components/ConfirmationBand';
+import SummarizeHistoricRouteTransaction from '@/components/transaction-components/SummarizeHistoricRouteTransaction';
 
 // Mapper and DTOs
 import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
@@ -44,23 +43,23 @@ import RouteTransactionDTO from '@/src/application/dto/RouteTransactionDTO';
 
 // Use cases and queries
 import { container, container as di_container } from '@/src/infrastructure/di/container';
-import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
-import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
 import RetrieveDayOperationQuery from '@/src/application/queries/RetrieveDayOperationQuery';
-import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
+import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
+import RegisterNewRouteTransaction from '@/src/application/commands/RegisterNewRouteTransaction';
 import VisitClientOutOfRouteUseCase from '@/src/application/commands/VisitClientOutOfRouteUseCase';
-import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
 import ListRouteTransactionsOfStoreQuery from '@/src/application/queries/ListRouteTransactionsOfStoreQuery';
+import RetrieveRouteTransactionByIDQuery from '@/src/application/queries/RetrieveRouteTransactionByIDQuery';
+import RetrieveCurrentShiftInventoryQuery from '@/src/application/queries/RetrieveCurrentShiftInventoryQuery';
+import ConfirmClientProspectAsClientUseCase from '@/src/application/commands/ConfirmClientProspectAsClientUseCase';
 import RetrieveHistoricRouteTransactionByStoreQuery from '@/src/application/queries/RetrieveHistoricRouteTransactionByStoreQuery';
 import VisitClientWithoutMakeARouteTransactionUseCase from '@/src/application/commands/VisitClientWithoutMakeARouteTransactionUseCase';
-import ListAllRegisterdStoresQuery from '@/src/application/queries/ListAllRegisterdStoresQuery';
 
 // Classes
 import ProductClass from '@/classes/ProductClass';
 
 // Services
-import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 import DataReplicationService from '@/src/infrastructure/services/DataReplicationService';
+import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 // Hooks
 import useNetworkState from '@/hooks/useNetworkState';

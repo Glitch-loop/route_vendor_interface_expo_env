@@ -2,14 +2,14 @@
 import { IStoreRouteMap } from "@/interfaces/interfaces";
 
 // DTOs
-import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 import StoreDTO from "@/src/application/dto/StoreDTO";
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 
 // Utils
-import { createDayOperationDependencyMap, getDayOperationColor, getDayOperationColorByDayOperationType, getRouteStatusStore } from "@/utils/day-operation/utils";
-import { LocationObjectCoords } from "expo-location";
 import { LatLng } from "react-native-maps";
+import { LocationObjectCoords } from "expo-location";
+import { createDayOperationDependencyMap, getDayOperationColor, getDayOperationColorByDayOperationType, getRouteStatusStore } from "@/utils/day-operation/utils";
 
 
 export function getAddressOfStore(store: StoreDTO): string {
