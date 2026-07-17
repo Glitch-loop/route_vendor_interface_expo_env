@@ -180,7 +180,6 @@ const SummarizeTransaction = ({
         }
 
       } catch (error) {
-        console.error("Error during canceling: ", error)
         Toast.show({type: 'error',
           text1:'Ha habido un error durante la cancelación de la transacción.',
           text2: 'Ha hanido un error durante la cancelación de la transacción.'});
