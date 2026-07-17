@@ -19,7 +19,7 @@ export class BackendDataSource {
 
   constructor() {
     // this.url = process.env.EXPO_PUBLIC_BACKEND_URL;
-    this.url = 'http://192.168.1.4:3000';
+    this.url = 'http://192.168.1.4:3001';
     console.log("Server: ", this.url)
     if (!this.url) {
       throw new Error('Backend URL not found in environment variables');

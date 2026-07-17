@@ -317,7 +317,17 @@ const inventoryOperationLayout = () => {
     console.log("Retrieving products")
     if (hasInternetConnection) {
       console.log("From backend")
-      availableProductsForInventoryOperation = await getProductOfCompany.execute();
+      try {
+        availableProductsForInventoryOperation = await getProductOfCompany.execute();
+      } catch (error) {
+        Toast.show({
+          type: 'info',
+          text1: 'No se pudo establecer comunicación con el servidor. Por lo tanto usar inforamción local.',
+          text2: 'Puede ser que no veas los ultimos cambios realizados por la administración.',
+        });
+      console.log("From local")
+      availableProductsForInventoryOperation = await getProductsAllRegisterdProductsQuery.execute();
+      }
     } else {
       Toast.show({
         type: 'info',
