@@ -20,12 +20,11 @@ import { DateService } from "@/src/core/interfaces/DateService";
 // Aggregates
 import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
 
-
 // Utils
 import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 @injectable()
-export class VisitClientWithoutMakeARouteTransactionUseCase {
+export default class VisitClientWithoutMakeARouteTransactionUseCase {
   constructor(
     @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
 

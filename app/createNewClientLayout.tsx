@@ -47,6 +47,9 @@ import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap,
 import { IStoreRouteMap, PostalCode } from '@/interfaces/interfaces';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
+// Hooks
+import useNetworkState from '@/hooks/useNetworkState';
+
 interface NewClientFormData {
   id_location_type: string;
   store_name: string;
@@ -112,12 +115,14 @@ export default function CreateNewClientLayout() {
     address_reference: ''
   });
   const [isLocationTypeMenuVisible, setIsLocationTypeMenuVisible] = useState<boolean>(false);
-
   const [selectedItems, setSelectedItems] = useState<PostalCode[]>([]);  
 
   const selectedLocationType = LOCATION_TYPES_CONSTANTS[formData.id_location_type];
   const fullStoreName = `${selectedLocationType?.location_type_name ?? ''} ${formData.store_name.trim()}`.trim();
 
+  // Custom hooks
+  const { refreshNetworkState } = useNetworkState();
+  
   useEffect(() => {
     setUpCreateNewClientLayout();
   }, [storesRedux, dayOperationsRedux]);
@@ -272,7 +277,10 @@ export default function CreateNewClientLayout() {
 
       // Syncing with central database
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      syncingService.executeReplicationSession();
+      
+      if (await refreshNetworkState()) {
+        syncingService.executeReplicationSession();
+      }
 
       router.push(`/salesLayout?id_store_param=${id_item}&id_day_operation_dependent_param=${id_day_operation}`);
     } catch (error) {
