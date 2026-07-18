@@ -553,327 +553,325 @@ const inventoryOperationLayout = () => {
   const handleCancelInventoryOperationProcess = ():void => { setShowDialog(false); };
 
   const handleConfirmInventoryOperation = async (): Promise<void> => {      
-      const inventoryOperationMovementWithoutZeroAmount = inventoryOperationMovements.filter((inv) => inv.amount > 0);
-      const hasInternetConnection = await refreshNetworkState();
-      let wasInventoryOperationSuccessful: boolean = false;
+    const inventoryOperationMovementWithoutZeroAmount = inventoryOperationMovements.filter((inv) => inv.amount > 0);
+    const hasInternetConnection = await refreshNetworkState();
+    let wasInventoryOperationSuccessful: boolean = false;
 
-      setShowDialog(false);
+    setShowDialog(false);
         
 
-      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
-        /*
-          Business rule:
-          The user has to have internet at moment of starting a new workday.
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+      /*
+        Business rule:
+        The user has to have internet at moment of starting a new workday.
 
-          It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
-          user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
-          of starting a new workday.
-        */
+        It's when the user performs an start shift inventory when the workday itself is created, so to ensure that the 
+        user is retrieving the last changes and to avoid problems with the synchronization process, the user needs to have internet connection at moment 
+        of starting a new workday.
+      */
+      Toast.show({
+        type: 'error',
+        text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
+        text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
+      });
+      dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
+      return;
+    }
+
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+      if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
         Toast.show({
           type: 'error',
-          text1: 'Se necesita internet para hacer un inventario de inicio de ruta.',
-          text2: 'Asegurate de tener conexión a internet o intenta usar datos.',
+          text1: 'Error al registrar la operación de inventario.',
+          text2: 'Debe haber al menos un producto para poder continuar.',
         });
-        dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
+        setIsInventoryAccepted(false);
+        return;
+      }
+    }
+
+    /* Avoiding re-executions */
+    if (isInventoryAccepted === true) return;
+    
+    setIsInventoryAccepted(true);
+
+    /*
+      There are 4 types of inventory operations:
+      - Start shift inventory: Unique in the day.
+      - Re-stock inventory: It might be several ones.
+      - Product devolution inventory: It might be several ones.
+      - End shift inventory: Unique in the day.
+
+      
+    */
+    // Use cases - queries
+    const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+    const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
+    const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
+    const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
+    const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisteredProductQuery>(ListAllRegisteredProductQuery);
+      
+
+    // Use cases - commands
+    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+      if (route === null || routeDay === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error durante la creación de la operación de inventario.',
+          text2: 'No se ha podido recuperar la información de la ruta o del día de ruta, por favor intente nuevamente.',
+        });
+        setIsInventoryAccepted(false);
         return;
       }
 
-      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-        if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
-            Toast.show({
-              type: 'error',
-              text1: 'Error al registrar la operación de inventario.',
-              text2: 'Debe haber al menos un producto para poder continuar.',
-          });
-          setIsInventoryAccepted(false);
-          return;
-        }
+      if (userSessionReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error durante la creación de la operación de inventario.',
+          text2: 'No se ha inicializado el día correctamente, por favor intente nuevamente.',
+        });
+        setIsInventoryAccepted(false);
+        return;
       }
-
-
-      /* Avoiding re-executions */
-      if (isInventoryAccepted === true) return;
       
+      Toast.show({
+        type: 'info',
+        text1: 'Registrando día de trabajo.',
+        text2: 'Tomará unos segundos.',
+      });
+      
+      try {
+        const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
+        await startShiftDayUseCaseCommand.execute(
+            getTotalAmountFromCashInventory(cashInventory),
+            userSessionReduxState.id_vendor,
+            route,
+            availableProducts,
+            inventoryOperationMovementWithoutZeroAmount,
+            routeDay
+        )
 
-      setIsInventoryAccepted(true);
-
-      /*
-        There are 4 types of inventory operations:
-        - Start shift inventory: Unique in the day.
-        - Re-stock inventory: It might be several ones.
-        - Product devolution inventory: It might be several ones.
-        - End shift inventory: Unique in the day.
-
+        // Executing a synchronization process to register the start shift inventory
+        // Note: In case of failure, the background process will eventually synchronize the records.
         
-      */
-      // Use cases - queries
-      const retrieveCurrentShiftInventoryQuery = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
-      const retrieveWorkDayInformationQuery    = di_container.resolve<RetrieveCurrentWorkdayInformationQuery>(RetrieveCurrentWorkdayInformationQuery);
-      const retrieveCurrentDayOperationsQuery  = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
-      const listAllRegisterdStoresQuery        = di_container.resolve<ListAllRegisterdStoresQuery>(ListAllRegisterdStoresQuery);
-      const listAllRegisteredProductsQuery     = di_container.resolve<ListAllRegisteredProductQuery>(ListAllRegisteredProductQuery);
-      
+        // TODO: syncingRecordsWithCentralDatabase();
+        const productInventoryResult             = await retrieveCurrentShiftInventoryQuery.execute()
+        const workDayInformationResult           = await retrieveWorkDayInformationQuery.execute()
+        const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
+        const allRegisterdStoresResult           = await listAllRegisterdStoresQuery.execute()
+        const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
 
-      // Use cases - commands
-      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
-        if (route === null || routeDay === null) {
+        if (workDayInformationResult === null) {
           Toast.show({
             type: 'error',
             text1: 'Error durante la creación de la operación de inventario.',
             text2: 'No se ha podido recuperar la información de la ruta o del día de ruta, por favor intente nuevamente.',
           });
-          setIsInventoryAccepted(false);
-          return;
+          return
         }
+        // throw new Error("Assertion")
+        dispatch(setProductInventory(productInventoryResult));
+        dispatch(setWorkDayInformation(workDayInformationResult));
+        dispatch(setDayOperations(currentDayOperationsResult));
+        dispatch(setStores(allRegisterdStoresResult));
+        dispatch(setProducts(allRegisteredProductsResult));
 
-        if (userSessionReduxState === null) {
-          Toast.show({
-            type: 'error',
-            text1: 'Error durante la creación de la operación de inventario.',
-            text2: 'No se ha inicializado el día correctamente, por favor intente nuevamente.',
-          });
-          setIsInventoryAccepted(false);
-          return;
-        }
+        Toast.show({
+          type: 'success',
+          text1: 'Se ha registrado el inventario inicial con exito.',
+          text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
+        });
+        wasInventoryOperationSuccessful = true;
         
+        router.replace('/routeOperationMenuLayout');
+      } catch (error) {
         Toast.show({
-          type: 'info',
-          text1: 'Registrando día de trabajo.',
-          text2: 'Tomará unos segundos.',
+          type: 'error',
+          text1: 'Ha habido un error durante el registro del inventario inicial.',
+          text2: 'Ha sucedido un error durante el registro del inventario inicial, por favor intente nuevamente.',
         });
         
-        try {
-          const startShiftDayUseCaseCommand = di_container.resolve<StartWorkDayUseCase>(StartWorkDayUseCase);
-          await startShiftDayUseCaseCommand.execute(
-             getTotalAmountFromCashInventory(cashInventory),
-             userSessionReduxState.id_vendor,
-             route,
-             availableProducts,
-             inventoryOperationMovementWithoutZeroAmount,
-             routeDay
-          )
+        const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
+        sqliteDatabaseService.cleanDatabase([EMBEDDED_TABLES.USER]);
+        dispatch(clearProductInventory());
+        dispatch(clearWorkDayInformation());
+        dispatch(clearDayOperations());
+        dispatch(clearStores());
+        dispatch(clearProducts());
 
-          // Executing a synchronization process to register the start shift inventory
-          // Note: In case of failure, the background process will eventually synchronize the records.
-          
-          // TODO: syncingRecordsWithCentralDatabase();
-          const productInventoryResult             = await retrieveCurrentShiftInventoryQuery.execute()
-          const workDayInformationResult           = await retrieveWorkDayInformationQuery.execute()
-          const currentDayOperationsResult         = await retrieveCurrentDayOperationsQuery.execute()
-          const allRegisterdStoresResult           = await listAllRegisterdStoresQuery.execute()
-          const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
-
-          if (workDayInformationResult === null) {
-            Toast.show({
-              type: 'error',
-              text1: 'Error durante la creación de la operación de inventario.',
-              text2: 'No se ha podido recuperar la información de la ruta o del día de ruta, por favor intente nuevamente.',
-            });
-            return
-          }
-          // throw new Error("Assertion")
-          dispatch(setProductInventory(productInventoryResult));
-          dispatch(setWorkDayInformation(workDayInformationResult));
-          dispatch(setDayOperations(currentDayOperationsResult));
-          dispatch(setStores(allRegisterdStoresResult));
-          dispatch(setProducts(allRegisteredProductsResult));
-
-          Toast.show({
-            type: 'success',
-            text1: 'Se ha registrado el inventario inicial con exito.',
-            text2: 'El proceso para registrar el inventario inicial ha sido completado exitosamente.',
-          });
-          wasInventoryOperationSuccessful = true;
-          
-          router.replace('/routeOperationMenuLayout');
-        } catch (error) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha habido un error durante el registro del inventario inicial.',
-            text2: 'Ha sucedido un error durante el registro del inventario inicial, por favor intente nuevamente.',
-          });
-          
-          const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
-          sqliteDatabaseService.cleanDatabase([EMBEDDED_TABLES.USER]);
-          dispatch(clearProductInventory());
-          dispatch(clearWorkDayInformation());
-          dispatch(clearDayOperations());
-          dispatch(clearStores());
-          dispatch(clearProducts());
-
-          router.replace('/selectionRouteOperationLayout');
-        }
-
-      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
-        if (workDayInformation === null || userSessionReduxState === null) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error.',
-            text2: 'Reinicia la aplicación e intenta nuevamente.',
-          })
-          return;
-        }
-
-        Toast.show({
-          type: 'info',
-          text1: 'Registrando re-stock.',
-          text2: 'Tomará unos segundos.',
-        });
-
-        try {
-          const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
-          await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation, userSessionReduxState.id_vendor);
-          
-          const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
-          const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
-          const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
-
-          dispatch(setProductInventory(currentShiftInventory));
-          dispatch(setDayOperations(currentDayOperationsResult));
-          dispatch(setProducts(allRegisteredProductsResult))
-          
-          Toast.show({
-                type: 'success',
-                text1: 'Se ha registrado el restock exitosamente.',
-                text2: 'Se ha actualizado el inventario actual.',
-          });
-          wasInventoryOperationSuccessful = true;
-
-          router.replace('/routeOperationMenuLayout');
-        } catch (error) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error, intente nuevamente.',
-            text2: 'Intente la operación nuevamente.',
-          });
-          router.replace('/routeOperationMenuLayout');
-        }
-      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
-        if (workDayInformation === null || userSessionReduxState === null) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error.',
-            text2: 'Reinicia la aplicación e intenta nuevamente.',
-          })
-          return;
-        }
-
-        Toast.show({
-          type: 'info',
-          text1: 'Registrando merma de producto.',
-          text2: 'Tomará unos segundos.',
-        });
-
-        try {
-          const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
-          await registerProductDevolutionCommand.execute(
-            inventoryOperationMovementWithoutZeroAmount,
-            workDayInformation,
-            userSessionReduxState.id_vendor
-          );
-
-          const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
-          const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
-
-          dispatch(setProductInventory(currentShiftInventory));
-          dispatch(setDayOperations(currentDayOperationsResult));
-
-          Toast.show({
-                type: 'success',
-                text1: 'Se ha registrado la merma de producto exitosamente.',
-                text2: '',
-          });
-          /*
-            According with business rules, after registering a product devolution, the user registers the final shift inventory
-          */
-         if (await doesAnActiveOperationTypeExist(currentDayOperationsResult, DAY_OPERATIONS.end_shift_inventory)) {
-          Toast.show({
-            type: 'info',
-            text1: 'Redirigiendo a menu principal.',
-            text2: 'Se ha detectado que existe un inventario final activo.',
-          });
-          router.replace('/routeOperationMenuLayout');
-         } else {
-          wasInventoryOperationSuccessful = true;
-          router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
-         }
-        } catch (error) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error, intente nuevamente.',
-            text2: 'Intente la operación nuevamente.',
-          });
-          router.replace('/routeOperationMenuLayout');
-        }          
-      } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
-        if (workDayInformation === null || userSessionReduxState === null) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error.',
-            text2: 'Reinicia la aplicación e intenta nuevamente.',
-          })
-          return;
-        }
-
-        Toast.show({
-          type: 'info',
-          text1: 'Registrando inventario final.',
-          text2: 'Registrando información necesaria para cerrar el inventario final y terminar el dia correctamente.',
-        });
-
-        try {
-          const registerEndShiftInventoryCommand = di_container.resolve<RegisterFinalShiftInventoryUseCase>(RegisterFinalShiftInventoryUseCase);
-          await registerEndShiftInventoryCommand.execute(
-            getTotalAmountFromCashInventory(cashInventory),
-            inventoryOperationMovementWithoutZeroAmount,
-            workDayInformation,
-            userSessionReduxState.id_vendor,
-          );
-
-          const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
-          const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
-          const currentWorkdayInformation   = await retrieveWorkDayInformationQuery.execute()
-
-          if (currentWorkdayInformation === null) {
-            Toast.show({
-              type: 'error',
-              text1: 'Ha ocurrido un error.',
-              text2: 'Reinicia la aplicación para finalizar el día de trabajo.',
-            })
-            return;
-          }
-
-          dispatch(setProductInventory(currentShiftInventory));
-          dispatch(setDayOperations(currentDayOperationsResult));
-          dispatch(setWorkDayInformation(currentWorkdayInformation));
-
-          Toast.show({
-                type: 'success',
-                text1: 'Se ha registrado el inventario final exitosamente.',
-                text2: '',
-          });
-          wasInventoryOperationSuccessful = true;
-
-          router.replace('/routeOperationMenuLayout');
-        } catch (error) {
-          Toast.show({
-            type: 'error',
-            text1: 'Ha ocurrido un error, intente nuevamente.',
-            text2: 'Intente la operación nuevamente.',
-          });
-        }
-         
-      } else {
-        /* Do nothing */
+        router.replace('/selectionRouteOperationLayout');
       }
 
-      dispatch(clearTemporalInventoryOperationDescription());
-
-      // Syncing with central database
-      if (userSessionReduxState !== null && wasInventoryOperationSuccessful && await refreshNetworkState()) {
-        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-        syncingService.executeReplicationSession();
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+      if (workDayInformation === null || userSessionReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error.',
+          text2: 'Reinicia la aplicación e intenta nuevamente.',
+        })
+        return;
       }
+
+      Toast.show({
+        type: 'info',
+        text1: 'Registrando re-stock.',
+        text2: 'Tomará unos segundos.',
+      });
+
+      try {
+        const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
+        await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation, userSessionReduxState.id_vendor);
+        
+        const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
+        const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
+        const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
+
+        dispatch(setProductInventory(currentShiftInventory));
+        dispatch(setDayOperations(currentDayOperationsResult));
+        dispatch(setProducts(allRegisteredProductsResult))
+        
+        Toast.show({
+              type: 'success',
+              text1: 'Se ha registrado el restock exitosamente.',
+              text2: 'Se ha actualizado el inventario actual.',
+        });
+        wasInventoryOperationSuccessful = true;
+
+        router.replace('/routeOperationMenuLayout');
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error, intente nuevamente.',
+          text2: 'Intente la operación nuevamente.',
+        });
+        router.replace('/routeOperationMenuLayout');
+      }
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+      if (workDayInformation === null || userSessionReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error.',
+          text2: 'Reinicia la aplicación e intenta nuevamente.',
+        })
+        return;
+      }
+
+      Toast.show({
+        type: 'info',
+        text1: 'Registrando merma de producto.',
+        text2: 'Tomará unos segundos.',
+      });
+
+      try {
+        const registerProductDevolutionCommand = di_container.resolve<RegisterProductDevolutionUseCase>(RegisterProductDevolutionUseCase);
+        await registerProductDevolutionCommand.execute(
+          inventoryOperationMovementWithoutZeroAmount,
+          workDayInformation,
+          userSessionReduxState.id_vendor
+        );
+
+        const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
+        const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+
+        dispatch(setProductInventory(currentShiftInventory));
+        dispatch(setDayOperations(currentDayOperationsResult));
+
+        Toast.show({
+              type: 'success',
+              text1: 'Se ha registrado la merma de producto exitosamente.',
+              text2: '',
+        });
+        /*
+          According with business rules, after registering a product devolution, the user registers the final shift inventory
+        */
+        if (await doesAnActiveOperationTypeExist(currentDayOperationsResult, DAY_OPERATIONS.end_shift_inventory)) {
+        Toast.show({
+          type: 'info',
+          text1: 'Redirigiendo a menu principal.',
+          text2: 'Se ha detectado que existe un inventario final activo.',
+        });
+        router.replace('/routeOperationMenuLayout');
+        } else {
+        wasInventoryOperationSuccessful = true;
+        router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        }
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error, intente nuevamente.',
+          text2: 'Intente la operación nuevamente.',
+        });
+        router.replace('/routeOperationMenuLayout');
+      }          
+    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      if (workDayInformation === null || userSessionReduxState === null) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error.',
+          text2: 'Reinicia la aplicación e intenta nuevamente.',
+        })
+        return;
+      }
+
+      Toast.show({
+        type: 'info',
+        text1: 'Registrando inventario final.',
+        text2: 'Registrando información necesaria para cerrar el inventario final y terminar el dia correctamente.',
+      });
+
+      try {
+        const registerEndShiftInventoryCommand = di_container.resolve<RegisterFinalShiftInventoryUseCase>(RegisterFinalShiftInventoryUseCase);
+        await registerEndShiftInventoryCommand.execute(
+          getTotalAmountFromCashInventory(cashInventory),
+          inventoryOperationMovementWithoutZeroAmount,
+          workDayInformation,
+          userSessionReduxState.id_vendor,
+        );
+
+        const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
+        const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+        const currentWorkdayInformation   = await retrieveWorkDayInformationQuery.execute()
+
+        if (currentWorkdayInformation === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Ha ocurrido un error.',
+            text2: 'Reinicia la aplicación para finalizar el día de trabajo.',
+          })
+          return;
+        }
+
+        dispatch(setProductInventory(currentShiftInventory));
+        dispatch(setDayOperations(currentDayOperationsResult));
+        dispatch(setWorkDayInformation(currentWorkdayInformation));
+
+        Toast.show({
+              type: 'success',
+              text1: 'Se ha registrado el inventario final exitosamente.',
+              text2: '',
+        });
+        wasInventoryOperationSuccessful = true;
+
+        router.replace('/routeOperationMenuLayout');
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ha ocurrido un error, intente nuevamente.',
+          text2: 'Intente la operación nuevamente.',
+        });
+      }
+        
+    } else {
+      /* Do nothing */
+    }
+
+    dispatch(clearTemporalInventoryOperationDescription());
+
+    // Syncing with central database
+    if (userSessionReduxState !== null && wasInventoryOperationSuccessful && await refreshNetworkState()) {
+      const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+      syncingService.executeReplicationSession();
+    }
   }
 
   const handlerOnVendorCancelation = () => {
