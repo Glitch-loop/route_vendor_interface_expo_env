@@ -115,6 +115,8 @@ const routeOperationMenuLayout = () => {
   const [clientVisitedIds, setclientVisitedIds] = useState<Set<string>>(new Set<string>());
   const [prospectOfClientIds, setProspectOfClientIds] = useState<Set<string>>(new Set<string>());
 
+  const [propectOfClients, setProspectOfClients] = useState<StoreDTO[]|null>(null);
+
   // Refs
   const operationsDayRef = useRef<Map<string, View|null>>(new Map());
   const scrolldownRef = useRef<ScrollView>(null);
@@ -173,14 +175,17 @@ const routeOperationMenuLayout = () => {
 
     if (storesRedux !== null) {
       const prospectOfClientsIds: Set<string> = new Set<string>();
+      const userProspectOfClients: StoreDTO[] = [];
       storesRedux.forEach((store) => {
         const { status_store, id_store } = store;
 
         if (status_store === -1) {
-          prospectOfClientsIds.add(id_store)
+          prospectOfClientsIds.add(id_store);
+          userProspectOfClients.push(store);
         }
       }); 
       setProspectOfClientIds(prospectOfClientsIds);
+      setProspectOfClients(userProspectOfClients.sort((a, b) => new Date(a.creation_date).getTime() - new Date(b.creation_date).getTime()));
     }
 
     if (workdayInformationReduxState === null) {
@@ -603,19 +608,19 @@ const routeOperationMenuLayout = () => {
           <View style={tw`mt-3 w-full flex flex-row justify-center`}>
             <Text style={tw`text-xl text-black align-middle`}>Prospectos de cliente</Text>
           </View>
-          { storesRedux === null ?
+          { propectOfClients === null ?
           <View style={tw`h-64 flex flex-col justify-center items-center`}>
             <ActivityIndicator size={'large'} />
           </View> 
           :
           <View style={tw`w-full h-full flex flex-col items-center`}>
-            { storesRedux.length === null || userRedux === null ?
+            { propectOfClients.length === 0 || userRedux === null ?
               <View style={tw`h-64 flex flex-col justify-center items-center`}>
                 <Text style={tw`text-xl text-black align-middle`}>Actualmente no tienes prospectos</Text>
               </View> 
               : 
               <View style={tw`w-full h-full flex flex-col items-center`}>
-              {storesRedux.map(storeRedux => {
+              {propectOfClients.map(storeRedux => {
                 let itemOrder = '';
                 let itemName = '';
                 let description = '';
