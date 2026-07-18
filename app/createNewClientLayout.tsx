@@ -1,7 +1,7 @@
 // Libraries
 import tw from 'twrnc';
 import { Router, useRouter }  from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Menu } from 'react-native-paper';
 import { container as di_container } from 'tsyringe';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -116,6 +116,13 @@ export default function CreateNewClientLayout() {
   });
   const [isLocationTypeMenuVisible, setIsLocationTypeMenuVisible] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<PostalCode[]>([]);  
+  const storeNameInputRef = useRef<TextInput | null>(null);
+  const streetInputRef = useRef<TextInput | null>(null);
+  const crossStreetInputRef = useRef<TextInput | null>(null);
+  const extNumberInputRef = useRef<TextInput | null>(null);
+  const colonyInputRef = useRef<TextInput | null>(null);
+  const postalCodeInputRef = useRef<TextInput | null>(null);
+  const addressReferenceInputRef = useRef<TextInput | null>(null);
 
   const selectedLocationType = LOCATION_TYPES_CONSTANTS[formData.id_location_type];
   const fullStoreName = `${selectedLocationType?.location_type_name ?? ''} ${formData.store_name.trim()}`.trim();
@@ -179,8 +186,8 @@ export default function CreateNewClientLayout() {
     router.replace('/routeOperationMenuLayout');
   }
 
-  const handleFormChange = (field: keyof NewClientFormData, value: string): void => {
-    setFormData(prev => {
+  function handleFormChange(field: keyof NewClientFormData, value: string): void {
+    setFormData((prev: NewClientFormData) => {
       const nextState: NewClientFormData = {
         ...prev,
         [field]: value
@@ -193,6 +200,14 @@ export default function CreateNewClientLayout() {
 
       return nextState;
     });
+  }
+
+  const focusNextFromStreet = (): void => {
+    if (formData.street.trim()) {
+      crossStreetInputRef.current?.focus();
+    } else {
+      extNumberInputRef.current?.focus();
+    }
   }
 
 
@@ -357,9 +372,13 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Nombre de la tienda</Text>
             <TextInput 
+              ref={storeNameInputRef}
               placeholder="Nombre del negocio" 
               value={formData.store_name}
               onChangeText={(text) => handleFormChange('store_name', text)}
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={() => streetInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
             {Boolean(fullStoreName) && (
               <Text style={tw`mt-2 text-xs text-black italic underline`}>
@@ -372,18 +391,26 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Calle</Text>
             <TextInput 
+              ref={streetInputRef}
               placeholder="Nombre de la calle" 
               value={formData.street}
               onChangeText={(text) => handleFormChange('street', text)}
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={focusNextFromStreet}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Esquina Calle</Text>
             <TextInput 
+              ref={crossStreetInputRef}
               placeholder="Esquina." 
               value={formData.cross_street}
               onChangeText={(text) => handleFormChange('cross_street', text)}
               editable={Boolean(formData.street.trim())}
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={() => extNumberInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
@@ -391,9 +418,13 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Número exterior</Text>
             <TextInput 
+              ref={extNumberInputRef}
               placeholder="p. ej., 123" 
               value={formData.ext_number}
               onChangeText={(text) => handleFormChange('ext_number', text)}
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={() => colonyInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
@@ -414,9 +445,13 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Nombre colonia</Text>
             <TextInput 
+              ref={colonyInputRef}
               placeholder="Nombre colonia" 
               value={formData.colony}
               onChangeText={(text) => handleFormChange('colony', text)}
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={() => postalCodeInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
@@ -424,10 +459,14 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-4`}>
             <Text style={tw`text-sm text-gray-700`}>Código postal</Text>
             <TextInput 
+              ref={postalCodeInputRef}
               placeholder="p. ej., 12345" 
               value={formData.postal_code}
               onChangeText={(text) => handleFormChange('postal_code', text)}
               keyboardType="numeric"
+              returnKeyType='next'
+              blurOnSubmit={false}
+              onSubmitEditing={() => addressReferenceInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
@@ -437,10 +476,13 @@ export default function CreateNewClientLayout() {
           <View style={tw`mt-2`}>
             <Text style={tw`text-sm text-gray-700`}>Referencia de la dirección</Text>
             <TextInput 
+              ref={addressReferenceInputRef}
               placeholder="Referencias o indicaciones adicionales" 
               value={formData.address_reference}
               onChangeText={(text) => handleFormChange('address_reference', text)}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} 
+              returnKeyType='done'
+              blurOnSubmit={true}
               multiline={true}
               textAlignVertical='top'
               numberOfLines={7}/>
