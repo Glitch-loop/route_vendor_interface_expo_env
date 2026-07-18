@@ -575,9 +575,10 @@ useEffect(() => {
         text2: 'Se ha registrado la venta satisfactoriamente.'});
         
       // Syncing with central database
-      console.log("Start replication")
-      const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      syncingService.executeReplicationSession();
+      if (await refreshNetworkState()) {
+        const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
+        syncingService.executeReplicationSession();
+      }
       setResultSaleState(true);
     } catch (error) {
       Toast.show({

@@ -62,8 +62,7 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
       await Promise.all(createTablePromises);
     } catch (error) {
-        console.log(error);
-        throw new Error('Failed to create embedded database tables.');
+        throw new Error('Failed to create embedded database tables: ' + error);
     }
   }
 

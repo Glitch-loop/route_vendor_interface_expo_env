@@ -74,7 +74,6 @@ export default class StartWorkDayUseCase {
     productToRegister: Product[],
     inventoryOperationDescriptions: InventoryOperationDescription[],
     routeDaySelected: RouteDay): Promise<void> {
-    console.log("id_user: ", id_user)
     const availableProductsMap: Map<string, Product> = new Map<string, Product>();
     let historicRouteTransactions: RouteTransaction[] = []; 
 

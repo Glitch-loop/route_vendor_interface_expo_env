@@ -58,6 +58,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 import useNetworkState from '@/hooks/useNetworkState';
 import SheetBackupService from '@/src/infrastructure/services/SheetBackupService';
 import AuthenticationService from '@/src/infrastructure/services/AuthenticationService';
+import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 
 // Auxiliar functions
 const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], operation_type: DAY_OPERATIONS):Promise<boolean> => {
@@ -389,7 +390,6 @@ const routeOperationMenuLayout = () => {
       }
 
     } catch (error) {
-      console.error(error)
       Toast.show({
         type: 'error',
         text1:'Ha habido un error al momento de descar la información, intente nuevamente.',
@@ -620,11 +620,11 @@ const routeOperationMenuLayout = () => {
                 let itemName = '';
                 let description = '';
                 let totalValue = '';
-                const { id_store, status_store, store_name, street, ext_number, colony, id_creator } = storeRedux;
+                const { id_store, status_store, store_name, street, ext_number, colony, id_creator, creation_date } = storeRedux;
                 const { id_vendor } = userRedux;
 
                 itemName = store_name || 'Nombre cliente desconocido.';
-                description = street + ' #' + ext_number + ', ' + colony;
+                description = street + ' #' + ext_number + ', ' + colony + ' - Creado: ' + format_date_to_UI_format(creation_date);
                 
                 if (status_store === -1 && id_vendor === id_creator) {
                   return (
