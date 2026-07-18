@@ -135,7 +135,6 @@ export function getDayOperationColorByDayOperationType(dayOperationType: string,
       style = 'bg-amber-300';
       break;
     case DAY_OPERATIONS.client_visited:
-      console.log("Client visited COLOR")
       style = 'bg-amber-100';
       break;
     default: 

@@ -506,9 +506,7 @@ const routeOperationMenuLayout = () => {
                   } else if (clientConfirmationIds.has(id_item)) {
                     cardColor = getDayOperationColorByDayOperationType(DAY_OPERATIONS.new_client_registration, false);  
                   } else if (clientAttentionIds.has(id_item) && clientVisitedIds.has(id_item)) {
-                    console.log("Client visited:")
                     cardColor = getDayOperationColorByDayOperationType(DAY_OPERATIONS.client_visited, false);  
-                    console.log("Card color: ", cardColor)
                   } else {
                     cardColor = getDayOperationColorByDayOperationType(operation_type, false);
                   }
@@ -579,9 +577,7 @@ const routeOperationMenuLayout = () => {
                 } else { // Other operations
                   isPrintableOperation = false;
                 }
-
-
-
+                
                 if (isPrintableOperation) {
                   return (
                     <RouteCard

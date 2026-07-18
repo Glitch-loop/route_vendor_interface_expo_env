@@ -53,11 +53,12 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
 
   // Determining status and color of the store depending on the store status and the day operations.
   stores.forEach((store) => {
-    const { status_store } = store;    
+    const { status_store, store_name } = store;    
     let color = '';
     let status = '';
-
+    console.log("Finding color of ", store_name)
     if (status_store === -1) {
+      console.log(store_name, " is prospect of client")
       color = getDayOperationColorByDayOperationType(DAY_OPERATIONS.prospect_registration, false);
       status = getRouteStatusStore(DAY_OPERATIONS.prospect_registration);                  
     } else {
@@ -65,7 +66,9 @@ export function convertStoreDTOToIStoreRouteMap(stores: StoreDTO[], dayOperation
       if (dayOperation) {
           const { operation_type } = dayOperation;
           color = getDayOperationColorByDayOperationType(operation_type, false);
+          console.log(color)
           status = getRouteStatusStore(operation_type);            
+          console.log(status)
       } else {
           color = getDayOperationColor(undefined, dependencyMap, false);
           status = getRouteStatusStore(undefined);

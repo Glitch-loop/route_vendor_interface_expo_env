@@ -11,6 +11,7 @@ import { View } from 'react-native';
 // Utils 
 import { capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
 import { getAddressOfStore } from '@/utils/stores/utils';
+import { Text } from 'react-native-paper';
 
 const styles = StyleSheet.create({
   container: {
@@ -211,31 +212,27 @@ const RouteMap = ({
               coordinate={selectedLocation} />
           }
 
-          { stores.map((store) => {
-            let marker_color = '';
-            const { id_store, store_name, latitude, longitude, tw_color, route_status_store } = store;
-            marker_color = tw_color;
+          { 
+            stores.map((store) => {
+              let marker_color = '';
+              const { id_store, store_name, latitude, longitude, tw_color, route_status_store } = store;
+              marker_color = tw_color;
 
-            return (
-              <Marker
-                ref={((ref) => { markerRefs.current[id_store] = ref; })}
-                key={id_store}
-                pinColor={tw.color(marker_color)}
-                title={`${ capitalizeFirstLetterOfEachWord(store_name) } - ${ route_status_store}`}
-                description={getAddressOfStore(store)}
-                onPress={() => { handleSelectStore(store) }}
-                coordinate={{ latitude: parseFloat(latitude), longitude: parseFloat(longitude) }} />
-            )
-          })
-          }
-          
+              return (
+                <Marker
+                  ref={((ref) => { markerRefs.current[id_store] = ref; })}
+                  key={id_store}
+                  pinColor={tw.color(marker_color)}
+                  title={`${capitalizeFirstLetterOfEachWord(store_name)} - ${route_status_store}`}
+                  description={`${getAddressOfStore(store)}`}
+                  onPress={() => { handleSelectStore(store) }}
+                  coordinate={{ latitude: parseFloat(latitude), longitude: parseFloat(longitude) }} />
+              );
+            })
+          }   
       </MapView>
     </View>
   );
 };
-
-
-
-
 
 export default RouteMap;
