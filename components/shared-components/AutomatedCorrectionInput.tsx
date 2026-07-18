@@ -4,13 +4,23 @@ import { TextInput, Keyboard } from 'react-native';
 import { delay } from 'tsyringe';
 import tw from 'twrnc';
 
+type AutomatedCorrectionNumberInputProps = {
+  amount: number,
+  onChangeAmount: (amount: number) => void,
+  onSubmitEditing?: () => void,
+  returnKeyType?: 'done' | 'next' | 'go' | 'search' | 'send',
+  blurOnSubmit?: boolean,
+  inputRef?: (ref: TextInput | null) => void,
+};
+
 const AutomatedCorrectionNumberInput = ({
   amount,
   onChangeAmount,
-}:{
-  amount:number,
-  onChangeAmount:any
-}) => {
+  onSubmitEditing,
+  returnKeyType = 'done',
+  blurOnSubmit = true,
+  inputRef,
+}: AutomatedCorrectionNumberInputProps) => {
   useEffect(() => {
     setInputValue(amount.toString());
   }, [amount])
@@ -54,15 +64,19 @@ const AutomatedCorrectionNumberInput = ({
 
   return (
     <TextInput
+      ref={inputRef}
       style={tw`mx-1 text-lg border border-solid bg-white rounded-md h-12 text-center`}
       value={inputValue}
       onFocus={ () => { handleFocusInput(); }}
       // onTouchStart={ () => { handleFocusInput(); } }
       onEndEditing={() => { handleOnLeaveInput(); }}
+      onSubmitEditing={onSubmitEditing}
       onChangeText={(text) => { 
         setInputValue(text); 
         handleTextChange(text);
       }}
+      returnKeyType={returnKeyType}
+      blurOnSubmit={blurOnSubmit}
       keyboardType={'numeric'}/>
   );
 };

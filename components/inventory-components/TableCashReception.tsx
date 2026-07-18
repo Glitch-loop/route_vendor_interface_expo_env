@@ -1,6 +1,6 @@
 // Librarries
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, TextInput } from 'react-native';
 import tw from 'twrnc';
 import { DataTable } from 'react-native-paper';
 
@@ -20,6 +20,7 @@ const TableCashReception = (
     cashInventoryOperation:ICurrency[],
     setCashInventoryOperation:any
   }) => {
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
   return (
     <DataTable style={tw`w-full`}>
@@ -31,8 +32,9 @@ const TableCashReception = (
           <Text style={tw`text-black ${textHeaderTableStyle}`}>Cantidad</Text>
         </DataTable.Title>
       </DataTable.Header>
-      {cashInventoryOperation.map((cashInventoryDenomination:ICurrency) =>
+      {cashInventoryOperation.map((cashInventoryDenomination:ICurrency, index:number) =>
       {
+        const isLastInput = index === cashInventoryOperation.length - 1;
         const handlerChangeAmountCash = (input: number) => {
           const index:number = cashInventoryOperation.findIndex(
           (cashDenomination:ICurrency) => cashDenomination.id_denomination === cashInventoryDenomination.id_denomination);
@@ -58,7 +60,17 @@ const TableCashReception = (
             <View style={tw`w-8/12`}>
               <AutomatedCorrectionNumberInput
                 amount={cashInventoryDenomination.amount!}
-                onChangeAmount={handlerChangeAmountCash}/>
+                onChangeAmount={handlerChangeAmountCash}
+                returnKeyType={isLastInput ? 'done' : 'next'}
+                blurOnSubmit={isLastInput}
+                onSubmitEditing={() => {
+                  if (!isLastInput) {
+                    inputRefs.current[index + 1]?.focus();
+                  }
+                }}
+                inputRef={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}/>
             </View>
             </DataTable.Cell>
           </DataTable.Row>

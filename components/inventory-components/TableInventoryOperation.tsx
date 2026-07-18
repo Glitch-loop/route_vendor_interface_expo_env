@@ -1,6 +1,6 @@
 // Libraries
-import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { ScrollView, Text, View, TextInput } from 'react-native';
 import { DataTable, ActivityIndicator } from 'react-native-paper';
 import tw from 'twrnc';
 
@@ -140,6 +140,7 @@ const TableInventoryOperation = (
   }) => {
     // let contextForTheOperation:number = determineFlowOfProduct(currentOperation);
     const orderedAvailableProducts = availableProducts.map(prod => prod).sort((a, b) => a.order_to_show - b.order_to_show);
+    const inputRefs = useRef<Array<TextInput | null>>([]);
 
   return (
     <View style={tw`w-full flex flex-row`}>
@@ -193,13 +194,14 @@ const TableInventoryOperation = (
               
               {/* Body section*/}
               { orderedAvailableProducts.length > 0 &&
-                orderedAvailableProducts.map((product) => {
+                orderedAvailableProducts.map((product, index) => {
                   const { id_product, cost } = product;
                   let amount:number = 0;
                   let suggestedAmount:number = 0;
                   let currentInventoryAmount:number = 0;
                   let price_at_moment: number = 0;
                   let cost_at_moment: number = cost;
+                  const isLastInput = index === orderedAvailableProducts.length - 1;
 
                   if (productWithPrices.has(id_product)) {
                     const currentProduct = productWithPrices.get(id_product)!;
@@ -243,7 +245,17 @@ const TableInventoryOperation = (
                         <View style={tw`w-8/12`}>
                           <AutomatedCorrectionNumberInput
                             amount={amount}
-                            onChangeAmount={handlerChangeInventory}/>
+                            onChangeAmount={handlerChangeInventory}
+                            returnKeyType={isLastInput ? 'done' : 'next'}
+                            blurOnSubmit={isLastInput}
+                            onSubmitEditing={() => {
+                              if (!isLastInput) {
+                                inputRefs.current[index + 1]?.focus();
+                              }
+                            }}
+                            inputRef={(ref) => {
+                              inputRefs.current[index] = ref;
+                            }} />
                         </View>
                       </DataTable.Cell>
                       <DataTable.Cell style={tw`${amount + currentInventoryAmount > 0 ? cellTableStyleWithAmountOfProduct : cellTableStyle} w-40`}>
