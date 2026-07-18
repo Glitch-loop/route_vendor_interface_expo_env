@@ -554,18 +554,20 @@ useEffect(() => {
         id_day_operation_dependent,
         userSessionReduxState.id_vendor
       );
-
-      const { id_route_transaction } = newRouteTransaction;
-      await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction);
+      
       setNewRouteTransaction(newRouteTransaction);
+      
+      const { id_route_transaction } = newRouteTransaction;
 
+      await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction);
+      
       const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       const registeredStoresList = await listAllRegisterdStoresQuery.execute();
 
-      dispatch(setDayOperations(newDayOperationsList));
-      dispatch(setProductInventory(newInventory));
       dispatch(setStores(registeredStoresList));
+      dispatch(setProductInventory(newInventory));
+      dispatch(setDayOperations(newDayOperationsList));
 
       Toast.show({
         type: 'success',

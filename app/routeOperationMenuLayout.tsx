@@ -46,7 +46,8 @@ import {
   getTitleDayOperationForMenuOperation,
   createDayOperationDependencyMap,
   getDayOperationColor,
-  orderDayOperationsForDisplaying
+  orderDayOperationsForDisplaying,
+  getDayOperationColorByDayOperationType
 } from '@/utils/day-operation/utils';
 
 
@@ -107,8 +108,11 @@ const routeOperationMenuLayout = () => {
   const [currentInventoryOperation, setCurrentInventoryOperation] = useState<DayOperationDTO | null>(null);
   const [dayOperationDependencyMap, setDayOperationDependencyMap] = useState<Map<string, DayOperationDTO>>(new Map());
   const [dayOperations, setDayOperations] = useState<DayOperationDTO[]|null>(null);
+  
   const [clientConfirmationIds, setClientConfirmationIds] = useState<Set<string>>(new Set<string>());
   const [clientAttentionIds, setclientAttentionIds] = useState<Set<string>>(new Set<string>());
+  const [clientVisitedIds, setclientVisitedIds] = useState<Set<string>>(new Set<string>());
+  const [prospectOfClientIds, setProspectOfClientIds] = useState<Set<string>>(new Set<string>());
 
   // Refs
   const operationsDayRef = useRef<Map<string, View|null>>(new Map());
@@ -160,8 +164,22 @@ const routeOperationMenuLayout = () => {
           setClientConfirmationIds((prev) => prev.add(dayOperation.id_item));
         } else if(dayOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
           setclientAttentionIds((prev) => prev.add(dayOperation.id_item));
+        } else if (dayOperation.operation_type === DAY_OPERATIONS.client_visited) {
+          setclientVisitedIds((prev) => prev.add(dayOperation.id_item));
         }
       });
+    }
+
+    if (storesRedux !== null) {
+      const prospectOfClientsIds: Set<string> = new Set<string>();
+      storesRedux.forEach((store) => {
+        const { status_store, id_store } = store;
+
+        if (status_store === -1) {
+          prospectOfClientsIds.add(id_store)
+        }
+      }); 
+      setProspectOfClientIds(prospectOfClientsIds);
     }
 
     if (workdayInformationReduxState === null) {
@@ -458,7 +476,7 @@ const routeOperationMenuLayout = () => {
               <ActivityIndicator size={'large'} />
             </View> :
             <View style={tw`w-full flex flex-col items-center`}>
-              {dayOperations.map(dayOperation => {
+              { dayOperations.map(dayOperation => {
                 let itemOrder = '';
                 let itemName = '';
                 let description = '';
@@ -468,8 +486,43 @@ const routeOperationMenuLayout = () => {
                 let isPrintableOperation = true;
                 const { id_day_operation, id_item, operation_type } = dayOperation;
 
-                // Inventory operations type
-                cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, false);
+                // Determining color of the card.
+                if(operation_type === DAY_OPERATIONS.route_client_attention
+                || operation_type === DAY_OPERATIONS.attend_client_petition
+                || operation_type === DAY_OPERATIONS.new_client_registration
+                || operation_type === DAY_OPERATIONS.attention_out_of_route
+                || operation_type === DAY_OPERATIONS.prospect_registration
+                ) { // Operation client
+                  /*
+                    Design note (07-17-26)
+
+                    The order of the if-else statements matters.
+
+                    If clientAttentionIds.has(id_item) && clientVisitedIds.has(id_item) is moved up, there is 
+                    the possibility of get a true for that case when it should be another block statement.
+                  */
+                   if(prospectOfClientIds.has(id_item)) {
+                    cardColor = getDayOperationColorByDayOperationType(DAY_OPERATIONS.prospect_registration, false);                    
+                  } else if (clientConfirmationIds.has(id_item)) {
+                    cardColor = getDayOperationColorByDayOperationType(DAY_OPERATIONS.new_client_registration, false);  
+                  } else if (clientAttentionIds.has(id_item) && clientVisitedIds.has(id_item)) {
+                    console.log("Client visited:")
+                    cardColor = getDayOperationColorByDayOperationType(DAY_OPERATIONS.client_visited, false);  
+                    console.log("Card color: ", cardColor)
+                  } else {
+                    cardColor = getDayOperationColorByDayOperationType(operation_type, false);
+                  }
+                } else { // Other type of operations
+                  cardColor = getDayOperationColorByDayOperationType(operation_type, false);
+                }
+
+                if (currentInventoryOperation !== null) {
+                  if (id_day_operation === currentInventoryOperation.id_day_operation && currentInventoryOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
+                    cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, true);
+                  }
+                }
+                
+                // Determining type of operation and if it is printable.
                 if (operation_type === DAY_OPERATIONS.start_shift_inventory
                   || operation_type === DAY_OPERATIONS.restock_inventory
                   || operation_type === DAY_OPERATIONS.product_devolution_inventory
@@ -527,11 +580,7 @@ const routeOperationMenuLayout = () => {
                   isPrintableOperation = false;
                 }
 
-                if(currentInventoryOperation !== null) {
-                  if (id_day_operation === currentInventoryOperation.id_day_operation && currentInventoryOperation.operation_type === DAY_OPERATIONS.route_client_attention) {
-                    cardColor = getDayOperationColor(dayOperation, dayOperationDependencyMap, true);
-                  }
-                }
+
 
                 if (isPrintableOperation) {
                   return (
