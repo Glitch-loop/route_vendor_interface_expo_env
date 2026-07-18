@@ -89,11 +89,11 @@ export default class SheetBackupService {
     const inventoryOperationDescriptionsToExport = pendingInvOpDescs.map((record) => this.mapperLocalServerModel.toServerModel(record));
 
     routeTransactionDescriptionsToExport.forEach((record, index) => {
-      rows.push(this.createBackupRow(3, 'transaction_descriptions', 'route_transaction_descriptions', index + 1, record.id_route_transaction_description, record));
+      rows.push(this.createBackupRow(3, 'transaction_descriptions', 'transaction_descriptions', index + 1, record.id_transaction_description, record));
     });
 
     inventoryOperationDescriptionsToExport.forEach((record, index) => {
-      rows.push(this.createBackupRow(3, 'transaction_descriptions', 'inventory_operation_descriptions', pendingRouteTxDescs.length + index + 1, record.id_inventory_operation_description, record));
+      rows.push(this.createBackupRow(3, 'transaction_descriptions', 'id_product_operation_description', pendingRouteTxDescs.length + index + 1, record.id_product_operation_description, record));
     });
 
     // Phase 4: Day operations

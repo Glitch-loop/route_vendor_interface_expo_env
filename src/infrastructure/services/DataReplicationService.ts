@@ -29,6 +29,7 @@ import InventoryOperationServerModel from "@/src/infrastructure/persitence/model
 
 // Mappers
 import { MapperLocalServerModel } from "@/src/infrastructure/mappers/MapperLocalServerModel";
+import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 
 @injectable()
 export default class DataReplicationService {
@@ -42,11 +43,19 @@ export default class DataReplicationService {
     @inject(TOKENS.SyncDayOperationRepository) private readonly syncDayOperationRepo: SyncDayOperationInformationRepository,
 
     // Server database dependencies
+    // Sync dependencies
     @inject(TOKENS.SyncServerStoreRepository) private readonly serverStoreRepo: SyncServerStoreRepository,
     @inject(TOKENS.SyncServerWorkdayInformationRepository) private readonly serverWorkdayRepo: SyncServerWorkdayInformationRepository,
     @inject(TOKENS.SyncServerRouteTransactionRepository) private readonly serverRouteTxRepo: SyncServerRouteTransactionRepository,
     @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepo: SyncServerInventoryOperationRepository,
     @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepo: SyncServerDayOperationRepository,
+    
+    // Consult dependecies
+    @inject(TOKENS.SyncServerStoreRepository) private readonly serverStoreRepoConsult: StoreRepository,
+    @inject(TOKENS.SyncServerRouteTransactionRepository) private readonly serverRouteTxRepoConsult: SyncServerRouteTransactionRepository,
+    @inject(TOKENS.SyncServerInventoryOperationRepository) private readonly serverInventoryRepoConsult: SyncServerInventoryOperationRepository,
+    @inject(TOKENS.SyncServerDayOperationRepository) private readonly serverDayOperationRepoConsult: SyncServerDayOperationRepository,
+
 
     private readonly mapperLocalServerModel: MapperLocalServerModel,
   ) { }
@@ -84,12 +93,9 @@ export default class DataReplicationService {
   // Each phase must be an method.
   private async executePhase1(): Promise<boolean> {
     try {
+      // Workdays 
       const pendingWorkDays = await this.syncWorkdayInfoRepo.listPendingWorkdayInformationToSync();
-      const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
-      const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toServerModel(store));
-      
       console.log(`Pending starting work days to sync: ${pendingWorkDays.length}`);
-      console.log(`Pending stores to sync: ${pendingStores.length}`);
 
       if (pendingWorkDays.length > 0) {
         const startWorkDays = pendingWorkDays
@@ -97,12 +103,21 @@ export default class DataReplicationService {
         await this.serverWorkdayRepo.upsertWorkdayInformations(startWorkDays);
         await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(startWorkDays.map(w => w.id_work_day));
       }
+
+      // Stores
+      const pendingStores = await this.syncStoreRepo.listPendingStoreToSync();
+      const storesToSync = pendingStores.map((store) => this.mapperLocalServerModel.toServerModel(store));
+      console.log(`Pending stores to sync: ${pendingStores.length}`);
+
       if (pendingStores.length > 0) {
         console.log("PENDING STORES TO BE SYNCED")
         console.log(storesToSync)
         await this.serverStoreRepo.upsertStores(storesToSync);
         await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
       }
+
+
+
       console.log("Phase 1 finishing: ", true)
       return true;
     } catch (error) {

@@ -7,11 +7,11 @@ import { Router, useRouter, useLocalSearchParams } from 'expo-router';
 // Redux context
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
-import { setStores } from '@/redux/slices/storesSlice';
-import { setProducts } from '@/redux/slices/productSlice';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
-import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
-import { setProductInventory } from '@/redux/slices/productsInventorySlice';
+import { clearStores, setStores } from '@/redux/slices/storesSlice';
+import { clearProducts, setProducts } from '@/redux/slices/productSlice';
+import { clearDayOperations, setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { clearWorkDayInformation, setWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { clearProductInventory, setProductInventory } from '@/redux/slices/productsInventorySlice';
 import { setTemporalInventoryOperationDescription, clearTemporalInventoryOperationDescription } from '@/redux/slices/inventoryOperationDescriptionTempSlice';
 
 // Components
@@ -27,10 +27,13 @@ import TableInventoryVisualization from '@/components/inventory-components/Table
 import TableRouteTransactionProductVisualization from '@/components/inventory-components/TableRouteTransactionProductVisualization';
 import TableProductDevolutionInventoryOperationVisualization from '@/components/inventory-components/TableProductDevolutionInventoryOperationVisualization';
 
-// Interfaces
+// UI interfaces
 import {
   ICurrency,
  } from '@/interfaces/interfaces';
+
+// Interfaces
+import { LocalDatabaseService } from '@/src/core/interfaces/LocalDatabaseService';
 
 // Utils
 import { initialMXNCurrencyState, } from '@/utils/inventoryOperations';
@@ -91,6 +94,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
+import EMBEDDED_TABLES from '@/src/infrastructure/database/embeddedTables';
 
 // Auxiliar functions
 function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
@@ -667,12 +671,12 @@ const inventoryOperationLayout = () => {
             });
             return
           }
-          
+          // throw new Error("Assertion")
           dispatch(setProductInventory(productInventoryResult));
           dispatch(setWorkDayInformation(workDayInformationResult));
           dispatch(setDayOperations(currentDayOperationsResult));
-          dispatch(setStores(allRegisterdStoresResult))
-          dispatch(setProducts(allRegisteredProductsResult))
+          dispatch(setStores(allRegisterdStoresResult));
+          dispatch(setProducts(allRegisteredProductsResult));
 
           Toast.show({
             type: 'success',
@@ -688,6 +692,14 @@ const inventoryOperationLayout = () => {
             text1: 'Ha habido un error durante el registro del inventario inicial.',
             text2: 'Ha sucedido un error durante el registro del inventario inicial, por favor intente nuevamente.',
           });
+          
+          const sqliteDatabaseService = container.resolve<LocalDatabaseService>(TOKENS.LocalDatabaseService);
+          sqliteDatabaseService.cleanDatabase([EMBEDDED_TABLES.USER]);
+          dispatch(clearProductInventory());
+          dispatch(clearWorkDayInformation());
+          dispatch(clearDayOperations());
+          dispatch(clearStores());
+          dispatch(clearProducts());
 
           router.replace('/selectionRouteOperationLayout');
         }
