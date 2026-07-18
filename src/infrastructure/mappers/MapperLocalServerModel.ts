@@ -63,7 +63,7 @@ export class MapperLocalServerModel {
 		if (isRouteTransactionLocalModel(model)) return this.routeTransactionLocalToServer(model);
 		if (isStoreLocalModel(model)) return this.storeLocalToServer(model);
 		if (isWorkDayInformationLocalModel(model)) return this.workDayInformationLocalToServer(model);
-    console.log("Model to convert: ", model)
+    
 		throw new Error('Unknown local model type at moment of transforming to server model.');
 	}
 

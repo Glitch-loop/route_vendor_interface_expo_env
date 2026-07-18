@@ -186,7 +186,6 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
       }
       
     } catch (error: any) {
-      console.log(error)
       throw new Error(`Failed to list stores: ${error.message}`);
     }
   }

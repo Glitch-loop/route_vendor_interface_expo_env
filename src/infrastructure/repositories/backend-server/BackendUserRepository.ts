@@ -64,7 +64,6 @@ export class BackendUserRepository implements ServerUserRepository {
 	}
 
 	async login(cellphone: string, password: string): Promise<string|null> {
-		console.log("Starting login")
 		const body: LoginRequestInterface = {
 			cellphone: cellphone,
 			password: password
