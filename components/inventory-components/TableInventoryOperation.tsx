@@ -105,8 +105,6 @@ function determineHeaderOfFinalColumn(id_type_of_operation: string):string {
   return result;                        
 }
 
-
-
 function detemrineHeaderOfTotalColumn(id_type_of_operation:string):string {
   let result:string = ""
   if (id_type_of_operation === DAY_OPERATIONS.product_devolution) {
