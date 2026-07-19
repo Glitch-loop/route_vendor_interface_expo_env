@@ -25,6 +25,8 @@ import { Store } from '@/src/core/entities/Store';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 import { StoreClientAggregate } from '@/src/core/aggregates/StoreClientAggregate';
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
+import RouteTransactionDescriptionDTO from '../dto/RouteTransactionDescriptionDTO';
 
 @injectable()
 export default class ConfirmClientProspectAsClientUseCase {
@@ -42,7 +44,13 @@ export default class ConfirmClientProspectAsClientUseCase {
       private readonly mapperDTO: MapperDTO,
   ) { }
 
-  async execute(id_store: string, id_transaction: string): Promise<DayOperationDTO|null> {
+  async executeUseCase(id_store: string, id_transaction: string, sellingRouteTransactionDescription: RouteTransactionDescription[]): Promise<boolean|null> {
+    
+    for (const selling of sellingRouteTransactionDescription) {
+      if (selling.id_transaction_operation_type !== DAY_OPERATIONS.sales) 
+        throw new Error('For confirming a prospect of client, all of the transaction descriptions must be of type sale.')
+    }
+    
     let latitude: string|undefined = undefined;
     let longitude: string|undefined = undefined;
     let sellingDate:Date = new Date();
@@ -93,6 +101,10 @@ export default class ConfirmClientProspectAsClientUseCase {
       }
       
       if (storeAggregate.confirmClientRegistration(sellingDate)) {
+        if (sellingRouteTransactionDescription.length === 0) {
+          return false;
+        }
+
         // Add day operation
         dayOperationAggregate.registerCreateNewClient(
           this.idService.generateID(),
@@ -112,11 +124,15 @@ export default class ConfirmClientProspectAsClientUseCase {
         
         // Extract new day operation
         const newDayOperation = newListdayOperations.pop();        
-        return newDayOperation ? this.mapperDTO.toDTO(newDayOperation) : null;
+        return true;
       }
     }
 
     return null;
+  }
+
+  async execute(id_store: string, id_transaction: string, sellingRouteTransactionDescription: RouteTransactionDescriptionDTO[]): Promise<boolean|null> {
+    return await this.executeUseCase(id_store, id_transaction, sellingRouteTransactionDescription.map((transactionDescription) => this.mapperDTO.toEntity(transactionDescription)));
   }
 }
 

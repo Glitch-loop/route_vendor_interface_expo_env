@@ -559,15 +559,29 @@ useEffect(() => {
       
       const { id_route_transaction } = newRouteTransaction;
 
-      await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction);
+      const resultOfConfirmation = await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction, productSale);
+      if (resultOfConfirmation === true) {
+        Toast.show({
+          type: 'info',
+          text1:'Se ha confirmado el prospecto de cliente como nuevo cliente.',
+          text2: ''});
+      } else if(resultOfConfirmation === false) {
+        Toast.show({
+          type: 'info',
+          text1:'No se ha confirmado el prospecto de cliente como nuevo cliente.',
+          text2: 'Tiene que haber almenos una venta.'});
+      } else {
+        /* That means the prospect of client is not candidate to be confirmed.*/
+      }
       
-      const newInventory = await retrieveCurrentShiftInventory.execute();
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
+      dispatch(setDayOperations(newDayOperationsList));
+
+      const newInventory = await retrieveCurrentShiftInventory.execute();
       const registeredStoresList = await listAllRegisterdStoresQuery.execute();
 
       dispatch(setStores(registeredStoresList));
       dispatch(setProductInventory(newInventory));
-      dispatch(setDayOperations(newDayOperationsList));
 
       Toast.show({
         type: 'success',
