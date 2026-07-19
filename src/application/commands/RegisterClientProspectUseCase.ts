@@ -91,28 +91,38 @@ export class RegisterClientProspectUseCase {
         if (!newStore) throw new Error("Error registering new client. Please try again.");
 
         const { id_store } = newStore;
-
+        const registerProspectOfClientDependent = this.idService.generateID()
         operationDayAggregate.registerProspectClient(
-            this.idService.generateID(),
+            registerProspectOfClientDependent,
             id_store,
             idWorkDay,
             new Date(this.dateService.getCurrentTimestamp()),
             latitude.toString(),
             longitude.toString(),
-        )
+        );
+
+        operationDayAggregate.registerVisitToClient(
+            this.idService.generateID(),
+            id_store,
+            idWorkDay,
+            new Date(this.dateService.getCurrentTimestamp()),
+            registerProspectOfClientDependent,
+            latitude.toString(),
+            longitude.toString(),
+        );
 
         const newDayOperations: DayOperation[]|null = operationDayAggregate.getNewDayOperations();
 
         if (newDayOperations === null) throw new Error("Error registering new client. Please try again.");
 
-        const newClientDayOperation: DayOperation | undefined = newDayOperations.pop();
+        const newClientDayOperation: DayOperation | undefined = newDayOperations.at(0);
 
-        if (!newClientDayOperation) throw new Error("Error registering new client. Please try again.");
+        if (newClientDayOperation === undefined) throw new Error("Error registering new client. Please try again.");
 
         // Persist all changes
         console.log("Store to add: ", newStore)
         await this.storeRepository.insertStores([ newStore ]);
-        await this.dayOperationRepository.insertDayOperations([ newClientDayOperation ]);
+        await this.dayOperationRepository.insertDayOperations(newDayOperations);
 
         return this.mapperDTO.toDTO(newClientDayOperation);
     }

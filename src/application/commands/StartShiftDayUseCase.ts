@@ -11,16 +11,20 @@ import { DayOperationRepository } from "@/src/core/interfaces/DayOperationReposi
 import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
 import { IDService } from "@/src/core/interfaces/IDService";
 import { DateService } from "@/src/core/interfaces/DateService";
+import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
+
+// Enums
 
 // Object values
 import { RouteDay } from "@/src/core/object-values/RouteDay";
 import { InventoryOperationDescription } from "@/src/core/object-values/InventoryOperationDescription";
 
 // Entities
-import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
-import { Product } from "@/src/core/entities/Product";
-import { Route } from "@/src/core/entities/Route";
 import { Store } from "@/src/core/entities/Store";
+import { Route } from "@/src/core/entities/Route";
+import { Product } from "@/src/core/entities/Product";
+import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
+import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 // Aggregates
 import { ShiftOrganizationAggregate } from "@/src/core/aggregates/ShiftOrganizationAggregate";
@@ -35,12 +39,11 @@ import RouteDTO from "@/src/application/dto/RouteDTO";
 import InventoryOperationDescriptionDTO from "@/src/application/dto/InventoryOperationDescriptionDTO";
 import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
 
-// Utils
+// DI container
 import { TOKENS } from "@/src/infrastructure/di/tokens";
+
+// Utils
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
-import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
-import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
-import RouteTransactionDTO from "../dto/RouteTransactionDTO";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
