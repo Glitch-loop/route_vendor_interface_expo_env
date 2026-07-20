@@ -1,7 +1,11 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # Config files
-.env*
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
 # Prompt files
 .github/prompts/
