@@ -159,7 +159,7 @@ export class BackendRouteRepository implements RouteRepository {
       const routeDayByRouteDayID: RouteDaysByRouteDayRequest = { id_route_days: [id_route_day] };
       const routeDayStores: RouteDayStore[] = [];
       const responseRouteDays: RouteDayInterface[] = await this.dataSource.post<RouteDayInterface[], RouteDaysByRouteDayRequest>(
-        '/route-organization/routes/days/routes/ids',
+        '/route-organization/routes/days/ids',
         routeDayByRouteDayID
       );
 

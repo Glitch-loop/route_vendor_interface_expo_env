@@ -36,12 +36,9 @@ export default class AuthenticationService {
   */
   async loginUser(cellphone: string, password: string): Promise<UserDTO | null> {
     // Online login
-    console.log("(await Network.getNetworkStateAsync()).isConnected: ", (await Network.getNetworkStateAsync()).isConnected)
-    console.log("await Network.getNetworkStateAsync()).isInternetReachable: ", (await Network.getNetworkStateAsync()).isInternetReachable)
     if ((await Network.getNetworkStateAsync()).isConnected === true 
     && (await Network.getNetworkStateAsync()).isInternetReachable === true) {
       const access_token: string|null = await this.serverAuthrepository.login(cellphone, password);
-      console.log("Online login: ", access_token)
       if(access_token === null) { // Try offline login
         const localUsers = await this.localAuthRepository.getUserByPhoneNumber(cellphone);
         const localUser = localUsers.at(0);

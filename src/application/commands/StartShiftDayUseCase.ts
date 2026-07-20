@@ -44,6 +44,7 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 // Utils
 import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+import { RouteRepository } from "@/src/core/interfaces/RouteRepository";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
@@ -63,6 +64,7 @@ export default class StartWorkDayUseCase {
     
     // Remote repositories dependencies
     @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
+    @inject(TOKENS.ServerRouteRepository) private readonly remoteRouteRepo: RouteRepository,
     @inject(TOKENS.ServerRouteTransactionRepository) private readonly remoteRouteTransactionRepo: RouteTransactionRepository,
     
     // Services depdendencies
@@ -171,13 +173,15 @@ export default class StartWorkDayUseCase {
     // Get stores for the route day.
     const allStores:Store[] = await this.remoteStoreRepo.listStores();
 
+    // Get route day.
+    const routeDayStores = await this.remoteRouteRepo.listRouteDayStoresByRoute(id_route_day);
+    console.log(routeDayStores)
     // Create day operations.
     /*
         The first operation of the day always will be the start shift inventory, 
         then other operations.
     */
     const { id_inventory_operation } = newInventoryOperation;
-    const { stores } = routeDaySelected;
 
     // Insert start shift inventory operation.
     dayOperationAggregate.registerStartShiftInventory(
@@ -189,8 +193,9 @@ export default class StartWorkDayUseCase {
 
 
     // Insert clients to attend as day operations.
-    const orderedStores = stores.sort((a, b) => a.position_in_route - b.position_in_route);
-
+    const orderedStores = routeDayStores.sort((a, b) => a.position_in_route - b.position_in_route);
+    console.log("orderedStores: ", routeDayStores)
+    console.log("Registering days to attend.")
     for (const store of orderedStores) {
         const { id_store } = store;
         dayOperationAggregate.registerAttendTodaysClient(
@@ -206,6 +211,7 @@ export default class StartWorkDayUseCase {
     // Retrieve past route transactions of the stores that belongs to the current route.
     // This information is going to be used for insights.
     for (const store of orderedStores) {
+        console.log("Retrieving past transactions from: ", store)
         const { id_store } = store;
         const historicRouteTransactionsOfCurrentStore:RouteTransaction[] = await this.remoteRouteTransactionRepo.listRouteTransactionByStore(id_store);
         historicRouteTransactions = historicRouteTransactions.concat(historicRouteTransactionsOfCurrentStore);

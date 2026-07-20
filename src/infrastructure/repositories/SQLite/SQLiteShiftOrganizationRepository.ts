@@ -85,6 +85,7 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
             const db: SQLiteDatabase = await this.dataSource.getClient();
             await db.withExclusiveTransactionAsync(async (tx) => {
                 const placeholders = ids.map(() => '?').join(',');
+                console.log(`UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`)
                 await tx.runAsync(
                     `UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`,
                     ids

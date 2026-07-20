@@ -309,7 +309,8 @@ const routeOperationMenuLayout = () => {
         text2: 'Sincronizando información con la base de datos, puede tardar unos pocos minutos.'});
 
       const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
-      const replicationSessionResult:boolean = await syncingService.executeReplicationSession()
+      const replicationSessionResult:boolean = await syncingService.executeReplicationSession();
+
       if (!replicationSessionResult && !wasBackupMade) {
         Toast.show({
           type: 'error',
@@ -317,7 +318,6 @@ const routeOperationMenuLayout = () => {
           text2: 'Descarga la información, he intenta nuevamente.'});
           return;
       }
-
 
       if (replicationSessionResult) {
         Toast.show({

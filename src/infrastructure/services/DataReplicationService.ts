@@ -116,8 +116,6 @@ export default class DataReplicationService {
         await this.syncStoreRepo.markStoreAsSynced(pendingStores.map(s => s.id_store));
       }
 
-
-
       console.log("Phase 1 finishing: ", true)
       return true;
     } catch (error) {
@@ -207,6 +205,7 @@ export default class DataReplicationService {
         const endWorkDays = pendingWorkDays
           .filter((workDay) => { return workDay.finish_date !== null && workDay.final_petty_cash !== null; });
         await this.serverWorkdayRepo.upsertWorkdayInformations(endWorkDays);
+        console.log("End work days: ", endWorkDays.map(w => w.id_work_day))
         await this.syncWorkdayInfoRepo.markWorkdayInformationAsSynced(endWorkDays.map(w => w.id_work_day));
       }
 
