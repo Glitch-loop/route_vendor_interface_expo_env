@@ -49,6 +49,7 @@ import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap,
 
 // Hooks
 import useNetworkState from '@/hooks/useNetworkState';
+import { capitalizeFirstLetter } from '@/utils/generalFunctions';
 
 interface NewClientFormData {
   id_location_type: string;
@@ -81,6 +82,15 @@ function mergeStoresByIdStore(...storeGroups: IStoreRouteMap[][]): IStoreRouteMa
   return Array.from(storesById.values());
 }
 
+function ItemSearchBar (item: PostalCode): React.ReactNode {
+  const { stablishment_name, postal_code, municipality } = item;
+  return (
+    <View>
+      <Text style={tw`text-xl text-center`}>{capitalizeFirstLetter(stablishment_name)}</Text>
+      <Text style={tw`text-sm text-center`}>{postal_code} - {capitalizeFirstLetter(municipality)}</Text>
+    </View>
+  ); 
+}
 
 export default function CreateNewClientLayout() {
   const locationTypeCatalog = Object.values(LOCATION_TYPES_CONSTANTS);
@@ -439,6 +449,7 @@ export default function CreateNewClientLayout() {
                   onSelectHandler={handlerOnSelectItem}
                   criteriaForValidQuery={validatorCriteria}
                   criteriaForSelectedItems={criteriaForSelectedItems}
+                  itemPresentation={ItemSearchBar}
               />
           </View>
           {/* colony */}

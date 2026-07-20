@@ -52,6 +52,8 @@ const SearchBarWithSuggestions = ({
     onSelectHandler,
     criteriaForValidQuery, // Fucntion with the criteria to determine if the item accomplishes the search query.
     criteriaForSelectedItems, // Function with the criteria to determine if the item is already selected (to avoid showing it in the suggestion list).
+    itemPresentation,
+    // inputRef
   }:{
     catalog:any[],
     selectedCatalog: any[],
@@ -59,7 +61,9 @@ const SearchBarWithSuggestions = ({
     keyField:string|number,
     onSelectHandler:any,
     criteriaForValidQuery: (query: any, item: any) => boolean,
-    criteriaForSelectedItems: (item: any, selectedItems: any[]) => boolean
+    criteriaForSelectedItems: (item: any, selectedItems: any[]) => boolean,
+    itemPresentation?: (item: any) => React.ReactNode,
+    // inputRef?: (ref: TextInput | null) => void,
   }) => {
   // Importing redux state
 
@@ -147,7 +151,10 @@ const SearchBarWithSuggestions = ({
                   {/* <Text style={tw`text-xl text-center`}>
                     {capitalizeFirstLetterOfEachWord(item[fieldToSearch])}
                   </Text> */}
-                  {ItemPresentation(item, fieldToSearch)}
+                  { itemPresentation ?
+                    itemPresentation(item) :
+                    ItemPresentation(item, fieldToSearch)
+                  }
                 </Pressable>
               ))
             )}
