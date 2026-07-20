@@ -72,9 +72,11 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
 
   async retrieveInventory(): Promise<ProductInventory[]> {
     const inventory: ProductInventory[] = [];
+
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
+
     try {
-        const db: SQLiteDatabase = await this.dataSource.getClient();
-        const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
         const result = statement.executeSync<any>();
         const rows = result.getAllSync();
 
@@ -88,11 +90,11 @@ export class SQLiteProductInventoryRepository implements ProductInventoryReposit
           );
         }
 
-      await statement.finalizeAsync();
-
       return inventory;
     } catch (error) {
       throw new Error('Failed to retrieve inventory.' + error);
+    } finally {
+      await statement.finalizeAsync();
     }
   }
 

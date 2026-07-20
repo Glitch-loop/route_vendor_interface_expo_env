@@ -108,11 +108,12 @@ export class SQLiteProductRepository implements ProductRepository {
   }
 
   async retrieveAllProducts(): Promise<Product[]> {
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = this.dataSource.getClient();
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = this.dataSource.getClient();
 
-      const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS};`);
+
+    try {
       const result = statement.executeSync<any>();
 
       const products: Product[] = [];
@@ -135,6 +136,8 @@ export class SQLiteProductRepository implements ProductRepository {
       return products;
     } catch (error) {
       throw new Error('Failed to retrieve products.');
+    } finally {
+      await statement.finalizeAsync();
     }
   }
 
@@ -162,10 +165,10 @@ export class SQLiteProductRepository implements ProductRepository {
   private async retrieveProductPrices(db: SQLiteDatabase, id_product: string): Promise<ProductPrice[]> {
     // Note: PRODUCTS_PRICES table does not have an id_product FK column.
     // All prices are returned. Consider adding id_product to the schema for proper filtering.
+    await this.dataSource.initialize();
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_PRICES};`);
+
     try {
-      await this.dataSource.initialize();
-      const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_PRICES};`);
-  
       const result = statement.executeSync<any>();
       const prices: ProductPrice[] = [];
       for (const row of result) {
@@ -182,6 +185,8 @@ export class SQLiteProductRepository implements ProductRepository {
       return prices;
     } catch (error) {
       throw new Error('Failed to product prices.');
+    } finally {
+      await statement.finalizeAsync();
     }
   }
 }

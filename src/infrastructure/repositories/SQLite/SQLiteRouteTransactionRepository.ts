@@ -198,13 +198,14 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
   async listRouteTransactions(): Promise<RouteTransaction[]> {
     const transactions:RouteTransaction[] = [];
 
+    // Retrieve all route transaction descriptions
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = this.dataSource.getClient();
+      
+    // Retrieve all route transactions
+    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
+
     try {        
-      // Retrieve all route transaction descriptions
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = this.dataSource.getClient();
-        
-      // Retrieve all route transactions
-      const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
       const resultTransactions = transactionsStatement.executeSync<any>();
 
       // Map descriptions to their respective transactions
@@ -232,20 +233,21 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return transactions;
     } catch (error) {
       throw new Error("Failed to list route transactions: " + error);
+    } finally {
+      await transactionsStatement.finalizeAsync()
     }
   }
 
   async listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]> {
     const transactions:RouteTransaction[] = [];
     
-    try {
-      await this.dataSource.initialize();
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = this.dataSource.getClient();
 
-      // Retrieve all route transaction descriptions
-      const db: SQLiteDatabase = this.dataSource.getClient();
-      
+    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
+
+    try {
       // Retrieve all route transactions
-      const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
       const resultTransactions = transactionsStatement.executeSync<any>([id_store]);
 
       // Map descriptions to their respective transactions
@@ -273,23 +275,25 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return transactions;
     } catch (error) {
       throw new Error("Failed to list route transactions: " + error);
+    } finally {
+      await transactionsStatement.finalizeAsync();
     }
   }
 
   async retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]> {
     const transactions:RouteTransaction[] = [];
+    const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
     
-    try {
-      const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = this.dataSource.getClient();
+      
+    // Retrieve all route transactions
+    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);
 
+    try {
       // Retrieve all route transaction descriptions
       const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
       
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = this.dataSource.getClient();
-        
-      // Retrieve all route transactions
-      const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);
       const resultTransactions = transactionsStatement.executeSync<any>();
         
       // Group descriptions by their route transaction ID
@@ -322,17 +326,20 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return transactions;
     } catch (error) {
       throw new Error("Failed to retrieve route transactions by ID: " + error);
+    } finally {
+      await transactionsStatement.finalizeAsync();
     }
   }
 
   async listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]> {
     const routeTransactionDescriptions: RouteTransactionDescription[] = [];
     
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    const statementTransactionDescriptions = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
+
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      const statementTransactionDescriptions = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
       const resultTransactionDescriptions = statementTransactionDescriptions.executeSync<RouteTransactionDescription>();
 
       for (const description of resultTransactionDescriptions) {
@@ -353,20 +360,23 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return routeTransactionDescriptions;
     } catch (error) {
       throw new Error("Failed to list route transaction descriptions: " + error);
+    } finally {
+      await statementTransactionDescriptions.finalizeAsync();
     }
   }
 
   async retrieveRouteTransactionDescriptionsByIds(ids_route_transaction: string[]): Promise<RouteTransactionDescription[]> {
     const routeTransactionDescriptions: RouteTransactionDescription[] = [];
     
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    // We receive route transaction IDs; filter descriptions by id_route_transaction
+    const statementTransactionDescriptions = await db.prepareAsync(
+      `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${ids_route_transaction.map(id => `'${id}'`).join(', ')})`
+    );
+
     try {  
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      // We receive route transaction IDs; filter descriptions by id_route_transaction
-      const statementTransactionDescriptions = await db.prepareAsync(
-        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${ids_route_transaction.map(id => `'${id}'`).join(', ')})`
-      );
       const execResult = statementTransactionDescriptions.executeSync<any>();
       const rows = execResult.getAllSync();
 
@@ -388,6 +398,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return routeTransactionDescriptions;
     } catch (error) {
       throw new Error("Failed to retrieve route transaction descriptions by IDs: " + error);
+    } finally {
+      await statementTransactionDescriptions.finalizeAsync();
     }
   }
 
@@ -397,12 +409,13 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     const routeTransactionToSyncWithoutDesc: RouteTransactionLocalModel[] = [];
     const routeTransactionMap: Map<string, RouteTransactionLocalModel> = new Map<string, RouteTransactionLocalModel>();
     
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
 
-      // Retrieving route transactions pending to sync
-      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+    // Retrieving route transactions pending to sync
+    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+    
+    try {
       const rows = stmt.executeSync<any>();
       for (const row of rows) {
         routeTransactionToSyncWithoutDesc.push({
@@ -447,17 +460,20 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return routeTransactionToSync;
     } catch (error) {
       throw new Error('Failed to list pending route transactions to sync: ' + error);
+    } finally {
+      await stmt.finalizeAsync();
     }
   }
 
   async listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionLocalModel[]> {
     const pending: RouteTransactionDescriptionLocalModel[] = [];
     
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+    
     try {  
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
       const rows = stmt.executeSync<any>();
       
       for (const row of rows) {
@@ -471,6 +487,8 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       return pending;
     } catch (error) {
       throw new Error('Failed to list pending route transaction descriptions to sync: ' + error);
+    } finally {
+      await stmt.finalizeAsync();
     }
   }
 

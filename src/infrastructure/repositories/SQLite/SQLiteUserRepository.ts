@@ -62,13 +62,14 @@ export class SQLiteUserRepository implements LocalUserRepository {
   }
 
   async getUserByPhoneNumber(cellphone: string): Promise<User[]> {
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    const statement = await db.prepareAsync(
+      `SELECT * FROM ${EMBEDDED_TABLES.USER} WHERE cellphone = ?;`,
+    );
+
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      const statement = await db.prepareAsync(
-        `SELECT * FROM ${EMBEDDED_TABLES.USER} WHERE cellphone = ?;`,
-      );
       const rows = statement.executeSync<any>([cellphone]);
       const users: User[] = [];
       for (const row of rows) {
@@ -83,6 +84,8 @@ export class SQLiteUserRepository implements LocalUserRepository {
       return users;
     } catch (error) {
       throw new Error('Failed to retrieve user by cellphone.');
+    } finally {
+      await statement.executeAsync()
     }
   }
 }

@@ -102,12 +102,15 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
   }
 
   async listPendingStoreToSync(): Promise<StoreLocalModel[]> {
+    const pending: StoreLocalModel[] = [];
+    
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    // PATCH: According with the desing, a record must be listed as pending to sync if is_syncde is 0 or  is_deleted is 1
+    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE status_store = -1 AND is_new = 1;`);
+
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      const pending: StoreLocalModel[] = [];
-      // PATCH: According with the desing, a record must be listed as pending to sync if is_syncde is 0 or  is_deleted is 1
-      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE status_store = -1 AND is_new = 1;`);
       // const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1;`);
       const rows = stmt.executeSync<any>();
       for (const row of rows) {
@@ -116,6 +119,8 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
       return pending;
     } catch (error) {
       throw new Error('Failed to list pending stores to sync: ' + error);
+    } finally {
+      await stmt.finalizeAsync();
     }
   }
 
@@ -221,12 +226,14 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
   }
 
   async retrieveStore(id_stores: string[]): Promise<Store[]> {
+    const stores: Store[] = [];
+    
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
+    
     try {
-      await this.dataSource.initialize();
-      const stores: Store[] = [];
-
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
       const result = statement.executeSync<Store>();
       
       for(let row of result) {
@@ -257,16 +264,20 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
       return stores;
     } catch (error) {
       throw new Error('Failed to retrieve stores: ' + error);
+    } finally {
+      await statement.finalizeAsync();
     }
   }
 
   async listStores(): Promise<Store[]> {
-    try {
-      await this.dataSource.initialize();
-      const stores: Store[] = [];
+    const stores: Store[] = [];
+    
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
 
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
+
+    try {
       const result = statement.executeSync<Store>();
       
       for(let row of result) {
@@ -297,6 +308,8 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
       return stores;
     } catch (error) {
       throw new Error('Failed to list stores: ' + error);
+    } finally {
+      await statement.finalizeAsync();
     }
   }
 

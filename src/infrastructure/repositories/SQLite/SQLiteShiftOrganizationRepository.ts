@@ -68,11 +68,12 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
   async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationLocalModel[]> {
     const pending: WorkDayInformationLocalModel[] = [];
 
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
+    await this.dataSource.initialize();
+    const db: SQLiteDatabase = await this.dataSource.getClient();
 
-      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
+    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
+
+    try {
       const rows = stmt.executeSync<any>();
       
       for (const row of rows) {
@@ -82,6 +83,8 @@ export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepos
       return pending;
     } catch (error) {
       throw new Error('Failed to list pending workday information to sync: ' + error);
+    } finally {
+      await stmt.finalizeAsync();
     }
   }
 

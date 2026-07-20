@@ -31,7 +31,7 @@ export class SQLiteDayOperationRepository extends DayOperationRepository impleme
     super();
   }
 
-  async insertDayOperations(day_operations: DayOperation[]): Promise<void> {
+  async insertDayOperations(day_operations: DayOperation[]): Promise<void> {    
     try {
       await this.dataSource.initialize();
       const db: SQLiteDatabase = await this.dataSource.getClient();

@@ -173,11 +173,12 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 		const inventoryOperationsTemp:InventoryOperation[] = [];
 		const inventoryOperations:InventoryOperation[] = [];
 
-		try {
-			await this.dataSource.initialize();
-			const db: SQLiteDatabase = await this.dataSource.getClient();
+		await this.dataSource.initialize();
+		const db: SQLiteDatabase = await this.dataSource.getClient();
 
-			const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
+		const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS};`);
+
+		try {
 			const result = statement.executeSync<InventoryOperation>();
 			
 			// Retrieve inventory operations
@@ -215,6 +216,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			return inventoryOperations;
 		} catch (error) {
 			throw new Error('Failed to list inventory operations: ' + error);
+		} finally {
+			await statement.finalizeAsync();
 		}
 	}
 
@@ -222,11 +225,12 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 		const inventoryOperations: InventoryOperation[] = [];
 		const inventoryOperationsTemp:InventoryOperation[] = [];
 
-		try {
-			await this.dataSource.initialize();
-			const db:SQLiteDatabase = this.dataSource.getClient();
+		await this.dataSource.initialize();
+		const db:SQLiteDatabase = this.dataSource.getClient();
 
-			const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
+		const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE id_inventory_operation IN(${id_inventory_operation.map(id => `'${id}'`).join(', ')});`);
+
+		try {
 			const result = statement.executeSync<InventoryOperation>();
 
 			for (let row of result) {
@@ -262,18 +266,22 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			return inventoryOperations;
 		} catch (error) {
 			throw new Error('Failed to retrieve inventory operations: ' + error);
+		} finally {
+			await statement.finalizeAsync();
 		}
 	}
 
 	async retrieveInventoryOperationDescription(inventoryOperationsIds: string[]):Promise<InventoryOperationDescription[]> {
+		const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
+		
+		await this.dataSource.initialize();
+		const db:SQLiteDatabase = this.dataSource.getClient();
+
+		const statement = await db.prepareAsync(`SELECT * 
+				FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} 
+				WHERE id_inventory_operation IN(${inventoryOperationsIds.map(op => `'${op}'`).join(', ')});`);
+	
 		try {
-			await this.dataSource.initialize();
-			const inventoryOperationsDescriptions:InventoryOperationDescription[] = [];
-			
-			const db:SQLiteDatabase = this.dataSource.getClient();
-			const statement = await db.prepareAsync(`SELECT * 
-					FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} 
-					WHERE id_inventory_operation IN(${inventoryOperationsIds.map(op => `'${op}'`).join(', ')});`);
 				
 			const result = statement.executeSync<InventoryOperationDescription>();
 
@@ -292,6 +300,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			return inventoryOperationsDescriptions;
 		} catch(error) {
 			throw new Error('Failed to retrieve inventory operation descriptions: ' + error);
+		} finally {
+			statement.finalizeSync();
 		}
 	}
 
@@ -315,12 +325,13 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 		const idInventoryOperation: Set<string> = new Set<string>();
 		const inventoryOperationMap: Map<string, InventoryOperationLocalModel> = new Map<string, InventoryOperationLocalModel>();
 		
+		await this.dataSource.initialize();
+		const db: SQLiteDatabase = await this.dataSource.getClient();
+		
+		// Retrieving pending inventory operations.
+		const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+
 		try {
-			await this.dataSource.initialize();
-			const db: SQLiteDatabase = await this.dataSource.getClient();
-			
-			// Retrieving pending inventory operations.
-			const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.INVENTORY_OPERATIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
 			const rows = stmt.executeSync<any>();
 			for (const row of rows) {
 				const { id_inventory_operation } = row as InventoryOperationLocalModel;
@@ -354,15 +365,19 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			return Array.from(inventoryOperationMap.values());
 		} catch (error) {
 			throw new Error('Failed to list pending inventory operations to sync: ' + error);
+		} finally {
+			await stmt.finalizeAsync();
 		}
 	}
 
 	async listPendingInventoryOperationDescriptionToSync(): Promise<InventoryOperationDescriptionLocalModel[]> {
+		const pending: InventoryOperationDescriptionLocalModel[] = [];
+
+		await this.dataSource.initialize();
+		const db: SQLiteDatabase = await this.dataSource.getClient();
+		const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
+
 		try {
-			await this.dataSource.initialize();
-			const db: SQLiteDatabase = await this.dataSource.getClient();
-			const pending: InventoryOperationDescriptionLocalModel[] = [];
-			const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCT_OPERATION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
 			const rows = stmt.executeSync<any>();
 			for (const row of rows) {
 				pending.push(row as InventoryOperationDescriptionLocalModel);
@@ -370,6 +385,8 @@ export class SQLiteInventoryOperationRepository implements InventoryOperationRep
 			return pending;
 		} catch (error) {
 			throw new Error('Failed to list pending inventory operation descriptions to sync: ' + error);
+		} finally {
+			stmt.finalizeAsync();
 		}
 	}
 
