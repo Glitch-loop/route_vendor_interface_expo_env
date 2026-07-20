@@ -4,6 +4,7 @@ export interface PostalCode {
   id: string;
   stablishment_name: string;
   postal_code: string;
+  municipality: string;
 }
 
 export interface IStoreRouteMap extends StoreDTO {

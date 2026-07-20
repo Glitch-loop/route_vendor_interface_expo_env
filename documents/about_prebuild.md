@@ -29,3 +29,6 @@ For running the prebuild
 ```
 npx expo run:android
 ```
+
+For making a prebuild cleaning the current prebuild folder (android)
+prebuild --platform android --clean
