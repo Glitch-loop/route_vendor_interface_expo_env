@@ -1,6 +1,6 @@
 // Libraries
 import React, { useState } from 'react';
-import { View, Pressable, Text, ScrollView } from 'react-native';
+import { View, Pressable, Text, ScrollView, TextInput } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 import tw from 'twrnc';
 
@@ -53,7 +53,11 @@ const SearchBarWithSuggestions = ({
     criteriaForValidQuery, // Fucntion with the criteria to determine if the item accomplishes the search query.
     criteriaForSelectedItems, // Function with the criteria to determine if the item is already selected (to avoid showing it in the suggestion list).
     itemPresentation,
-    // inputRef
+    onSubmitEditing,
+    returnKeyType,
+    blurOnSubmit,
+    placeholder,
+    inputRef,
   }:{
     catalog:any[],
     selectedCatalog: any[],
@@ -63,7 +67,11 @@ const SearchBarWithSuggestions = ({
     criteriaForValidQuery: (query: any, item: any) => boolean,
     criteriaForSelectedItems: (item: any, selectedItems: any[]) => boolean,
     itemPresentation?: (item: any) => React.ReactNode,
-    // inputRef?: (ref: TextInput | null) => void,
+    onSubmitEditing?: () => void,
+    returnKeyType?: 'done' | 'next' | 'go' | 'search' | 'send',
+    blurOnSubmit?: boolean,
+    placeholder?: string,
+    inputRef?: (ref: TextInput | null) => void,
   }) => {
   // Importing redux state
 
@@ -121,17 +129,25 @@ const SearchBarWithSuggestions = ({
     setFilteredData([]);
   };
 
+  const handleOnSubmitEditing = () => {
+    onSubmitEditing?.();
+  };
+
   return (
     <View style={tw`h-16 w-11/12 flex flex-col`}>
       <View style={tw`h-full w-full`}>
         <Provider>
           <Searchbar
+            ref={(ref) => inputRef?.(ref as TextInput | null)}
             clearIcon={() => {return '';}}
             icon={() => <MaterialIcons name="search" size={24} color="gray" />}
             style={tw`h-full border border-solid text-xl`}
-            placeholder="Search"
+            placeholder={placeholder ?? 'Search'}
             onChangeText={onChangeSearch}
             value={searchQuery}
+            onSubmitEditing={handleOnSubmitEditing}
+            returnKeyType={returnKeyType ?? 'search'}
+            blurOnSubmit={blurOnSubmit ?? true}
           />
         </Provider>
       </View>

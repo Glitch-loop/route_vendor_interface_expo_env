@@ -130,6 +130,7 @@ export default function CreateNewClientLayout() {
   const streetInputRef = useRef<TextInput | null>(null);
   const crossStreetInputRef = useRef<TextInput | null>(null);
   const extNumberInputRef = useRef<TextInput | null>(null);
+  const colonySearchInputRef = useRef<TextInput | null>(null);
   const colonyInputRef = useRef<TextInput | null>(null);
   const postalCodeInputRef = useRef<TextInput | null>(null);
   const addressReferenceInputRef = useRef<TextInput | null>(null);
@@ -434,7 +435,7 @@ export default function CreateNewClientLayout() {
               onChangeText={(text) => handleFormChange('ext_number', text)}
               returnKeyType='next'
               blurOnSubmit={false}
-              onSubmitEditing={() => colonyInputRef.current?.focus()}
+              onSubmitEditing={() => colonySearchInputRef.current?.focus()}
               style={tw`mt-2 border border-gray-300 rounded-md px-3 py-2`} />
           </View>
 
@@ -450,6 +451,11 @@ export default function CreateNewClientLayout() {
                   criteriaForValidQuery={validatorCriteria}
                   criteriaForSelectedItems={criteriaForSelectedItems}
                   itemPresentation={ItemSearchBar}
+                  inputRef={(ref) => { colonySearchInputRef.current = ref; }}
+                  returnKeyType='next'
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => colonyInputRef.current?.focus()}
+                  placeholder='Buscar colonia'
               />
           </View>
           {/* colony */}
