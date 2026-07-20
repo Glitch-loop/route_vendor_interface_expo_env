@@ -53,14 +53,15 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
     try {
       await this.dataSource.initialize();
       const db = await this.dataSource.getClient();
-      
-      const createTablePromises:any[] = tablesToCreate
-      .map((queryToCreateTable:string) => {
-        // console.log(queryToCreateTable) // Database creation
-        return db.runAsync(queryToCreateTable);
-      });
 
-      await Promise.all(createTablePromises);
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        const createTablePromises:any[] = tablesToCreate
+        .map((queryToCreateTable:string) => {
+          // console.log(queryToCreateTable) // Database creation
+          return tx.runAsync(queryToCreateTable);
+        });
+        await Promise.all(createTablePromises);
+      });
     } catch (error) {
         throw new Error('Failed to create embedded database tables: ' + error);
     }
@@ -83,16 +84,19 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
       EMBEDDED_TABLES.SYNC_QUEUE,
       EMBEDDED_TABLES.SYNC_HISTORIC,
     ];
+    
     try {
       await this.dataSource.initialize();
       const db = await this.dataSource.getClient();
       
-      const dropTablePromises:any[] = tablesToDelete
-      .map((tableName:string) => {
-          return db.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
-      });
 
-      await Promise.all(dropTablePromises);
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        const dropTablePromises:any[] = tablesToDelete
+        .map((tableName:string) => {
+            return tx.runAsync(`DROP TABLE IF EXISTS ${tableName};`);
+        });
+        await Promise.all(dropTablePromises);
+      });
 
     } catch(error) {
       throw new Error('Failed to drop embedded database tables.');
@@ -122,13 +126,15 @@ export class SQLiteDatabaseService implements LocalDatabaseService {
 
     try {
       await this.dataSource.initialize();
-      const db = await this.dataSource.getClient();
+      const db = this.dataSource.getClient();
 
-      const cleanTablePromises:any[] = tablesToDelete.map((tableName:string) => {
-        if (!excludeTableSet.has(tableName)) return db.runAsync(`DELETE FROM ${tableName};`);
+      await db.withExclusiveTransactionAsync(async (tx) => { 
+        const cleanTablePromises:any[] = tablesToDelete.map((tableName:string) => {
+          if (!excludeTableSet.has(tableName)) return tx.runAsync(`DELETE FROM ${tableName};`);
+        });
+  
+        await Promise.all(cleanTablePromises);
       });
-
-      await Promise.all(cleanTablePromises);
     } catch (error) {
       throw new Error('Failed to clean embedded database tables: ' + error);
     }
