@@ -21,161 +21,174 @@ import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
 
 @injectable()
 export class SQLiteShiftOrganizationRepository implements ShiftOrganizationRepository, SyncWorkdayInformationRepository {
-    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+  constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
-    async insertWorkDay(workDay: WorkDayInformation): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.runAsync(`
-                INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (
-                    id_work_day,
-                    start_date,
-                    finish_date,
-                    start_petty_cash,
-                    final_petty_cash,
-                    id_route,
-                    route_name,
-                    description,
-                    route_status,
-                    id_day,
-                    id_user,
-                    id_route_day
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            `, [
-                workDay.id_work_day,
-                workDay.start_date.toISOString(),
-                workDay.finish_date ? workDay.finish_date.toISOString() : null,
-                workDay.start_petty_cash,
-                workDay.final_petty_cash,
-                workDay.id_route,
-                workDay.route_name,
-                workDay.description,
-                workDay.route_status,
-                workDay.id_day,
-                workDay.id_user,
-                workDay.id_route_day
-            ]);
-        } catch (error) {
-            throw new Error('Failed to insert work day: ' + error);
-        }
+  async insertWorkDay(workDay: WorkDayInformation): Promise<void> {
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+      
+      await db.withExclusiveTransactionAsync(async (tx) => { 
+        await tx.runAsync(`
+          INSERT INTO ${EMBEDDED_TABLES.ROUTE_DAY} (
+              id_work_day,
+              start_date,
+              finish_date,
+              start_petty_cash,
+              final_petty_cash,
+              id_route,
+              route_name,
+              description,
+              route_status,
+              id_day,
+              id_user,
+              id_route_day
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        `,
+        [
+          workDay.id_work_day,
+          workDay.start_date.toISOString(),
+          workDay.finish_date ? workDay.finish_date.toISOString() : null,
+          workDay.start_petty_cash,
+          workDay.final_petty_cash,
+          workDay.id_route,
+          workDay.route_name,
+          workDay.description,
+          workDay.route_status,
+          workDay.id_day,
+          workDay.id_user,
+          workDay.id_route_day
+        ]);
+      });
+    } catch (error) {
+      throw new Error('Failed to insert work day: ' + error);
     }
+  }
 
-    async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationLocalModel[]> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const pending: WorkDayInformationLocalModel[] = [];
-            const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
-            const rows = stmt.executeSync<any>();
-            for (const row of rows) {
-                pending.push(row as WorkDayInformationLocalModel);
-            }
+  async listPendingWorkdayInformationToSync(): Promise<WorkDayInformationLocalModel[]> {
+    const pending: WorkDayInformationLocalModel[] = [];
 
-            return pending;
-        } catch (error) {
-            throw new Error('Failed to list pending workday information to sync: ' + error);
-        }
-    }
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
 
-    async markWorkdayInformationAsSynced(ids: string[]): Promise<void> {
-        if (!ids || ids.length === 0) return;
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                const placeholders = ids.map(() => '?').join(',');
-                console.log(`UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`)
-                await tx.runAsync(
-                    `UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`,
-                    ids
-                );
-            });
-        } catch (error) {
-            throw new Error('Failed to mark workday information as synced: ' + error);
-        }
-    }
+      const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE is_synced = 0 OR is_deleted = 1;`);
+      const rows = stmt.executeSync<any>();
+      
+      for (const row of rows) {
+        pending.push(row as WorkDayInformationLocalModel);
+      }
 
-    async deleteWorkDay(workDay: WorkDayInformation): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.runAsync(
-                `DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE id_work_day = ?;`,
-                [workDay.id_work_day]
-            );
-        } catch (error) {
-            throw new Error('Failed to delete work day: ' + error);
-        }
+      return pending;
+    } catch (error) {
+      throw new Error('Failed to list pending workday information to sync: ' + error);
     }
-    
-    async updateWorkDay(workDay: WorkDayInformation): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            db.runSync(`
-                UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET
-                    start_date = ?,
-                    finish_date = ?,
-                    start_petty_cash = ?,
-                    final_petty_cash = ?,
-                    id_route = ?,
-                    route_name = ?,
-                    description = ?,
-                    route_status = ?,
-                    id_day = ?,
-                    id_route_day = ?,
-                    is_synced = ?,
-                    updated_at = ?     
-                WHERE id_work_day = ?;
-            `, [
-                workDay.start_date.toISOString(),
-                workDay.finish_date ? workDay.finish_date.toISOString() : null,
-                workDay.start_petty_cash,
-                workDay.final_petty_cash,
-                workDay.id_route,
-                workDay.route_name,
-                workDay.description,
-                workDay.route_status,
-                workDay.id_day,
-                workDay.id_route_day,
-                0, // Mark as not synced
-                new Date().toISOString(),
-                workDay.id_work_day
-            ]);
-        } catch (error) {
-            throw new Error('Failed to update work day: ' + error);
-        }
-    }
+  }
 
-    async listWorkDays(): Promise<WorkDayInformation[]> {
-        const workDays: WorkDayInformation[] = [];
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const result = db.getAllSync<any>(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
-            
-            for (const row of result) {
-                workDays.push(new WorkDayInformation(
-                    row.id_work_day,
-                    new Date(row.start_date),
-                    row.finish_date ? new Date(row.finish_date) : null,
-                    row.start_petty_cash,
-                    row.final_petty_cash,
-                    row.id_route,
-                    row.route_name,
-                    row.description,
-                    row.route_status,
-                    row.id_day,
-                    row.id_user,
-                    row.id_route_day
-                ));
-            }
-            
-            return workDays;
-        } catch (error) {
-            throw new Error('Failed to list work days: ' + error);
-        }
+  async markWorkdayInformationAsSynced(ids: string[]): Promise<void> {
+    if (!ids || ids.length === 0) return;
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        const placeholders = ids.map(() => '?').join(',');
+        await tx.runAsync(
+          `UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET is_synced = 1 WHERE id_work_day IN (${placeholders});`,
+          ids
+        );
+      });
+    } catch (error) {
+      throw new Error('Failed to mark workday information as synced: ' + error);
     }
+  }
+
+  async deleteWorkDay(workDay: WorkDayInformation): Promise<void> {
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+      await db.withExclusiveTransactionAsync(async (tx) => { 
+        await tx.runAsync(
+          `DELETE FROM ${EMBEDDED_TABLES.ROUTE_DAY} WHERE id_work_day = ?;`,
+          [workDay.id_work_day]
+        );
+      });
+    } catch (error) {
+      throw new Error('Failed to delete work day: ' + error);
+    }
+  }
+  
+  async updateWorkDay(workDay: WorkDayInformation): Promise<void> {
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+
+      await db.withExclusiveTransactionAsync(async (tx) => { 
+        await tx.runSync(`
+          UPDATE ${EMBEDDED_TABLES.ROUTE_DAY} SET
+              start_date = ?,
+              finish_date = ?,
+              start_petty_cash = ?,
+              final_petty_cash = ?,
+              id_route = ?,
+              route_name = ?,
+              description = ?,
+              route_status = ?,
+              id_day = ?,
+              id_route_day = ?,
+              is_synced = ?,
+              updated_at = ?     
+          WHERE id_work_day = ?;
+        `,
+        [
+          workDay.start_date.toISOString(),
+          workDay.finish_date ? workDay.finish_date.toISOString() : null,
+          workDay.start_petty_cash,
+          workDay.final_petty_cash,
+          workDay.id_route,
+          workDay.route_name,
+          workDay.description,
+          workDay.route_status,
+          workDay.id_day,
+          workDay.id_route_day,
+          0, // Mark as not synced
+          new Date().toISOString(),
+          workDay.id_work_day
+        ]);
+      });
+    } catch (error) {
+      throw new Error('Failed to update work day: ' + error);
+    }
+  }
+
+  async listWorkDays(): Promise<WorkDayInformation[]> {
+    const workDays: WorkDayInformation[] = [];
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+      
+      const result = db.getAllSync<any>(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_DAY};`);
+      
+      for (const row of result) {
+        workDays.push(new WorkDayInformation(
+            row.id_work_day,
+            new Date(row.start_date),
+            row.finish_date ? new Date(row.finish_date) : null,
+            row.start_petty_cash,
+            row.final_petty_cash,
+            row.id_route,
+            row.route_name,
+            row.description,
+            row.route_status,
+            row.id_day,
+            row.id_user,
+            row.id_route_day
+        ));
+      }  
+      return workDays;
+    } catch (error) {
+      throw new Error('Failed to list work days: ' + error);
+    }
+  }
 }
 

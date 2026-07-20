@@ -1,4 +1,3 @@
-
 // Libraries
 import { injectable, inject } from 'tsyringe';
 import { SQLiteDatabase } from 'expo-sqlite';
@@ -12,105 +11,105 @@ import { ProductInventory } from '@/src/core/entities/ProductInventory';
 // DataSources
 import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
 
+// DI container
+import { TOKENS } from '@/src/infrastructure/di/tokens';
+
 // Utils
 import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
-import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
 export class SQLiteProductInventoryRepository implements ProductInventoryRepository {
-    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+  constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
 
-    private printProductInventory(products: ProductInventory[]) {
-        products.forEach((product) => {
-            console.log(`id_product_inventory: ${product.get_id_product_inventory()}, stock: ${product.get_stock_of_product()}`);
-        });
-    }
-
-    async createInventory(products: ProductInventory[]): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                for (const product of products) {
-                    await tx.runAsync(`
-                        INSERT INTO ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
-                            id_product_inventory,
-                            stock,
-                            id_product
-                        ) VALUES (?, ?, ?);
-                    `, [
-                        product.get_id_product_inventory(),
-                        product.get_stock_of_product(),
-                        product.get_id_product()
-                    ]);
-                }
-            });
-        } catch (error) {
-            throw new Error('Failed to create inventory.' + error);
+  async createInventory(products: ProductInventory[]): Promise<void> {
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+      
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        for (const product of products) {
+          await tx.runAsync(`
+              INSERT INTO ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} (
+                  id_product_inventory,
+                  stock,
+                  id_product
+              ) VALUES (?, ?, ?);
+          `, [
+            product.get_id_product_inventory(),
+            product.get_stock_of_product(),
+            product.get_id_product()
+          ]);
         }
+      });
+    } catch (error) {
+      throw new Error('Failed to create inventory.' + error);
     }
+  }
 
-    async updateInventory(products: ProductInventory[]): Promise<void> {
-        try {
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                for (const product of products) {
-                    await tx.runAsync(`
-                        UPDATE ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} SET
-                            stock = ?,
-                            id_product = ?
-                        WHERE id_product_inventory = ?;
-                    `, [
-                        product.get_stock_of_product(),
-                        product.get_id_product(),
-                        product.get_id_product_inventory()
-                    ]);
-                }
-            });
-        } catch (error) {
-            throw new Error('Failed to update inventory.' + error);
+  async updateInventory(products: ProductInventory[]): Promise<void> {
+    try {
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        for (const product of products) {
+          await tx.runAsync(`
+              UPDATE ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} SET
+                  stock = ?,
+                  id_product = ?
+              WHERE id_product_inventory = ?;
+          `, [
+              product.get_stock_of_product(),
+              product.get_id_product(),
+              product.get_id_product_inventory()
+          ]);
         }
+      });
+    } catch (error) {
+      throw new Error('Failed to update inventory.' + error);
     }
+  }
 
-    async retrieveInventory(): Promise<ProductInventory[]> {
-        const inventory: ProductInventory[] = [];
-        try {
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
-            const result = statement.executeSync<any>();
-            const rows = result.getAllSync();
+  async retrieveInventory(): Promise<ProductInventory[]> {
+    const inventory: ProductInventory[] = [];
+    try {
+        const db: SQLiteDatabase = await this.dataSource.getClient();
+        const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY};`);
+        const result = statement.executeSync<any>();
+        const rows = result.getAllSync();
 
-            for (const row of rows) {
-                inventory.push(
-                    new ProductInventory(
-                        row.id_product_inventory,
-                        row.stock,
-                        row.id_product,
-                    )
-                );
-            }
-
-            await statement.finalizeAsync();
-            return inventory;
-        } catch (error) {
-            throw new Error('Failed to retrieve inventory.' + error);
+        for (const row of rows) {
+          inventory.push(
+            new ProductInventory(
+              row.id_product_inventory,
+              row.stock,
+              row.id_product,
+            )
+          );
         }
-    }
 
-    async deleteInventory(products: ProductInventory[]): Promise<void> {
-        try { 
-            await this.dataSource.initialize();
-            const db: SQLiteDatabase = await this.dataSource.getClient();
-            await db.withExclusiveTransactionAsync(async (tx) => {
-                for (const product of products) {
-                    await tx.runAsync(`
-                        DELETE FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} WHERE id_product_inventory = ?;
-                    `, [product['id_product_inventory']]);
-                }
-            });
-        } catch (error) {
-            throw new Error('Failed to delete inventory.' + error);
-        }
+      await statement.finalizeAsync();
+
+      return inventory;
+    } catch (error) {
+      throw new Error('Failed to retrieve inventory.' + error);
     }
+  }
+
+  async deleteInventory(products: ProductInventory[]): Promise<void> {
+    try { 
+      await this.dataSource.initialize();
+      const db: SQLiteDatabase = await this.dataSource.getClient();
+    
+      await db.withExclusiveTransactionAsync(async (tx) => {
+        for (const product of products) {
+          await tx.runAsync(`
+          DELETE FROM ${EMBEDDED_TABLES.PRODUCTS_INVENTORY} WHERE id_product_inventory = ?;
+          `, [product['id_product_inventory']]);
+        }
+      });
+    } catch (error) {
+      throw new Error('Failed to delete inventory.' + error);
+    }
+  }
 }
