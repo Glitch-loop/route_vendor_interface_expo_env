@@ -3,13 +3,12 @@
 import "./global.css"
 
 // Libraries
-import React, { useEffect } from "react";
+import React from "react";
 import { Slot } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 
 // Redux
 import { Provider } from "react-redux";
-import { useRouter } from "expo-router";
 import store from "@/redux/store";
 
 // UI Components

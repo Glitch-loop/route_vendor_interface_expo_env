@@ -161,12 +161,12 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
 
   private async recursiveListStore(next_item: string|undefined): Promise<LocationStoreResponseInterface[]> {
     const listedStores:LocationStoreResponseInterface[] = [];
-    let urlToRequest:string = `/clients/locations?status_location=[1,-1]&limit=500&next_item=${next_item}`
+    let urlToRequest:string = `/clients/locations?status_location=1,-1&limit=500&next_item=${next_item}`
     try {
       if(next_item === undefined) {
-        urlToRequest = `/clients/locations?status_location=[1,-1]&limit=500`
+        urlToRequest = `/clients/locations?status_location=1,-1&limit=500`
       } else {
-        urlToRequest = `/clients/locations?status_location=[1,-1]&limit=500&next_item=${next_item}`
+        urlToRequest = `/clients/locations?status_location=1,-1&limit=500&next_item=${next_item}`
       }
 
       const response = await this.dataSource.get<LocationStoreResponseInterface[]>(

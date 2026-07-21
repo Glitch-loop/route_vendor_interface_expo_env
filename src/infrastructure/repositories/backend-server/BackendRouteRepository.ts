@@ -75,7 +75,6 @@ export class BackendRouteRepository implements RouteRepository {
         routesId.add(id_route)
       });
 
-
       /*
         Note (06-25-26)
         Endpoint doesn't provide a way to retrieve all the routes.
