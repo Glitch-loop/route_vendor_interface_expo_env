@@ -52,7 +52,8 @@ export class RegisterClientProspectUseCase {
         storePostalCode: string,
         storeAddressReference: string,
         idWorkDay: string,
-        useSession: UserDTO
+        useSession: UserDTO,
+        coords: Coordinates|null
     ): Promise<DayOperationDTO> {
         const { id_vendor} = useSession;
 
@@ -62,10 +63,24 @@ export class RegisterClientProspectUseCase {
         const operationDayAggregate = new OperationDayAggregate(dayOperations);
 
         // Register new client
-        const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
-        if (coordinates === null) throw new Error('Location cannot be obtained. Client registration requires location data.');
+        let latitude:string|undefined = undefined;
+        let longitude:string|undefined = undefined;
 
-        const { latitude, longitude } = coordinates;
+        if (coords === null) {
+            const coordinates:Coordinates|null = await this.locationService.getCurrentLocation();
+            if (coordinates == null) {
+                if (coordinates === null) throw new Error('Location cannot be obtained. Client registration requires location data.');
+            } else {
+            latitude = coordinates.latitude.toString();
+            longitude = coordinates.longitude.toString();
+            }
+        } else {
+            latitude = coords.latitude.toString();
+            longitude = coords.longitude.toString();
+        }
+
+
+
 
         storeAggregate.registerNewClient(
             this.idService.generateID(),
@@ -77,8 +92,8 @@ export class RegisterClientProspectUseCase {
             cleanStringToStoreInDatabase(storeName),
             '',
             '',
-            latitude.toString(),
-            longitude.toString(),
+            latitude!.toString(),
+            longitude!.toString(),
             id_vendor,
             '',
             storeLocationTypeId,
@@ -97,8 +112,8 @@ export class RegisterClientProspectUseCase {
             id_store,
             idWorkDay,
             new Date(this.dateService.getCurrentTimestamp()),
-            latitude.toString(),
-            longitude.toString(),
+            latitude!.toString(),
+            longitude!.toString(),
         );
 
         operationDayAggregate.registerVisitToClient(
@@ -107,8 +122,8 @@ export class RegisterClientProspectUseCase {
             idWorkDay,
             new Date(this.dateService.getCurrentTimestamp()),
             registerProspectOfClientDependent,
-            latitude.toString(),
-            longitude.toString(),
+            latitude!.toString(),
+            longitude!.toString(),
         );
 
         const newDayOperations: DayOperation[]|null = operationDayAggregate.getNewDayOperations();

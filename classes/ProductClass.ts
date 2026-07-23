@@ -96,7 +96,7 @@ export default class ProductClass {
       base price.
     */
     
-    const { product_price } = this.product;
+    const { product_price, product_name } = this.product;
     for (const price of product_price) {
       if ((price.id_client === null || price.id_client === undefined)
       && (price.id_location === null || price.id_location === undefined)
@@ -105,6 +105,6 @@ export default class ProductClass {
       }
     }
 
-    throw new Error("Product doesn't have base price.")
+    throw new Error(`Product (${product_name}) doesn't have base price.`)
   }
 }

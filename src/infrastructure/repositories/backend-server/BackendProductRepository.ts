@@ -64,7 +64,7 @@ export class BackendProductRepository implements ProductRepository {
   async retrieveAllProducts(): Promise<Product[]> {
     
     try {
-      const allProducts: ProductResponseInterface[] = await this.recursiveListStore(undefined);      
+      const allProducts: ProductResponseInterface[] = await this.recursiveListProducts(undefined);      
       /*
         Note (06-25-26):
 
@@ -87,7 +87,7 @@ export class BackendProductRepository implements ProductRepository {
     return;
   }
 
-  private async recursiveListStore(next_item: string|undefined): Promise<ProductResponseInterface[]> {
+  private async recursiveListProducts(next_item: string|undefined): Promise<ProductResponseInterface[]> {
     const listedStores:ProductResponseInterface[] = [];
     let urlToRequest:string = `/products?limit=100&next_item=${next_item}`
     try {
@@ -109,7 +109,7 @@ export class BackendProductRepository implements ProductRepository {
           return response.data;
         } else {
           return listedStores.concat(
-            await this.recursiveListStore(response.meta.next_item)
+            await this.recursiveListProducts(response.meta.next_item)
           )
 
         }

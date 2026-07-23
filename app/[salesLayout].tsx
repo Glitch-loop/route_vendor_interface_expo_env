@@ -397,7 +397,7 @@ const salesLayout = () => {
         if (position !== null) {
           setUserCoordinates(new Coordinates(position.coords.latitude, position.coords.longitude));
         }
-      })
+      });
   }
 
   const setUpHistoricalData = async () => {

@@ -50,6 +50,7 @@ import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap,
 // Hooks
 import useNetworkState from '@/hooks/useNetworkState';
 import { capitalizeFirstLetter } from '@/utils/generalFunctions';
+import { Coordinates } from '@/src/core/object-values/Coordinates';
 
 interface NewClientFormData {
   id_location_type: string;
@@ -124,6 +125,9 @@ export default function CreateNewClientLayout() {
     postal_code: '',
     address_reference: ''
   });
+  const [userCoordinates, setUserCoordinates] = useState<Coordinates|null>(null)
+
+  // Refs
   const [isLocationTypeMenuVisible, setIsLocationTypeMenuVisible] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<PostalCode[]>([]);  
   const storeNameInputRef = useRef<TextInput | null>(null);
@@ -138,11 +142,14 @@ export default function CreateNewClientLayout() {
   const selectedLocationType = LOCATION_TYPES_CONSTANTS[formData.id_location_type];
   const fullStoreName = `${selectedLocationType?.location_type_name ?? ''} ${formData.store_name.trim()}`.trim();
 
+
   // Custom hooks
   const { refreshNetworkState } = useNetworkState();
+  const { getMostAccurateCurrentUserLocation } = useCurrentLocation();
   
   useEffect(() => {
     setUpCreateNewClientLayout();
+    getUsersPosition();
   }, [storesRedux, dayOperationsRedux]);
 
   // Auxiliar functions
@@ -177,19 +184,13 @@ export default function CreateNewClientLayout() {
     }
   }
 
-  const determineUserLocation = async ():Promise<LocationObjectCoords|undefined> => {
-    const location: LocationObject|null = await userLocationHook.getCurrentUserLocation();
-    let coordinates: LocationObjectCoords|undefined = undefined;
-
-    if (location !== null) {
-      const { coords } = location;
-      coordinates = coords;
-      setUserLocation(coordinates);
-    } else {
-      setUserLocation(undefined);
-    }
-
-    return coordinates
+  const getUsersPosition = () => {
+    getMostAccurateCurrentUserLocation()
+      .then((position) => {
+        if (position !== null) {
+          setUserCoordinates(new Coordinates(position.coords.latitude, position.coords.longitude));
+        }
+      })
   }
 
   //Handlers
@@ -287,7 +288,8 @@ export default function CreateNewClientLayout() {
         postal_code,
         address_reference,
         workDayReduxState.id_route_day,
-        { ...userSessionReduxState }
+        { ...userSessionReduxState },
+        userCoordinates
       )
 
       dispatch(setDayOperations(await retrieveDayOperationQuery.execute()));
