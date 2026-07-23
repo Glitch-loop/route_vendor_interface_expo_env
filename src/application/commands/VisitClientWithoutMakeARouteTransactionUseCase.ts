@@ -38,6 +38,7 @@ export default class VisitClientWithoutMakeARouteTransactionUseCase {
     id_store: string,
     id_day_operation_dependent: string,
     id_route_day: string,
+    coords: Coordinates|null
   ): Promise<DayOperationDTO|null> {
     const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
@@ -45,13 +46,21 @@ export default class VisitClientWithoutMakeARouteTransactionUseCase {
     let latitude: string | undefined = undefined;
     let longitude: string | undefined = undefined;
 
-    const coordinates: Coordinates | null = await this.locationService.getCurrentLocation();
-
-    if(coordinates !== null) {
-      latitude = coordinates.latitude.toString();
-      longitude = coordinates.longitude.toString();
+    // Retrieving cords
+    if (coords === null) {
+      const coordinates:Coordinates|null = await this.locationService.getCurrentLocation();
+      if (coordinates == null) {
+        latitude = undefined;
+        longitude = undefined;
+      } else {
+        latitude = coordinates.latitude.toString();
+        longitude = coordinates.longitude.toString();
+      }
+    } else {
+      latitude = coords.latitude.toString();
+      longitude = coords.longitude.toString();
     }
-
+    
     /*
       Note (06-22-26):
       

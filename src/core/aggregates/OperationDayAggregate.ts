@@ -57,7 +57,7 @@ export class OperationDayAggregate {
     this.insertOperationDayNextToCurrentOperation(newDayOperation);
   }
   
-  registerClientAttentionOutOfRoute(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date): void {
+  registerClientAttentionOutOfRoute(idDayOperation: string, idClient: string, idRouteDay: string, createdAt: Date, latitude?: string, longitude?: string): void {
     /*
       Business rule:
       About "Client attention out-of-route" operation:
@@ -72,8 +72,8 @@ export class OperationDayAggregate {
       DAY_OPERATIONS.attention_out_of_route,
       createdAt,
       null,
-      undefined,
-      undefined
+      latitude,
+      longitude
     );
 
     this.verifyIdItemIsNotBeingRepeatedForClientOperations(idClient);

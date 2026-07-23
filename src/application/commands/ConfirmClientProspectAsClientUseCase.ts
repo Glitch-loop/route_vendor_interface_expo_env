@@ -5,28 +5,33 @@ import { injectable, inject } from 'tsyringe'
 import { OperationDayAggregate } from '@/src/core/aggregates/OperationDayAggregate';
 
 // Entitties
+import { Store } from '@/src/core/entities/Store';
 import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // Interfaces
-import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
 import { IDService } from '@/src/core/interfaces/IDService';
 import { DateService } from '@/src/core/interfaces/DateService';
+import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
+import { LocationService } from '@/src/core/interfaces/LocationService';
+import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
 
+// Object values
+import { Coordinates } from '@/src/core/object-values/Coordinates';
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
+
+// Aggregates
+import { StoreClientAggregate } from '@/src/core/aggregates/StoreClientAggregate';
+
+// Enums
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 // DTOs & Mapper
 import { MapperDTO } from '@/src/application/mappers/MapperDTO';
+import RouteTransactionDescriptionDTO from '@/src/application/dto/RouteTransactionDescriptionDTO';
 
-// Utils
+// DI container
 import { TOKENS } from '@/src/infrastructure/di/tokens';
-import DayOperationDTO from '../dto/DayOperationDTO';
-import { LocationService } from '@/src/core/interfaces/LocationService';
-import { Coordinates } from '@/src/core/object-values/Coordinates';
-import { Store } from '@/src/core/entities/Store';
-import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
-import { StoreClientAggregate } from '@/src/core/aggregates/StoreClientAggregate';
-import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
-import RouteTransactionDescriptionDTO from '../dto/RouteTransactionDescriptionDTO';
+
 
 @injectable()
 export default class ConfirmClientProspectAsClientUseCase {
@@ -44,7 +49,12 @@ export default class ConfirmClientProspectAsClientUseCase {
       private readonly mapperDTO: MapperDTO,
   ) { }
 
-  async executeUseCase(id_store: string, id_transaction: string, sellingRouteTransactionDescription: RouteTransactionDescription[]): Promise<boolean|null> {
+  async executeUseCase(
+    id_store: string, 
+    id_transaction: string, 
+    sellingRouteTransactionDescription: RouteTransactionDescription[],
+    coords: Coordinates|null
+  ): Promise<boolean|null> {
     
     for (const selling of sellingRouteTransactionDescription) {
       if (selling.id_transaction_operation_type !== DAY_OPERATIONS.sales) 
@@ -60,20 +70,26 @@ export default class ConfirmClientProspectAsClientUseCase {
     
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
 
-    const coordinates:Coordinates|null = await this.locationService.getCurrentLocation()
     const sellingToClient: DayOperation[] = dayOperations.filter((dayOperation) => {
       return dayOperation.id_item === id_transaction && dayOperation.operation_type === DAY_OPERATIONS.route_transaction;
     });
     const createNewClientDayOperation: DayOperation[] = dayOperations.filter((dayOperation) => {
       return dayOperation.id_item === id_store && dayOperation.operation_type === DAY_OPERATIONS.new_client_registration;
     });
-
-    if (coordinates == null) {
-      latitude = undefined;
-      longitude = undefined;
+    
+    // Retrieving cords
+    if (coords === null) {
+      const coordinates:Coordinates|null = await this.locationService.getCurrentLocation();
+      if (coordinates == null) {
+        latitude = undefined;
+        longitude = undefined;
+      } else {
+        latitude = coordinates.latitude.toString();
+        longitude = coordinates.longitude.toString();
+      }
     } else {
-      latitude = coordinates.latitude.toString();
-      longitude = coordinates.longitude.toString();
+      latitude = coords.latitude.toString();
+      longitude = coords.longitude.toString();
     }
 
     /*
@@ -131,8 +147,13 @@ export default class ConfirmClientProspectAsClientUseCase {
     return null;
   }
 
-  async execute(id_store: string, id_transaction: string, sellingRouteTransactionDescription: RouteTransactionDescriptionDTO[]): Promise<boolean|null> {
-    return await this.executeUseCase(id_store, id_transaction, sellingRouteTransactionDescription.map((transactionDescription) => this.mapperDTO.toEntity(transactionDescription)));
+  async execute(id_store: string, id_transaction: string, sellingRouteTransactionDescription: RouteTransactionDescriptionDTO[], coords: Coordinates|null): Promise<boolean|null> {
+    return await this.executeUseCase(
+      id_store, 
+      id_transaction, 
+      sellingRouteTransactionDescription.map((transactionDescription) => this.mapperDTO.toEntity(transactionDescription)),
+      coords
+    );
   }
 }
 

@@ -62,6 +62,7 @@ export default class RegisterNewRouteTransaction {
     id_store: string,
     id_day_operation_dependent: string,
     created_by: string,
+    coords: Coordinates|null
   ):Promise<RouteTransaction> {
     const { id_work_day, id_route_day } = workDayInformation;
     
@@ -78,13 +79,18 @@ export default class RegisterNewRouteTransaction {
 
     if (status_store === 0) throw new Error("The store where the route transaction is being registered is inactive.");
 
-    const retrieveCoordinates: Coordinates | null = await this.locationService.getCurrentLocation();
-
-    if (retrieveCoordinates !== null) {
-      latitude = retrieveCoordinates.latitude.toString();
-      longitude = retrieveCoordinates.longitude.toString();
+    
+    // Retrieving cords
+    if (coords === null) {
+      const retrieveCoordinates: Coordinates | null = await this.locationService.getCurrentLocation();
+      if (retrieveCoordinates !== null) {
+        latitude = retrieveCoordinates.latitude.toString();
+        longitude = retrieveCoordinates.longitude.toString();
+      }
+    } else {
+      latitude = coords.latitude.toString();
+      longitude = coords.longitude.toString();
     }
-
 
     const routeTransactionAggregate: RouteTransactionAggregate = new RouteTransactionAggregate(null);
     const productInventoryAggregate: ProductInventoryAggregate = new ProductInventoryAggregate(currentInventory);
@@ -180,7 +186,8 @@ export default class RegisterNewRouteTransaction {
       cashReceived: number,
       id_store: string,
       id_day_operation_dependent: string,
-      created_by: string
+      created_by: string,
+      coords: Coordinates|null
   ):Promise<RouteTransactionDTO> {
     const mapper = new MapperDTO();
     const routeTransactionDescriptions: RouteTransactionDescription[] = routeTransactionDescription
@@ -195,6 +202,7 @@ export default class RegisterNewRouteTransaction {
       id_store,
       id_day_operation_dependent,
       created_by,
+      coords
     );
 
     return mapper.toDTO(newRouteTransaction);

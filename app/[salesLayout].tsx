@@ -62,7 +62,8 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 import { BluetoothPrinterService } from '@/src/infrastructure/services/BluetoothPrinterService';
 
 // Hooks
-import useNetworkState from '@/hooks/useNetworkState';
+import useNetworkState from '@/hooks/useNetworkState'; 
+import useCurrentLocation from '@/hooks/useCurrentLocation';
 
 // Utils
 import { 
@@ -74,6 +75,7 @@ import {
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
+import { Coordinates } from '@/src/core/object-values/Coordinates';
 
 type typeSearchParams = {
   id_store_param: string;
@@ -148,7 +150,6 @@ function mergeProductToCommitFromDifferentContext(
   return [...mergedByProductInventory.values()];
 }
 
-
 function getPricesForStartedRouteTransaction(
   routeTransactionDescriptions: RouteTransactionDescriptionDTO[], 
   mapProductClass: Map<string, ProductClass>,
@@ -209,6 +210,7 @@ const salesLayout = () => {
   const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
   const [showYesNoVisitWithoutSelling, setShowYesNoVisitWithoutSelling] = useState<boolean>(false);
   const [historicRouteTransaction, setHistoricRouteTransactions] = useState<RouteTransactionDTO[]>([]);
+  const [userCoordinates, setUserCoordinates] = useState<Coordinates|null>(null)
 
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
@@ -218,27 +220,30 @@ const salesLayout = () => {
 
   // Custom hooks
   const { refreshNetworkState } = useNetworkState();
+  const { getMostAccurateCurrentUserLocation } = useCurrentLocation();
 
   /* States used in the logic of the layout. */
   const [startPaymentProcess, setStartPaymentProcess] = useState<boolean>(false);
   const [finishedSale, setFinishedSale] = useState<boolean>(false);
   const [resultSaleState, setResultSaleState] = useState<boolean>(true);
 
-// BackHandler now reads from refs (always latest)
-useEffect(() => {
-  const backAction = (): boolean => {
-    dispatch(setRouteTransactionDescription([
-      ...productDevolutionRef.current,
-      ...productRepositionRef.current,
-      ...productSampleRef.current,
-      ...productSaleRef.current
-    ]));
-    return false; // Allow default back behavior after saving
-  };
+  // BackHandler now reads from refs (always latest)
+  useEffect(() => {
+    const backAction = (): boolean => {
+      dispatch(setRouteTransactionDescription([
+        ...productDevolutionRef.current,
+        ...productRepositionRef.current,
+        ...productSampleRef.current,
+        ...productSaleRef.current
+      ]));
+      return false; // Allow default back behavior after saving
+    };
 
-  const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-  return () => backHandler.remove();
-}, []); // Empty deps is fine now - refs always have latest values
+    getUsersPosition();
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, []); // Empty deps is fine now - refs always have latest values
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -386,6 +391,15 @@ useEffect(() => {
     }
   }
 
+  const getUsersPosition = () => {
+    getMostAccurateCurrentUserLocation()
+      .then((position) => {
+        if (position !== null) {
+          setUserCoordinates(new Coordinates(position.coords.latitude, position.coords.longitude));
+        }
+      })
+  }
+
   const setUpHistoricalData = async () => {
     // Retrieving historical data
     if (id_store_param) {
@@ -475,7 +489,7 @@ useEffect(() => {
       const visitWithoutSelling = container.resolve<VisitClientWithoutMakeARouteTransactionUseCase>(VisitClientWithoutMakeARouteTransactionUseCase);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       
-      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_param, workDayInformation.id_route_day);
+      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_param, workDayInformation.id_route_day, userCoordinates);
       const newDayOperationsList = await retrieveDayOperationQuery.execute();
       
       dispatch(setDayOperations(newDayOperationsList));
@@ -526,7 +540,7 @@ useEffect(() => {
     try {
       let id_day_operation_dependent: string|null = null;
       if (is_selling_out_of_route === '1') {
-        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day);
+        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day, userCoordinates);
         if (visitedClientOutOfRoute !== null) {
           const { id_day_operation } = visitedClientOutOfRoute;
           id_day_operation_dependent = id_day_operation;
@@ -552,14 +566,15 @@ useEffect(() => {
         receivedCash,
         id_store_param,
         id_day_operation_dependent,
-        userSessionReduxState.id_vendor
+        userSessionReduxState.id_vendor,
+        userCoordinates
       );
       
       setNewRouteTransaction(newRouteTransaction);
       
       const { id_route_transaction } = newRouteTransaction;
 
-      const resultOfConfirmation = await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction, productSale);
+      const resultOfConfirmation = await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction, productSale, userCoordinates);
       if (resultOfConfirmation === true) {
         Toast.show({
           type: 'info',
