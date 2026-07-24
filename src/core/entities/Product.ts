@@ -14,8 +14,6 @@ export class Product {
     public readonly price: ProductPrice[],
     public readonly barcode: string | null,
   ) {
-    console.log(product_name)
-    console.log(price)
     this.basePrice = this.determineBasePrice();
   }
 
