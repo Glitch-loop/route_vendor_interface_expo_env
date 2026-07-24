@@ -314,14 +314,10 @@ const inventoryOperationLayout = () => {
       return;
     }
 
-    console.log("hasInternetConnection: ", hasInternetConnection)
     if (hasInternetConnection) {
       try {
-        console.log("Retrieveing from backend")
         availableProductsForInventoryOperation = await getProductOfCompany.execute();
-        console.log("inventory operation: ", availableProductsForInventoryOperation)
       } catch (error) {
-        console.log("Error: ", error)
         Toast.show({
           type: 'info',
           text1: 'No se pudo establecer comunicación con el servidor. Por lo tanto usar inforamción local.',

@@ -13,13 +13,13 @@ export class SQLiteDataSource {
   private initPromise: Promise<void> | null = null; // 👈 Guards against concurrent init calls
   
   constructor() {
-    console.log('SQLiteDataSource constructor called');
+    // console.log('SQLiteDataSource constructor called');
   }
   
   async initialize(): Promise<void> {
     if (!this.client) {
       try {
-        console.log("Initializing client")
+        // console.log("Initializing client")
         this.client = await SQLite.openDatabaseAsync('mydb.db');
       } catch(error) {
         throw new Error('Failed to make connection to SQLite database: ' + error);
@@ -68,7 +68,7 @@ export class SQLiteDataSource {
     if (this.client === undefined || this.client === null) {
       throw new Error('SQLiteDataSource not initialized. Call initialize() first.');
     }
-    console.log("retrieving SQLite client.")
+
     return this.client;
   }
 }

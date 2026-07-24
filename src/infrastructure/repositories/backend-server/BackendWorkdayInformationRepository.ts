@@ -22,13 +22,13 @@ export class BackendWorkdayInformationRepository implements SyncServerWorkdayInf
     try {
       const workdayToUpsert = informations[0];
       if(workdayToUpsert.finish_date === null && workdayToUpsert.final_petty_cash === null) {
-        console.log("Start day")
+        // console.log("Start day")
         await this.dataSource.post<WorkDayInformationServerModel, WorkDayInformationServerModel>(
           '/business-operation-route/work-days',
           workdayToUpsert
         );
       } else {
-        console.log("Finsih day")
+        // console.log("Finsih day")
         await this.dataSource.patch<WorkDayInformationServerModel, WorkDayInformationServerModel>(
           `/business-operation-route/work-days/${workdayToUpsert.id_work_day}`,
           workdayToUpsert

@@ -74,11 +74,10 @@ export class BackendUserRepository implements ServerUserRepository {
 				'/security/login',
 				body
 			);
-			console.log("access_token: ", access_token)
+			// console.log("access_token: ", access_token)
 			return access_token ? access_token : null;
 
 		} catch (error) {
-			console.log(error)
 			return null;
 		}
 	}

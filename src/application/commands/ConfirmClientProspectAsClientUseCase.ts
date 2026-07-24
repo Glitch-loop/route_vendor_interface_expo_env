@@ -133,7 +133,6 @@ export default class ConfirmClientProspectAsClientUseCase {
         );
 
         // Persist all changes
-        console.log("Client confirmed: ", storeAggregate.getStoreClient());
         await this.localStoreRepo.updateStore(storeAggregate.getStoreClient());
         const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
         await this.localDayOperationRepo.insertDayOperations(newListdayOperations);

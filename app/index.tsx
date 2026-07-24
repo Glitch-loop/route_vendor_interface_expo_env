@@ -99,9 +99,9 @@ export default function Index() {
 
   const startSession = async () => {
     const authenticationService = container.resolve(AuthenticationService);
-    console.log("Database initialization")
+    // console.log("Database initialization")
     await localDatabaseInitialization();
-    console.log("User session")
+    // console.log("User session")
     const userSession:UserDTO | null = await authenticationService.activeSession();
 
     if (userSession === null) {
