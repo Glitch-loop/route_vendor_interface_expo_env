@@ -192,7 +192,7 @@ const salesLayout = () => {
   // Redux context definitions
   const dispatch: AppDispatch = useDispatch();
   const productInventory      = useSelector((state: RootState) => state.productsInventory);
-  const availableProducts      = useSelector((state: RootState) => state.products);
+  const availableProducts     = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
   const stores                = useSelector((state: RootState) => state.stores);
   const userSessionReduxState = useSelector((state: RootState) => state.user);

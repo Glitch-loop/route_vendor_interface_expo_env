@@ -23,6 +23,10 @@ export function format_date_to_UI_format(date: Date | string) {
   return dayjs(date).format('DD-MM-YY HH:mm a');
 }
 
+export function format_date_to_UI_short_format(date: Date | string) {
+  return dayjs(date).format('DD-MM-YY');
+}
+
 export function current_day_name() {
   return dayjs().format('dddd');
 }

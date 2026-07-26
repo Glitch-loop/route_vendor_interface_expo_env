@@ -102,6 +102,7 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
       // const response = await this.dataSource.get<LocationStoreResponseInterface[]>(
       //   '/clients/locations'
       // );
+      console.log("List all stores")
       const listedStores:LocationStoreResponseInterface[] = await this.recursiveListStore(undefined);
       
       
@@ -159,32 +160,28 @@ export class BackendStoreRepository implements StoreRepository, SyncServerStoreR
     }
   }
 
-  private async recursiveListStore(next_item: string|undefined): Promise<LocationStoreResponseInterface[]> {
-    const listedStores:LocationStoreResponseInterface[] = [];
-    let urlToRequest:string = `/clients/locations?status_location=1,-1&limit=500&next_item=${next_item}`
+  private async recursiveListStore(initialNextItem?: string): Promise<LocationStoreResponseInterface[]> {
+    const allStores: LocationStoreResponseInterface[] = [];
+    let nextItem: string | undefined = initialNextItem;
+
     try {
-      if(next_item === undefined) {
-        urlToRequest = `/clients/locations?status_location=1,-1&limit=500`
-      } else {
-        urlToRequest = `/clients/locations?status_location=1,-1&limit=500&next_item=${next_item}`
-      }
+      do {
+        const query = nextItem ? `&next_item=${nextItem}` : '';
+        const urlToRequest = `/clients/locations?status_location=1,-1&limit=200${query}`;
 
-      const response = await this.dataSource.get<LocationStoreResponseInterface[]>(
-        urlToRequest
-      );
+        console.log("urlToSend: ", urlToRequest);
+        const response = await this.dataSource.get<LocationStoreResponseInterface[]>(urlToRequest);
 
-      if (response.meta === undefined) {
-        return response.data;
-      } else {
-        if (response.meta.has_next_page === false) {
-          return response.data;
-        } else {
-          return listedStores.concat(
-            await this.recursiveListStore(response.meta.next_item)
-          );
+        if (response.data && response.data.length > 0) {
+          allStores.push(...response.data);
         }
-      }
-      
+
+        // Update nextItem to continue loop, or set undefined to stop
+        nextItem = response.meta?.has_next_page ? response.meta.next_item : undefined;
+
+      } while (nextItem);
+
+      return allStores;
     } catch (error: any) {
       throw new Error(`Failed to list stores: ${error.message}`);
     }

@@ -88,35 +88,34 @@ export class BackendProductRepository implements ProductRepository {
   }
 
   private async recursiveListProducts(next_item: string|undefined): Promise<ProductResponseInterface[]> {
-    const listedStores:ProductResponseInterface[] = [];
-    let urlToRequest:string = `/products?limit=100&next_item=${next_item}`
+    const allProducts: ProductResponseInterface[] = [];
+    let nextItem: string | undefined = next_item;
+
     try {
-      if(next_item === undefined) {
-        urlToRequest = `/products?limit=100`
-      } else {
-        urlToRequest = `/products?limit=100&next_item=${next_item}`
-      }
+      do {
+        const urlToRequest = nextItem 
+          ? `/products?limit=100&next_item=${nextItem}`
+          : `/products?limit=100`;
 
-      const response = await this.dataSource.get<ProductResponseInterface[]>(
-        urlToRequest
-      );
+        const response = await this.dataSource.get<ProductResponseInterface[]>(urlToRequest);
 
-      if (response.meta === undefined) {
-        return response.data;
-      } else {
-        
-        if (response.meta.has_next_page === false) {
-          return response.data;
-        } else {
-          return listedStores.concat(
-            await this.recursiveListProducts(response.meta.next_item)
-          )
-
+        // Accumulate items from the current page
+        if (response.data && response.data.length > 0) {
+          allProducts.push(...response.data);
         }
-      }
-      
+
+        // Check if another page exists
+        if (!response.meta || !response.meta.has_next_page) {
+          break;
+        }
+
+        nextItem = response.meta.next_item;
+
+      } while (nextItem);
+
+      return allProducts;
     } catch (error: any) {
-      throw new Error(`Failed to list stores: ${error.message}`);
+      throw new Error(`Failed to list products: ${error.message}`);
     }
   }
 

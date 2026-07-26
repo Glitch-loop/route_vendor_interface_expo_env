@@ -88,7 +88,7 @@ const routeSelectionLayout = () => {
         const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
         const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
         const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
-
+        console.log("Registered stores: ", stores.length)
         dispatch(setWorkDayInformation(workDayInformation));
         dispatch(setProductInventory(productInventory));
         dispatch(setDayOperations(dayOperations));
