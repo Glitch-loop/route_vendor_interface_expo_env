@@ -93,7 +93,6 @@ const routeSelectionLayout = () => {
         dispatch(setProductInventory(productInventory));
         dispatch(setDayOperations(dayOperations));
         dispatch(setStores(stores));
-        console.log("All products: ", products)
         dispatch(setProducts(products));
 
         router.replace('/routeOperationMenuLayout');
