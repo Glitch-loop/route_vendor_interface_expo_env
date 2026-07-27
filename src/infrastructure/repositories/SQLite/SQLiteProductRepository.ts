@@ -56,8 +56,9 @@ export class SQLiteProductRepository implements ProductRepository {
                   create_at,
                   id_client,
                   id_location,
-                  id_route_day
-              ) VALUES (?, ?, ?, ?, ?, ?);
+                  id_route_day,
+                  id_product
+              ) VALUES (?, ?, ?, ?, ?, ?, ?);
           `, 
           [
             price.id_product_price,
@@ -66,6 +67,7 @@ export class SQLiteProductRepository implements ProductRepository {
             price.id_client,
             price.id_location,
             price.id_route_day,
+            product.id_product,
           ]);
         }
       });
@@ -166,10 +168,10 @@ export class SQLiteProductRepository implements ProductRepository {
     // Note: PRODUCTS_PRICES table does not have an id_product FK column.
     // All prices are returned. Consider adding id_product to the schema for proper filtering.
     await this.dataSource.initialize();
-    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_PRICES};`);
+    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.PRODUCTS_PRICES} WHERE id_product = ?;`);
 
     try {
-      const result = statement.executeSync<any>();
+      const result = statement.executeSync<any>([id_product]);
       const prices: ProductPrice[] = [];
       for (const row of result) {
         prices.push(new ProductPrice(

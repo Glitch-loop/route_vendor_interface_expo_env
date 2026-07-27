@@ -12,7 +12,7 @@ import { clearRoute } from '@/redux/slices/routeSlice';
 import { clearStores } from '@/redux/slices/storesSlice';
 import { clearProducts } from '@/redux/slices/productSlice';
 import { clearRouteDay } from '@/redux/slices/routeDaySlice';
-import store, { AppDispatch, RootState } from '@/redux/store';
+import { AppDispatch, RootState } from '@/redux/store';
 import { clearDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { clearProductInventory } from '@/redux/slices/productsInventorySlice';

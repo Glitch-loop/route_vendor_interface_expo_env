@@ -91,7 +91,8 @@ export const productPricesEmbeddedTable = `
     create_at             TEXT NOT NULL,
     id_client             TEXT,
     id_location           TEXT,
-    id_route_day          TEXT
+    id_route_day          TEXT,
+    id_product            TEXT NOT NULL
   );
 `;
 

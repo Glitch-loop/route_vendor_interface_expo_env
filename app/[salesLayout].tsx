@@ -296,11 +296,18 @@ const salesLayout = () => {
 
     // Setting up initial states for the sale layout.
     if (productInventory !== null && availableProducts !== null) {
+      console.log("SETTING UP SALES LAYOUT")
+      console.log("ALL PRODUCTS----------------------------------------")
+      availableProducts.forEach((product) => {
+        console.log("NAME: ", product.product_name)
+        console.log("PRICE: ", product.product_price)
+      })
       const productInventoryMapLocal = createMapProductInventoryWithProduct(productInventory, availableProducts)
       setProductInventoryMap(productInventoryMapLocal);
 
       // Creating product class for retrieving prices
       for (const [currentIdProductInventory, currentProductInventory] of productInventoryMapLocal) {
+        // console.log("Product to save: ", currentProductInventory)
         productClassMap.set(
           currentProductInventory.id_product, 
           new ProductClass(currentProductInventory)
@@ -844,8 +851,9 @@ const salesLayout = () => {
             mergeProductToCommitFromDifferentContext(productSample, productReposition)
           ));
       } else {
-        const { id_product, id_product_inventory, cost } = item;
+        const { id_product, id_product_inventory, cost, product_name } = item;
         const price_at_moment:number = getPriceForAProduct(item, currentStore);
+        console.log("Get price for product " + product_name + " - " + price_at_moment)
         const newRouteTransactionDescription:RouteTransactionDescriptionDTO = {
             id_route_transaction_description: '',
             price_at_moment: price_at_moment,

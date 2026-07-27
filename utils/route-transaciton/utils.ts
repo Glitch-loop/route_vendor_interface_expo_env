@@ -16,6 +16,7 @@ import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState"
 import { capitalizeFirstLetter } from "../string/utils";
 import { capitalizeFirstLetterOfEachWord } from "../generalFunctions";
 import { DAY_OPERATIONS } from "@/src/core/enums/DayOperations";
+import { getAddressOfStore } from "../stores/utils";
 
 // Related to route transaction workflow
 export function getProductDevolutionBalance(
@@ -338,7 +339,7 @@ export function getTicketSale(
   // Getting Subtotals of each concept
   let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
   let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
-  let subtotalSampleProduct       = getProductDevolutionBalance(productsSample, []);
+  let subtotalSampleProduct     = getProductDevolutionBalance(productsSample, []);
   let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
   let productDevolutionBalance  = '$0';
   let greatTotal                = '$0';
@@ -357,6 +358,7 @@ export function getTicketSale(
   let vendor:string = 'No disponible';
   let status:string = 'No disponible';
   let storeName:string = 'No disponible';
+  let storeAddress:string = 'No disponible';
   let routeTransactionDate:string = 'No disponible';
   let paymentMethodName:string = 'No disponible';
 
@@ -401,6 +403,7 @@ export function getTicketSale(
   if (storeTransaction !== undefined) {
     const { store_name } = storeTransaction;
     storeName = store_name !== undefined ? store_name : 'No disponible'; 
+    storeAddress = getAddressOfStore(storeTransaction);
   }
 
   vendor = (userSession !== undefined && userSession !== null) ? userSession.name : 'No disponible';
@@ -411,6 +414,7 @@ export function getTicketSale(
   ticket += getTicketLine(`Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`, true);
   ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, true);
   ticket += getTicketLine(`Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`, true);
+  ticket += getTicketLine(`Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`, true);
   ticket += getTicketLine('', true);
 
   // Body of the ticket
