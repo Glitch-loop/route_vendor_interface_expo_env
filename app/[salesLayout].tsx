@@ -481,9 +481,6 @@ const salesLayout = () => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
-    console.log("current store: ", currentStore)
-    console.log("id_day_operation_dependent_param: ", id_day_operation_dependent_param)
-    console.log("workDayInformation: ", workDayInformation)
     if (currentStore === null || workDayInformation === null) {
       Toast.show({
         type: 'error',
