@@ -546,6 +546,7 @@ const inventoryOperationLayout = () => {
     if(askToUserIfAgreeWithInventory) {
       setShowDialog(true);
     } else {
+      console.log("Hello world++++++++++++++++++++++++++++")
       handleConfirmInventoryOperation();
     }
   }

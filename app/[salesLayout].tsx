@@ -195,6 +195,7 @@ const salesLayout = () => {
   const availableProducts     = useSelector((state: RootState) => state.products);
   const workDayInformation    = useSelector((state: RootState) => state.workDayInformation);
   const stores                = useSelector((state: RootState) => state.stores);
+  const dayOperations         = useSelector((state: RootState) => state.dayOperations);
   const userSessionReduxState = useSelector((state: RootState) => state.user);
   const routeTransactionDescriptionTempReduxState = useSelector((state: RootState) => state.routeTransactionDescriptionTemp);
 
@@ -480,25 +481,57 @@ const salesLayout = () => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
-    if (currentStore === null || id_day_operation_dependent_param === undefined || workDayInformation === null) {
+    console.log("current store: ", currentStore)
+    console.log("id_day_operation_dependent_param: ", id_day_operation_dependent_param)
+    console.log("workDayInformation: ", workDayInformation)
+    if (currentStore === null || workDayInformation === null) {
       Toast.show({
         type: 'error',
         text1:'Ha ocurrido un error.',
         text2: 'Vuelve a cargar la pagina para poder hacer esta operación.'});
     } else {
+      const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
+      let id_day_operation_dependent:string|null = null;
+      if (is_selling_out_of_route === '1') {
+        const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day, userCoordinates);
+        if (visitedClientOutOfRoute !== null) {
+          const { id_day_operation } = visitedClientOutOfRoute;
+          id_day_operation_dependent = id_day_operation;
+        }
+      } else if (id_day_operation_dependent_param !== undefined) {
+        id_day_operation_dependent = id_day_operation_dependent_param;
+      } else if (dayOperations !== null){
+        const dayOperationDependent = dayOperations.find((dayOperation) => dayOperation.id_item === currentStore.id_store && (
+                                                 dayOperation.operation_type === DAY_OPERATIONS.route_client_attention
+                                              || dayOperation.operation_type === DAY_OPERATIONS.new_client_registration
+                                              || dayOperation.operation_type === DAY_OPERATIONS.prospect_registration));
+
+        if (dayOperationDependent !== undefined) {
+          const { id_day_operation } = dayOperationDependent;
+          id_day_operation_dependent = id_day_operation;
+        }
+      }
+      
       const visitWithoutSelling = container.resolve<VisitClientWithoutMakeARouteTransactionUseCase>(VisitClientWithoutMakeARouteTransactionUseCase);
       const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
       
-      await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent_param, workDayInformation.id_route_day, userCoordinates);
-      const newDayOperationsList = await retrieveDayOperationQuery.execute();
-      
-      dispatch(setDayOperations(newDayOperationsList));
-      dispatch(clearRouteTransactionDescription());
-      
-      Toast.show({
-        type: 'success',
-        text1:'Se a registrado la visita sin venta correctamente.',
-        text2: ''});
+      if (id_day_operation_dependent !== null) {
+        await visitWithoutSelling.execute(currentStore.id_store, id_day_operation_dependent, workDayInformation.id_route_day, userCoordinates);
+        const newDayOperationsList = await retrieveDayOperationQuery.execute();
+        
+        dispatch(setDayOperations(newDayOperationsList));
+        dispatch(clearRouteTransactionDescription());
+        
+        Toast.show({
+          type: 'success',
+          text1:'Se a registrado la visita sin venta correctamente.',
+          text2: ''});
+      } else {
+        Toast.show({
+          type: 'error',
+          text1:'Ha ocurrido un error.',
+          text2: 'Continua con la siguiente tienda.'});
+      }
 
       router.replace('/routeOperationMenuLayout');
     }
