@@ -65,7 +65,7 @@ export default class ProductClass {
     let clientPrice = -1;
 
     const { product_price } = this.product;
-    console.log("Product price: ", product_price)
+
     if (idLocation === undefined && idRouteDay === undefined && idClient === undefined) {
       price = this.basePrice.price
     } else {
