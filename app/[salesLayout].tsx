@@ -72,6 +72,7 @@ import {
   getGreatTotal,
   productCommitedValidation,
   getTicketSale,
+  getTicket,
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
@@ -684,7 +685,7 @@ const salesLayout = () => {
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store_param);
 
       if (finishedSale) {          
-          ticketToPrint = getTicketSale(
+          ticketToPrint = getTicket(
             productInventoryMap,
             productDevolution,
             productReposition,
@@ -695,7 +696,7 @@ const salesLayout = () => {
             userSessionReduxState
           );
       } else {
-        ticketToPrint = getTicketSale(
+        ticketToPrint = getTicket(
           productInventoryMap,
           productDevolution,
           productReposition,

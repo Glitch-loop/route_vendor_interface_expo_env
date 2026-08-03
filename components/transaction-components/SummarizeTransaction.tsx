@@ -39,7 +39,7 @@ import { BluetoothPrinterService } from '@/src/infrastructure/services/Bluetooth
 
 // Utils
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { getTicketSale } from '@/utils/route-transaciton/utils';
+import { getTicketSale, getSimpleTicket, getTicket } from '@/utils/route-transaciton/utils';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 
@@ -114,7 +114,7 @@ const SummarizeTransaction = ({
       if (stores !== null) storeToConsult = stores.find((storeItem:StoreDTO) => storeItem.id_store === id_store);
         await printerService.getConnectedPrinter();
         await printerService.printTicket(
-          getTicketSale(
+          getTicket(
             productInventoryMap,
             productsDevolution,
             productsReposition,
