@@ -314,7 +314,7 @@ const routeOperationMenuLayout = () => {
       if (!replicationSessionResult && !wasBackupMade) {
         Toast.show({
           type: 'error',
-          text1:'Error durante la sincronizacón',
+          text1:'Error durante la sincronización',
           text2: 'Descarga la información, he intenta nuevamente.'});
           return;
       }
