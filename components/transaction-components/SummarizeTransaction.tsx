@@ -39,7 +39,7 @@ import { BluetoothPrinterService } from '@/src/infrastructure/services/Bluetooth
 
 // Utils
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
-import { getTicketSale, getSimpleTicket, getTicket } from '@/utils/route-transaciton/utils';
+import { getTicket } from '@/utils/route-transaciton/utils';
 import { ROUTE_TRANSACTION_STATE } from '@/src/core/enums/RouteTransactionState';
 import { format_date_to_UI_format } from '@/utils/date/momentFormat';
 
@@ -275,16 +275,6 @@ const SummarizeTransaction = ({
               transactionMovements={productsReposition}
               totalSectionCaptionMessage={'Valor total de reposición: '}/>
             <View style={tw`w-full border`}/>
-            {/* Product sample section */}
-            <SectionTitle
-              title={'Cortesias'}
-              caption={''}
-              titlePositionStyle={'text-center w-full flex flex-row justify-center'}
-              />
-            <SummarizeFormat
-              productInventoryMap={productInventoryMap}
-              transactionMovements={productsSample}
-              totalSectionCaptionMessage={'Total cortesia: '}/>
             <View style={tw`w-full border`}/>
             {/* Product sale section */}
             <SectionTitle
@@ -296,6 +286,17 @@ const SummarizeTransaction = ({
               productInventoryMap={productInventoryMap}
               transactionMovements={productsSale}
               totalSectionCaptionMessage={'Total venta: '}/>
+            <View style={tw`w-full border`}/>
+            {/* Product sample section */}
+            <SectionTitle
+              title={'Cortesias'}
+              caption={''}
+              titlePositionStyle={'text-center w-full flex flex-row justify-center'}
+              />
+            <SummarizeFormat
+              productInventoryMap={productInventoryMap}
+              transactionMovements={productsSample}
+              totalSectionCaptionMessage={'Total cortesia: '}/>
             <View style={tw`w-full border`}/>
             {/* Totals sections */}
             <Text style={tw`text-black font-bold text-xl text-center mt-3`}>Resumen</Text>
