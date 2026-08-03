@@ -670,12 +670,17 @@ const salesLayout = () => {
       return;
     }
 
-    if (productDevolution.length === 0 && productReposition.length === 0 && productSample.length === 0 && productSale.length === 0) {
-      Toast.show({
-        type: 'info',
-        text1: 'No hay movimientos para imprimir el ticket de la venta.',
-        text2: 'Agrega movimientos antes de intentar imprimir el ticket.'});
-      return;
+    if (!finishedSale) {
+      if ((productDevolution.length === 0 
+          && productReposition.length === 0 
+          && productSample.length === 0 
+          && productSale.length === 0)) {
+        Toast.show({
+          type: 'info',
+          text1: 'No hay movimientos para imprimir el ticket de la venta.',
+          text2: 'Agrega movimientos antes de intentar imprimir el ticket.'});
+        return;
+      }
     }
 
     try {      
@@ -725,10 +730,16 @@ const salesLayout = () => {
     setResultSaleState(false);
   };
 
-  // Related to add product
-
-  // TODO provide validation for the product devolutuon, if there is not product devolution, then delete product reposition
+  // Handlers for adding product devolution.
   const handlerSetProductDevolution = (declaredProductDevolution: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
+    if (productSale.length > 0 || productSample.length > 0)  {
+      Toast.show({
+        type: 'error',
+        text1: `No puedes agregar una devolución si tienes producto en la sección de ${productSale.length > 0 ? 'ventas' : 'cortesias'}.`, 
+        text2: "Finaliza la operación actual y comienza otra operación para la devolución."});
+      return;
+    }
+    
     if (declaredProductDevolution.length > 0) {
       /* That means that there is product devolution */
     } else {
@@ -824,6 +835,13 @@ const salesLayout = () => {
   };
 
   const handleSetSampleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
+    if (productDevolution.length > 0)  {
+      Toast.show({
+        type: 'error',
+        text1: "No puedes dar una cortesia si estas manejando una devolución.", 
+        text2: "Finaliza la operación actual y comienza otra operación para dar la cortesia."});
+      return;
+    }
     if (productInventoryMap !== undefined) {
       if (item === null) {
         setProductSample(
@@ -866,6 +884,15 @@ const salesLayout = () => {
   };
 
   const handleSetSaleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
+    console.log("productDevolution.length:" , productDevolution.length)
+    if (productDevolution.length > 0)  {
+      Toast.show({
+        type: 'error',
+        text1: "No puedes agregar un producto para vender si estas manejando una devolución.", 
+        text2: "Finaliza la operación actual y comienza otra operación para la venta."});
+      return;
+    }
+    
     if (productInventoryMap !== undefined) {
       if (item === null) {
         setProductSale(
@@ -947,6 +974,7 @@ const salesLayout = () => {
                 routeTransactions={historicRouteTransaction}
                 productInventoryMap={productClassMap}
               />
+              <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
               <View style={tw`w-full flex flex-row`}>
                 <TableProduct
                   avialableProducts   = { availableProducts || [] }
@@ -980,22 +1008,22 @@ const salesLayout = () => {
                 <TableProduct
                   avialableProducts   = { availableProducts || [] }
                   productInventory    = { productInventory || [] }
-                  commitedProducts    = { productSample }
-                  setCommitedProduct  = { handleSetSampleProduct }
-                  sectionTitle        = { 'Cortesias' }
+                  commitedProducts    = { productSale }
+                  setCommitedProduct  = { handleSetSaleProduct }
+                  sectionTitle        = { 'Productos para vender' }
                   sectionCaption      = { '' }
-                  totalMessage        = { 'Total cortesia' }
+                  totalMessage        = { 'Total de la venta:' }
                   />
               </View>
               <View style={tw`w-full flex flex-row`}>
                 <TableProduct
                   avialableProducts   = { availableProducts || [] }
                   productInventory    = { productInventory || [] }
-                  commitedProducts    = { productSale }
-                  setCommitedProduct  = { handleSetSaleProduct }
-                  sectionTitle        = { 'Productos para vender' }
+                  commitedProducts    = { productSample }
+                  setCommitedProduct  = { handleSetSampleProduct }
+                  sectionTitle        = { 'Cortesias' }
                   sectionCaption      = { '' }
-                  totalMessage        = { 'Total de la venta:' }
+                  totalMessage        = { 'Total cortesia' }
                   />
               </View>
                <View style={tw`w-full flex flex-row justify-center my-5`}>

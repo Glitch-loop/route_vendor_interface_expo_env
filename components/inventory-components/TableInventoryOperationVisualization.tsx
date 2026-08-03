@@ -342,7 +342,9 @@ const TableInventoryOperationVisualization = (
                           ${inventoryIssueAmount !== 0 ? 'bg-red-200' : 'bg-green-200'} w-48 border-b`}>
                           <View style={tw`${viewTagRowTableStyle}`}>
                             <Text style={tw`${textRowTableStyle}`}>
-                              {inventoryIssueAmount < 0 ? inventoryIssueAmount * -1 : inventoryIssueAmount} {inventoryIssueAmount > 0 ? ' (Falto)' : ''} {inventoryIssueAmount < 0 ? ' (Sobro)' : ''}
+                              {/* {discrepancy === 0 ? '✓' : (discrepancy > 0 ? `+${discrepancy}` : discrepancy)} */}
+                              { inventoryIssueAmount === 0 ? '✓' : inventoryIssueAmount < 0  ? inventoryIssueAmount * -1 : inventoryIssueAmount }
+                              {inventoryIssueAmount > 0 ? ' (Falto)' : ''} {inventoryIssueAmount < 0 ? ' (Sobro)' : ''}
                             </Text>
                           </View>
                         </DataTable.Cell>

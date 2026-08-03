@@ -615,6 +615,8 @@ export function getTicket(
   if (productsDevolution.length > 0) {
     ticket += getTicketLine(`*Total devolucion: `, false, (showTotalPosition - 26)); // 26-lenght characters string
     ticket += getTicketLine(`-$${subtotalProductDevolution}`,true, (showTotalPosition - 19)); // 26-lenght characters string
+  } else {
+    ticket += getTicketLine('', true);
   }
   ticket += getTicketLine('', true);
 
@@ -625,7 +627,10 @@ export function getTicket(
   if (productsReposition.length > 0) {
     ticket += getTicketLine(`*Total reposicion: `, false, (showTotalPosition - 25)); // 26-lenght characters string
     ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 19)); // 26-lenght characters string
+  } else {
+    ticket += getTicketLine('', true);
   }
+
   ticket += getTicketLine('', true);
 
   ticket += getTicketLine('*Total devolucion:', false); // 26-lenght characters string

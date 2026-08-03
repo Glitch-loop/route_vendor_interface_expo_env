@@ -42,7 +42,7 @@ const getUniqueSortedDates = (descriptions: TransactionDescriptionWithDate[]): D
   });
   return Array.from(uniqueDates)
     .map(dateStr => new Date(dateStr))
-    .sort((a, b) => a.getTime() + b.getTime());
+    .sort((a, b) => b.getTime() - a.getTime());
 };
 
 /**
@@ -90,7 +90,7 @@ const renderTransactionTable = (
     return null;
   }
 
-  const dateHeaders = dates.map(d => d.toISOString().split('T')[0]);
+  const dateHeaders = dates.sort((a, b) => b.getTime() - a.getTime()).map(d => d.toISOString().split('T')[0]);
 
   // Get order for printing
   const orderToPrint = Array.from(productInventoryMap.values())
@@ -188,6 +188,24 @@ const SummarizeHistoricRouteTransaction = ({
       transaction_date: transactionDateById.get(description.id_route_transaction) ?? getDateKey(description.created_at)
     }));
 
+  const repositionTransactionDescriptions: TransactionDescriptionWithDate[] = 
+    getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(
+      routeTransactions,
+      DAY_OPERATIONS.product_reposition
+    ).map((description) => ({
+      ...description,
+      transaction_date: transactionDateById.get(description.id_route_transaction) ?? getDateKey(description.created_at)
+    }));
+
+  const sampleTransactionDescriptions: TransactionDescriptionWithDate[] = 
+    getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(
+      routeTransactions,
+      DAY_OPERATIONS.sample
+    ).map((description) => ({
+      ...description,
+      transaction_date: transactionDateById.get(description.id_route_transaction) ?? getDateKey(description.created_at)
+    }));
+
   // Products that had at least one sale
   const productsInStore: Set<string> = new Set(
     salesTransactionDescriptions.map(desc => desc.id_product)
@@ -221,6 +239,20 @@ const SummarizeHistoricRouteTransaction = ({
       {renderTransactionTable(
         'Resumen de Devoluciones',
         devolutionTransactionDescriptions,
+        productInventoryMap
+      )}
+
+      {/* Devolutions Table */}
+      {renderTransactionTable(
+        'Resumen de Reposiciones',
+        repositionTransactionDescriptions,
+        productInventoryMap
+      )}
+      
+      {/* Devolutions Table */}
+      {renderTransactionTable(
+        'Resumen de Cortesias',
+        sampleTransactionDescriptions,
         productInventoryMap
       )}
 
