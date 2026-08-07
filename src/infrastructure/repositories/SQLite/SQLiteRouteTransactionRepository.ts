@@ -202,12 +202,9 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     // Retrieve all route transaction descriptions
     await this.dataSource.initialize();
     const db: SQLiteDatabase = this.dataSource.getClient();
-    
     if (id_work_day !== undefined) {
-      query += `WHERE id_work_day IN (?)` 
+      query += ` WHERE id_work_day IN (?);` 
     }
-
-
     // Retrieve all route transactions
     const transactionsStatement = await db.prepareAsync(query);
 
