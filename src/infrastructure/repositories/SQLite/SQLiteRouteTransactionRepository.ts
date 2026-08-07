@@ -195,18 +195,29 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
     }
   }
 
-  async listRouteTransactions(): Promise<RouteTransaction[]> {
+  async listRouteTransactions(id_work_day? :string[]): Promise<RouteTransaction[]> {
     const transactions:RouteTransaction[] = [];
-
+    let query: string = `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`;
+    
     // Retrieve all route transaction descriptions
     await this.dataSource.initialize();
     const db: SQLiteDatabase = this.dataSource.getClient();
-      
-    // Retrieve all route transactions
-    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`);
+    
+    if (id_work_day !== undefined) {
+      query += `WHERE id_work_day IN (?)` 
+    }
 
-    try {        
-      const resultTransactions = transactionsStatement.executeSync<any>();
+
+    // Retrieve all route transactions
+    const transactionsStatement = await db.prepareAsync(query);
+
+    try {
+      let resultTransactions: any;
+      if (id_work_day !== undefined) {
+        resultTransactions = transactionsStatement.executeSync<any>([id_work_day.map(id => id).join(",")]);
+      } else {
+        resultTransactions = transactionsStatement.executeSync<any>();
+      }
 
       // Map descriptions to their respective transactions
       for (const transaction of resultTransactions) {                

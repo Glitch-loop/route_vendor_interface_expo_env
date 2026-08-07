@@ -732,14 +732,6 @@ const salesLayout = () => {
 
   // Handlers for adding product devolution.
   const handlerSetProductDevolution = (declaredProductDevolution: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
-    if (productSale.length > 0 || productSample.length > 0)  {
-      Toast.show({
-        type: 'error',
-        text1: `No puedes agregar una devolución si tienes producto en la sección de ${productSale.length > 0 ? 'ventas' : 'cortesias'}.`, 
-        text2: "Finaliza la operación actual y comienza otra operación para la devolución."});
-      return;
-    }
-    
     if (declaredProductDevolution.length > 0) {
       /* That means that there is product devolution */
     } else {
@@ -835,13 +827,6 @@ const salesLayout = () => {
   };
 
   const handleSetSampleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
-    if (productDevolution.length > 0)  {
-      Toast.show({
-        type: 'error',
-        text1: "No puedes dar una cortesia si estas manejando una devolución.", 
-        text2: "Finaliza la operación actual y comienza otra operación para dar la cortesia."});
-      return;
-    }
     if (productInventoryMap !== undefined) {
       if (item === null) {
         setProductSample(
@@ -883,16 +868,7 @@ const salesLayout = () => {
     }
   };
 
-  const handleSetSaleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {
-    console.log("productDevolution.length:" , productDevolution.length)
-    if (productDevolution.length > 0)  {
-      Toast.show({
-        type: 'error',
-        text1: "No puedes agregar un producto para vender si estas manejando una devolución.", 
-        text2: "Finaliza la operación actual y comienza otra operación para la venta."});
-      return;
-    }
-    
+  const handleSetSaleProduct = (productsToCommit: RouteTransactionDescriptionDTO[], item: ProductDTO&ProductInventoryDTO|null, amountToSet: number) => {    
     if (productInventoryMap !== undefined) {
       if (item === null) {
         setProductSale(

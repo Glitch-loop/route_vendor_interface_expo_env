@@ -429,7 +429,20 @@ const inventoryOperationLayout = () => {
           return;
         }
 
-        const allRouteTransactions:RouteTransactionDTO[] = await listAllRouteTransactionsQuery.execute()
+        // Retrieve current work day
+        if (workDayInformation === null) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error al consultar la operación de inventario.',
+            text2: 'No se ha cargado correctamente la información del día. Cierre sesión he intente nuevamente.',
+          });
+          router.replace('/routeOperationMenuLayout');
+          return;
+        }
+        
+        const { id_work_day } = workDayInformation;
+
+        const allRouteTransactions:RouteTransactionDTO[] = await listAllRouteTransactionsQuery.execute([ id_work_day ]);
         const allInventoryOperations: InventoryOperationDTO[] = await listInventoryOperationsQuery.execute();
         const startInventoryOperationDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.start_shift_inventory);
         const restockInventoryOperationsDescriptions: InventoryOperationDescriptionDTO[][] = getInventoryOperationDescriptionsOfActiveInventoryOperationsByTypeOfOperations(allInventoryOperations, DAY_OPERATIONS.restock_inventory);

@@ -22,8 +22,8 @@ export default class ListAllRouteTransactionsQuery {
     private readonly mapperDTO: MapperDTO,
   ) {}
 
-  async execute(): Promise<RouteTransactionDTO[]> {
-    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactions();
+  async execute(id_work_day? : string[]): Promise<RouteTransactionDTO[]> {
+    const transactions: RouteTransaction[] = await this.routeTxRepo.listRouteTransactions(id_work_day);
     return transactions.map((t) => this.mapperDTO.toDTO(t));
   }
 }
