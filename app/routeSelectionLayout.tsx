@@ -52,6 +52,7 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 
 // Utils
 import { determineIfCurrentDay } from '@/utils/date/momentFormat';
+import { FileLogger } from '@/src/infrastructure/services/FileLogger';
 
 const routeSelectionLayout = () => {
   // Redux

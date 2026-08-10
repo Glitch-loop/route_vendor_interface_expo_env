@@ -54,9 +54,9 @@ export function getMessageForProductDevolutionOperation(
 ): string {
   let total = getProductDevolutionBalance(productDevolution, productReposition);
   if (total < 0) {
-    return 'Balance de la devolución de producto (por cobrar): ';
+    return 'Diferencia (por cobrar): ';
   } else {
-    return 'Balance de la devolución de producto (a pagar): ';
+    return 'Diferencia (a pagar): ';
   }
 }
 
@@ -663,8 +663,8 @@ export function getTicket(
   ticket += getTicketLine('**DIFERENCIA:',false);
   ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 13));
 
-  ticket += getTicketLine('Venta total:',false); // 11-lenght characters string
-  ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 12));
+  ticket += getTicketLine('*Total venta:',false); // 11-lenght characters string
+  ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 13));
 
   ticket += getTicketLine('Gran total:',false); // 11-lenght characters string
   ticket += getTicketLine(`${greatTotal}`,true, (showTotalPosition - 11));

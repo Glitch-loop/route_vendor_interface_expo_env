@@ -111,7 +111,6 @@ const SaleSummarize = ({
   return (
     <View style={tw`w-11/12 flex flex-col items-center`}>
       <Text style={tw`w-full text-black text-2xl text-left`}>Resumen</Text>
-
       {/* Product samples section */}
       <SummaryConceptTable 
         title="Cortesias"
@@ -125,7 +124,7 @@ const SaleSummarize = ({
       {/* Getting subtotal product devolution */}
       { productsDevolution.length > 0 &&
         <SubtotalLine
-          description={'Total devolución de producto:'}
+          description={'Total devolución:'}
           total={ getProductDevolutionBalanceWithoutNegativeNumber(productsDevolution, []) }
           fontStyle={'font-bold italic text-base'}/>
       }
@@ -227,32 +226,32 @@ const SaleSummarize = ({
           {/* Getting subtotal of selling and product reposition. */}
           { summarizeProduct.length > 0 &&
             <View style={tw`flex flex-row items-center justify-around`}>
-                {/* Product name */}
-                <View style={tw`w-24 flex`} />
-                {/* Price */}
-                <View style={tw`w-16 flex`} />
-                {/* Sale amount */}
-                <View style={tw`w-24 flex`}>
-                  <Text style={tw`font-bold italic text-base`}>Subtotal venta: </Text>
-                </View>
-                {/* Sale Subtotal */}
-                <View style={tw`w-24 flex`}>
-                  <Text style={tw`font-bold italic text-base text-center`}>
-                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber(productsSale, []))}
-                  </Text>
-                </View>
-                {/* Reposition amount */}
-                <View style={tw`w-24 flex`}>
-                  <Text style={tw`font-bold italic text-base`}>Subtotal reposición: </Text>
-                </View>
-                {/* Reposition subtotal */}
-                <View style={tw`w-24 flex`}>
-                  <Text style={tw`font-bold italic text-base text-center`}>
-                    {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition))}
-                  </Text>
-                </View>
-                {/* Total product amount amount */}
-                <View style={tw`w-24 flex`} />
+              {/* Product name */}
+              <View style={tw`w-24 flex`} />
+              {/* Price */}
+              <View style={tw`w-16 flex`} />
+              {/* Sale amount */}
+              <View style={tw`w-24 flex`}>
+                <Text style={tw`font-bold italic text-base`}>Total venta: </Text>
+              </View>
+              {/* Sale Subtotal */}
+              <View style={tw`w-24 flex`}>
+                <Text style={tw`font-bold italic text-base text-center`}>
+                  {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber(productsSale, []))}
+                </Text>
+              </View>
+              {/* Reposition amount */}
+              <View style={tw`w-24 flex`}>
+                <Text style={tw`font-bold italic text-base`}>Total reposición: </Text>
+              </View>
+              {/* Reposition subtotal */}
+              <View style={tw`w-24 flex`}>
+                <Text style={tw`font-bold italic text-base text-center`}>
+                  {formatNumberAsAccountingCurrency(getProductDevolutionBalanceWithoutNegativeNumber([], productsReposition))}
+                </Text>
+              </View>
+              {/* Total product amount amount */}
+              <View style={tw`w-24 flex`} />
             </View>
           }
         </View>

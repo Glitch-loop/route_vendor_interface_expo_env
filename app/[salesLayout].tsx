@@ -498,7 +498,7 @@ const salesLayout = () => {
         }
       } else if (id_day_operation_dependent_param !== undefined) {
         id_day_operation_dependent = id_day_operation_dependent_param;
-      } else if (dayOperations !== null){
+      } else if (dayOperations !== null) {
         const dayOperationDependent = dayOperations.find((dayOperation) => dayOperation.id_item === currentStore.id_store && (
                                                  dayOperation.operation_type === DAY_OPERATIONS.route_client_attention
                                               || dayOperation.operation_type === DAY_OPERATIONS.new_client_registration
@@ -549,24 +549,45 @@ const salesLayout = () => {
     
     const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
-    setFinishedSale(true); // Finishing sale payment process.
-
-    if (workDayInformation === null 
-    || id_store_param === undefined 
-    && (id_day_operation_dependent_param === undefined || is_selling_out_of_route === undefined || is_prospect_of_client_confirmation === undefined)
-    ) {
+    if (workDayInformation === null) {
       Toast.show({
         type: 'error',
-        text1:'Error interno',
-        text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
+        text1:'No se ha cargado la información del dia correctamente.',
+        text2: 'Reinicie la aplicación para que se configure la aplicación correctamente.'});
       return;
     }
 
+    if (id_store_param === undefined) {
+      Toast.show({
+        type: 'error',
+        text1:'No se ha cargado correctamente la información del cliente.',
+        text2: 'Reinicie la aplicación para que se configure la aplicación correctamente.'});
+      return;
+    }
+
+    if (userSessionReduxState === null) {
+      Toast.show({
+        type: 'error',
+        text1:'Ha habido un error en la configuración de la sesión.',
+        text2: 'No se pudo completar la venta, porfavor la aplicación.'});
+      return;
+    }
+
+    if (id_day_operation_dependent_param === undefined 
+    && is_selling_out_of_route === undefined 
+    && is_prospect_of_client_confirmation === undefined) {
+      Toast.show({
+        type: 'error',
+        text1:'Ha habido un error en la configuración interna de la venta.',
+        text2: 'No se pudo completar la venta, porfavor reinicie la aplicación.'});
+      return;
+    }
 
     Toast.show({
       type: 'info',
       text1:'Comenzando proceso para registrar la venta',
-      text2: 'Iniciando proceso para registrar la venta'});
+      text2: 'Iniciando proceso para registrar la venta'
+    });
     
     try {
       let id_day_operation_dependent: string|null = null;
@@ -582,11 +603,11 @@ const salesLayout = () => {
         id_day_operation_dependent = id_day_operation_dependent_param;
       }
 
-      if (id_day_operation_dependent === null || userSessionReduxState === null) {
+      if (id_day_operation_dependent === null) {
         Toast.show({
           type: 'error',
-          text1:'Error interno',
-          text2: 'No se pudo completar la venta, porfavor reinicie sesión.'});
+          text1:'No se pudo determinar la operación dependiente de la venta.',
+          text2: 'No se pudo completar la venta, porfavor reinicie la aplicación.'});
         return;
       }
 
@@ -639,16 +660,16 @@ const salesLayout = () => {
         const syncingService = di_container.resolve<DataReplicationService>(DataReplicationService);
         syncingService.executeReplicationSession();
       }
+      setFinishedSale(true);
       setResultSaleState(true);
     } catch (error) {
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',
-        text2: 'Hubo un problema durante el registro de la venta, porfavor, intente nuevamente.'});
-      
-      setResultSaleState(false);
+        text2: `${error}`});
+      setFinishedSale(false);
+      setResultSaleState(true);
     }
-
   }
 
   const handleOnSuccessfullCompletionSale = async () => {
@@ -946,10 +967,12 @@ const salesLayout = () => {
                   onGoBack={handleOnGoBack}
                   />
               </View>
-              <SummarizeHistoricRouteTransaction 
-                routeTransactions={historicRouteTransaction}
-                productInventoryMap={productClassMap}
-              />
+              { historicRouteTransaction.length > 0 &&
+                <SummarizeHistoricRouteTransaction 
+                  routeTransactions={historicRouteTransaction}
+                  productInventoryMap={productClassMap}
+                />
+              }
               <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
               <View style={tw`w-full flex flex-row`}>
                 <TableProduct
@@ -959,7 +982,7 @@ const salesLayout = () => {
                   setCommitedProduct  = { handlerSetProductDevolution }
                   sectionTitle        = {'Devolución de producto'}
                   sectionCaption      = {'(Precios consultados al día de la venta)'}
-                  totalMessage        = {'Total de valor de devolución:'}
+                  totalMessage        = {'Total devolución:'}
                   />
               </View>
               <View style={tw`w-full flex flex-row`}>
@@ -970,7 +993,7 @@ const salesLayout = () => {
                   setCommitedProduct  = { handleSetProductReposition }
                   sectionTitle        = { 'Reposición de producto' }
                   sectionCaption      = { '(Precios actuales tomados para la reposición)' }
-                  totalMessage        = { 'Total de valor de la reposición:' }
+                  totalMessage        = { 'Total reposición:' }
                   />
               </View>
               <View style={tw`w-11/12 flex flex-row justify-end`}>

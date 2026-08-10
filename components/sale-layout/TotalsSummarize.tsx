@@ -65,7 +65,7 @@ const TotalsSummarize = ({
     <View style={tw`w-full my-5 flex flex-col justify-center items-center`}>
       <View style={tw`w-full flex flex-row`}>
         <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
-          Valor total de devolución de producto:
+          Total devolución:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           { formatNumberAsAccountingCurrency(subtotalProductDevolution) }
@@ -73,7 +73,7 @@ const TotalsSummarize = ({
       </View>
       <View style={tw`w-full flex flex-row`}>
         <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
-          Valor total de reposición de producto:
+          Total reposición:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           { formatNumberAsAccountingCurrency(subtotalProductReposition) }
@@ -81,7 +81,7 @@ const TotalsSummarize = ({
       </View>
       <View style={tw`w-full flex flex-row`}>
         <Text style={tw`flex basis-4/6 text-base text-black text-right font-bold italic`}>
-          Balance de devolución de producto:
+          Diferencia:
         </Text>
         <Text
           style={tw`flex basis-2/6 text-base text-black text-center align-middle font-bold italic`}>
@@ -91,7 +91,7 @@ const TotalsSummarize = ({
       <View style={tw`flex flex-row w-11/12 border border-solid mt-2`} />
       <View style={tw`w-full flex flex-row`}>
         <Text style={tw`flex basis-4/6 text-base text-black text-right italic`}>
-          Balance de devolución de producto:
+          Diferencia:
         </Text>
         <Text style={tw`flex basis-2/6 text-base text-black text-center align-middle italic`}>
           { formatNumberAsAccountingCurrency(subtotalProductReposition - subtotalProductDevolution) }
