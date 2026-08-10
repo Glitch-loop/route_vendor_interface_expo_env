@@ -490,6 +490,7 @@ const salesLayout = () => {
     } else {
       const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
       let id_day_operation_dependent:string|null = null;
+      
       if (is_selling_out_of_route === '1') {
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day, userCoordinates);
         if (visitedClientOutOfRoute !== null) {

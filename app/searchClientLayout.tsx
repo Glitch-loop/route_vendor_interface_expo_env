@@ -306,7 +306,7 @@ const searchClientLayout = () => {
 
       if(dayOperation) {
         const { id_day_operation } = dayOperation;
-        router.push(`/salesLayout?id_store_param=${id_store}&id_day_operation_dependent_search_param=${id_day_operation}`);
+        router.push(`/salesLayout?id_store_param=${id_store}&id_day_operation_dependent_param=${id_day_operation}`);
       } else {
         router.push(`/salesLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
       }
