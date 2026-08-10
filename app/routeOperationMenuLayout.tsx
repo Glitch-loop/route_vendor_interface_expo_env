@@ -47,7 +47,8 @@ import {
   createDayOperationDependencyMap,
   getDayOperationColor,
   orderDayOperationsForDisplaying,
-  getDayOperationColorByDayOperationType
+  getDayOperationColorByDayOperationType,
+  findPreferredSaleDependencyDayOperation
 } from '@/utils/day-operation/utils';
 
 
@@ -214,13 +215,23 @@ const routeOperationMenuLayout = () => {
   }
 
   // Handlers
-  const onSelectStore = (dayOperation: DayOperationDTO):void => { router.push(`/storeMenuLayout?id_store_param=${dayOperation.id_item}&id_day_operation_dependent_param=${dayOperation.id_day_operation}`); };
-
   const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
 
   const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
 
   const createNewClient = ():void => { router.push('/createNewClientLayout'); };
+
+  const onSelectStore = (dayOperation: DayOperationDTO):void => {
+    const preferredDependency = dayOperationsReduxState === null
+      ? dayOperation
+      : findPreferredSaleDependencyDayOperation(dayOperationsReduxState, dayOperation.id_item) ?? dayOperation;
+
+    router.push(`/storeMenuLayout?id_store_param=${dayOperation.id_item}&id_day_operation_dependent_param=${preferredDependency.id_day_operation}&is_selling_out_of_route=0`);
+  };
+
+  const onSaleToProspectOfClient = (id_store: string): void => {
+    router.push(`/storeMenuLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
+  }
 
   const onFinishInventory = async ():Promise<void> => {
     /*
@@ -400,11 +411,6 @@ const routeOperationMenuLayout = () => {
         text1:'Ha habido un error al momento de descar la información, intente nuevamente.',
         text2: ''});
     } 
-  }
-
-  const onSaleToProspectOfClient = (id_store: string): void => {
-    router.push(`/storeMenuLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
-    // router.push(`/salesLayout?id_store_param=${id_store}&is_selling_out_of_route=1`);
   }
 
   const handleLogout = async () => {

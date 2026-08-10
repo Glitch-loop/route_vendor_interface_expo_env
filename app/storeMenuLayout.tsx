@@ -36,10 +36,12 @@ import { getAddressOfStore } from '@/utils/stores/utils';
 import { convertStoreDTOToIStoreRouteMap } from '@/utils/stores/utils';
 import { createMapProductInventoryWithProduct } from '@/utils/inventory/utils';
 import { capitalizeFirstLetter, capitalizeFirstLetterOfEachWord } from '@/utils/string/utils';
+import { findPreferredSaleDependencyDayOperation } from '@/utils/day-operation/utils';
 
 type typeSearchParams = {
   id_store_param: string;
-  id_day_operation_dependent_param: string;
+  id_day_operation_dependent_param?: string;
+  is_selling_out_of_route?: string;
 }
 
 const storeMenuLayout = () => {
@@ -47,7 +49,8 @@ const storeMenuLayout = () => {
 
   const { 
     id_store_param,
-    id_day_operation_dependent_param
+    id_day_operation_dependent_param,
+    is_selling_out_of_route
   } = params as typeSearchParams;
 
   //Defining redux context
@@ -99,7 +102,19 @@ const storeMenuLayout = () => {
   // handlers
   const handlerGoBackToMainOperationMenu = () => { router.replace('/routeOperationMenuLayout') };
 
-  const handlerGoBackToStoreMenu = () => { router.replace(`/storeMenuLayout?id_store_param=${id_store_param}&id_day_operation_dependent_param=${id_day_operation_dependent_param}`); };
+  const handlerGoBackToStoreMenu = () => {
+    const queryParams = new URLSearchParams({ id_store_param });
+
+    if (id_day_operation_dependent_param !== undefined) {
+      queryParams.set('id_day_operation_dependent_param', id_day_operation_dependent_param);
+    }
+
+    if (is_selling_out_of_route !== undefined) {
+      queryParams.set('is_selling_out_of_route', is_selling_out_of_route);
+    }
+
+    router.replace(`/storeMenuLayout?${queryParams.toString()}`);
+  };
 
   const handlerOnStartSale = () => { 
       if (workDay === null) {
@@ -109,8 +124,25 @@ const storeMenuLayout = () => {
   
       const { finish_date } = workDay;
   
+    const preferredDependency = dayOperationsReduxState === null
+      ? undefined
+      : findPreferredSaleDependencyDayOperation(dayOperationsReduxState, id_store_param);
+    const dependencyId = preferredDependency?.id_day_operation ?? id_day_operation_dependent_param;
+
     if (finish_date !== null) Toast.show({type: 'error', text1:'Inventario final finalizado', text2: 'No se pueden hacer mas operaciones'});
-    else router.push(`/salesLayout?id_store_param=${id_store_param}&id_day_operation_dependent_param=${id_day_operation_dependent_param}`); 
+    else {
+      const queryParams = new URLSearchParams({ id_store_param });
+
+      if (dependencyId !== undefined) {
+        queryParams.set('id_day_operation_dependent_param', dependencyId);
+      }
+
+      if (is_selling_out_of_route !== undefined) {
+        queryParams.set('is_selling_out_of_route', is_selling_out_of_route);
+      }
+
+      router.push(`/salesLayout?${queryParams.toString()}`);
+    }
   };
 
   const handlerOnConsultTransactions = async() => {

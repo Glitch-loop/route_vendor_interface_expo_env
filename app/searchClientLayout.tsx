@@ -25,6 +25,7 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import { convertStoreDTOToIStoreRouteMap, convertUserClientsDTOToIStoreRouteMap, findStoresAround } from '@/utils/stores/utils';
 import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 import { getAddressOfStore } from '@/utils/stores/utils';
+import { findPreferredSaleDependencyDayOperation } from '@/utils/day-operation/utils';
 
 // UI - Components
 import Toast from 'react-native-toast-message';
@@ -295,14 +296,7 @@ const searchClientLayout = () => {
 
     if (selectedClient) {
       const { id_store } = selectedClient;
-      const dayOperation:DayOperationDTO|undefined = dayOperationsRedux.find((dayOperation) => {
-        return dayOperation.id_item === id_store 
-        && (dayOperation.operation_type === DAY_OPERATIONS.attend_client_petition
-        ||  dayOperation.operation_type === DAY_OPERATIONS.new_client_registration
-        ||  dayOperation.operation_type === DAY_OPERATIONS.route_client_attention
-        ||  dayOperation.operation_type === DAY_OPERATIONS.attention_out_of_route
-        );
-      });
+      const dayOperation:DayOperationDTO|undefined = findPreferredSaleDependencyDayOperation(dayOperationsRedux, id_store);
 
       if(dayOperation) {
         const { id_day_operation } = dayOperation;

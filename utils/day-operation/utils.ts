@@ -183,6 +183,25 @@ export function createDayOperationDependencyMap(dayOperations: DayOperationDTO[]
   return dependencyMap;
 }
 
+export function findPreferredSaleDependencyDayOperation(dayOperations: DayOperationDTO[], idStore: string): DayOperationDTO | undefined {
+  const dependencyPriority = [
+    DAY_OPERATIONS.route_client_attention,
+    DAY_OPERATIONS.attend_client_petition,
+    DAY_OPERATIONS.new_client_registration,
+    DAY_OPERATIONS.attention_out_of_route,
+    DAY_OPERATIONS.prospect_registration,
+  ];
+
+  for (const operationType of dependencyPriority) {
+    const dayOperation = dayOperations.find((item) => item.id_item === idStore && item.operation_type === operationType);
+    if (dayOperation !== undefined) {
+      return dayOperation;
+    }
+  }
+
+  return undefined;
+}
+
 export function determinePositionOrderToAttendOfStoreToAttend(id_item_to_determine: string, dayOperations: DayOperationDTO[]): number {
   let numberToAttend = 0;
   const orderedDayOperations = dayOperations.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
