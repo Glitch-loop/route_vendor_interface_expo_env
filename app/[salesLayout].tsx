@@ -132,23 +132,28 @@ function mergeProductToCommitFromDifferentContext(
 ): RouteTransactionDescriptionDTO[] {
   const mergedByProductInventory = new Map<string, RouteTransactionDescriptionDTO>();
 
-  for (const movement of contextA) {
-    mergedByProductInventory.set(movement.id_product_inventory, { ...movement });
-  }
+  // Combine both arrays so aggregation rules apply equally to all items
+  for (const movement of [...contextA, ...contextB]) {
+    // Safety check against undefined/null keys
+    if (!movement.id_product_inventory) continue;
 
-  for (const movement of contextB) {
-    const currentMovement = mergedByProductInventory.get(movement.id_product_inventory);
-    if (currentMovement === undefined) {
-      mergedByProductInventory.set(movement.id_product_inventory, { ...movement });
+    const existing = mergedByProductInventory.get(movement.id_product_inventory);
+
+    if (!existing) {
+      mergedByProductInventory.set(movement.id_product_inventory, { 
+        ...movement,
+        amount: Number(movement.amount || 0),
+      });
     } else {
       mergedByProductInventory.set(movement.id_product_inventory, {
-        ...currentMovement,
-        amount: currentMovement.amount + movement.amount,
+        ...existing,
+        // Accumulate amounts safely
+        amount: Number(existing.amount) + Number(movement.amount || 0),
       });
     }
   }
 
-  return [...mergedByProductInventory.values()];
+  return Array.from(mergedByProductInventory.values());
 }
 
 function getPricesForStartedRouteTransaction(
@@ -297,8 +302,10 @@ const salesLayout = () => {
     }
 
     // Setting up initial states for the sale layout.
-    if (productInventory !== null && availableProducts !== null) {
-      const productInventoryMapLocal = createMapProductInventoryWithProduct(productInventory, availableProducts)
+    if (availableProducts !== null) {
+      const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
+      const currentProductInventory = await retrieveCurrentShiftInventory.execute();
+      const productInventoryMapLocal = createMapProductInventoryWithProduct(currentProductInventory, availableProducts)
       setProductInventoryMap(productInventoryMapLocal);
 
       // Creating product class for retrieving prices

@@ -119,6 +119,7 @@ export default class RegisterNewRouteTransaction {
         id_transaction_operation_type, 
         id_product
       } = description;
+      
       routeTransactionAggregate.addRouteTransactionDescription(
         this.idService.generateID(),
         price_at_moment,
