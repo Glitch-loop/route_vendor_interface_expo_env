@@ -1,4 +1,4 @@
-export function convertArrayOfInterfacesToMapOfInterfaces(field_to_use_as_key: string, array_of_interfaces: any[]): Map<string, any> { 
+export function convertArrayOfInterfacesToMapOfInterfaces(field_to_use_as_key: string, array_of_interfaces: any[] = []): Map<string, any> { 
     const map_of_interfaces: Map<string, any> = new Map<string, any>();
     array_of_interfaces.forEach((current_interface:any) => {
       const key:string = current_interface[field_to_use_as_key];
@@ -9,7 +9,7 @@ export function convertArrayOfInterfacesToMapOfInterfaces(field_to_use_as_key: s
 }
 
 
-export function convertArrayOfInterfacesToMapOfArraysOfInterfaces(field_to_use_as_key: string, array_of_interfaces: any[]): Map<string, any[]> {
+export function convertArrayOfInterfacesToMapOfArraysOfInterfaces(field_to_use_as_key: string, array_of_interfaces: any[] = []): Map<string, any[]> {
   const map_of_arrays_of_interfaces: Map<string, any[]> = new Map<string, any[]>();
 
   array_of_interfaces.forEach((current_interface:any) => {

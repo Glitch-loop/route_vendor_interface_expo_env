@@ -450,21 +450,18 @@ const inventoryOperationLayout = () => {
         const allActiveRouteTransactions: RouteTransactionDTO[] = allRouteTransactions.filter((transaction: RouteTransactionDTO) => transaction.state === ROUTE_TRANSACTION_STATE.ACTIVE);
 
         setAvailableProducts(availableProductsForInventoryOperation);
-        setInitialShiftInventory(startInventoryOperationDescriptions[0]);
+        setInitialShiftInventory(startInventoryOperationDescriptions[0] ?? []);
         setRestockInventories(restockInventoryOperationsDescriptions);
-        setDevolutionInventory(devolutionInventoryOperationsDescriptions[0]);
+        setDevolutionInventory(devolutionInventoryOperationsDescriptions[0] ?? []);
         setFinalShiftInventory([]);
         setFinalShiftInventory(inventory_operation_descriptions);
         setProductRepositionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_reposition));
         setProductSampleTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sample));
         setProductSoldTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.sales));
         setProductDevolutionTransactions(getRouteTransactionDescriptionsOfActiveTransactionsByTypeOfOperations(allActiveRouteTransactions, DAY_OPERATIONS.product_devolution));
-
         setRouteTransactions(allActiveRouteTransactions);
         setStoresToConsult(await listRegisteredStoresQuery.execute());        
-
         setOrderedStoreForPrinting(orderDayOperationsForDisplaying([...dayOperationReduxState]));
-
         setInventoryWithdrawal(true);
         setInventoryOutflow(true);
         setFinalOperation(true);
@@ -1050,7 +1047,7 @@ const inventoryOperationLayout = () => {
                   suggestedInventory              = {suggestedInventory}
                   initialInventory                = {initialShiftInventory}
                   restockInventories              = {restockInventories}
-                  devolutionInventory             = {devolutionInventory}
+                  devolutionInventory             = {inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory ? [] : devolutionInventory}
                   soldOperations                  = {productSoldTransactions}
                   repositionsOperations           = {productRepositionTransactions}
                   samplesOperations               = {productSampleTransactions}

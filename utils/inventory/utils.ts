@@ -10,7 +10,6 @@ export function getTotalAmountFromCashInventory(cashInventory:ICurrency[]):numbe
 
 export function determineIfExistsOperationDescriptionMovement(operationMovements:InventoryOperationDescriptionDTO[]) {
   let isAtLeastOneMovement:boolean = false;
-
   operationMovements.forEach((inventory: InventoryOperationDescriptionDTO) => {
     const { amount } = inventory;
     if(amount > 0) isAtLeastOneMovement = true;

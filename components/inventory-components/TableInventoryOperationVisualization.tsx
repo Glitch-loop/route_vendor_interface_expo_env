@@ -79,8 +79,8 @@ const TableInventoryOperationVisualization = (
 
   const mapSuggestedInventory: Map<string, ProductInventoryDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', suggestedInventory);
   const mapInitialInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', initialInventory);
-  
   const restockInventoriesMaps: Map<string, InventoryOperationDescriptionDTO>[] = [];
+  
   restockInventories.forEach((restockInventory:InventoryOperationDescriptionDTO[]) => {
     const currentMapRestockInventory: Map<string, InventoryOperationDescriptionDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', restockInventory);
     restockInventoriesMaps.push(currentMapRestockInventory);
@@ -225,7 +225,7 @@ const TableInventoryOperationVisualization = (
                   soldInventoryOperationAmount        = mapSoldOperations.has(id_product) ? mapSoldOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
                   repositionInventoryOperationAmount  = mapRepositionsOperations.has(id_product) ? mapRepositionsOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
                   sampleInventoryOperationAmount     = mapSamplesOperations.has(id_product) ? mapSamplesOperations.get(id_product)!.reduce((acc, curr) => acc + curr.amount, 0) : 0;
-              
+
                   restockInventoriesMaps.forEach((mapRestockInventory:Map<string, InventoryOperationDescriptionDTO>) => {
                     const currentRestockProductAmount = mapRestockInventory.has(id_product) ? mapRestockInventory.get(id_product)!.amount : 0;
                     withdrawalAmount += currentRestockProductAmount;
