@@ -619,6 +619,7 @@ const salesLayout = () => {
         return;
       }
 
+
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSample, ...productSale],
         workDayInformation!,
@@ -653,10 +654,10 @@ const salesLayout = () => {
       dispatch(setDayOperations(newDayOperationsList));
 
       const newInventory = await retrieveCurrentShiftInventory.execute();
-      const registeredStoresList = await listAllRegisterdStoresQuery.execute();
-
-      dispatch(setStores(registeredStoresList));
       dispatch(setProductInventory(newInventory));
+
+      const registeredStoresList = await listAllRegisterdStoresQuery.execute();
+      dispatch(setStores(registeredStoresList));
 
       Toast.show({
         type: 'success',
@@ -675,7 +676,7 @@ const salesLayout = () => {
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',
         text2: `${error}`});
-      setFinishedSale(false);
+      setFinishedSale(true);
       setResultSaleState(true);
     }
   }
