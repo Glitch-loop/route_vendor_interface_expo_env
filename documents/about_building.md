@@ -62,3 +62,22 @@ npx expo prebuild
 
 cd ./android
 ./gradlew assembleRelease
+
+
+
+BUILD WITHOUT USING CACHE
+# 1. Delete the generated android folder to wipe all stale native cache
+rm -rf android
+
+# 2. Regenerate a fresh native Android folder from app.json
+npx expo prebuild --clean
+
+# 3. Enter the android directory and clean Gradle tasks
+cd android
+./gradlew clean
+
+# 4. Compile the fresh release APK without using build cache
+./gradlew assembleRelease --no-build-cache --rerun-tasks
+
+# 5. Return to root directory
+cd ..
