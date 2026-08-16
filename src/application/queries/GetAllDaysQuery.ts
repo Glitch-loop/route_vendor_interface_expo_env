@@ -12,9 +12,11 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 
 @injectable()
 export class GetAllDaysQuery {
-    constructor(@inject(TOKENS.ServerRouteRepository) private repo: RouteRepository) { }
+  constructor(
+    @inject(TOKENS.ServerRouteRepository) private repo: RouteRepository,
+  ) {}
 
-    async execute(): Promise<Day[]> {
-        return await this.repo.listDays();
-    }
+  async execute(): Promise<Day[]> {
+    return await this.repo.listDays();
+  }
 }

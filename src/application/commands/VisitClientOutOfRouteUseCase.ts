@@ -9,6 +9,7 @@ import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // Interfaces
 import { IDService } from '@/src/core/interfaces/IDService';
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
 import { DateService } from '@/src/core/interfaces/DateService';
 import { LocationService } from '@/src/core/interfaces/LocationService';
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -27,7 +28,8 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export default class VisitClientOutOfRouteUseCase {
   constructor(
       // Repositories
-      @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+      @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+      // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
 
       // Services
       @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -36,7 +38,11 @@ export default class VisitClientOutOfRouteUseCase {
   ) { }
 
   async execute(id_store: string, id_route_day: string, coords: Coordinates|null): Promise<DayOperationDTO|null> {
-    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    const dayOperations: DayOperation[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.dayOperationRepository.listDayOperations();
+    });
+
+    // const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
     const mapper: MapperDTO = new MapperDTO();
 
@@ -71,7 +77,9 @@ export default class VisitClientOutOfRouteUseCase {
     // Persist all changes
     const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
-    await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+    await this.unitOfWork.execute(async (repo) => {
+      await repo.dayOperationRepository.insertDayOperations(newListdayOperations);
+    });
 
     // Extract new day operation
     const newDayOperation = newListdayOperations.pop();        

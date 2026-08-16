@@ -1,102 +1,156 @@
-import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
-import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
-import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
-import { TOKENS } from "@/src/infrastructure/di/tokens";
+// Librarires
 import { injectable, inject } from "tsyringe";
 
+// Interfaces
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
+
+// Enums
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
+
+// DI container
+import { TOKENS } from "@/src/infrastructure/di/tokens";
+import { DayOperation } from "@/src/core/entities/DayOperation";
+import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
+
 /*
-    This use case determine which operation the user can start when he is starting from another inventory operation.
+  This use case determine which operation the user can start when he is starting from another inventory operation.
 
-    For example:
-        - If the user is starting from a "start shift inventory", the only possible next operation is "re-stock inventory" or "final shift inventory".
-        - If the user is starting from a "re-stock inventory", the possible next operations are: "re-stock inventory" or "final shift inventory".
+  For example:
+      - If the user is starting from a "start shift inventory", the only possible next operation is "re-stock inventory" or "final shift inventory".
+      - If the user is starting from a "re-stock inventory", the possible next operations are: "re-stock inventory" or "final shift inventory".
 
-    There are 4 types of inventories:
-        - Start shift inventory
-        - Re-stock inventory
-        - Product devolution inventory
-        - Final shift inventory
+  There are 4 types of inventories:
+      - Start shift inventory
+      - Re-stock inventory
+      - Product devolution inventory
+      - Final shift inventory
 
-    How to determine which operation can be started from another operation?
+  How to determine which operation can be started from another operation?
 
-    - Start shift inventory
-        * A start shift inventory can be started only if there is not another type of inventory operation or route transactions.
-        * The start shift inventory which the current is starting must be cancelled.
+  - Start shift inventory
+      * A start shift inventory can be started only if there is not another type of inventory operation or route transactions.
+      * The start shift inventory which the current is starting must be cancelled.
 
-    - Re-stock inventory
-        * There is not an final shift inventory after this operation.
+  - Re-stock inventory
+      * There is not an final shift inventory after this operation.
 
 
-    - Product devolution
-        * Not applicable.
+  - Product devolution
+      * Not applicable.
 
-    - Final inventory
-        * If there is at least one final shift inventory, then the following started operation can be only a final shift inventory.
+  - Final inventory
+      * If there is at least one final shift inventory, then the following started operation can be only a final shift inventory.
 */
-
 
 @injectable()
 export default class DetermineTypeOperationForStartingFromAnotherTypeOperationUseCase {
-    constructor(
-        @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-        @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository
-    ) { }
+  constructor(
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    // @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
+  ) {}
 
-    // TODO: Test all scenarios
-    async execute(): Promise<DAY_OPERATIONS> {        
-        let typeOperationToStart: DAY_OPERATIONS = DAY_OPERATIONS.start_shift_inventory;
-        const dayOperations = await this.localDayOperationRepo.listDayOperations();
-        const startShiftInventoryIds:string[]  =  [];
-        const endShiftOrProductDevolutionInventoryIds:string[]  =  [];
+  // TODO: Test all scenarios
+  async execute(): Promise<DAY_OPERATIONS> {
+    let typeOperationToStart: DAY_OPERATIONS = DAY_OPERATIONS.start_shift_inventory;
 
-        for (const dayOp of dayOperations) {
-            const { operation_type, id_item } = dayOp;
-            if (operation_type === DAY_OPERATIONS.end_shift_inventory 
-            || operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-                endShiftOrProductDevolutionInventoryIds.push(id_item);
-                typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
-            } else if (
-                operation_type === DAY_OPERATIONS.restock_inventory
-                || operation_type === DAY_OPERATIONS.route_transaction) {
-                typeOperationToStart = DAY_OPERATIONS.restock_inventory;
-            }
+    const dayOperations:DayOperation[] = await this.unitOfWork.execute(
+      async (repo) => {
+        return await repo.dayOperationRepository.listDayOperations();
+      },
+    );
 
-            if (operation_type === DAY_OPERATIONS.start_shift_inventory) {
-                startShiftInventoryIds.push( id_item );
-            }
-        }
+    // const dayOperations = await this.localDayOperationRepo.listDayOperations();
+    const startShiftInventoryIds: string[] = [];
+    const endShiftOrProductDevolutionInventoryIds: string[] = [];
 
-        // Verify if there is a product devolution before end shift inventory.
-        if (typeOperationToStart === DAY_OPERATIONS.end_shift_inventory && startShiftInventoryIds.length > 0) { 
-            const inventoryOperations = await this.localInventoryOperationRepo.retrieveInventoryOperations(endShiftOrProductDevolutionInventoryIds);
-            
-            const isProductDevolutionActive:boolean = inventoryOperations.some(invOp => {
-                const { id_inventory_operation_type, state } = invOp;
-                if (id_inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory && state === 1) return true;
-                 else return false;
-            });
+    for (const dayOp of dayOperations) {
+      const { operation_type, id_item } = dayOp;
+      if (
+        operation_type === DAY_OPERATIONS.end_shift_inventory ||
+        operation_type === DAY_OPERATIONS.product_devolution_inventory
+      ) {
+        endShiftOrProductDevolutionInventoryIds.push(id_item);
+        typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
+      } else if (
+        operation_type === DAY_OPERATIONS.restock_inventory ||
+        operation_type === DAY_OPERATIONS.route_transaction
+      ) {
+        typeOperationToStart = DAY_OPERATIONS.restock_inventory;
+      }
 
-            if(isProductDevolutionActive) {
-                typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
-            } else {
-                typeOperationToStart = DAY_OPERATIONS.product_devolution_inventory;
-            }
-        }
-
-        // Verify if the others start shift inventories are cancelled.
-        if (typeOperationToStart === DAY_OPERATIONS.start_shift_inventory && startShiftInventoryIds.length > 0) { 
-            const inventoryOperations = await this.localInventoryOperationRepo.retrieveInventoryOperations(startShiftInventoryIds);
-
-            for (const invOp of inventoryOperations) {
-                const { state } = invOp;
-
-                if (state !== 0) {
-                    typeOperationToStart = DAY_OPERATIONS.restock_inventory;
-                    break;
-                }
-            }
-        }
-
-        return typeOperationToStart;
+      if (operation_type === DAY_OPERATIONS.start_shift_inventory) {
+        startShiftInventoryIds.push(id_item);
+      }
     }
+
+    // Verify if there is a product devolution before end shift inventory.
+    if (
+      typeOperationToStart === DAY_OPERATIONS.end_shift_inventory &&
+      startShiftInventoryIds.length > 0
+    ) {
+      const inventoryOperations:InventoryOperation[] = await this.unitOfWork.execute(
+        async (repo) => {
+          return await repo.inventoryOperationRepository.retrieveInventoryOperations(
+            endShiftOrProductDevolutionInventoryIds,
+          );
+        },
+      );
+
+      // const inventoryOperations =
+      //   await this.localInventoryOperationRepo.retrieveInventoryOperations(
+      //     endShiftOrProductDevolutionInventoryIds,
+      //   );
+
+      const isProductDevolutionActive: boolean = inventoryOperations.some(
+        (invOp) => {
+          const { id_inventory_operation_type, state } = invOp;
+          if (
+            id_inventory_operation_type ===
+              DAY_OPERATIONS.product_devolution_inventory &&
+            state === 1
+          )
+            return true;
+          else return false;
+        },
+      );
+
+      if (isProductDevolutionActive) {
+        typeOperationToStart = DAY_OPERATIONS.end_shift_inventory;
+      } else {
+        typeOperationToStart = DAY_OPERATIONS.product_devolution_inventory;
+      }
+    }
+
+    // Verify if the others start shift inventories are cancelled.
+    if (
+      typeOperationToStart === DAY_OPERATIONS.start_shift_inventory &&
+      startShiftInventoryIds.length > 0
+    ) {
+      const inventoryOperations:InventoryOperation[] = await this.unitOfWork.execute(
+        async (repo) => {
+          return await repo.inventoryOperationRepository.retrieveInventoryOperations(
+            startShiftInventoryIds,
+          );
+        },
+      );
+      // const inventoryOperations =
+      //   await this.localInventoryOperationRepo.retrieveInventoryOperations(
+      //     startShiftInventoryIds,
+      //   );
+
+      for (const invOp of inventoryOperations) {
+        const { state } = invOp;
+
+        if (state !== 0) {
+          typeOperationToStart = DAY_OPERATIONS.restock_inventory;
+          break;
+        }
+      }
+    }
+
+    return typeOperationToStart;
+  }
 }

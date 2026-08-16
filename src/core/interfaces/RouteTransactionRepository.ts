@@ -1,5 +1,4 @@
 // Entities
-import { Store } from '@/src/core/entities/Store';
 import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
 // Object values

@@ -4,6 +4,7 @@ import { injectable, inject } from 'tsyringe'
 // Repositories
 import { IDService } from '@/src/core/interfaces/IDService';
 import { DateService } from '@/src/core/interfaces/DateService';
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 import { LocationService } from '@/src/core/interfaces/LocationService';
 import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
@@ -43,10 +44,11 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export default class RegisterNewRouteTransaction {
   constructor(
     // Repositories
-    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-    @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
-    @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
-    @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    // @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+    // @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
+    // @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
     
     // Services
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -65,10 +67,22 @@ export default class RegisterNewRouteTransaction {
     coords: Coordinates|null
   ):Promise<RouteTransaction> {
     const { id_work_day, id_route_day } = workDayInformation;
-    
-    const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
-    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
-    const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
+
+    const currentInventory: ProductInventory[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.productInventoryRepository.retrieveInventory();
+    });
+
+    const dayOperations: DayOperation[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.dayOperationRepository.listDayOperations();
+    });
+
+    const storesRetrieved: Store[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.storeRepository.retrieveStore([ id_store ]);
+    });
+
+    // const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
+    // const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    // const storesRetrieved: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
 
     let latitude: string = "0";
     let longitude: string = "0";
@@ -173,9 +187,16 @@ export default class RegisterNewRouteTransaction {
     const updatedInventory: ProductInventory[] = productInventoryAggregate.getModifiedProductInventory();
     const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
-    await this.localProductInventoryRepo.updateInventory(updatedInventory);
-    await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
-    await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+    await this.unitOfWork.execute(async (repo) => {
+      await repo.productInventoryRepository.updateInventory(updatedInventory);
+      await repo.routeTransactionRepository.insertRouteTransaction(routeTransaction, false);
+      await repo.dayOperationRepository.insertDayOperations(newListdayOperations);
+    });
+    
+    // await this.localProductInventoryRepo.updateInventory(updatedInventory);
+    // await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
+    // await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+
     
     return routeTransaction;
   }

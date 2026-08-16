@@ -2,11 +2,12 @@
 import { inject, injectable } from 'tsyringe';
 
 // Interfaces
-import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
-import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
-import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
 import { IDService } from '@/src/core/interfaces/IDService';
+import { IUnitOfWork } from '@/src/core/interfaces/IUnitOfWork';
 import { DateService } from '@/src/core/interfaces/DateService';
+import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
+import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
+import { InventoryOperationRepository } from '@/src/core/interfaces/InventoryOperationRepository';
 
 // Entities
 import { DayOperation } from '@/src/core/entities/DayOperation';
@@ -26,9 +27,10 @@ import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 export default class CancelInventoryOperationUseCase {
   constructor(
     // Repositories
-    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-    @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
-    @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    // @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
+    // @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
 
     // Services
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -38,15 +40,27 @@ export default class CancelInventoryOperationUseCase {
   // TODO: Add synchronization with central database when online.
   async execute(id_inventory_operation: string): Promise<void> {
     // Load required state
-    const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
+    // const [inventoryOperation] = await this.localInventoryOperationRepo.retrieveInventoryOperations([id_inventory_operation]);
+    const [inventoryOperation] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.inventoryOperationRepository.retrieveInventoryOperations([id_inventory_operation]);
+    });
+    
     if (!inventoryOperation) throw new Error('The inventory operation to cancel does not exist.');
 
     const { inventory_operation_descriptions, id_inventory_operation_type, state } = inventoryOperation;
 
     if (state === 0) throw new Error('The inventory operation is already cancelled.');
 
-    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
-    const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
+    const dayOperations: DayOperation[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.dayOperationRepository.listDayOperations();
+    }); 
+
+    const currentInventory: ProductInventory[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.productInventoryRepository.retrieveInventory();
+    }); 
+
+    // const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    // const currentInventory: ProductInventory[] = await this.localProductInventoryRepo.retrieveInventory();
 
     const dayOperationOfInventory = dayOperations.find((dayOp) => { return dayOp.id_item === id_inventory_operation && dayOp.operation_type !== DAY_OPERATIONS.cancel_inventory_operation})
 
@@ -83,8 +97,14 @@ export default class CancelInventoryOperationUseCase {
     const updatedProducts: ProductInventory[] = modifiedInventory;
     const newDayOps: DayOperation[] | null = dayAgg.getNewDayOperations();
 
-    await this.localInventoryOperationRepo.updateInventoryOperation(cancelledOperation);
-    if (updatedProducts.length > 0) await this.localProductInventoryRepo.updateInventory(updatedProducts);
-    if (newDayOps && newDayOps.length > 0) await this.localDayOperationRepo.insertDayOperations(newDayOps);
+
+    await this.unitOfWork.execute(async (repo) => {
+      await repo.inventoryOperationRepository.updateInventoryOperation(cancelledOperation);
+      if (updatedProducts.length > 0) await repo.productInventoryRepository.updateInventory(updatedProducts);
+      if (newDayOps && newDayOps.length > 0) await repo.dayOperationRepository.insertDayOperations(newDayOps);
+      // await this.localInventoryOperationRepo.updateInventoryOperation(cancelledOperation);
+      // if (updatedProducts.length > 0) await this.localProductInventoryRepo.updateInventory(updatedProducts);
+      // if (newDayOps && newDayOps.length > 0) await this.localDayOperationRepo.insertDayOperations(newDayOps);
+    }); 
   }
 }

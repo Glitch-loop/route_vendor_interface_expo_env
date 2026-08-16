@@ -53,6 +53,8 @@ import { SQLiteShiftOrganizationRepository } from '@/src/infrastructure/reposito
 import { SQLiteRouteTransactionRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteRouteTransactionRepository'
 import { SQLiteUserRepository } from '@/src/infrastructure/repositories/SQLite/SQLiteUserRepository'
 
+// Unit of work - Sqlite
+import { SQLiteUnitOfWork } from '@/src/infrastructure/repositories/SQLite/SQLiteUnitOfWork';
 
 // Implementations - Backend
 import { BackendUserRepository } from '@/src/infrastructure/repositories/backend-server/BackendUserRepository';
@@ -79,6 +81,7 @@ import { BackendStoreRepository } from '../repositories/backend-server/BackendSt
 import { BackendDayOperationRepository } from '../repositories/backend-server/BackendDayOperationRepository';
 import { BackendRouteTransactionRepository } from '../repositories/backend-server/BackendRouteTransactionRepository';
 import { BackendInventoryOperationRepository } from '../repositories/backend-server/BackendInventoryOperationRepository';
+import { IUnitOfWork } from '@/src/core/interfaces/IUnitOfWork';
 
 
 
@@ -135,6 +138,11 @@ container.register<ProductRepository>(TOKENS.SQLiteProductRepository, {
 
 container.register<LocalUserRepository>(TOKENS.LocalAuthenticationRepository, {
     useClass: SQLiteUserRepository
+});
+
+// =================== Implementation of Unit of work - SQLite ====================
+container.register<IUnitOfWork>(TOKENS.SQLiteUnitOfWork, {
+    useClass: SQLiteUnitOfWork
 });
 
 // RouteRepository: There is not need to register it because there is not implementation needed.

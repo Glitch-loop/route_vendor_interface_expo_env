@@ -12,10 +12,11 @@ import { MapperDTO } from "@/src/application/mappers/MapperDTO";
 import DayOperationDTO from "@/src/application/dto/DayOperationDTO";
 
 // Interfaces
-import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
-import { LocationService } from "@/src/core/interfaces/LocationService";
 import { IDService } from "@/src/core/interfaces/IDService";
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
 import { DateService } from "@/src/core/interfaces/DateService";
+import { LocationService } from "@/src/core/interfaces/LocationService";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
 
 // Aggregates
 import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
@@ -26,7 +27,8 @@ import { TOKENS } from "@/src/infrastructure/di/tokens";
 @injectable()
 export default class VisitClientWithoutMakeARouteTransactionUseCase {
   constructor(
-    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
 
     // Services
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -40,7 +42,10 @@ export default class VisitClientWithoutMakeARouteTransactionUseCase {
     id_route_day: string,
     coords: Coordinates|null
   ): Promise<DayOperationDTO|null> {
-    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    const dayOperations: DayOperation[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.dayOperationRepository.listDayOperations();
+    });
+    // const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);
     const mapper: MapperDTO = new MapperDTO();
     let latitude: string | undefined = undefined;
@@ -85,7 +90,11 @@ export default class VisitClientWithoutMakeARouteTransactionUseCase {
 
     // Persist all changes
     const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
-    await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+    
+    await this.unitOfWork.execute(async (repo) => {
+      await repo.dayOperationRepository.insertDayOperations(newListdayOperations);
+    });
+    // await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
 
     // Extract new day operation
     const newDayOperation = newListdayOperations.pop();        

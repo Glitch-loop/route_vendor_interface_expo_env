@@ -35,6 +35,9 @@ export const TOKENS = {
     SQLiteShiftOrganizationRepository: Symbol('SQLiteShiftOrganizationRepository'),
     SQLiteStoreRepository: Symbol('SQLiteStoreRepository'),
 
+    // SQLite - Unit of Work
+    SQLiteUnitOfWork: Symbol('SQLiteUnitOfWork'),
+
     //Sync Repositories
     SyncInventoryOperationRepository: Symbol('SyncInventoryOperationRepository'),
     SyncDayOperationRepository: Symbol('SyncDayOperationRepository'),

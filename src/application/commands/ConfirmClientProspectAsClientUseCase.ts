@@ -10,6 +10,7 @@ import { DayOperation } from '@/src/core/entities/DayOperation';
 
 // Interfaces
 import { IDService } from '@/src/core/interfaces/IDService';
+import { IUnitOfWork } from '@/src/core/interfaces/IUnitOfWork';
 import { DateService } from '@/src/core/interfaces/DateService';
 import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 import { LocationService } from '@/src/core/interfaces/LocationService';
@@ -37,8 +38,9 @@ import { TOKENS } from '@/src/infrastructure/di/tokens';
 export default class ConfirmClientProspectAsClientUseCase {
   constructor(
     // Repositories
-    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-    @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    // @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
 
     // Services
     @inject(TOKENS.IDService) private readonly idService: IDService,
@@ -65,8 +67,16 @@ export default class ConfirmClientProspectAsClientUseCase {
     let longitude: string|undefined = undefined;
     let sellingDate:Date = new Date();
 
-    const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
-    const stores: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
+
+    const dayOperations: DayOperation[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.dayOperationRepository.listDayOperations();
+    });
+
+    const stores: Store[] = await this.unitOfWork.execute(async (repo) => {
+      return await repo.storeRepository.retrieveStore([ id_store ]);
+    });
+    // const dayOperations: DayOperation[] = await this.localDayOperationRepo.listDayOperations();
+    // const stores: Store[] = await this.localStoreRepo.retrieveStore([ id_store ]);
     
     const dayOperationAggregate: OperationDayAggregate = new OperationDayAggregate(dayOperations);        
 
@@ -131,11 +141,17 @@ export default class ConfirmClientProspectAsClientUseCase {
           latitude,
           longitude
         );
+        
+        const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
         // Persist all changes
-        await this.localStoreRepo.updateStore(storeAggregate.getStoreClient());
-        const newListdayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
-        await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
+        await this.unitOfWork.execute(async (repo) => {
+          await repo.storeRepository.updateStore(storeAggregate.getStoreClient());
+          await repo.dayOperationRepository.insertDayOperations(newListdayOperations);
+        });
+        
+        // await this.localStoreRepo.updateStore(storeAggregate.getStoreClient());
+        // await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
         
         // Extract new day operation
         const newDayOperation = newListdayOperations.pop();        

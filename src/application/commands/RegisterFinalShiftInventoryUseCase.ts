@@ -2,36 +2,39 @@
 import { inject, injectable } from "tsyringe";
 
 // Interfaces
+import { IDService } from "@/src/core/interfaces/IDService";
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
+import { DateService } from "@/src/core/interfaces/DateService";
 import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
 import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
-import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
-import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
-import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
-import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
 import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
-import { IDService } from "@/src/core/interfaces/IDService";
-import { DateService } from "@/src/core/interfaces/DateService";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
+import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
+import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
+
+// Enums
+import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 
 // Object values
 import { InventoryOperationDescription } from "@/src/core/object-values/InventoryOperationDescription";
 
 // Entities
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
+import { DayOperation } from "@/src/core/entities/DayOperation";
 
 // Aggregates
+import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
 import { ShiftOrganizationAggregate } from "@/src/core/aggregates/ShiftOrganizationAggregate";
 import { InventoryOperationAggregate } from "@/src/core/aggregates/InventoryOperationAggregate";
-import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
 
 // DTOs and mapper
-import InventoryOperationDescriptionDTO from "@/src/application/dto/InventoryOperationDescriptionDTO";
 import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
+import InventoryOperationDescriptionDTO from "@/src/application/dto/InventoryOperationDescriptionDTO";
+import WorkDayInformationDTO from "@/src/application/dto/WorkdayInformationDTO";
 
-// Utils
+// DI container
 import { TOKENS } from "@/src/infrastructure/di/tokens";
-import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
-import WorkDayInformationDTO from "../dto/WorkdayInformationDTO";
-import { DayOperation } from "@/src/core/entities/DayOperation";
 
 /**
  * StartWorkDayUseCase - Uses SQLite for local/offline operations
@@ -41,11 +44,12 @@ import { DayOperation } from "@/src/core/entities/DayOperation";
 export default class RegisterFinalShiftInventoryUseCase {
 	constructor(
 		// Local repositories dependencies
-		@inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,
-		@inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
-		@inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
-		@inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-		
+		// @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,
+		// @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
+		// @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+		// @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+		@inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+
 		// Remote repositories dependencies
 		@inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
 		
@@ -111,9 +115,15 @@ export default class RegisterFinalShiftInventoryUseCase {
 		const dayOperations: DayOperation[] = dayOperationAggregate.getNewDayOperations() || [];
 
 		// Store information in local database.
-		await this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);
-		await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);        
-		await this.localDayOperationRepo.insertDayOperations(dayOperations!);
+		await this.unitOfWork.execute(async (repo) => {
+			await repo.dayOperationRepository.insertDayOperations(dayOperations!);
+			await repo.shiftOrganizationRepository.updateWorkDay(finalWorkDayInformation);
+			await repo.inventoryOperationRepository.createInventoryOperation(newInventoryOperation);        
+    });
+		
+		// await this.localShiftDayRepo.updateWorkDay(finalWorkDayInformation);
+		// await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);        
+		// await this.localDayOperationRepo.insertDayOperations(dayOperations!);
 
 }
 

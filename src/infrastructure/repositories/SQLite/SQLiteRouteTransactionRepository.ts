@@ -1,50 +1,53 @@
 // Libraries
-import { injectable, inject } from 'tsyringe';
-import { SQLiteDatabase } from "expo-sqlite";
+import { SQLiteDatabase } from 'expo-sqlite';
 
 // Interfaces
-import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
+import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
+import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 
 // Entities
-import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
+import { RouteTransaction } from '@/src/core/entities/RouteTransaction';
 
 // Value Objects
-import { RouteTransactionDescription } from "@/src/core/object-values/RouteTransactionDescription";
+import { RouteTransactionDescription } from '@/src/core/object-values/RouteTransactionDescription';
 
 // Database
-import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
-
-// DataSources
-import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
+import EMBEDDED_TABLES from '@/src/infrastructure/database/embeddedTables';
 
 // Models
-import RouteTransactionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionServerModel';
-import RouteTransactionDescriptionModel from '@/src/infrastructure/persitence/model/server-models/RouteTransactionDescriptionServerModel';
-
-// Utils
-import { TOKENS } from "@/src/infrastructure/di/tokens";
-import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
-import RouteTransactionLocalModel from '../../persitence/model/local-models/RouteTransactionLocalModel';
-import RouteTransactionDescriptionLocalModel from '../../persitence/model/local-models/RouteTransactionDescriptionLocalModel';
+import RouteTransactionLocalModel from '@/src/infrastructure/persitence/model/local-models/RouteTransactionLocalModel';
+import RouteTransactionDescriptionLocalModel from '@/src/infrastructure/persitence/model/local-models/RouteTransactionDescriptionLocalModel';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+import { inject, injectable } from 'tsyringe';
+import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
 export class SQLiteRouteTransactionRepository implements RouteTransactionRepository, SyncRouteTransactionRepository {
-    constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+  private readonly db: SQLiteDatabase;
+  
+  constructor(db: SQLiteDatabase);
+  constructor(dataSource: SQLiteDataSource);
+  constructor(@inject(TOKENS.SQLiteDataSource) dbOrDataSource?: SQLiteDatabase | SQLiteDataSource) {
+    if (!dbOrDataSource) {
+      throw new Error(
+        'SQLiteDayOperationRepository requires a Database or DataSource instance.'
+      );
+    }
 
-  async insertRouteTransaction(route_transaction: RouteTransaction, is_synced: boolean): Promise<void> {
-    let insertSyncedRecord = `
-      INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
-        (id_route_transaction, 
-        date, 
-        state, 
-        cash_received, 
-        latitude,
-        longitude,
-        id_work_day, 
-        created_by, 
-        id_payment_method,
-        id_store
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+    if (
+      'getClient' in dbOrDataSource &&
+      typeof dbOrDataSource.getClient === 'function'
+    ) {
+      this.db = dbOrDataSource.getClient();
+    } else {
+      this.db = dbOrDataSource as SQLiteDatabase;
+    }
+  }
+
+  async insertRouteTransaction(
+    route_transaction: RouteTransaction,
+    is_synced: boolean
+  ): Promise<void> {
     const {
       id_route_transaction,
       date,
@@ -56,33 +59,23 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
       created_by,
       id_store,
       payment_method,
-      transaction_description
+      transaction_description,
     } = route_transaction;
-    
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      if (is_synced) {
-          insertSyncedRecord = `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} 
-              (id_route_transaction, 
-              date, 
-              state, 
-              cash_received, 
-              latitude,
-              longitude,
-              id_work_day, 
-              created_by, 
-              id_payment_method,
-              id_store,
-              is_synced,
-              is_deleted
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0);`;
-      }
 
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        await tx.runAsync(insertSyncedRecord,
-        [
+    const insertQuery = is_synced
+      ? `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (
+          id_route_transaction, date, state, cash_received, latitude, longitude,
+          id_work_day, created_by, id_payment_method, id_store, is_synced, is_deleted
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0);`
+      : `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} (
+          id_route_transaction, date, state, cash_received, latitude, longitude,
+          id_work_day, created_by, id_payment_method, id_store
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+    try {
+      const stmtMain = await this.db.prepareAsync(insertQuery);
+      try {
+        await stmtMain.executeAsync([
           id_route_transaction,
           date.toISOString(),
           state,
@@ -94,302 +87,294 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
           payment_method,
           id_store,
         ]);
+      } finally {
+        await stmtMain.finalizeAsync();
+      }
 
-        for (const description of transaction_description) {
-          const {
-            id_route_transaction_description,
-            price_at_moment,
-            cost_at_moment,
-            amount,
-            created_at,
-            id_product_inventory,
-            id_transaction_operation_type,
-            id_product,
-            id_route_transaction
-          } = description
-
-          await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} 
-              (id_route_transaction_description, 
-              price_at_moment, 
-              cost_at_moment, 
-              amount, 
-              created_at,
-              id_product_inventory,
-              id_transaction_operation_type, 
-              id_product, 
-              id_route_transaction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-          `,
-          [
-            id_route_transaction_description,
-            price_at_moment,
-            cost_at_moment,
-            amount,
-            created_at.toISOString(),
-            id_product_inventory,
-            id_transaction_operation_type,
-            id_product,
-            id_route_transaction
-          ]);
+      if (transaction_description && transaction_description.length > 0) {
+        const stmtDesc = await this.db.prepareAsync(
+          `INSERT INTO ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} (
+            id_route_transaction_description, price_at_moment, cost_at_moment,
+            amount, created_at, id_product_inventory, id_transaction_operation_type,
+            id_product, id_route_transaction
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`
+        );
+        try {
+          for (const description of transaction_description) {
+            await stmtDesc.executeAsync([
+              description.id_route_transaction_description,
+              description.price_at_moment,
+              description.cost_at_moment,
+              description.amount,
+              description.created_at.toISOString(),
+              description.id_product_inventory,
+              description.id_transaction_operation_type,
+              description.id_product,
+              description.id_route_transaction,
+            ]);
+          }
+        } finally {
+          await stmtDesc.finalizeAsync();
         }
-      });
-    } catch(error) {
-      throw new Error("Failed to insert route transaction: " + error);
+      }
+    } catch (error) {
+      throw new Error('Failed to insert route transaction', { cause: error });
     }
   }
 
-  async updateRouteTransaction(route_transaction: RouteTransaction): Promise<void> {   
-    try {
-      await this.dataSource.initialize();
-      const {
-        id_route_transaction,
-        date,
-        state,
-        id_work_day,
-        id_store,
-        payment_method,
-      } = route_transaction;
+  async updateRouteTransaction(route_transaction: RouteTransaction): Promise<void> {
+    const { id_route_transaction, date, state, id_work_day, id_store, payment_method } =
+      route_transaction;
 
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      await db.withExclusiveTransactionAsync(async (tx) => {
-      await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
-        date = ?, 
-        state = ?, 
-        id_work_day = ?, 
-        id_payment_method = ?, 
-        id_store = ?,
-        is_synced = ?,
-        updated_at = ?
-        WHERE id_route_transaction = ?;
-      `,
-      [
-        date.toISOString(),
-        state,
-        id_work_day,
-        payment_method,
-        id_store,
-        0, // Mark as not synced
-        new Date().toISOString(),
-        id_route_transaction,
-      ]);
-    });
+    try {
+      const stmt = await this.db.prepareAsync(
+        `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET  
+          date = ?, state = ?, id_work_day = ?, id_payment_method = ?, 
+          id_store = ?, is_synced = 0, updated_at = ?
+         WHERE id_route_transaction = ?;`
+      );
+      try {
+        await stmt.executeAsync([
+          date.toISOString(),
+          state,
+          id_work_day,
+          payment_method,
+          id_store,
+          new Date().toISOString(),
+          id_route_transaction,
+        ]);
+      } finally {
+        await stmt.finalizeAsync();
+      }
     } catch (error) {
-      throw new Error("Failed to update route transaction: " + error);
+      throw new Error('Failed to update route transaction', { cause: error });
     }
   }
 
   async deleteRouteTransactions(route_transactions: RouteTransaction[]): Promise<void> {
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = this.dataSource.getClient();
+    if (!route_transactions || route_transactions.length === 0) return;
 
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (?);`, 
-          [route_transactions.map(rt => rt.id_route_transaction).join(",")]);
-
-        await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (?);`,
-          [route_transactions.map(rt => rt.id_route_transaction).join(",")]
-        );
-      });
-    } catch(error) {
-      throw new Error('Failed to delete route transactions: ' + error);
-    }
-  }
-
-  async listRouteTransactions(id_work_day? :string[]): Promise<RouteTransaction[]> {
-    const transactions:RouteTransaction[] = [];
-    let query: string = `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`;
-    
-    // Retrieve all route transaction descriptions
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = this.dataSource.getClient();
-    if (id_work_day !== undefined) {
-      query += ` WHERE id_work_day IN (?);` 
-    }
-    // Retrieve all route transactions
-    const transactionsStatement = await db.prepareAsync(query);
+    const ids = route_transactions.map((rt) => rt.id_route_transaction);
+    const placeholders = ids.map(() => '?').join(',');
 
     try {
-      let resultTransactions: any;
-      if (id_work_day !== undefined) {
-        resultTransactions = transactionsStatement.executeSync<any>([id_work_day.map(id => id).join(",")]);
-      } else {
-        resultTransactions = transactionsStatement.executeSync<any>();
+      const stmtDesc = await this.db.prepareAsync(
+        `DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${placeholders});`
+      );
+      try {
+        await stmtDesc.executeAsync(ids);
+      } finally {
+        await stmtDesc.finalizeAsync();
       }
 
-      // Map descriptions to their respective transactions
-      for (const transaction of resultTransactions) {                
-        const id_route_transaction:string = transaction['id_route_transaction'];
-        
-        const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.retrieveRouteTransactionDescriptionsByIds([ id_route_transaction ]);
-        
-        transactions.push(
-          new RouteTransaction(
-            transaction['id_route_transaction'],
-            new Date(transaction['date']),
-            transaction['state'],
-            transaction['cash_received'],
-            transaction['id_work_day'],
-            transaction['id_store'],
-            transaction['latitude'],
-            transaction['longitude'],
-            transaction['created_by'],
-            transaction['id_payment_method'],
-            resultRouteTransactionDescriptions
-          )
-        );
+      const stmtMain = await this.db.prepareAsync(
+        `DELETE FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${placeholders});`
+      );
+      try {
+        await stmtMain.executeAsync(ids);
+      } finally {
+        await stmtMain.finalizeAsync();
       }
-      return transactions;
     } catch (error) {
-      throw new Error("Failed to list route transactions: " + error);
-    } finally {
-      await transactionsStatement.finalizeAsync()
+      throw new Error('Failed to delete route transactions', { cause: error });
     }
   }
 
-  async listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]> {
-    const transactions:RouteTransaction[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = this.dataSource.getClient();
-
-    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`);
-
+  async listRouteTransactions(id_work_day?: string[]): Promise<RouteTransaction[]> {
     try {
-      // Retrieve all route transactions
-      const resultTransactions = transactionsStatement.executeSync<any>([id_store]);
+      let query = `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS}`;
+      let params: string[] = [];
 
-      // Map descriptions to their respective transactions
-      for (const transaction of resultTransactions) {
-        const id_route_transaction:string = transaction['id_route_transaction'];
-        const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.retrieveRouteTransactionDescriptionsByIds([ id_route_transaction ]);
-        
-        transactions.push(
-          new RouteTransaction(
-            transaction['id_route_transaction'],
-            new Date(transaction['date']),
-            transaction['state'],
-            transaction['cash_received'],
-            transaction['id_work_day'],
-            transaction['id_store'],
-            transaction['latitude'],
-            transaction['longitude'],
-            transaction['created_by'],
-            transaction['id_payment_method'],
-            resultRouteTransactionDescriptions
-          )
-        );
+      if (id_work_day && id_work_day.length > 0) {
+        const placeholders = id_work_day.map(() => '?').join(',');
+        query += ` WHERE id_work_day IN (${placeholders})`;
+        params = id_work_day;
       }
 
-      return transactions;
-    } catch (error) {
-      throw new Error("Failed to list route transactions: " + error);
-    } finally {
-      await transactionsStatement.finalizeAsync();
-    }
-  }
-
-  async retrieveRouteTransactionById(id_route_transactions: string[]): Promise<RouteTransaction[]> {
-    const transactions:RouteTransaction[] = [];
-    const routeTransactionDescriptions: Map<string, RouteTransactionDescription[]> = new Map();
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = this.dataSource.getClient();
-      
-    // Retrieve all route transactions
-    const transactionsStatement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${id_route_transactions.map(id => `'${id}'`).join(', ')});`);
-
-    try {
-      // Retrieve all route transaction descriptions
-      const resultRouteTransactionDescriptions: RouteTransactionDescription[] = await this.listRouteTransactionDescriptions();
-      
-      const resultTransactions = transactionsStatement.executeSync<any>();
-        
-      // Group descriptions by their route transaction ID
-      for (const transactionDescription of resultRouteTransactionDescriptions) {
-        const descriptions = routeTransactionDescriptions.get(transactionDescription.id_route_transaction) || [];
-        descriptions.push(transactionDescription);
-        routeTransactionDescriptions.set(transactionDescription.id_route_transaction, descriptions);
+      const stmt = await this.db.prepareAsync(query);
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>(params);
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
       }
 
-      // Map descriptions to their respective transactions
-      for (const transaction of resultTransactions) {
-        const id_route_transaction:string = transaction['id_route_transaction'];
-        const descriptions = routeTransactionDescriptions.get(id_route_transaction) || [];
+      const transactions: RouteTransaction[] = [];
+      for (const transaction of rows) {
+        const descriptions = await this.retrieveRouteTransactionDescriptionsByIds([
+          transaction.id_route_transaction,
+        ]);
+
         transactions.push(
           new RouteTransaction(
-            transaction['id_route_transaction'],
-            new Date(transaction['date']),
-            transaction['state'],
-            transaction['cash_received'],
-            transaction['id_work_day'],
-            transaction['id_store'],
-            transaction['latitude'],
-            transaction['longitude'],
-            transaction['created_by'],
-            transaction['id_payment_method'],
+            transaction.id_route_transaction,
+            new Date(transaction.date),
+            transaction.state,
+            transaction.cash_received,
+            transaction.id_work_day,
+            transaction.id_store,
+            transaction.latitude,
+            transaction.longitude,
+            transaction.created_by,
+            transaction.id_payment_method,
             descriptions
           )
         );
       }
       return transactions;
     } catch (error) {
-      throw new Error("Failed to retrieve route transactions by ID: " + error);
-    } finally {
-      await transactionsStatement.finalizeAsync();
+      throw new Error('Failed to list route transactions', { cause: error });
+    }
+  }
+
+  async listRouteTransactionByStore(id_store: string): Promise<RouteTransaction[]> {
+    try {
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_store = ?;`
+      );
+
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>([id_store]);
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      const transactions: RouteTransaction[] = [];
+      for (const transaction of rows) {
+        const descriptions = await this.retrieveRouteTransactionDescriptionsByIds([
+          transaction.id_route_transaction,
+        ]);
+
+        transactions.push(
+          new RouteTransaction(
+            transaction.id_route_transaction,
+            new Date(transaction.date),
+            transaction.state,
+            transaction.cash_received,
+            transaction.id_work_day,
+            transaction.id_store,
+            transaction.latitude,
+            transaction.longitude,
+            transaction.created_by,
+            transaction.id_payment_method,
+            descriptions
+          )
+        );
+      }
+      return transactions;
+    } catch (error) {
+      throw new Error('Failed to list route transactions by store', { cause: error });
+    }
+  }
+
+  async retrieveRouteTransactionById(
+    id_route_transactions: string[]
+  ): Promise<RouteTransaction[]> {
+    if (!id_route_transactions || id_route_transactions.length === 0) return [];
+
+    try {
+      const placeholders = id_route_transactions.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE id_route_transaction IN (${placeholders});`
+      );
+
+      let resultTransactions: any[];
+      try {
+        const result = await stmt.executeAsync<any>(id_route_transactions);
+        resultTransactions = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      const descriptionsList = await this.retrieveRouteTransactionDescriptionsByIds(
+        id_route_transactions
+      );
+
+      const descriptionsMap = new Map<string, RouteTransactionDescription[]>();
+      for (const desc of descriptionsList) {
+        const list = descriptionsMap.get(desc.id_route_transaction) || [];
+        list.push(desc);
+        descriptionsMap.set(desc.id_route_transaction, list);
+      }
+
+      return resultTransactions.map(
+        (t) =>
+          new RouteTransaction(
+            t.id_route_transaction,
+            new Date(t.date),
+            t.state,
+            t.cash_received,
+            t.id_work_day,
+            t.id_store,
+            t.latitude,
+            t.longitude,
+            t.created_by,
+            t.id_payment_method,
+            descriptionsMap.get(t.id_route_transaction) || []
+          )
+      );
+    } catch (error) {
+      throw new Error('Failed to retrieve route transactions by ID', { cause: error });
     }
   }
 
   async listRouteTransactionDescriptions(): Promise<RouteTransactionDescription[]> {
-    const routeTransactionDescriptions: RouteTransactionDescription[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-    
-    const statementTransactionDescriptions = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS}`);
-
     try {
-      const resultTransactionDescriptions = statementTransactionDescriptions.executeSync<RouteTransactionDescription>();
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS};`
+      );
 
-      for (const description of resultTransactionDescriptions) {
-        routeTransactionDescriptions.push(
-          new RouteTransactionDescription(
-            description['id_route_transaction_description'],
-            description['price_at_moment'],
-            description['cost_at_moment'],
-            description['amount'],
-            new Date(description['created_at']),
-            description['id_product_inventory'],
-            description['id_transaction_operation_type'],
-            description['id_product'],
-            description['id_route_transaction']
-          )
-        );
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>();
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
       }
-      return routeTransactionDescriptions;
+
+      return rows.map(
+        (d) =>
+          new RouteTransactionDescription(
+            d.id_route_transaction_description,
+            d.price_at_moment,
+            d.cost_at_moment,
+            d.amount,
+            new Date(d.created_at),
+            d.id_product_inventory,
+            d.id_transaction_operation_type,
+            d.id_product,
+            d.id_route_transaction
+          )
+      );
     } catch (error) {
-      throw new Error("Failed to list route transaction descriptions: " + error);
-    } finally {
-      await statementTransactionDescriptions.finalizeAsync();
+      throw new Error('Failed to list route transaction descriptions', { cause: error });
     }
   }
 
-  async retrieveRouteTransactionDescriptionsByIds(ids_route_transaction: string[]): Promise<RouteTransactionDescription[]> {
-    const routeTransactionDescriptions: RouteTransactionDescription[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-    
-    // We receive route transaction IDs; filter descriptions by id_route_transaction
-    const statementTransactionDescriptions = await db.prepareAsync(
-      `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${ids_route_transaction.map(id => `'${id}'`).join(', ')})`
-    );
+  async retrieveRouteTransactionDescriptionsByIds(
+    ids_route_transaction: string[]
+  ): Promise<RouteTransactionDescription[]> {
+    if (!ids_route_transaction || ids_route_transaction.length === 0) return [];
 
-    try {  
-      const execResult = statementTransactionDescriptions.executeSync<any>();
-      const rows = execResult.getAllSync();
+    try {
+      const placeholders = ids_route_transaction.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE id_route_transaction IN (${placeholders});`
+      );
 
-      for (const description of rows) {
-        routeTransactionDescriptions.push(
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>(ids_route_transaction);
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      return rows.map(
+        (description) =>
           new RouteTransactionDescription(
             description.id_route_transaction_description,
             description.price_at_moment,
@@ -401,153 +386,140 @@ export class SQLiteRouteTransactionRepository implements RouteTransactionReposit
             description.id_product,
             description.id_route_transaction
           )
-        );                
-      }
-      return routeTransactionDescriptions;
+      );
     } catch (error) {
-      throw new Error("Failed to retrieve route transaction descriptions by IDs: " + error);
-    } finally {
-      await statementTransactionDescriptions.finalizeAsync();
+      throw new Error('Failed to retrieve route transaction descriptions by IDs', {
+        cause: error,
+      });
     }
   }
 
   async listPendingRouteTransactionToSync(): Promise<RouteTransactionLocalModel[]> {
-    const idRouteTransaction:string[] = [];
-    const routeTransactionToSync: RouteTransactionLocalModel[] = [];
-    const routeTransactionToSyncWithoutDesc: RouteTransactionLocalModel[] = [];
-    const routeTransactionMap: Map<string, RouteTransactionLocalModel> = new Map<string, RouteTransactionLocalModel>();
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-
-    // Retrieving route transactions pending to sync
-    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
-    
     try {
-      const rows = stmt.executeSync<any>();
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} WHERE is_synced = 0 OR is_deleted = 1;`
+      );
+
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>();
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      const routeTransactionMap = new Map<string, RouteTransactionLocalModel>();
+      const idRouteTransactions: string[] = [];
+
       for (const row of rows) {
-        routeTransactionToSyncWithoutDesc.push({
-          ...row as RouteTransactionLocalModel,
-          transaction_descriptions: []
-        });
+        const model: RouteTransactionLocalModel = {
+          ...row,
+          transaction_descriptions: [],
+        };
+        routeTransactionMap.set(model.id_route_transaction, model);
+        idRouteTransactions.push(model.id_route_transaction);
       }
 
-      // Retrieving description of the route transactions.
-      for (const transaction of routeTransactionToSyncWithoutDesc) {
-        const { id_route_transaction } = transaction;
-        routeTransactionMap.set(id_route_transaction, transaction);
-        idRouteTransaction.push(id_route_transaction);
-      }
+      const descriptions = await this.retrieveRouteTransactionDescriptionsByIds(
+        idRouteTransactions
+      );
 
-      const routeTransactionDescriptions = await this.retrieveRouteTransactionDescriptionsByIds(idRouteTransaction);
-
-      for (const desc of routeTransactionDescriptions) {
-        const { id_route_transaction } = desc;
-        if (routeTransactionMap.has(id_route_transaction)) {
-          routeTransactionMap.get(id_route_transaction)!
-          .transaction_descriptions.push(
-            {
-                id_route_transaction_description: desc.id_route_transaction_description,
-                price_at_moment: desc.price_at_moment,
-                cost_at_moment: desc.cost_at_moment,
-                amount: desc.amount,
-                created_at: desc.created_at,
-                id_product_inventory: desc.id_product_inventory,
-                id_transaction_operation_type: desc.id_transaction_operation_type,
-                id_product: desc.id_product,
-                id_route_transaction: desc.id_route_transaction_description,
-            } as unknown as RouteTransactionDescriptionLocalModel
-          );
+      for (const desc of descriptions) {
+        const transaction = routeTransactionMap.get(desc.id_route_transaction);
+        if (transaction) {
+          transaction.transaction_descriptions.push({
+            id_route_transaction_description: desc.id_route_transaction_description,
+            price_at_moment: desc.price_at_moment,
+            cost_at_moment: desc.cost_at_moment,
+            amount: desc.amount,
+            created_at: desc.created_at,
+            id_product_inventory: desc.id_product_inventory,
+            id_transaction_operation_type: desc.id_transaction_operation_type,
+            id_product: desc.id_product,
+            id_route_transaction: desc.id_route_transaction,
+          } as unknown as RouteTransactionDescriptionLocalModel);
         }
       }
 
-      for(const [idTransaction, routeTransaction] of routeTransactionMap) {
-        routeTransactionToSync.push(routeTransaction);
-      }
-
-      return routeTransactionToSync;
+      return Array.from(routeTransactionMap.values());
     } catch (error) {
-      throw new Error('Failed to list pending route transactions to sync: ' + error);
-    } finally {
-      await stmt.finalizeAsync();
+      throw new Error('Failed to list pending route transactions to sync', {
+        cause: error,
+      });
     }
   }
 
-  async listPendingRouteTransactionDescriptionToSync(): Promise<RouteTransactionDescriptionLocalModel[]> {
-    const pending: RouteTransactionDescriptionLocalModel[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-    
-    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`);
-    
-    try {  
-      const rows = stmt.executeSync<any>();
-      
-      for (const row of rows) {
-        // Ensure created_at is Date if consumers expect it
-        if (row.created_at && typeof row.created_at === 'string') {
-          row.created_at = new Date(row.created_at);
-        }
-        pending.push(row as RouteTransactionDescriptionLocalModel);
+  async listPendingRouteTransactionDescriptionToSync(): Promise<
+    RouteTransactionDescriptionLocalModel[]
+  > {
+    try {
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} WHERE is_synced = 0 OR is_deleted = 1;`
+      );
+
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>();
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
       }
-      
-      return pending;
+
+      return rows.map((row) => ({
+        ...row,
+        created_at: row.created_at ? new Date(row.created_at) : row.created_at,
+      })) as RouteTransactionDescriptionLocalModel[];
     } catch (error) {
-      throw new Error('Failed to list pending route transaction descriptions to sync: ' + error);
-    } finally {
-      await stmt.finalizeAsync();
+      throw new Error('Failed to list pending route transaction descriptions to sync', {
+        cause: error,
+      });
     }
   }
 
-  async markRouteTransactionsAsSynced(routeTransactionSynced: RouteTransactionLocalModel[]): Promise<void> {
+  async markRouteTransactionsAsSynced(
+    routeTransactionSynced: RouteTransactionLocalModel[]
+  ): Promise<void> {
     if (!routeTransactionSynced || routeTransactionSynced.length === 0) return;
 
-    const ids: string[] = routeTransactionSynced.map(t => t.id_route_transaction);
-    const idsDesc: string[] = [];
-
-    for (const routeTransaction of routeTransactionSynced) {
-      const { transaction_descriptions } = routeTransaction;
-      for (const desc of transaction_descriptions) {
-        const { id_route_transaction_description } = desc;
-        idsDesc.push(id_route_transaction_description)
-      }
-    }
+    const ids: string[] = routeTransactionSynced.map((t) => t.id_route_transaction);
+    const idsDesc: string[] = routeTransactionSynced.flatMap((t) =>
+      t.transaction_descriptions.map((d) => d.id_route_transaction_description)
+    );
 
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        const placeholders = ids.map(() => '?').join(',');
-        await tx.runAsync(
-          `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET is_synced = 1 WHERE id_route_transaction IN (${placeholders});`,
-          ids
-        );
-      });
+      const placeholders = ids.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTIONS} SET is_synced = 1 WHERE id_route_transaction IN (${placeholders});`
+      );
+      try {
+        await stmt.executeAsync(ids);
+      } finally {
+        await stmt.finalizeAsync();
+      }
 
-      this.markRouteTransactionDescriptionsAsSynced(idsDesc);
+      await this.markRouteTransactionDescriptionsAsSynced(idsDesc);
     } catch (error) {
-      throw new Error('Failed to mark route transactions as synced: ' + error);
+      throw new Error('Failed to mark route transactions as synced', { cause: error });
     }
   }
 
   async markRouteTransactionDescriptionsAsSynced(ids: string[]): Promise<void> {
     if (!ids || ids.length === 0) return;
-    
-    try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
 
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        const placeholders = ids.map(() => '?').join(',');
-        await tx.runAsync(
-          `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} SET is_synced = 1 WHERE id_route_transaction_description IN (${placeholders});`,
-          ids
-        );
-      });
+    try {
+      const placeholders = ids.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `UPDATE ${EMBEDDED_TABLES.ROUTE_TRANSACTION_DESCRIPTIONS} SET is_synced = 1 WHERE id_route_transaction_description IN (${placeholders});`
+      );
+      try {
+        await stmt.executeAsync(ids);
+      } finally {
+        await stmt.finalizeAsync();
+      }
     } catch (error) {
-      throw new Error('Failed to mark route transaction descriptions as synced: ' + error);
+      throw new Error('Failed to mark route transaction descriptions as synced', {
+        cause: error,
+      });
     }
   }
 }

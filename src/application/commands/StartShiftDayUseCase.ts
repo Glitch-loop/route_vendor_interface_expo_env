@@ -2,17 +2,18 @@
 import { inject, injectable } from "tsyringe";
 
 // Interfaces
+import { IDService } from "@/src/core/interfaces/IDService";
+import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
+import { DateService } from "@/src/core/interfaces/DateService";
+import { RouteRepository } from "@/src/core/interfaces/RouteRepository";
 import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
+import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
 import { InventoryOperation } from "@/src/core/entities/InventoryOperation";
+import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
+import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
+import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
 import { ShiftOrganizationRepository } from "@/src/core/interfaces/ShiftOrganizationRepository";
 import { InventoryOperationRepository } from "@/src/core/interfaces/InventoryOperationRepository";
-import { ProductInventoryRepository } from "@/src/core/interfaces/ProductInventoryRepository";
-import { DayOperationRepository } from "@/src/core/interfaces/DayOperationRepository";
-import { ProductRepository } from "@/src/core/interfaces/ProductRepository";
-import { IDService } from "@/src/core/interfaces/IDService";
-import { DateService } from "@/src/core/interfaces/DateService";
-import { RouteTransactionRepository } from "@/src/core/interfaces/RouteTransactionRepository";
-import { RouteRepository } from "@/src/core/interfaces/RouteRepository";
 
 // Object values
 import { RouteDay } from "@/src/core/object-values/RouteDay";
@@ -26,17 +27,17 @@ import { RouteTransaction } from "@/src/core/entities/RouteTransaction";
 import { WorkDayInformation } from "@/src/core/entities/WorkDayInformation";
 
 // Aggregates
-import { ShiftOrganizationAggregate } from "@/src/core/aggregates/ShiftOrganizationAggregate";
-import { InventoryOperationAggregate } from "@/src/core/aggregates/InventoryOperationAggregate";
-import { ProductInventoryAggregate } from "@/src/core/aggregates/ProductInventoryAggregate";
 import { OperationDayAggregate } from "@/src/core/aggregates/OperationDayAggregate";
+import { ProductInventoryAggregate } from "@/src/core/aggregates/ProductInventoryAggregate";
+import { InventoryOperationAggregate } from "@/src/core/aggregates/InventoryOperationAggregate";
+import { ShiftOrganizationAggregate } from "@/src/core/aggregates/ShiftOrganizationAggregate";
 
 // DTOs and mapper
+import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
+import RouteDTO from "@/src/application/dto/RouteDTO";
 import ProductDTO from "@/src/application/dto/ProductDTO";
 import RouteDayDTO from "@/src/application/dto/RouteDayDTO";
-import RouteDTO from "@/src/application/dto/RouteDTO";
 import InventoryOperationDescriptionDTO from "@/src/application/dto/InventoryOperationDescriptionDTO";
-import { MapperDTO } from "@/src/application/mappers/MapperDTO"; 
 
 // DI container
 import { TOKENS } from "@/src/infrastructure/di/tokens";
@@ -48,13 +49,14 @@ import DAY_OPERATIONS from "@/src/core/enums/DayOperations";
 export default class StartWorkDayUseCase {
   constructor(
     // Local repositories dependencies
-    @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,
-    @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
-    @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
-    @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
-    @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
-    @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
-    @inject(TOKENS.SQLiteProductRepository) private readonly localProductRepo: ProductRepository,
+    @inject(TOKENS.SQLiteUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    // @inject(TOKENS.SQLiteShiftOrganizationRepository) private readonly localShiftDayRepo: ShiftOrganizationRepository,
+    // @inject(TOKENS.SQLiteInventoryOperationRepository) private readonly localInventoryOperationRepo: InventoryOperationRepository,
+    // @inject(TOKENS.SQLiteStoreRepository) private readonly localStoreRepo: StoreRepository,
+    // @inject(TOKENS.SQLiteProductInventoryRepository) private readonly localProductInventoryRepo: ProductInventoryRepository,
+    // @inject(TOKENS.SQLiteRouteTransactionRepository) private readonly localRouteTransactionRepo: RouteTransactionRepository,
+    // @inject(TOKENS.SQLiteDayOperationRepository) private readonly localDayOperationRepo: DayOperationRepository,
+    // @inject(TOKENS.SQLiteProductRepository) private readonly localProductRepo: ProductRepository,
     
     // Remote repositories dependencies
     @inject(TOKENS.ServerStoreRepository) private readonly remoteStoreRepo: StoreRepository,
@@ -190,20 +192,36 @@ export default class StartWorkDayUseCase {
     const historicRouteTransactions: RouteTransaction[] = storeTransactionsResults.flat();
 
     // 🔒 LOCAL PERSISTENCE (SEQUENTIAL): Write to SQLite safely step-by-step
-    await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
-    await this.localStoreRepo.insertStores(allStores);
+    await this.unitOfWork.execute(async (repo) => {
+      await repo.inventoryOperationRepository.createInventoryOperation(newInventoryOperation);
+      await repo.storeRepository.insertStores(allStores);
+  
+      for (const product of productToRegister) {
+        await repo.productRepository.insertProduct(product);
+      }
+  
+      await repo.productInventoryRepository.createInventory(newInventory);
+      await repo.shiftOrganizationRepository.insertWorkDay(newWorkDayInformation);
+      await repo.dayOperationRepository.insertDayOperations(newDayOperations!);
+  
+      for (const routeTransaction of historicRouteTransactions) {
+        await repo.routeTransactionRepository.insertRouteTransaction(routeTransaction, true);
+      }
+    });
+    // await this.localInventoryOperationRepo.createInventoryOperation(newInventoryOperation);
+    // await this.localStoreRepo.insertStores(allStores);
 
-    for (const product of productToRegister) {
-      await this.localProductRepo.insertProduct(product);
-    }
+    // for (const product of productToRegister) {
+    //   await this.localProductRepo.insertProduct(product);
+    // }
 
-    await this.localProductInventoryRepo.createInventory(newInventory);
-    await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
-    await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
+    // await this.localProductInventoryRepo.createInventory(newInventory);
+    // await this.localShiftDayRepo.insertWorkDay(newWorkDayInformation);
+    // await this.localDayOperationRepo.insertDayOperations(newDayOperations!);
 
-    for (const routeTransaction of historicRouteTransactions) {
-      await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, true);
-    }
+    // for (const routeTransaction of historicRouteTransactions) {
+    //   await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, true);
+    // }
   }
   
   async execute(

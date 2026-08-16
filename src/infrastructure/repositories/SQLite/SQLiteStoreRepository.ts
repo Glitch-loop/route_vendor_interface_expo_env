@@ -1,243 +1,215 @@
 // Libraries
-import { injectable, inject } from 'tsyringe';
-import { SQLiteDatabase } from "expo-sqlite";
+import { SQLiteDatabase } from 'expo-sqlite';
 
 // Interfaces
-import { StoreRepository } from "@/src/core/interfaces/StoreRepository";
+import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
 
 // Entities
-import { Store } from "@/src/core/entities/Store";
+import { Store } from '@/src/core/entities/Store';
 
 // Models
 import StoreLocalModel from '@/src/infrastructure/persitence/model/local-models/StoreLocalModel';
 
 // Database
-
-// DataSources
-import { SQLiteDataSource } from "@/src/infrastructure/datasources/SQLiteDataSource";
-
-// Utils
-import { TOKENS } from "@/src/infrastructure/di/tokens";
-import EMBEDDED_TABLES from "@/src/infrastructure/database/embeddedTables";
-
+import EMBEDDED_TABLES from '@/src/infrastructure/database/embeddedTables';
+import { SQLiteDataSource } from '@/src/infrastructure/datasources/SQLiteDataSource';
+import { inject, injectable } from 'tsyringe';
+import { TOKENS } from '@/src/infrastructure/di/tokens';
 
 @injectable()
 export class SQLiteStoreRepository implements StoreRepository, SyncStoreRepository {
-  constructor(@inject(TOKENS.SQLiteDataSource) private readonly dataSource: SQLiteDataSource) {}
+  private readonly db: SQLiteDatabase;
+  
+  constructor(db: SQLiteDatabase);
+  constructor(dataSource: SQLiteDataSource);
+  constructor(@inject(TOKENS.SQLiteDataSource) dbOrDataSource?: SQLiteDatabase | SQLiteDataSource) {
+    if (!dbOrDataSource) {
+      throw new Error(
+        'SQLiteDayOperationRepository requires a Database or DataSource instance.'
+      );
+    }
+
+    if (
+      'getClient' in dbOrDataSource &&
+      typeof dbOrDataSource.getClient === 'function'
+    ) {
+      this.db = dbOrDataSource.getClient();
+    } else {
+      this.db = dbOrDataSource as SQLiteDatabase;
+    }
+  }
 
   async insertStores(stores: Store[]): Promise<void> {
-    try {
-      await this.dataSource.initialize();
-      const db:SQLiteDatabase = this.dataSource.getClient();
-        
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        for (const store of stores) {
-          const {
-            id_store,
-            street,
-            ext_number,
-            colony,
-            postal_code,
-            address_reference,
-            store_name,
-            owner_name,
-            cellphone,
-            latitude,
-            longitude,
-            id_creator,
-            id_client,
-            id_location_type,
-            creation_date,
-            creation_context,
-            status_store,
-            is_new
-          } = store;
+    if (!stores || stores.length === 0) return;
 
-          await tx.runAsync(`INSERT INTO ${EMBEDDED_TABLES.STORES} (
-            id_store, 
-            street, 
-            ext_number, 
-            colony, 
-            postal_code, 
-            address_reference, 
-            store_name, 
-            owner_name, 
-            cellphone, 
-            latitude, 
-            longitude, 
-            id_creator, 
-            id_client, 
-            id_location_type, 
-            creation_date, 
-            creation_context,
-            status_store,
-            is_new
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-          [
-            id_store,
-            street,
-            ext_number,
-            colony,
-            postal_code,
-            address_reference,
-            store_name,
-            owner_name,
-            cellphone,
-            latitude,
-            longitude,
-            id_creator,
-            id_client,
-            id_location_type,
-            typeof creation_date === "string" ? creation_date : creation_date.toISOString(),
-            creation_context,
-            status_store,
-            is_new
-          ]); 
-        }
-      });
+    try {
+      const stmt = await this.db.prepareAsync(`
+        INSERT INTO ${EMBEDDED_TABLES.STORES} (
+          id_store, 
+          street, 
+          ext_number, 
+          colony, 
+          postal_code, 
+          address_reference, 
+          store_name, 
+          owner_name, 
+          cellphone, 
+          latitude, 
+          longitude, 
+          id_creator, 
+          id_client, 
+          id_location_type, 
+          creation_date, 
+          creation_context,
+          status_store,
+          is_new
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      `);
+
+      try {
+        await this.db.withExclusiveTransactionAsync(async () => {
+          for (const store of stores) {
+            await stmt.executeAsync([
+              store.id_store,
+              store.street,
+              store.ext_number,
+              store.colony,
+              store.postal_code,
+              store.address_reference,
+              store.store_name,
+              store.owner_name,
+              store.cellphone,
+              store.latitude,
+              store.longitude,
+              store.id_creator,
+              store.id_client,
+              store.id_location_type,
+              typeof store.creation_date === 'string'
+                ? store.creation_date
+                : store.creation_date.toISOString(),
+              store.creation_context,
+              store.status_store,
+              store.is_new,
+            ]);
+          }
+        });
+      } finally {
+        await stmt.finalizeAsync();
+      }
     } catch (error) {
-      throw new Error("Failed to insert stores: " + error);
+      throw new Error('Failed to insert stores', { cause: error });
     }
   }
 
   async listPendingStoreToSync(): Promise<StoreLocalModel[]> {
-    const pending: StoreLocalModel[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-    
-    // PATCH: According with the desing, a record must be listed as pending to sync if is_syncde is 0 or  is_deleted is 1
-    const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE status_store = -1 AND is_new = 1;`);
-
     try {
-      // const stmt = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE is_synced = 0 OR is_deleted = 1;`);
-      const rows = stmt.executeSync<any>();
-      for (const row of rows) {
-        pending.push(row as StoreLocalModel);
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE status_store = -1 AND is_new = 1;`
+      );
+      try {
+        const result = await stmt.executeAsync<any>();
+        const rows = await result.getAllAsync();
+        return rows as StoreLocalModel[];
+      } finally {
+        await stmt.finalizeAsync();
       }
-      return pending;
     } catch (error) {
-      throw new Error('Failed to list pending stores to sync: ' + error);
-    } finally {
-      await stmt.finalizeAsync();
+      throw new Error('Failed to list pending stores to sync', {
+        cause: error,
+      });
     }
   }
 
   async markStoreAsSynced(ids: string[]): Promise<void> {
     if (!ids || ids.length === 0) return;
+
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        const placeholders = ids.map(() => '?').join(',');
-        await tx.runAsync(
-          `UPDATE ${EMBEDDED_TABLES.STORES} SET is_synced = 1, is_new = 0 WHERE id_store IN (${placeholders});`,
-          ids
-        );
-      });
+      const placeholders = ids.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `UPDATE ${EMBEDDED_TABLES.STORES} SET is_synced = 1, is_new = 0 WHERE id_store IN (${placeholders});`
+      );
+      try {
+        await stmt.executeAsync(ids);
+      } finally {
+        await stmt.finalizeAsync();
+      }
     } catch (error) {
-      throw new Error('Failed to mark stores as synced: ' + error);
+      throw new Error('Failed to mark stores as synced', { cause: error });
     }
   }
 
   async updateStore(store: Store): Promise<void> {
-    /*
-      Note (07-14-26)
-
-      So far, the unique case on which updateStore from SQLiteStoreRepository is used,
-      it is when the store is confirmed as a client (prospect of client -> client).
-
-      The process of updating the status of the store is carried out by the backend, 
-      letting this implementation (update) only for local purposes.
-
-      As a way to give more context of how this process is carried out by the backend:
-        This process is performed using the day operation. In this case "new client confirmation",
-        when the backend detects this confirmation, it triggers the process for updating the status
-        of the store.
-    */
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      await db.withExclusiveTransactionAsync(async (tx) => {
-      const {
-        id_store,
-        street,
-        ext_number,
-        colony,
-        postal_code,
-        address_reference,
-        store_name,
-        owner_name,
-        cellphone,
-        latitude,
-        id_client,
-        longitude,
-        id_creator,
-        id_location_type,
-        creation_date,
-        creation_context,
-        status_store,
-        is_new,
-      } = store;
-
-      await tx.runAsync(`UPDATE ${EMBEDDED_TABLES.STORES} SET 
-        street = ?, 
-        ext_number = ?, 
-        colony = ?, 
-        postal_code = ?, 
-        address_reference = ?, 
-        store_name = ?, 
-        owner_name = ?, 
-        cellphone = ?, 
-        latitude = ?, 
-        longitude = ?, 
-        id_creator = ?, 
-        id_client = ?, 
-        id_location_type = ?, 
-        creation_date = ?, 
-        creation_context = ?, 
-        status_store = ?,
-        is_synced = 0
-        WHERE id_store = ?;`, 
-        [
-          street,
-          ext_number,
-          colony,
-          postal_code,
-          address_reference,
-          store_name,
-          owner_name,
-          cellphone,
-          latitude,
-          longitude,
-          id_creator,
-          id_client,
-          id_location_type,
-          new Date(creation_date).toISOString(),
-          creation_context,
-          status_store,
-          id_store
+      const stmt = await this.db.prepareAsync(`
+        UPDATE ${EMBEDDED_TABLES.STORES} SET 
+          street = ?, 
+          ext_number = ?, 
+          colony = ?, 
+          postal_code = ?, 
+          address_reference = ?, 
+          store_name = ?, 
+          owner_name = ?, 
+          cellphone = ?, 
+          latitude = ?, 
+          longitude = ?, 
+          id_creator = ?, 
+          id_client = ?, 
+          id_location_type = ?, 
+          creation_date = ?, 
+          creation_context = ?, 
+          status_store = ?,
+          is_synced = 0
+        WHERE id_store = ?;
+      `);
+      try {
+        await stmt.executeAsync([
+          store.street,
+          store.ext_number,
+          store.colony,
+          store.postal_code,
+          store.address_reference,
+          store.store_name,
+          store.owner_name,
+          store.cellphone,
+          store.latitude,
+          store.longitude,
+          store.id_creator,
+          store.id_client,
+          store.id_location_type,
+          typeof store.creation_date === 'string'
+            ? store.creation_date
+            : store.creation_date.toISOString(),
+          store.creation_context,
+          store.status_store,
+          store.id_store,
         ]);
-      });
-    } catch(error) {
-        throw new Error('Failed to update store: ' + error);
+      } finally {
+        await stmt.finalizeAsync();
+      }
+    } catch (error) {
+      throw new Error('Failed to update store', { cause: error });
     }
   }
 
   async retrieveStore(id_stores: string[]): Promise<Store[]> {
-    const stores: Store[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-    
-    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${id_stores.map((id_store) => `'${id_store}'`).join(',')});`);
-    
+    if (!id_stores || id_stores.length === 0) return [];
+
     try {
-      const result = statement.executeSync<Store>();
-      
-      for(let row of result) {
-        stores.push(
+      const placeholders = id_stores.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${placeholders});`
+      );
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>(id_stores);
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      return rows.map(
+        (row) =>
           new Store(
             row.id_store,
             row.street,
@@ -256,32 +228,29 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             new Date(row.creation_date),
             row.creation_context,
             row.status_store,
-            row.is_new,
+            row.is_new
           )
-        );
-      }
-
-      return stores;
+      );
     } catch (error) {
-      throw new Error('Failed to retrieve stores: ' + error);
-    } finally {
-      await statement.finalizeAsync();
+      throw new Error('Failed to retrieve stores', { cause: error });
     }
   }
 
   async listStores(): Promise<Store[]> {
-    const stores: Store[] = [];
-    
-    await this.dataSource.initialize();
-    const db: SQLiteDatabase = await this.dataSource.getClient();
-
-    const statement = await db.prepareAsync(`SELECT * FROM ${EMBEDDED_TABLES.STORES};`);
-
     try {
-      const result = statement.executeSync<Store>();
-      
-      for(let row of result) {
-        stores.push(
+      const stmt = await this.db.prepareAsync(
+        `SELECT * FROM ${EMBEDDED_TABLES.STORES};`
+      );
+      let rows: any[];
+      try {
+        const result = await stmt.executeAsync<any>();
+        rows = await result.getAllAsync();
+      } finally {
+        await stmt.finalizeAsync();
+      }
+
+      return rows.map(
+        (row) =>
           new Store(
             row.id_store,
             row.street,
@@ -300,30 +269,30 @@ export class SQLiteStoreRepository implements StoreRepository, SyncStoreReposito
             new Date(row.creation_date),
             row.creation_context,
             row.status_store,
-            row.is_new,
+            row.is_new
           )
-        );
-      }
-
-      return stores;
+      );
     } catch (error) {
-      throw new Error('Failed to list stores: ' + error);
-    } finally {
-      await statement.finalizeAsync();
+      throw new Error('Failed to list stores', { cause: error });
     }
   }
 
   async deleteStores(stores: Store[]): Promise<void> {
+    if (!stores || stores.length === 0) return;
+
     try {
-      await this.dataSource.initialize();
-      const db: SQLiteDatabase = await this.dataSource.getClient();
-      await db.withExclusiveTransactionAsync(async (tx) => {
-        for (const store of stores) {
-          await tx.runAsync(`DELETE FROM ${EMBEDDED_TABLES.STORES} WHERE id_store = ?;`, [store.id_store]);
-        }
-      });
+      const ids = stores.map((s) => s.id_store);
+      const placeholders = ids.map(() => '?').join(',');
+      const stmt = await this.db.prepareAsync(
+        `DELETE FROM ${EMBEDDED_TABLES.STORES} WHERE id_store IN (${placeholders});`
+      );
+      try {
+        await stmt.executeAsync(ids);
+      } finally {
+        await stmt.finalizeAsync();
+      }
     } catch (error) {
-      throw new Error('Failed to delete stores: ' + error);
-    } 
+      throw new Error('Failed to delete stores', { cause: error });
+    }
   }
 }

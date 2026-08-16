@@ -71,7 +71,6 @@ import {
   getMessageForProductDevolutionOperation,
   getGreatTotal,
   productCommitedValidation,
-  getTicketSale,
   getTicket,
   getRouteTransactionDescriptionsFromRouteTransactionOfParticularType
 } from '@/utils/route-transaciton/utils';
