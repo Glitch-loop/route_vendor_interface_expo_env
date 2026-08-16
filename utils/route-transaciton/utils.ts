@@ -263,66 +263,54 @@ export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularT
   The parameter of indentation is of type of number and depending of the input is the number of 
   "blank spaces" that it will be let in the ticket.
 */
-export function getTicketLine(lineToWrite:string, enterAtTheEnd:boolean = true, indent:number = 0): string {
-  const anchorPrint:number = 32;
-  let text:string = '';
-  let writtenLine:string = '';
-  let filteredLineToWrite:string = '';
-  let indentation = 0;
+export function getTicketLine(
+  lineToWrite: string,
+  enterAtTheEnd: boolean = true,
+  indent: number = 0
+): string {
+  const MAX_WIDTH = 32;
+  const MAX_INDENT = 25;
 
-  // Validation for indentation
-  if (indent < 0) {
-    indentation = 0;
-  } else if  (indent > 32) {
-    indentation = 25; // Maximum allowed indentantion
-  } else {
-    indentation = indent;
+  // Clamp indentation between 0 and MAX_INDENT
+  const indentSize = Math.max(0, Math.min(indent, MAX_INDENT));
+  const availableWidth = MAX_WIDTH - indentSize;
+
+  // Strip newlines and tabs, then split into clean words
+  const cleanText = lineToWrite.replace(/[\n\t]/g, '');
+  const words = cleanText.split(' ').filter((word) => word.length > 0);
+
+  if (words.length === 0) {
+    return enterAtTheEnd ? '\n' : '';
   }
 
-  // Filtering tabulators and enters
-  for (let i = 0; i < lineToWrite.length; i++) {
-    if (lineToWrite[i] === '\n') {
-      continue;
-    } else if (lineToWrite[i] === '\t') {
-      continue;
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    // Check if adding this word exceeds available line width
+    if (currentLine.length === 0) {
+      currentLine = word;
+    } else if (currentLine.length + 1 + word.length <= availableWidth) {
+      currentLine += ' ' + word;
     } else {
-      filteredLineToWrite += lineToWrite[i];
+      // Push completed line with indentation
+      lines.push(' '.repeat(indentSize) + currentLine);
+      currentLine = word;
     }
   }
 
-  const wordsToFilter:string[] = filteredLineToWrite.split(' ');
-
-  // Filtering blank spaces or empty strings.
-  const words = wordsToFilter.filter((word:string) => {return word !== '';});
-  for(let i = 0; i < words.length; i++) {
-    const totalLineLength = indentation + writtenLine.length + words[i].length;
-    if (i === words.length - 1) { // Last iteration
-      if (totalLineLength < anchorPrint) {
-        /*anchorPrint + 1: The addition represents the space between words.*/
-        text = text + ' '.repeat(indentation) + writtenLine + words[i];
-      } else {
-        text = text + '\n' + ' '.repeat(indentation) + writtenLine + '\n' + ' '.repeat(indentation) + words[i];
-      }
-    } else {
-      if (totalLineLength + 1 < anchorPrint) {
-        /*anchorPrint + 1: It represents a 'space' between words.*/
-        writtenLine = writtenLine + words[i] + ' ';
-      } else {
-        text = text  + ' '.repeat(indentation) + writtenLine + '\n';
-        writtenLine = words[i] + ' ';
-      }
-    }
+  // Push remaining word buffer
+  if (currentLine.length > 0) {
+    lines.push(' '.repeat(indentSize) + currentLine);
   }
 
+  let result = lines.join('\n');
   if (enterAtTheEnd) {
-    text = text + '\n';
-  } else {
-    /* Do nothing*/
+    result += '\n';
   }
 
-  return text;
+  return result;
 }
-
 
 /**
  * @param productInventory 
@@ -601,11 +589,11 @@ export function getTicket(
   ticket += getTicketLine('Ferdis', true, 13);
   ticket += getTicketLine(`Fecha: ${routeTransactionDate}`, true);
   ticket += getTicketLine(`Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`, true);
-  ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, false);
+  ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, true);
   ticket += getTicketLine(`Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`, true);
-  ticket += getTicketLine(`Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`, false);
+  ticket += getTicketLine(`Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`, true);
   ticket += getTicketLine('--------------------------------',false);
-
+  
   // Body of the ticket
   // Writing devolution products section
   // ticket += getTicketLine('Devolucion de producto', true, 5);
@@ -625,8 +613,8 @@ export function getTicket(
   ticket += getTicketLine('Cantidad Producto Precio Total',true);
   ticket += getListSectionTicket(productInventory, productsReposition, 'No hubo movmimentos en la seccion de reposiciones');
   if (productsReposition.length > 0) {
-    ticket += getTicketLine(`*Total reposicion: `, false, (showTotalPosition - 25)); // 26-lenght characters string
-    ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 19)); // 26-lenght characters string
+    ticket += getTicketLine(`*Total reposicion: `, false, (showTotalPosition - 26)); // 26-lenght characters string
+    ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 18)); // 26-lenght characters string
   } else {
     ticket += getTicketLine('', true);
   }
@@ -640,7 +628,7 @@ export function getTicket(
   ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 17));
   
   ticket += getTicketLine('**DIFERENCIA:',false);
-  ticket += getTicketLine(`${productDevolutionBalance}`, false, (showTotalPosition - 12));
+  ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 12));
 
   ticket += getTicketLine('--------------------------------',false);
   ticket += getTicketLine('--------------------------------',false);
@@ -651,9 +639,9 @@ export function getTicket(
   ticket += getListSectionTicket(productInventory, productsSale, 'No hubo movmimentos en la seccion de ventas');
   if (productsSale.length > 0) {
     ticket += getTicketLine('*Total venta:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSaleProduct}`, false, (showTotalPosition - 13));
+    ticket += getTicketLine(`$${subtotalSaleProduct}`, true, (showTotalPosition - 13));
   } else {
-    ticket += getTicketLine('', false);
+    ticket += getTicketLine('', true);
   }
 
   // Summarizing Section
@@ -683,12 +671,14 @@ export function getTicket(
     ticket += getTicketLine('-- CORTESIA --', true, 10);
     ticket += getTicketLine('Cantidad Producto Precio Total',true);
     ticket += getListSectionTicket(productInventory, productsSample, 'No hubo movmimentos en la seccion de ventas');
-    ticket += getTicketLine('Total cortesia:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSampleProduct}`, true, (showTotalPosition - 15));
+    ticket += getTicketLine('*Total cortesia:', false); // 12-lenght characters string
+    ticket += getTicketLine(`$${subtotalSampleProduct}`, true, (showTotalPosition - 16));
+    ticket += getTicketLine('',true);
     ticket += getTicketLine('',true);
     ticket += getTicketLine('',true);
     ticket += getTicketLine('-------------------------------', true, 1);
     ticket += getTicketLine('Firma cortesia recibida', true, 5);
+    ticket += getTicketLine('',true);
     ticket += getTicketLine('',true);
     ticket += getTicketLine('',true);
     ticket += getTicketLine('-------------------------------', true, 1);
