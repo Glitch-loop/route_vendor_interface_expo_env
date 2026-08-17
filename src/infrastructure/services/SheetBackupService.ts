@@ -1,16 +1,17 @@
-
-
-
+// Librarires
+import { Platform } from 'react-native';
 import { inject, injectable } from 'tsyringe';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Platform } from 'react-native';
 
-import { TOKENS } from '@/src/infrastructure/di/tokens';
-import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
-import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
+// Repositories
 import { SyncStoreRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncStoreRepository';
+import { SyncRouteTransactionRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncRouteTransactionRepository';
 import { SyncWorkdayInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncWorkdayInformationRepository';
+import { SyncInventoryOperationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncInventoryOperationRepository';
 import { SyncDayOperationInformationRepository } from '@/src/infrastructure/persitence/interface/local-database/SyncDayOperationRepository';
+
+// DI container
+import { TOKENS } from '@/src/infrastructure/di/tokens';
 import { MapperLocalServerModel } from '@/src/infrastructure/mappers/MapperLocalServerModel';
 
 type BackupRow = {
