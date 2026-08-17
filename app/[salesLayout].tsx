@@ -247,6 +247,9 @@ const salesLayout = () => {
 
     getUsersPosition();
 
+    setpUpSalesLayout();
+    setUpHistoricalData();
+
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => backHandler.remove();
   }, []); // Empty deps is fine now - refs always have latest values
@@ -269,9 +272,8 @@ const salesLayout = () => {
   }, [productSale]);
 
   useEffect(() => {
-    setpUpSalesLayout();
-    setUpHistoricalData();
-  }, [productInventory])
+
+  }, [])
 
   // -- Auxiliar functions --
   const setpUpSalesLayout = async () => {
@@ -305,6 +307,7 @@ const salesLayout = () => {
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const currentProductInventory = await retrieveCurrentShiftInventory.execute();
       const productInventoryMapLocal = createMapProductInventoryWithProduct(currentProductInventory, availableProducts)
+      console.log("productInventoryMapLocal: ", productInventoryMapLocal)
       setProductInventoryMap(productInventoryMapLocal);
 
       // Creating product class for retrieving prices
@@ -548,6 +551,7 @@ const salesLayout = () => {
     that the sale is closed.
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
+    console.log("Starting handle pay sale process")
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
     const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
@@ -598,6 +602,7 @@ const salesLayout = () => {
     
     try {
       let id_day_operation_dependent: string|null = null;
+      console.log("Determining type of client")
       if (is_selling_out_of_route === '1') {
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day, userCoordinates);
         if (visitedClientOutOfRoute !== null) {
@@ -618,7 +623,7 @@ const salesLayout = () => {
         return;
       }
 
-
+      console.log("Registering transaction")
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSample, ...productSale],
         workDayInformation!,
@@ -634,6 +639,7 @@ const salesLayout = () => {
       
       const { id_route_transaction } = newRouteTransaction;
 
+      console.log("Confirming new prospect of client")
       const resultOfConfirmation = await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction, productSale, userCoordinates);
       if (resultOfConfirmation === true) {
         Toast.show({

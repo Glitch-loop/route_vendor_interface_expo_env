@@ -11,7 +11,10 @@ import Toast from "react-native-toast-message";
 
 // Utils
 import PAYMENT_METHODS from "@/src/core/enums/PaymentMethod";
-import { format_date_to_UI_format, time_posix_format } from "@/utils/date/momentFormat";
+import {
+  format_date_to_UI_format,
+  time_posix_format,
+} from "@/utils/date/momentFormat";
 import { ROUTE_TRANSACTION_STATE } from "@/src/core/enums/RouteTransactionState";
 import { capitalizeFirstLetter } from "../string/utils";
 import { capitalizeFirstLetterOfEachWord } from "../generalFunctions";
@@ -20,25 +23,25 @@ import { getAddressOfStore } from "../stores/utils";
 
 // Related to route transaction workflow
 export function getProductDevolutionBalance(
-  productDevolution: RouteTransactionDescriptionDTO[], 
-  productReposition: RouteTransactionDescriptionDTO[]
-):number {
-    const totalProductDevolution = productDevolution.reduce((acc,item) => {
-        const { amount, price_at_moment } = item;
-        return acc + price_at_moment * amount;
-    }, 0);
+  productDevolution: RouteTransactionDescriptionDTO[],
+  productReposition: RouteTransactionDescriptionDTO[],
+): number {
+  const totalProductDevolution = productDevolution.reduce((acc, item) => {
+    const { amount, price_at_moment } = item;
+    return acc + price_at_moment * amount;
+  }, 0);
 
-  const totalProductReposition = productReposition.reduce((acc, item) =>{
-        const { amount, price_at_moment } = item;
-        return acc + price_at_moment * amount;
-    }, 0);
+  const totalProductReposition = productReposition.reduce((acc, item) => {
+    const { amount, price_at_moment } = item;
+    return acc + price_at_moment * amount;
+  }, 0);
 
   return totalProductDevolution - totalProductReposition;
 }
 
 export function getProductDevolutionBalanceWithoutNegativeNumber(
-  productDevolution: RouteTransactionDescriptionDTO[], 
-  productReposition: RouteTransactionDescriptionDTO[]
+  productDevolution: RouteTransactionDescriptionDTO[],
+  productReposition: RouteTransactionDescriptionDTO[],
 ): number {
   let total = getProductDevolutionBalance(productDevolution, productReposition);
   if (total < 0) {
@@ -49,150 +52,185 @@ export function getProductDevolutionBalanceWithoutNegativeNumber(
 }
 
 export function getMessageForProductDevolutionOperation(
-  productDevolution:RouteTransactionDescriptionDTO[], 
-  productReposition:RouteTransactionDescriptionDTO[]
+  productDevolution: RouteTransactionDescriptionDTO[],
+  productReposition: RouteTransactionDescriptionDTO[],
 ): string {
   let total = getProductDevolutionBalance(productDevolution, productReposition);
   if (total < 0) {
-    return 'Diferencia (por cobrar): ';
+    return "Diferencia (por cobrar): ";
   } else {
-    return 'Diferencia (a pagar): ';
+    return "Diferencia (a pagar): ";
   }
 }
 
 export function getGreatTotal(
-  productsDevolution:RouteTransactionDescriptionDTO[],
-  productsReposition:RouteTransactionDescriptionDTO[],
-  productsSample:RouteTransactionDescriptionDTO[],
-  salesProduct:RouteTransactionDescriptionDTO[]
-):number {
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
+  productsDevolution: RouteTransactionDescriptionDTO[],
+  productsReposition: RouteTransactionDescriptionDTO[],
+  productsSample: RouteTransactionDescriptionDTO[],
+  salesProduct: RouteTransactionDescriptionDTO[],
+): number {
+  let subtotalProductDevolution = getProductDevolutionBalance(
+    productsDevolution,
+    [],
+  );
+  let subtotalProductReposition = getProductDevolutionBalance(
+    productsReposition,
+    [],
+  );
   let subtotalSampleProduct = getProductDevolutionBalance(productsSample, []);
   let subtotalSaleProduct = getProductDevolutionBalance(salesProduct, []);
-  return subtotalSaleProduct + subtotalSampleProduct + subtotalProductReposition - subtotalProductDevolution;
+  return (
+    subtotalSaleProduct +
+    subtotalSampleProduct +
+    subtotalProductReposition -
+    subtotalProductDevolution
+  );
 }
 
 export function productCommitedValidation(
-    productInventory: Map<string, ProductInventoryDTO>,
-    productsToCommit: RouteTransactionDescriptionDTO[],
-    productSharingInventory: RouteTransactionDescriptionDTO[]
+  productInventory: Map<string, ProductInventoryDTO>,
+  productsToCommit: RouteTransactionDescriptionDTO[],
+  productSharingInventory: RouteTransactionDescriptionDTO[],
 ): RouteTransactionDescriptionDTO[] {
-    let isNewAmountAllowed:boolean = true;
-    let errorCaption:string|undefined = undefined;
+  let isNewAmountAllowed: boolean = true;
+  let errorCaption: string | undefined = undefined;
 
-    const reviewedProducts:RouteTransactionDescriptionDTO[] = [];
+  const reviewedProducts: RouteTransactionDescriptionDTO[] = [];
 
-    const productSharingInventoryMap:Map<string, RouteTransactionDescriptionDTO> = new Map();
+  const productSharingInventoryMap: Map<
+    string,
+    RouteTransactionDescriptionDTO
+  > = new Map();
 
-    productSharingInventory.forEach((productShared:RouteTransactionDescriptionDTO) => {
-      productSharingInventoryMap.set(productShared.id_product_inventory, productShared);
-    });
+  productSharingInventory.forEach(
+    (productShared: RouteTransactionDescriptionDTO) => {
+      productSharingInventoryMap.set(
+        productShared.id_product_inventory,
+        productShared,
+      );
+    },
+  );
 
-    // Using 'product to commit' as reference for the validation
-    for (const productToCommit of productsToCommit) {
-        const idProductInventoryToEvaluate = productToCommit.id_product_inventory;
-        const amountToCommit = productToCommit.amount;
-        let amountInStockOfCurrentProduct: number = 0;
-        let amountShared: number|undefined = undefined;
+  // Using 'product to commit' as reference for the validation
+  for (const productToCommit of productsToCommit) {
+    const idProductInventoryToEvaluate = productToCommit.id_product_inventory;
+    const amountToCommit = productToCommit.amount;
+    let amountInStockOfCurrentProduct: number = 0;
+    let amountShared: number | undefined = undefined;
 
-        // Find the current stock for the product to commit
-        if (productInventory.has(idProductInventoryToEvaluate)) {
-            const productInventoryFound = productInventory.get(idProductInventoryToEvaluate)!;
-            amountInStockOfCurrentProduct = productInventoryFound.stock;
-        } else {
-            errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0'
-        };
-        
-
-        if (amountInStockOfCurrentProduct === 0) { /* There is not product in stock */
-            isNewAmountAllowed = false;
-            errorCaption = 'Actualmente no tienes el suficiente stock para el producto, stock: 0';
-            // Product is not added because there is no stock available.
-            continue; // No need to continue with the other validations
-        }
-        
-        // Find if the product is being shared with another type of operation
-        if (productSharingInventoryMap.has(idProductInventoryToEvaluate)) {
-            const productSharingFound = productSharingInventoryMap.get(idProductInventoryToEvaluate)!;
-            amountShared = productSharingFound.amount;
-        } else errorCaption = 'El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.';
-
-        if (amountShared !== undefined) { // The product is being shared between two operations
-            if ((amountShared + amountToCommit) <= amountInStockOfCurrentProduct) { /* Product enough to supply both movements */
-                reviewedProducts.push({
-                ...productToCommit,
-                amount: amountToCommit,
-                });
-            } else { /* There is not product enough to fullfill both movements */
-                isNewAmountAllowed = false; // Not possible amount.
-    
-                // Determine what is the problem with the stock.
-                if (amountInStockOfCurrentProduct - amountShared > 0) {
-                    // There is not enough product to fullfill the current movement. So, it will add the information with the maximum amount possible.
-                    errorCaption = `No hay suficiente stock para completar la reposición, venta y/o cortesia. Stock: ${amountInStockOfCurrentProduct}`;
-                    reviewedProducts.push({
-                        ...productToCommit,
-                        amount: amountInStockOfCurrentProduct - amountShared,
-                    });
-                } else { /* All the stock is already being used by shared inventory*/
-                    // Prouct is not being added because there is no stock available.
-                    errorCaption = `Actualmente la totalidad del stock esta siendo usado para las otras operaciones. Stock: ${amountInStockOfCurrentProduct}`;
-                }
-            }
-        } else { /* It means that only one concept (product reposition or sale) is outflowing product. */
-            if (amountToCommit <= amountInStockOfCurrentProduct) { 
-                // There is enough product to commit the requested amount
-                reviewedProducts.push({
-                ...productToCommit,
-                amount: amountToCommit,
-                });
-            } else {
-                isNewAmountAllowed = false;
-                if(amountInStockOfCurrentProduct > 0) {
-                // There is not enough product to fullfill the requeriment, but at least there is some stock
-                reviewedProducts.push({
-                    ...productToCommit,
-                    amount: amountInStockOfCurrentProduct,
-                });
-                errorCaption = `Estas excediendo el stock actual del producto, stock: ${amountInStockOfCurrentProduct}`;
-                } else errorCaption = 'Actualmente no tienes stock para el producto, stock: 0'; // Product is not being added because there is no stock available.
-            
-                // isNewAmountAllowed = false; // There is not product enough to fullfill the requeriment.
-                // if (isProductReposition) {
-                //   errorCaption = 'Estas intentando reponer mas producto del que tienes en el inventario.';
-                // } else {
-                //   errorCaption = 'Estas intentando vender mas producto del que tienes en el inventario.';
-                // }
-            }
-        }
+    // Find the current stock for the product to commit
+    if (productInventory.has(idProductInventoryToEvaluate)) {
+      const productInventoryFound = productInventory.get(
+        idProductInventoryToEvaluate,
+      )!;
+      amountInStockOfCurrentProduct = productInventoryFound.stock;
+    } else {
+      errorCaption =
+        "Actualmente no tienes el suficiente stock para el producto, stock: 0";
     }
 
-    // Prepare the final list of valid products to commit
-    // reviewedProducts.forEach((:RouteTransactionDescriptionDTO) => {
-    //     const { id_product } = productToCommit;
+    if (amountInStockOfCurrentProduct === 0) {
+      /* There is not product in stock */
+      isNewAmountAllowed = false;
+      errorCaption =
+        "Actualmente no tienes el suficiente stock para el producto, stock: 0";
+      // Product is not added because there is no stock available.
+      continue; // No need to continue with the other validations
+    }
 
-    //     const productCommittedFound:RouteTransactionDescriptionDTO|undefined = affectedProducts
-    //         .find((currentProductCommitted:RouteTransactionDescriptionDTO) => { return id_product === currentProductCommitted.id_product; });
-    //     if(productCommittedFound !== undefined) productsReadyToCommit.push(productCommittedFound)
-        
-    // });
+    // Find if the product is being shared with another type of operation
+    if (productSharingInventoryMap.has(idProductInventoryToEvaluate)) {
+      const productSharingFound = productSharingInventoryMap.get(
+        idProductInventoryToEvaluate,
+      )!;
+      amountShared = productSharingFound.amount;
+    } else
+      errorCaption =
+        "El inventario de productos ha cambiado, por favor cierra y abre de nuevo la aplicación.";
 
-
-    if (isNewAmountAllowed === false && errorCaption !== undefined) {
-        // There was an error during the validation
-        Toast.show({
-            type: 'error',
-            text1: 'Error en la cantidad de productos',
-            text2: errorCaption
+    if (amountShared !== undefined) {
+      // The product is being shared between two operations
+      if (amountShared + amountToCommit <= amountInStockOfCurrentProduct) {
+        /* Product enough to supply both movements */
+        reviewedProducts.push({
+          ...productToCommit,
+          amount: amountToCommit,
         });
-    }
+      } else {
+        /* There is not product enough to fullfill both movements */
+        isNewAmountAllowed = false; // Not possible amount.
 
-    return reviewedProducts.map((product:RouteTransactionDescriptionDTO) => { return {...product}; });
+        // Determine what is the problem with the stock.
+        if (amountInStockOfCurrentProduct - amountShared > 0) {
+          // There is not enough product to fullfill the current movement. So, it will add the information with the maximum amount possible.
+          errorCaption = `No hay suficiente stock para completar la reposición, venta y/o cortesia. Stock: ${amountInStockOfCurrentProduct}`;
+          reviewedProducts.push({
+            ...productToCommit,
+            amount: amountInStockOfCurrentProduct - amountShared,
+          });
+        } else {
+          /* All the stock is already being used by shared inventory*/
+          // Prouct is not being added because there is no stock available.
+          errorCaption = `Actualmente la totalidad del stock esta siendo usado para las otras operaciones. Stock: ${amountInStockOfCurrentProduct}`;
+        }
+      }
+    } else {
+      /* It means that only one concept (product reposition or sale) is outflowing product. */
+      if (amountToCommit <= amountInStockOfCurrentProduct) {
+        // There is enough product to commit the requested amount
+        reviewedProducts.push({
+          ...productToCommit,
+          amount: amountToCommit,
+        });
+      } else {
+        isNewAmountAllowed = false;
+        if (amountInStockOfCurrentProduct > 0) {
+          // There is not enough product to fullfill the requeriment, but at least there is some stock
+          reviewedProducts.push({
+            ...productToCommit,
+            amount: amountInStockOfCurrentProduct,
+          });
+          errorCaption = `Estas excediendo el stock actual del producto, stock: ${amountInStockOfCurrentProduct}`;
+        } else
+          errorCaption =
+            "Actualmente no tienes stock para el producto, stock: 0"; // Product is not being added because there is no stock available.
+
+        // isNewAmountAllowed = false; // There is not product enough to fullfill the requeriment.
+        // if (isProductReposition) {
+        //   errorCaption = 'Estas intentando reponer mas producto del que tienes en el inventario.';
+        // } else {
+        //   errorCaption = 'Estas intentando vender mas producto del que tienes en el inventario.';
+        // }
+      }
+    }
+  }
+
+  // Prepare the final list of valid products to commit
+  // reviewedProducts.forEach((:RouteTransactionDescriptionDTO) => {
+  //     const { id_product } = productToCommit;
+
+  //     const productCommittedFound:RouteTransactionDescriptionDTO|undefined = affectedProducts
+  //         .find((currentProductCommitted:RouteTransactionDescriptionDTO) => { return id_product === currentProductCommitted.id_product; });
+  //     if(productCommittedFound !== undefined) productsReadyToCommit.push(productCommittedFound)
+
+  // });
+
+  if (isNewAmountAllowed === false && errorCaption !== undefined) {
+    // There was an error during the validation
+    Toast.show({
+      type: "error",
+      text1: "Error en la cantidad de productos",
+      text2: errorCaption,
+    });
+  }
+
+  return reviewedProducts.map((product: RouteTransactionDescriptionDTO) => {
+    return { ...product };
+  });
 }
 
-export function calculateChange(total:number, received:number): number {
-  let difference:number = 0;
+export function calculateChange(total: number, received: number): number {
+  let difference: number = 0;
   if (total < 0) {
     /*
       It means that the vendor has to give money to the client, this probably
@@ -201,7 +239,7 @@ export function calculateChange(total:number, received:number): number {
     if (total + received < 0) {
       difference = 0;
     } else {
-      difference = (total + received);
+      difference = total + received;
     }
   } else {
     /* Do nothing; It is a normal selling (vendor has to receive money)*/
@@ -214,42 +252,55 @@ export function calculateChange(total:number, received:number): number {
   return difference;
 }
 
-export function getNamePaymentMethodById(id_payment_method:string): string {
-  let name_payment_method:string = '';
-    switch (id_payment_method) {
-        case PAYMENT_METHODS.CASH:
-            name_payment_method = 'Efectivo';
-            break;
-        // case PAYMENT_METHODS.TRANSFER:
-        //     name_payment_method = 'Transferencia';
-        //     break;
-        // case PAYMENT_METHODS.CREDIT_CARD:
-        //     name_payment_method = 'Tarjeta de crédito';
-        //     break;
-        // case PAYMENT_METHODS.DEBIT_CARD:
-        //     name_payment_method = 'Tarjeta de débito';
-        //     break;
-    }
-    return name_payment_method;
+export function getNamePaymentMethodById(id_payment_method: string): string {
+  let name_payment_method: string = "";
+  switch (id_payment_method) {
+    case PAYMENT_METHODS.CASH:
+      name_payment_method = "Efectivo";
+      break;
+    // case PAYMENT_METHODS.TRANSFER:
+    //     name_payment_method = 'Transferencia';
+    //     break;
+    // case PAYMENT_METHODS.CREDIT_CARD:
+    //     name_payment_method = 'Tarjeta de crédito';
+    //     break;
+    // case PAYMENT_METHODS.DEBIT_CARD:
+    //     name_payment_method = 'Tarjeta de débito';
+    //     break;
+  }
+  return name_payment_method;
 }
 
-export function getTransactionIdentifier(transactionIdentifier:string): string {
-  let finalTransactionIdentifier = '';
+export function getTransactionIdentifier(
+  transactionIdentifier: string,
+): string {
+  let finalTransactionIdentifier = "";
   if (transactionIdentifier === undefined) {
-    finalTransactionIdentifier = time_posix_format().toString() + time_posix_format().toString().slice(0,3);
+    finalTransactionIdentifier =
+      time_posix_format().toString() +
+      time_posix_format().toString().slice(0, 3);
   } else {
     if (transactionIdentifier.length > 5) {
-      finalTransactionIdentifier = time_posix_format().toString() + transactionIdentifier.slice(0,3);
+      finalTransactionIdentifier =
+        time_posix_format().toString() + transactionIdentifier.slice(0, 3);
     } else {
-      finalTransactionIdentifier = time_posix_format().toString() + time_posix_format().toString().slice(0,3);
+      finalTransactionIdentifier =
+        time_posix_format().toString() +
+        time_posix_format().toString().slice(0, 3);
     }
   }
 
   return finalTransactionIdentifier;
 }
 
-export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(transaction_description: RouteTransactionDescriptionDTO[], type: DAY_OPERATIONS): RouteTransactionDescriptionDTO[] {
-  return transaction_description.filter(((movement: RouteTransactionDescriptionDTO) => movement.id_transaction_operation_type === type));
+export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularType(
+  transaction_description: RouteTransactionDescriptionDTO[],
+  type: DAY_OPERATIONS,
+): RouteTransactionDescriptionDTO[] {
+  return transaction_description.filter(
+    (movement: RouteTransactionDescriptionDTO) =>
+      movement.id_transaction_operation_type === type,
+  );
 }
 
 // Related to ticket service
@@ -266,7 +317,7 @@ export function getRouteTransactionDescriptionsFromRouteTransactionOfParticularT
 export function getTicketLine(
   lineToWrite: string,
   enterAtTheEnd: boolean = true,
-  indent: number = 0
+  indent: number = 0,
 ): string {
   const MAX_WIDTH = 32;
   const MAX_INDENT = 25;
@@ -276,57 +327,57 @@ export function getTicketLine(
   const availableWidth = MAX_WIDTH - indentSize;
 
   // Strip newlines and tabs, then split into clean words
-  const cleanText = lineToWrite.replace(/[\n\t]/g, '');
-  const words = cleanText.split(' ').filter((word) => word.length > 0);
+  const cleanText = lineToWrite.replace(/[\n\t]/g, "");
+  const words = cleanText.split(" ").filter((word) => word.length > 0);
 
   if (words.length === 0) {
-    return enterAtTheEnd ? '\n' : '';
+    return enterAtTheEnd ? "\n" : "";
   }
 
   const lines: string[] = [];
-  let currentLine = '';
+  let currentLine = "";
 
   for (const word of words) {
     // Check if adding this word exceeds available line width
     if (currentLine.length === 0) {
       currentLine = word;
     } else if (currentLine.length + 1 + word.length <= availableWidth) {
-      currentLine += ' ' + word;
+      currentLine += " " + word;
     } else {
       // Push completed line with indentation
-      lines.push(' '.repeat(indentSize) + currentLine);
+      lines.push(" ".repeat(indentSize) + currentLine);
       currentLine = word;
     }
   }
 
   // Push remaining word buffer
   if (currentLine.length > 0) {
-    lines.push(' '.repeat(indentSize) + currentLine);
+    lines.push(" ".repeat(indentSize) + currentLine);
   }
 
-  let result = lines.join('\n');
+  let result = lines.join("\n");
   if (enterAtTheEnd) {
-    result += '\n';
+    result += "\n";
   }
 
   return result;
 }
 
 /**
- * @param productInventory 
- * @param productsDevolution 
- * @param productsReposition 
- * @param productsSample 
- * @param productsSale 
- * @param routeTransacion 
- * @param storeTransaction 
- * @param userSession 
+ * @param productInventory
+ * @param productsDevolution
+ * @param productsReposition
+ * @param productsSample
+ * @param productsSale
+ * @param routeTransacion
+ * @param storeTransaction
+ * @param userSession
  * @returns
- * 
- * `getTicketSale` is a function that creates the format for printing the 
+ *
+ * `getTicketSale` is a function that creates the format for printing the
  * ticket of the transaction.
- * 
- * This function create a ticket with the whole transaction, this includes 
+ *
+ * This function create a ticket with the whole transaction, this includes
  * the following movements:
  *   - Product devolution.
  *   - Product reposition.
@@ -335,27 +386,34 @@ export function getTicketLine(
  *
  */
 export function getTicketSale(
-    productInventory: Map<string, ProductInventoryDTO&ProductDTO>,
-    productsDevolution:RouteTransactionDescriptionDTO[],
-    productsReposition:RouteTransactionDescriptionDTO[],
-    productsSample: RouteTransactionDescriptionDTO[],
-    productsSale: RouteTransactionDescriptionDTO[],
-    routeTransacion?:RouteTransactionDTO,
-    storeTransaction?:StoreDTO,
-    userSession?: UserDTO | null
+  productInventory: Map<string, ProductInventoryDTO & ProductDTO>,
+  productsDevolution: RouteTransactionDescriptionDTO[],
+  productsReposition: RouteTransactionDescriptionDTO[],
+  productsSample: RouteTransactionDescriptionDTO[],
+  productsSale: RouteTransactionDescriptionDTO[],
+  routeTransacion?: RouteTransactionDTO,
+  storeTransaction?: StoreDTO,
+  userSession?: UserDTO | null,
 ) {
   // Variable to keep the text of the ticket .
-  let ticket = '\n';
+  let ticket = "\n";
 
   // Getting Subtotals of each concept
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
-  let subtotalSampleProduct     = getProductDevolutionBalance(productsSample, []);
-  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
-  let productDevolutionBalance  = '$0';
-  let greatTotal                = '$0';
-  let cashReceived              = '$0';
-  let greatTotalNumber          = subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
+  let subtotalProductDevolution = getProductDevolutionBalance(
+    productsDevolution,
+    [],
+  );
+  let subtotalProductReposition = getProductDevolutionBalance(
+    productsReposition,
+    [],
+  );
+  let subtotalSampleProduct = getProductDevolutionBalance(productsSample, []);
+  let subtotalSaleProduct = getProductDevolutionBalance(productsSale, []);
+  let productDevolutionBalance = "$0";
+  let greatTotal = "$0";
+  let cashReceived = "$0";
+  let greatTotalNumber =
+    subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
 
   /*
     Variables for setting the format of the ticket.
@@ -363,165 +421,257 @@ export function getTicketSale(
     characters
   */
 
-  let showTotalPosition:number = 26; // 32 - 26 = $99999 (maximum possible number to print)
+  let showTotalPosition: number = 26; // 32 - 26 = $99999 (maximum possible number to print)
 
   // Variables for header information
-  let vendor:string = 'No disponible';
-  let status:string = 'No disponible';
-  let storeName:string = 'No disponible';
-  let storeAddress:string = 'No disponible';
-  let routeTransactionDate:string = 'No disponible';
-  let paymentMethodName:string = 'No disponible';
+  let vendor: string = "No disponible";
+  let status: string = "No disponible";
+  let storeName: string = "No disponible";
+  let storeAddress: string = "No disponible";
+  let routeTransactionDate: string = "No disponible";
+  let paymentMethodName: string = "No disponible";
 
   // Formating totals of ticket.
   if (subtotalProductReposition - subtotalProductDevolution < 0) {
-    productDevolutionBalance = '-$' + ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+    productDevolutionBalance =
+      "-$" +
+      ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
   } else {
-    productDevolutionBalance = '$' + (subtotalProductReposition - subtotalProductDevolution).toString();
+    productDevolutionBalance =
+      "$" + (subtotalProductReposition - subtotalProductDevolution).toString();
   }
 
-  if (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution < 0) {
-    greatTotal = '-$' + ((subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+  if (
+    subtotalSaleProduct +
+      subtotalProductReposition -
+      subtotalProductDevolution <
+    0
+  ) {
+    greatTotal =
+      "-$" +
+      (
+        (subtotalSaleProduct +
+          subtotalProductReposition -
+          subtotalProductDevolution) *
+        -1
+      ).toString();
   } else {
-    greatTotal = '$' + (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution).toString();
+    greatTotal =
+      "$" +
+      (
+        subtotalSaleProduct +
+        subtotalProductReposition -
+        subtotalProductDevolution
+      ).toString();
   }
-
 
   // If there is information about the transaction, store and vendor, add it to the ticket
   if (routeTransacion !== undefined) {
     const { state, date, payment_method } = routeTransacion;
     if (state === ROUTE_TRANSACTION_STATE.ACTIVE) {
-      status = 'Completada';
+      status = "Completada";
     } else {
-      status = 'Cancelada';
+      status = "Cancelada";
     }
 
     routeTransactionDate = format_date_to_UI_format(date);
 
     if (routeTransacion.cash_received < 0) {
-      cashReceived = '$' + (routeTransacion.cash_received * -1).toString();
+      cashReceived = "$" + (routeTransacion.cash_received * -1).toString();
     } else {
-      cashReceived = '$' + (routeTransacion.cash_received).toString();
+      cashReceived = "$" + routeTransacion.cash_received.toString();
     }
 
     paymentMethodName = getNamePaymentMethodById(payment_method);
-
-  } else { // Route transaction is in process.
-    status = 'En proceso';
+  } else {
+    // Route transaction is in process.
+    status = "En proceso";
     routeTransactionDate = format_date_to_UI_format(new Date());
   }
 
   if (storeTransaction !== undefined) {
     const { store_name } = storeTransaction;
-    storeName = store_name !== undefined ? store_name : 'No disponible'; 
+    storeName = store_name !== undefined ? store_name : "No disponible";
     storeAddress = getAddressOfStore(storeTransaction);
   }
 
-  vendor = (userSession !== undefined && userSession !== null) ? userSession.name : 'No disponible';
+  vendor =
+    userSession !== undefined && userSession !== null
+      ? userSession.name
+      : "No disponible";
 
   // Header of the ticket
-  ticket += getTicketLine('Ferdis', true, 13);
+  ticket += getTicketLine("Ferdis", true, 13);
   ticket += getTicketLine(`Fecha: ${routeTransactionDate}`, true);
-  ticket += getTicketLine(`Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`, true);
-  ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, false);
-  ticket += getTicketLine(`Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`, true);
-  ticket += getTicketLine(`Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`, true);
-  ticket += getTicketLine('', true);
+  ticket += getTicketLine(
+    `Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`,
+    true,
+  );
+  ticket += getTicketLine(
+    `Estatus: ${capitalizeFirstLetterOfEachWord(status)}`,
+    false,
+  );
+  ticket += getTicketLine(
+    `Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`,
+    true,
+  );
+  ticket += getTicketLine(
+    `Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`,
+    true,
+  );
+  ticket += getTicketLine("", true);
 
   // Body of the ticket
   // Writing devolution products section
-  ticket += getTicketLine('Devolucion de producto', true, 5);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsDevolution, 'No hubo movmimentos en la seccion de mermas');
+  ticket += getTicketLine("Devolucion de producto", true, 5);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsDevolution,
+    "No hubo movmimentos en la seccion de mermas",
+  );
   if (productsDevolution.length > 0) {
-    ticket += getTicketLine(`Valor total de devolucion: $${subtotalProductDevolution}`,true);
+    ticket += getTicketLine(
+      `Valor total de devolucion: $${subtotalProductDevolution}`,
+      true,
+    );
   }
-  ticket += getTicketLine('', true);
+  ticket += getTicketLine("", true);
 
   // Writing reposition product section
-  ticket += getTicketLine('Reposicion de producto', true, 5);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsReposition, 'No hubo movmimentos en la seccion de reposiciones');
+  ticket += getTicketLine("Reposicion de producto", true, 5);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsReposition,
+    "No hubo movmimentos en la seccion de reposiciones",
+  );
   if (productsReposition.length > 0) {
-    ticket += getTicketLine(`Valor total de reposicion: $${subtotalProductReposition}`,true);
+    ticket += getTicketLine(
+      `Valor total de reposicion: $${subtotalProductReposition}`,
+      true,
+    );
   }
-  ticket += getTicketLine('', true);
+  ticket += getTicketLine("", true);
 
   // Writing product of the sample section
-  ticket += getTicketLine('Cortesia', true, 13);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsSample, 'No hubo movmimentos en la seccion de ventas');
+  ticket += getTicketLine("Cortesia", true, 13);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsSample,
+    "No hubo movmimentos en la seccion de ventas",
+  );
   if (productsSample.length > 0) {
-    ticket += getTicketLine('Total venta:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSampleProduct}`,true, (showTotalPosition - 12));
+    ticket += getTicketLine("Total venta:", false); // 12-lenght characters string
+    ticket += getTicketLine(
+      `$${subtotalSampleProduct}`,
+      true,
+      showTotalPosition - 12,
+    );
   } else {
-    ticket += getTicketLine('',true);
+    ticket += getTicketLine("", true);
   }
 
   // Writing product of the sale section
-  ticket += getTicketLine('Venta', true, 13);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsSale, 'No hubo movmimentos en la seccion de ventas');
+  ticket += getTicketLine("Venta", true, 13);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsSale,
+    "No hubo movmimentos en la seccion de ventas",
+  );
   if (productsSale.length > 0) {
-    ticket += getTicketLine('Total venta:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 12));
+    ticket += getTicketLine("Total venta:", false); // 12-lenght characters string
+    ticket += getTicketLine(
+      `$${subtotalSaleProduct}`,
+      true,
+      showTotalPosition - 12,
+    );
   } else {
-    ticket += getTicketLine('',true);
+    ticket += getTicketLine("", true);
   }
 
   // Summarizing Section
-  ticket += getTicketLine('--------------------------------',true);
+  ticket += getTicketLine("--------------------------------", true);
 
-  ticket += getTicketLine('Valor concepto devolucion:', false); // 26-lenght characters string
-  ticket += getTicketLine(`-$${subtotalProductDevolution}`,true, (showTotalPosition - 26));
+  ticket += getTicketLine("Valor concepto devolucion:", false); // 26-lenght characters string
+  ticket += getTicketLine(
+    `-$${subtotalProductDevolution}`,
+    true,
+    showTotalPosition - 26,
+  );
 
-  ticket += getTicketLine('Valor concepto reposicion:',false); // 26-lenght characters string
-  ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 26));
+  ticket += getTicketLine("Valor concepto reposicion:", false); // 26-lenght characters string
+  ticket += getTicketLine(
+    `$${subtotalProductReposition}`,
+    true,
+    showTotalPosition - 26,
+  );
 
-  ticket += getTicketLine('Balance devolucion de productos:',false);
-  ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 10));
+  ticket += getTicketLine("Balance devolucion de productos:", false);
+  ticket += getTicketLine(
+    `${productDevolutionBalance}`,
+    true,
+    showTotalPosition - 10,
+  );
 
-  ticket += getTicketLine('Venta total:',false); // 11-lenght characters string
-  ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 12));
+  ticket += getTicketLine("Venta total:", false); // 11-lenght characters string
+  ticket += getTicketLine(
+    `$${subtotalSaleProduct}`,
+    true,
+    showTotalPosition - 12,
+  );
 
-  ticket += getTicketLine('Gran total:',false); // 11-lenght characters string
-  ticket += getTicketLine(`${greatTotal}`,true, (showTotalPosition - 11));
+  ticket += getTicketLine("Gran total:", false); // 11-lenght characters string
+  ticket += getTicketLine(`${greatTotal}`, true, showTotalPosition - 11);
 
   if (routeTransacion !== undefined) {
-    ticket += getTicketLine(`Metodo de pago (${paymentMethodName}):`,false);
-    ticket += getTicketLine(`${cashReceived}`,true, (showTotalPosition - 32));
-    ticket += getTicketLine('Cambio:',false);
-    ticket += getTicketLine(`$${calculateChange(greatTotalNumber, routeTransacion.cash_received)}`,true, (showTotalPosition - 7));
+    ticket += getTicketLine(`Metodo de pago (${paymentMethodName}):`, false);
+    ticket += getTicketLine(`${cashReceived}`, true, showTotalPosition - 32);
+    ticket += getTicketLine("Cambio:", false);
+    ticket += getTicketLine(
+      `$${calculateChange(greatTotalNumber, routeTransacion.cash_received)}`,
+      true,
+      showTotalPosition - 7,
+    );
   }
 
   // Finishing ticket
-  ticket += '\n\n';
+  ticket += "\n\n";
 
   return ticket;
 }
 
 export function getTicket(
-    productInventory: Map<string, ProductInventoryDTO&ProductDTO>,
-    productsDevolution:RouteTransactionDescriptionDTO[],
-    productsReposition:RouteTransactionDescriptionDTO[],
-    productsSample: RouteTransactionDescriptionDTO[],
-    productsSale: RouteTransactionDescriptionDTO[],
-    routeTransacion?:RouteTransactionDTO,
-    storeTransaction?:StoreDTO,
-    userSession?: UserDTO | null
+  productInventory: Map<string, ProductInventoryDTO & ProductDTO>,
+  productsDevolution: RouteTransactionDescriptionDTO[],
+  productsReposition: RouteTransactionDescriptionDTO[],
+  productsSample: RouteTransactionDescriptionDTO[],
+  productsSale: RouteTransactionDescriptionDTO[],
+  routeTransacion?: RouteTransactionDTO,
+  storeTransaction?: StoreDTO,
+  userSession?: UserDTO | null,
 ) {
   // Variable to keep the text of the ticket .
-  let ticket = '\n';
+  let ticket = "\n";
 
   // Getting Subtotals of each concept
-  let subtotalProductDevolution = getProductDevolutionBalance(productsDevolution, []);
-  let subtotalProductReposition = getProductDevolutionBalance(productsReposition, []);
-  let subtotalSampleProduct     = getProductDevolutionBalance(productsSample, []);
-  let subtotalSaleProduct       = getProductDevolutionBalance(productsSale, []);
-  let productDevolutionBalance  = '$0';
-  let greatTotal                = '$0';
-  let cashReceived              = '$0';
-  let greatTotalNumber          = subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
+  let subtotalProductDevolution = getProductDevolutionBalance(
+    productsDevolution,
+    [],
+  );
+  let subtotalProductReposition = getProductDevolutionBalance(
+    productsReposition,
+    [],
+  );
+  let subtotalSampleProduct = getProductDevolutionBalance(productsSample, []);
+  let subtotalSaleProduct = getProductDevolutionBalance(productsSale, []);
+  let productDevolutionBalance = "$0";
+  let greatTotal = "$0";
+  let cashReceived = "$0";
+  let greatTotalNumber =
+    subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution;
 
   /*
     Variables for setting the format of the ticket.
@@ -529,192 +679,290 @@ export function getTicket(
     characters
   */
 
-  let showTotalPosition:number = 26; // 32 - 26 = $99999 (maximum possible number to print)
+  let showTotalPosition: number = 26; // 32 - 26 = $99999 (maximum possible number to print)
 
   // Variables for header information
-  let vendor:string = 'No disponible';
-  let status:string = 'No disponible';
-  let storeName:string = 'No disponible';
-  let storeAddress:string = 'No disponible';
-  let routeTransactionDate:string = 'No disponible';
-  let paymentMethodName:string = 'No disponible';
+  let vendor: string = "No disponible";
+  let status: string = "No disponible";
+  let storeName: string = "No disponible";
+  let storeAddress: string = "No disponible";
+  let routeTransactionDate: string = "No disponible";
+  let paymentMethodName: string = "No disponible";
 
   // Formating totals of ticket.
   if (subtotalProductReposition - subtotalProductDevolution < 0) {
-    productDevolutionBalance = '-$' + ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+    productDevolutionBalance =
+      "-$" +
+      ((subtotalProductReposition - subtotalProductDevolution) * -1).toString();
   } else {
-    productDevolutionBalance = '$' + (subtotalProductReposition - subtotalProductDevolution).toString();
+    productDevolutionBalance =
+      "$" + (subtotalProductReposition - subtotalProductDevolution).toString();
   }
 
-  if (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution < 0) {
-    greatTotal = '-$' + ((subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution) * -1).toString();
+  if (
+    subtotalSaleProduct +
+      subtotalProductReposition -
+      subtotalProductDevolution <
+    0
+  ) {
+    greatTotal =
+      "-$" +
+      (
+        (subtotalSaleProduct +
+          subtotalProductReposition -
+          subtotalProductDevolution) *
+        -1
+      ).toString();
   } else {
-    greatTotal = '$' + (subtotalSaleProduct + subtotalProductReposition - subtotalProductDevolution).toString();
+    greatTotal =
+      "$" +
+      (
+        subtotalSaleProduct +
+        subtotalProductReposition -
+        subtotalProductDevolution
+      ).toString();
   }
-
 
   // If there is information about the transaction, store and vendor, add it to the ticket
   if (routeTransacion !== undefined) {
     const { state, date, payment_method } = routeTransacion;
     if (state === ROUTE_TRANSACTION_STATE.ACTIVE) {
-      status = 'Completada';
+      status = "Completada";
     } else {
-      status = 'Cancelada';
+      status = "Cancelada";
     }
 
     routeTransactionDate = format_date_to_UI_format(date);
 
     if (routeTransacion.cash_received < 0) {
-      cashReceived = '$' + (routeTransacion.cash_received * -1).toString();
+      cashReceived = "$" + (routeTransacion.cash_received * -1).toString();
     } else {
-      cashReceived = '$' + (routeTransacion.cash_received).toString();
+      cashReceived = "$" + routeTransacion.cash_received.toString();
     }
 
     paymentMethodName = getNamePaymentMethodById(payment_method);
-
-  } else { // Route transaction is in process.
-    status = 'En proceso';
+  } else {
+    // Route transaction is in process.
+    status = "En proceso";
     routeTransactionDate = format_date_to_UI_format(new Date());
   }
 
   if (storeTransaction !== undefined) {
     const { store_name } = storeTransaction;
-    storeName = store_name !== undefined ? store_name : 'No disponible'; 
+    storeName = store_name !== undefined ? store_name : "No disponible";
     storeAddress = getAddressOfStore(storeTransaction);
   }
 
-  vendor = (userSession !== undefined && userSession !== null) ? userSession.name : 'No disponible';
+  vendor =
+    userSession !== undefined && userSession !== null
+      ? userSession.name
+      : "No disponible";
 
   // Header of the ticket
-  ticket += getTicketLine('Ferdis', true, 13);
+  ticket += getTicketLine("Ferdis", true, 13);
   ticket += getTicketLine(`Fecha: ${routeTransactionDate}`, true);
-  ticket += getTicketLine(`Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`, true);
-  ticket += getTicketLine(`Estatus: ${capitalizeFirstLetterOfEachWord(status)}`, true);
-  ticket += getTicketLine(`Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`, true);
-  ticket += getTicketLine(`Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`, true);
-  ticket += getTicketLine('--------------------------------',false);
-  
+  ticket += getTicketLine(
+    `Vendedor: ${capitalizeFirstLetterOfEachWord(vendor)}`,
+    true,
+  );
+  ticket += getTicketLine(
+    `Estatus: ${capitalizeFirstLetterOfEachWord(status)}`,
+    true,
+  );
+  ticket += getTicketLine(
+    `Cliente: ${capitalizeFirstLetterOfEachWord(storeName)}`,
+    true,
+  );
+  ticket += getTicketLine(
+    `Dirección: ${capitalizeFirstLetterOfEachWord(storeAddress)}`,
+    true,
+  );
+  ticket += getTicketLine("--------------------------------", false);
+
   // Body of the ticket
   // Writing devolution products section
   // ticket += getTicketLine('Devolucion de producto', true, 5);
-  ticket += getTicketLine('-- DEVOLUCION DE PRODUCTO --', true, 2);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsDevolution, 'No hubo movmimentos en la seccion de mermas');
+  ticket += getTicketLine("-- DEVOLUCION DE PRODUCTO --", true, 2);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsDevolution,
+    "No hubo movmimentos en la seccion de mermas",
+  );
   if (productsDevolution.length > 0) {
-    ticket += getTicketLine(`*Total devolucion: `, false, (showTotalPosition - 26)); // 26-lenght characters string
-    ticket += getTicketLine(`-$${subtotalProductDevolution}`,true, (showTotalPosition - 19)); // 26-lenght characters string
+    ticket += getTicketLine(
+      `*Total devolucion: `,
+      false,
+      showTotalPosition - 26,
+    ); // 26-lenght characters string
+    ticket += getTicketLine(
+      `-$${subtotalProductDevolution}`,
+      true,
+      showTotalPosition - 19,
+    ); // 26-lenght characters string
   } else {
-    ticket += getTicketLine('', true);
+    ticket += getTicketLine("", true);
   }
-  ticket += getTicketLine('', true);
+  ticket += getTicketLine("", true);
 
   // Writing reposition product section
-  ticket += getTicketLine('-- REPOSICION DE PRODUCTO --', true, 2);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsReposition, 'No hubo movmimentos en la seccion de reposiciones');
+  ticket += getTicketLine("-- REPOSICION DE PRODUCTO --", true, 2);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsReposition,
+    "No hubo movmimentos en la seccion de reposiciones",
+  );
   if (productsReposition.length > 0) {
-    ticket += getTicketLine(`*Total reposicion: `, false, (showTotalPosition - 26)); // 26-lenght characters string
-    ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 18)); // 26-lenght characters string
+    ticket += getTicketLine(
+      `*Total reposicion: `,
+      false,
+      showTotalPosition - 26,
+    ); // 26-lenght characters string
+    ticket += getTicketLine(
+      `$${subtotalProductReposition}`,
+      true,
+      showTotalPosition - 18,
+    ); // 26-lenght characters string
   } else {
-    ticket += getTicketLine('', true);
+    ticket += getTicketLine("", true);
   }
 
-  ticket += getTicketLine('', true);
+  ticket += getTicketLine("", true);
 
-  ticket += getTicketLine('*Total devolucion:', false); // 26-lenght characters string
-  ticket += getTicketLine(`-$${subtotalProductDevolution}`,true, (showTotalPosition - 18));
+  ticket += getTicketLine("*Total devolucion:", false); // 26-lenght characters string
+  ticket += getTicketLine(
+    `-$${subtotalProductDevolution}`,
+    true,
+    showTotalPosition - 18,
+  );
 
-  ticket += getTicketLine('*Total reposicion:',false); // 26-lenght characters string
-  ticket += getTicketLine(`$${subtotalProductReposition}`,true, (showTotalPosition - 17));
-  
-  ticket += getTicketLine('**DIFERENCIA:',false);
-  ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 12));
+  ticket += getTicketLine("*Total reposicion:", false); // 26-lenght characters string
+  ticket += getTicketLine(
+    `$${subtotalProductReposition}`,
+    true,
+    showTotalPosition - 17,
+  );
 
-  ticket += getTicketLine('--------------------------------',false);
-  ticket += getTicketLine('--------------------------------',false);
+  ticket += getTicketLine("**DIFERENCIA:", false);
+  ticket += getTicketLine(
+    `${productDevolutionBalance}`,
+    true,
+    showTotalPosition - 12,
+  );
+
+  ticket += getTicketLine("--------------------------------", false);
+  ticket += getTicketLine("--------------------------------", false);
 
   // // Writing product of the sale section
-  ticket += getTicketLine('-- VENTA --', true, 10);
-  ticket += getTicketLine('Cantidad Producto Precio Total',true);
-  ticket += getListSectionTicket(productInventory, productsSale, 'No hubo movmimentos en la seccion de ventas');
+  ticket += getTicketLine("-- VENTA --", true, 10);
+  ticket += getTicketLine("Cantidad Producto Precio Total", true);
+  ticket += getListSectionTicket(
+    productInventory,
+    productsSale,
+    "No hubo movmimentos en la seccion de ventas",
+  );
   if (productsSale.length > 0) {
-    ticket += getTicketLine('*Total venta:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSaleProduct}`, true, (showTotalPosition - 13));
+    ticket += getTicketLine("*Total venta:", false); // 12-lenght characters string
+    ticket += getTicketLine(
+      `$${subtotalSaleProduct}`,
+      true,
+      showTotalPosition - 13,
+    );
   } else {
-    ticket += getTicketLine('', true);
+    ticket += getTicketLine("", true);
   }
 
   // Summarizing Section
-  ticket += getTicketLine('--------------------------------', false);
-  ticket += getTicketLine('--------------------------------', false);
-  ticket += getTicketLine('-- RESUMEN --', true, 10);
-  ticket += getTicketLine('**DIFERENCIA:',false);
-  ticket += getTicketLine(`${productDevolutionBalance}`, true, (showTotalPosition - 13));
+  ticket += getTicketLine("--------------------------------", false);
+  ticket += getTicketLine("--------------------------------", false);
+  ticket += getTicketLine("-- RESUMEN --", true, 10);
+  ticket += getTicketLine("**DIFERENCIA:", false);
+  ticket += getTicketLine(
+    `${productDevolutionBalance}`,
+    true,
+    showTotalPosition - 13,
+  );
 
-  ticket += getTicketLine('*Total venta:',false); // 11-lenght characters string
-  ticket += getTicketLine(`$${subtotalSaleProduct}`,true, (showTotalPosition - 13));
+  ticket += getTicketLine("*Total venta:", false); // 11-lenght characters string
+  ticket += getTicketLine(
+    `$${subtotalSaleProduct}`,
+    true,
+    showTotalPosition - 13,
+  );
 
-  ticket += getTicketLine('Gran total:',false); // 11-lenght characters string
-  ticket += getTicketLine(`${greatTotal}`,true, (showTotalPosition - 11));
+  ticket += getTicketLine("Gran total:", false); // 11-lenght characters string
+  ticket += getTicketLine(`${greatTotal}`, true, showTotalPosition - 11);
 
   if (routeTransacion !== undefined) {
-    ticket += getTicketLine(`Metodo de pago (${paymentMethodName}):`,false);
-    ticket += getTicketLine(`${cashReceived}`,true, (showTotalPosition - 32));
-    ticket += getTicketLine('Cambio:',false);
-    ticket += getTicketLine(`$${calculateChange(greatTotalNumber, routeTransacion.cash_received)}`,true, (showTotalPosition - 7));
+    ticket += getTicketLine(`Metodo de pago (${paymentMethodName}):`, false);
+    ticket += getTicketLine(`${cashReceived}`, true, showTotalPosition - 32);
+    ticket += getTicketLine("Cambio:", false);
+    ticket += getTicketLine(
+      `$${calculateChange(greatTotalNumber, routeTransacion.cash_received)}`,
+      true,
+      showTotalPosition - 7,
+    );
   }
 
   // Writing product of the sample section
   if (productsSample.length > 0) {
-    ticket += getTicketLine('--------------------------------', false);
-    ticket += getTicketLine('--------------------------------', false);
-    ticket += getTicketLine('-- CORTESIA --', true, 10);
-    ticket += getTicketLine('Cantidad Producto Precio Total',true);
-    ticket += getListSectionTicket(productInventory, productsSample, 'No hubo movmimentos en la seccion de ventas');
-    ticket += getTicketLine('*Total cortesia:', false); // 12-lenght characters string
-    ticket += getTicketLine(`$${subtotalSampleProduct}`, true, (showTotalPosition - 16));
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('-------------------------------', true, 1);
-    ticket += getTicketLine('Firma cortesia recibida', true, 5);
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('',true);
-    ticket += getTicketLine('-------------------------------', true, 1);
-    ticket += getTicketLine('Numero de contacto', true, 6);
-    ticket += getTicketLine('(Para futuras promociones)', true, 3);
+    ticket += getTicketLine("--------------------------------", false);
+    ticket += getTicketLine("--------------------------------", false);
+    ticket += getTicketLine("-- CORTESIA --", true, 10);
+    ticket += getTicketLine("Cantidad Producto Precio Total", true);
+    ticket += getListSectionTicket(
+      productInventory,
+      productsSample,
+      "No hubo movmimentos en la seccion de ventas",
+    );
+    ticket += getTicketLine("*Total cortesia:", false); // 12-lenght characters string
+    ticket += getTicketLine(
+      `$${subtotalSampleProduct}`,
+      true,
+      showTotalPosition - 16,
+    );
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("-------------------------------", true, 1);
+    ticket += getTicketLine("Firma cortesia recibida", true, 5);
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("", true);
+    ticket += getTicketLine("-------------------------------", true, 1);
+    ticket += getTicketLine("Numero de contacto", true, 6);
+    ticket += getTicketLine("(Para futuras promociones)", true, 3);
   } else {
-    ticket += getTicketLine('',true);
+    ticket += getTicketLine("", true);
   }
 
   // Finishing ticket
-  ticket += '\n\n';
+  ticket += "\n\n";
 
   return ticket;
 }
 
 export function getListSectionTicket(
-  productInventory: Map<string, ProductInventoryDTO&ProductDTO>, 
-  routeTransactionMovement:RouteTransactionDescriptionDTO[], 
-  messageNoMovements?:string|undefined,
-  includePriceAndTotal: boolean = true
+  productInventory: Map<string, ProductInventoryDTO & ProductDTO>,
+  routeTransactionMovement: RouteTransactionDescriptionDTO[],
+  messageNoMovements?: string | undefined,
+  includePriceAndTotal: boolean = true,
 ) {
-  let sectionTicket = '';
+  let sectionTicket = "";
   if (routeTransactionMovement.length > 0) {
-    routeTransactionMovement.forEach(movement => {
+    routeTransactionMovement.forEach((movement) => {
       const { id_product_inventory, amount, price_at_moment } = movement;
-
 
       if (!productInventory.has(id_product_inventory)) return;
 
       const productInfo = productInventory.get(id_product_inventory)!;
 
-      const { product_name } = productInfo
+      const { product_name } = productInfo;
 
       let amountMovement: string = `${amount}`;
       let productName: string = `${capitalizeFirstLetter(product_name)}`;
-      let price: string = `$${ price_at_moment }`;
+      let price: string = `$${price_at_moment}`;
       let total: string = `$${amount * price_at_moment}`;
 
       /*
@@ -726,23 +974,30 @@ export function getListSectionTicket(
 
       // First section
       sectionTicket = sectionTicket + getTicketLine(amountMovement, false); // Cantidad
-      sectionTicket = sectionTicket + getTicketLine(productName, true, (9 - amountMovement.length)); // Producto
+      sectionTicket =
+        sectionTicket +
+        getTicketLine(productName, true, 9 - amountMovement.length); // Producto
 
       // Second section
       if (includePriceAndTotal) {
         sectionTicket = sectionTicket + getTicketLine(price, false, 18); // Price
-        sectionTicket = sectionTicket + getTicketLine(total, true, (8 - price.length)); // Total
+        sectionTicket =
+          sectionTicket + getTicketLine(total, true, 8 - price.length); // Total
       }
     });
   } else {
     if (messageNoMovements !== undefined) {
       sectionTicket += getTicketLine(messageNoMovements, false, 0);
     } else {
-      sectionTicket += getTicketLine('No hubieron movimientos en este concepto', false, 0);
+      sectionTicket += getTicketLine(
+        "No hubieron movimientos en este concepto",
+        false,
+        0,
+      );
     }
   }
 
-  getTicketLine('', false, 0);
+  getTicketLine("", false, 0);
 
   return sectionTicket;
 }
@@ -758,7 +1013,7 @@ export function getListSectionTicket(
   possible, having as limit the first substraction that gives a favorable balance for the vendor.
 */
 // export function validatingIfRepositionIsValid(productToCommit: IProductInventory[], productDevolution: IProductInventory[], productReposition: IProductInventory[]):boolean {
-//   let result:boolean = false;   
+//   let result:boolean = false;
 //   let lastModification:IProductInventory = {
 //     id_product: '',
 //     product_name: '',
@@ -775,9 +1030,8 @@ export function getListSectionTicket(
 //   // let totalItemsOfProductsToCommit:number = productToCommit.reduce((acc, item) => { return acc + item.amount;}, 0);
 //   // let totalItemsOfProductDevolution:number = productDevolution.reduce((acc, item) => { return acc + item.amount;}, 0);
 //   // let totalItemsOfProductReposition:number = productReposition.reduce((acc, item) => { return acc + item.amount; }, 0);
-    
-//   // const totalItemsForReposition:number = totalItemsOfProductReposition + totalItemsOfProductsToCommit;
 
+//   // const totalItemsForReposition:number = totalItemsOfProductReposition + totalItemsOfProductsToCommit;
 
 //   // if (totalItemsForReposition > totalItemsOfProductDevolution) {
 //   //   result = false
@@ -786,8 +1040,8 @@ export function getListSectionTicket(
 //   // }
 
 //   return true;
-  
-//   /* 
+
+//   /*
 //    Date: 03-23-25
 //     Becuase of business rules, this validation was desactivated.
 //     Although the validation is not valid right now, it is possible that in the future this validation will be re-activated.
@@ -814,7 +1068,6 @@ export function getListSectionTicket(
 //     }
 //   })
 
-
 //   let balance:number = totalValueOfProductDevolution - totalValueOfProductsToCommit;
 
 //   if (balance >= 0) {
@@ -833,5 +1086,3 @@ export function getListSectionTicket(
 
 //   return result;
 // }
-
-
