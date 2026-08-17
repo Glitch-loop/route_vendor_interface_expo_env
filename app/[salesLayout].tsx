@@ -500,12 +500,8 @@ const salesLayout = () => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
-
-        /* Avoiding re-executions */
-    if (isOperationAccepted === true) {
-      console.log("Avoiding re-executions")
-      return};
-      
+    /* Avoiding re-executions */
+    if (isOperationAccepted === true) return;
     setIsOperationAccepted(true);
 
     if (currentStore === null || workDayInformation === null) {
@@ -570,12 +566,8 @@ const salesLayout = () => {
     that the sale is closed.
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
-    console.log("Starting handle pay sale process")
     /* Avoiding re-executions */
-    if (isOperationAccepted === true) {
-      console.log("Avoiding re-executions")
-      return};
-      
+    if (isOperationAccepted === true) return;
     setIsOperationAccepted(true);
 
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
@@ -668,7 +660,6 @@ const salesLayout = () => {
       
       const { id_route_transaction } = newRouteTransaction;
 
-      console.log("Confirming new prospect of client")
       const resultOfConfirmation = await confirmClientProscpectAsClient.execute(id_store_param, id_route_transaction, productSale, userCoordinates);
       if (resultOfConfirmation === true) {
         Toast.show({
