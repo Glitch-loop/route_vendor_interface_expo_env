@@ -17,7 +17,7 @@ export class SQLiteDataSource {
    * Safe against concurrent callers (returns the in-flight promise).
    */
   async initialize(databaseName: string = 'mydb.db'): Promise<void> {
-    console.log("Initilizing local database connection")
+    // console.log("Initilizing local database connection")
     if (this.client) return;
 
     if (!this.initPromise) {

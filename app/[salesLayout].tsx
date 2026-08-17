@@ -206,17 +206,25 @@ const salesLayout = () => {
 
   // Use states
   /* States to store the current product according with their context. */
+  // About transactions
   const [productDevolution, setProductDevolution] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productReposition, setProductReposition] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSample, setProductSample] = useState<RouteTransactionDescriptionDTO[]>([]);
   const [productSale, setProductSale] = useState<RouteTransactionDescriptionDTO[]>([]);
-  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined); //<id_product_inventory, ProductInventoryDTO&ProductDTO>
-  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // <id product, Product class>
   const [newRouteTransaction, setNewRouteTransaction] = useState<RouteTransactionDTO | null>(null);
-  const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
-  const [showYesNoVisitWithoutSelling, setShowYesNoVisitWithoutSelling] = useState<boolean>(false);
   const [historicRouteTransaction, setHistoricRouteTransactions] = useState<RouteTransactionDTO[]>([]);
   const [userCoordinates, setUserCoordinates] = useState<Coordinates|null>(null)
+  
+  // Products
+  const [productInventoryMap, setProductInventoryMap] = useState<Map<string, ProductInventoryDTO&ProductDTO> | undefined>(undefined); //<id_product_inventory, ProductInventoryDTO&ProductDTO>
+  const [productClassMap, setProductClassMap] = useState<Map<string, ProductClass>>(new Map<string, ProductClass>()); // <id product, Product class>
+  
+  // Stores
+  const [currentStore, setCurrentStore] = useState<StoreDTO | null>(null);
+  
+  // UI logic
+  const [showYesNoVisitWithoutSelling, setShowYesNoVisitWithoutSelling] = useState<boolean>(false);
+  const [isOperationAccepted, setIsOperationAccepted] = useState<boolean>(false);
 
   // Use refs
   const productDevolutionRef = useRef<RouteTransactionDescriptionDTO[]>([]);
@@ -307,7 +315,6 @@ const salesLayout = () => {
       const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
       const currentProductInventory = await retrieveCurrentShiftInventory.execute();
       const productInventoryMapLocal = createMapProductInventoryWithProduct(currentProductInventory, availableProducts)
-      console.log("productInventoryMapLocal: ", productInventoryMapLocal)
       setProductInventoryMap(productInventoryMapLocal);
 
       // Creating product class for retrieving prices
@@ -455,11 +462,13 @@ const salesLayout = () => {
   // Handlers
   const handleCancelSale = () => { 
     dispatch(clearRouteTransactionDescription());
+    setIsOperationAccepted(false);
     router.back(); 
   };
 
   const handleOnGoBack = () => {
     dispatch(setRouteTransactionDescription([...productDevolution, ...productReposition, ...productSample, ...productSale]));
+    setIsOperationAccepted(false);
     router.back(); 
   };
 
@@ -491,11 +500,20 @@ const salesLayout = () => {
 
   const handleVisitWithoutSelling = async () => {
     setShowYesNoVisitWithoutSelling(false);
+
+        /* Avoiding re-executions */
+    if (isOperationAccepted === true) {
+      console.log("Avoiding re-executions")
+      return};
+      
+    setIsOperationAccepted(true);
+
     if (currentStore === null || workDayInformation === null) {
       Toast.show({
         type: 'error',
         text1:'Ha ocurrido un error.',
         text2: 'Vuelve a cargar la pagina para poder hacer esta operación.'});
+        setIsOperationAccepted(false);
     } else {
       const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
       let id_day_operation_dependent:string|null = null;
@@ -539,6 +557,7 @@ const salesLayout = () => {
           type: 'error',
           text1:'Ha ocurrido un error.',
           text2: 'Continua con la siguiente tienda.'});
+        setIsOperationAccepted(false);
       }
 
       router.replace('/routeOperationMenuLayout');
@@ -552,6 +571,13 @@ const salesLayout = () => {
   */
   const handlePaySale = async (receivedCash:number, paymentMethod:PAYMENT_METHODS) => {
     console.log("Starting handle pay sale process")
+    /* Avoiding re-executions */
+    if (isOperationAccepted === true) {
+      console.log("Avoiding re-executions")
+      return};
+      
+    setIsOperationAccepted(true);
+
     const registerNewRouteTransactionCommand = di_container.resolve<RegisterNewRouteTransaction>(RegisterNewRouteTransaction);
     const visitClientOutOfRouteCommand = di_container.resolve<VisitClientOutOfRouteUseCase>(VisitClientOutOfRouteUseCase);
     const retrieveCurrentShiftInventory = di_container.resolve<RetrieveCurrentShiftInventoryQuery>(RetrieveCurrentShiftInventoryQuery);
@@ -561,6 +587,7 @@ const salesLayout = () => {
     const retrieveDayOperationQuery = di_container.resolve<RetrieveDayOperationQuery>(RetrieveDayOperationQuery);
 
     if (workDayInformation === null) {
+      setIsOperationAccepted(false);
       Toast.show({
         type: 'error',
         text1:'No se ha cargado la información del dia correctamente.',
@@ -569,6 +596,7 @@ const salesLayout = () => {
     }
 
     if (id_store_param === undefined) {
+      setIsOperationAccepted(false);
       Toast.show({
         type: 'error',
         text1:'No se ha cargado correctamente la información del cliente.',
@@ -577,6 +605,7 @@ const salesLayout = () => {
     }
 
     if (userSessionReduxState === null) {
+      setIsOperationAccepted(false);
       Toast.show({
         type: 'error',
         text1:'Ha habido un error en la configuración de la sesión.',
@@ -587,6 +616,7 @@ const salesLayout = () => {
     if (id_day_operation_dependent_param === undefined 
     && is_selling_out_of_route === undefined 
     && is_prospect_of_client_confirmation === undefined) {
+      setIsOperationAccepted(false);
       Toast.show({
         type: 'error',
         text1:'Ha habido un error en la configuración interna de la venta.',
@@ -602,7 +632,6 @@ const salesLayout = () => {
     
     try {
       let id_day_operation_dependent: string|null = null;
-      console.log("Determining type of client")
       if (is_selling_out_of_route === '1') {
         const visitedClientOutOfRoute: DayOperationDTO|null = await visitClientOutOfRouteCommand.execute(id_store_param, workDayInformation.id_route_day, userCoordinates);
         if (visitedClientOutOfRoute !== null) {
@@ -620,10 +649,10 @@ const salesLayout = () => {
           type: 'error',
           text1:'No se pudo determinar la operación dependiente de la venta.',
           text2: 'No se pudo completar la venta, porfavor reinicie la aplicación.'});
+        setIsOperationAccepted(false);
         return;
       }
 
-      console.log("Registering transaction")
       const newRouteTransaction = await registerNewRouteTransactionCommand.execute(
         [...productDevolution, ...productReposition, ...productSample, ...productSale],
         workDayInformation!,
@@ -677,22 +706,25 @@ const salesLayout = () => {
       setFinishedSale(true);
       setResultSaleState(true);
     } catch (error) {
+      setFinishedSale(true);
+      setResultSaleState(true);
+      setIsOperationAccepted(false);
       Toast.show({
         type: 'error',
         text1:'Hubo un problema durante el registro de la venta',
         text2: `${error}`});
-      setFinishedSale(true);
-      setResultSaleState(true);
     }
   }
 
   const handleOnSuccessfullCompletionSale = async () => {
-    dispatch(clearRouteTransactionDescription()); 
+    dispatch(clearRouteTransactionDescription());
+    setIsOperationAccepted(false);
     router.replace('/routeOperationMenuLayout');
   };
 
-  const handleOnFailedCompletionSale = () => { 
-    dispatch(clearRouteTransactionDescription()); 
+  const handleOnFailedCompletionSale = () => {
+    dispatch(clearRouteTransactionDescription());
+    setIsOperationAccepted(false);
     router.push('/routeOperationMenuLayout'); 
   };
 
@@ -763,6 +795,7 @@ const salesLayout = () => {
   const handleOnTryAgain = () => {
     setFinishedSale(false);
     setResultSaleState(false);
+    setIsOperationAccepted(false);
   };
 
   // Handlers for adding product devolution.
