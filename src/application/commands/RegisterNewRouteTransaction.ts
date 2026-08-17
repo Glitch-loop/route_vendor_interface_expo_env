@@ -5,11 +5,7 @@ import { injectable, inject } from 'tsyringe'
 import { IDService } from '@/src/core/interfaces/IDService';
 import { DateService } from '@/src/core/interfaces/DateService';
 import { IUnitOfWork } from "@/src/core/interfaces/IUnitOfWork";
-import { StoreRepository } from '@/src/core/interfaces/StoreRepository';
 import { LocationService } from '@/src/core/interfaces/LocationService';
-import { DayOperationRepository } from '@/src/core/interfaces/DayOperationRepository';
-import { ProductInventoryRepository } from '@/src/core/interfaces/ProductInventoryRepository';
-import { RouteTransactionRepository } from '@/src/core/interfaces/RouteTransactionRepository';
 
 // Enums
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
@@ -196,8 +192,6 @@ export default class RegisterNewRouteTransaction {
     // await this.localProductInventoryRepo.updateInventory(updatedInventory);
     // await this.localRouteTransactionRepo.insertRouteTransaction(routeTransaction, false);
     // await this.localDayOperationRepo.insertDayOperations(newListdayOperations);
-
-    
     return routeTransaction;
   }
 
