@@ -95,6 +95,7 @@ import DataReplicationService from '@/src/infrastructure/services/DataReplicatio
 // Custom hooks
 import useNetworkState from '@/hooks/useNetworkState';
 import EMBEDDED_TABLES from '@/src/infrastructure/database/embeddedTables';
+import CopyAndPasteInventoryOperation from '@/components/inventory-components/CopyAndPasteInventoryOperation';
 
 // Auxiliar functions
 function getTextForConfirmationDialog(idTypeOperation: DAY_OPERATIONS): string {
@@ -177,14 +178,16 @@ const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], o
 type typeSearchParams = {
   id_type_of_operation_search_param: string;
   id_inventory_operation_search_param?: string;
+  id_inventory_operation_method?: string; // 1 = manual method, 2 = admin registration method
 }
 
 const inventoryOperationLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const { 
-    id_type_of_operation_search_param, 
+    id_type_of_operation_search_param,
     id_inventory_operation_search_param,
+    id_inventory_operation_method = 1,
   } = params as typeSearchParams;
 
 
@@ -1111,14 +1114,23 @@ const inventoryOperationLayout = () => {
                 }
               </View> :
               <View style={tw`flex basis-auto w-full mt-3`}>
-                <TableInventoryOperations
+                { id_inventory_operation_method === '1' ?
+                  <TableInventoryOperations
+                      availableProducts={availableProducts}
+                      productWithPrices={productClassMap}
+                      suggestedInventory={suggestedInventory}
+                      currentInventory={currentShiftInventory}
+                      movementsOfOperation={inventoryOperationMovements}
+                      setInventoryOperation={setInventoryOperationMovements}
+                      id_type_of_operation={id_type_of_operation_search_param} />
+                  :
+                  <CopyAndPasteInventoryOperation 
                     availableProducts={availableProducts}
                     productWithPrices={productClassMap}
-                    suggestedInventory={suggestedInventory}
-                    currentInventory={currentShiftInventory}
                     movementsOfOperation={inventoryOperationMovements}
                     setInventoryOperation={setInventoryOperationMovements}
-                    id_type_of_operation={id_type_of_operation_search_param} />
+                  />
+                }
               </View>
             }
             {/* Cash reception section. */}

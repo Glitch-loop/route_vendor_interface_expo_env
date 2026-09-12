@@ -21,8 +21,12 @@ const selectionRouteOperationLayout = () => {
     router.push('/routeSelectionLayout');
   };
 
-  const handlerGoToInventory = () => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}`);
+  const handlerGoToInventoryWithManualMethod = () => {
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}&id_inventory_operation_method=1`);
+  };
+
+  const handlerGoToInventoryWithAdminRegistrationMethod = () => {
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}&id_inventory_operation_method=2`);
   };
 
   return (
@@ -35,14 +39,14 @@ const selectionRouteOperationLayout = () => {
         <View style={tw`w-full h-full flex flex-row items-center justify-center`}>
           <ProjectButton 
             title={'Auto registro de inventario'}
-            onPress={handlerGoToInventory}
+            onPress={handlerGoToInventoryWithManualMethod}
             buttonVariant={'indigo'}
             textStyle='text-2xl text-center text-white'
             buttonStyle={tw`mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
           />
           <ProjectButton 
             title={'Registro de inventario por administrador.'}
-            onPress={() => {}}
+            onPress={handlerGoToInventoryWithAdminRegistrationMethod}
             buttonVariant={'purple'}
             textStyle='text-2xl text-center text-white'
             buttonStyle={tw`mr-3 w-52 h-44 rounded-full flex flex-row justify-center items-center  max-w-44`}
