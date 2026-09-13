@@ -123,7 +123,7 @@ function determineComponentForInventoryCancelation(inventoryOperation: Inventory
   if (state === 1) {
     return <View/>;
   } else {
-    return <Text style={tw`text-center text-black text-base`}> Operación cancelada</Text>
+    return <Text style={tw`text-center text-black text-base italic font-bold`}> Operación cancelada</Text>
   }
 }
 
@@ -358,7 +358,6 @@ const inventoryOperationLayout = () => {
       if (inventory_operation_method === '2') {
         inventoryOperationToConsult = [];
       } else {
-        console.log("Data processing")
         inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation ]);
         isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation);
       }

@@ -74,7 +74,6 @@ const TableInventoryOperationVisualization = (
     finalOperation: boolean,
     issueInventory: boolean,
   }) => {
-
   const availableProductsStored: ProductDTO[] = availableProducts.sort((a, b) => a.order_to_show - b.order_to_show);
 
   const mapSuggestedInventory: Map<string, ProductInventoryDTO> = convertArrayOfInterfacesToMapOfInterfaces('id_product', suggestedInventory);
@@ -357,7 +356,7 @@ const TableInventoryOperationVisualization = (
           </ScrollView>
         </View> :
         <View style={tw`w-full flex flex-col justify-center`}>
-          <ActivityIndicator size={'large'} />
+          <Text style={tw`w-full text-lg text-center`}>La operación de inventario consultada no cuenta con movimientos.</Text>
         </View>
       }
     </View>
