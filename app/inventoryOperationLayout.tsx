@@ -187,7 +187,7 @@ const inventoryOperationLayout = () => {
   const { 
     inventory_operation_type,
     id_inventory_operation,
-    inventory_operation_method = 1,
+    inventory_operation_method,
   } = params as typeSearchParams;
 
 
@@ -351,11 +351,17 @@ const inventoryOperationLayout = () => {
 
     setProductClassMap(auxiliarProductClassMap);
     
+    // Information needed for starting an inventory operation from another one.
     if (id_inventory_operation === undefined) {
       inventoryOperationToConsult = [];
     } else {
-      inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation ]);
-      isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation)
+      if (inventory_operation_method === '2') {
+        inventoryOperationToConsult = [];
+      } else {
+        console.log("Data processing")
+        inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation ]);
+        isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation);
+      }
     }
     
     // Validations for inventory operations
@@ -935,7 +941,7 @@ const inventoryOperationLayout = () => {
         }
       }
 
-      router.replace(`/inventoryOperationLayout?inventory_operation_type=${typeOfOperationToStart}&id_inventory_operation=${id_inventory_operation}`);
+      router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${typeOfOperationToStart}&id_inventory_operation=${id_inventory_operation}`);
     }
   }
 
@@ -1043,77 +1049,86 @@ const inventoryOperationLayout = () => {
               }
             </View>
 
-            {/* Depending on the action, it will be decided the menu to be displayed. */}
-            { inventory_operation_type === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null ?
-              <View style={tw`flex basis-auto w-full mt-3`}>
-                <TableInventoryVisualization 
-                  availableProducts               = {availableProducts}
-                  suggestedInventory              = {suggestedInventory}
-                  initialInventory                = {initialShiftInventory}
-                  restockInventories              = {restockInventories}
-                  devolutionInventory             = {inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory ? [] : devolutionInventory}
-                  soldOperations                  = {productSoldTransactions}
-                  repositionsOperations           = {productRepositionTransactions}
-                  samplesOperations               = {productSampleTransactions}
-                  returnedInventory               = {finalShiftInventory}
-                  inventoryWithdrawal             = {inventoryWithdrawal}
-                  inventoryOutflow                = {inventoryOutflow}
-                  finalOperation                  = {finalOperation}
-                  issueInventory                  = {issueInventory}
-                  />
-                { (inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && inventoryOperationToConsult.state === 1) &&
-                  <View style={tw`flex basis-auto w-full mt-3`}>
-                    <Text style={tw`w-full text-center text-black text-2xl`}>
-                      Inventario de devoluciones
-                    </Text>
-                    <TableProductDevolutionInventoryOperationVisualization
-                      availableProducts={availableProducts}
-                      devolutionInventory={devolutionInventory}
-                      routeTransactionOperations={productDevolutionTransactions}
+            {/* Components for when the user is consulting an inventory operation. */}
+            { inventory_operation_type === DAY_OPERATIONS.consult_inventory &&
+              <>
+                { inventoryOperationToConsult === null ?
+                <Text style={tw`mt-3 text-lg text-center `}>Consultando información, puede demorar un par de segundos.</Text> :
+                <View style={tw`flex basis-auto w-full mt-3`}>
+                  <TableInventoryVisualization 
+                    availableProducts               = {availableProducts}
+                    suggestedInventory              = {suggestedInventory}
+                    initialInventory                = {initialShiftInventory}
+                    restockInventories              = {restockInventories}
+                    devolutionInventory             = {inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory ? [] : devolutionInventory}
+                    soldOperations                  = {productSoldTransactions}
+                    repositionsOperations           = {productRepositionTransactions}
+                    samplesOperations               = {productSampleTransactions}
+                    returnedInventory               = {finalShiftInventory}
+                    inventoryWithdrawal             = {inventoryWithdrawal}
+                    inventoryOutflow                = {inventoryOutflow}
+                    finalOperation                  = {finalOperation}
+                    issueInventory                  = {issueInventory}
                     />
-                    <Text style={tw`w-full text-center text-black text-2xl`}>
-                      Devuelto por tienda
-                    </Text>
-                    <TableRouteTransactionProductVisualization
-                        availableProducts               = {availableProducts}
-                        stores                          = {storesToConsult}
-                        routeTransactions               = {routeTransactions}
-                        idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_devolution }
-                        calculateTotalOfProduct         = {true}
-                        dayOperations                   = {orderedStoreForPrinting}/>
-                    <Text style={tw`w-full text-center text-black text-2xl`}>
-                      Reposición de producto por tienda
-                    </Text>
-                    <TableRouteTransactionProductVisualization
-                        availableProducts               = {availableProducts}
-                        stores                          = {storesToConsult}
-                        routeTransactions               = {routeTransactions}
-                        idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_reposition }
-                        calculateTotalOfProduct         = {true}
-                        dayOperations                   = {orderedStoreForPrinting} />
-                    <Text style={tw`w-full text-center text-black text-2xl`}>
-                      Cortesia de producto por tienda
-                    </Text>
-                    <TableRouteTransactionProductVisualization
-                        availableProducts               = {availableProducts}
-                        stores                          = {storesToConsult}
-                        routeTransactions               = {routeTransactions}
-                        idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sample }
-                        calculateTotalOfProduct         = {true}
-                        dayOperations                   = {orderedStoreForPrinting} />
-                    <Text style={tw`w-full text-center text-black text-2xl`}>
-                      Producto vendido por tienda
-                    </Text>
+                    { (inventoryOperationToConsult.id_inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && inventoryOperationToConsult.state === 1) &&
+                    <View style={tw`flex basis-auto w-full mt-3`}>
+                      <Text style={tw`w-full text-center text-black text-2xl`}>
+                        Inventario de devoluciones
+                      </Text>
+                      <TableProductDevolutionInventoryOperationVisualization
+                        availableProducts={availableProducts}
+                        devolutionInventory={devolutionInventory}
+                        routeTransactionOperations={productDevolutionTransactions}
+                      />
+                      <Text style={tw`w-full text-center text-black text-2xl`}>
+                        Devuelto por tienda
+                      </Text>
                       <TableRouteTransactionProductVisualization
-                        availableProducts               = {availableProducts}
-                        stores                          = {storesToConsult}
-                        routeTransactions               = {routeTransactions}
-                        idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sales }
-                        calculateTotalOfProduct         = {true}
-                        dayOperations                   = {orderedStoreForPrinting} />
-                  </View>
+                          availableProducts               = {availableProducts}
+                          stores                          = {storesToConsult}
+                          routeTransactions               = {routeTransactions}
+                          idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_devolution }
+                          calculateTotalOfProduct         = {true}
+                          dayOperations                   = {orderedStoreForPrinting}/>
+                      <Text style={tw`w-full text-center text-black text-2xl`}>
+                        Reposición de producto por tienda
+                      </Text>
+                      <TableRouteTransactionProductVisualization
+                          availableProducts               = {availableProducts}
+                          stores                          = {storesToConsult}
+                          routeTransactions               = {routeTransactions}
+                          idInventoryOperationTypeToShow  = { DAY_OPERATIONS.product_reposition }
+                          calculateTotalOfProduct         = {true}
+                          dayOperations                   = {orderedStoreForPrinting} />
+                      <Text style={tw`w-full text-center text-black text-2xl`}>
+                        Cortesia de producto por tienda
+                      </Text>
+                      <TableRouteTransactionProductVisualization
+                          availableProducts               = {availableProducts}
+                          stores                          = {storesToConsult}
+                          routeTransactions               = {routeTransactions}
+                          idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sample }
+                          calculateTotalOfProduct         = {true}
+                          dayOperations                   = {orderedStoreForPrinting} />
+                      <Text style={tw`w-full text-center text-black text-2xl`}>
+                        Producto vendido por tienda
+                      </Text>
+                        <TableRouteTransactionProductVisualization
+                          availableProducts               = {availableProducts}
+                          stores                          = {storesToConsult}
+                          routeTransactions               = {routeTransactions}
+                          idInventoryOperationTypeToShow  = { DAY_OPERATIONS.sales }
+                          calculateTotalOfProduct         = {true}
+                          dayOperations                   = {orderedStoreForPrinting} />
+                    </View>
+                  }
+                </View>
                 }
-              </View> :
+              </>
+            }
+
+            {/* Components when the user is making an inventory operation. */}
+            { inventory_operation_type !== DAY_OPERATIONS.consult_inventory && inventory_operation_method !== undefined &&
               <View style={tw`flex basis-auto w-full mt-3`}>
                 { inventory_operation_method === '1' ?
                   <TableInventoryOperations

@@ -8,11 +8,11 @@ import { Router, useRouter } from 'expo-router';
 // Redux context
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '@/redux/slices/userSlice';
+import { AppDispatch, RootState } from '@/redux/store';
 import { clearRoute } from '@/redux/slices/routeSlice';
 import { clearStores } from '@/redux/slices/storesSlice';
 import { clearProducts } from '@/redux/slices/productSlice';
 import { clearRouteDay } from '@/redux/slices/routeDaySlice';
-import { AppDispatch, RootState } from '@/redux/store';
 import { clearDayOperations } from '@/redux/slices/dayOperationsSlice';
 import { clearWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { clearProductInventory } from '@/redux/slices/productsInventorySlice';
@@ -35,8 +35,8 @@ import DayOperationDTO from '@/src/application/dto/DayOperationDTO';
 import InventoryOperationDTO from '@/src/application/dto/InventoryOperationDTO';
 
 // Use cases and queries
-import { container, container as di_container } from '@/src/infrastructure/di/container';
 import FinishShiftDayUseCase from '@/src/application/commands/FinishShiftDayUseCase';
+import { container, container as di_container } from '@/src/infrastructure/di/container';
 import DetermineCurrentInventoryOperation from '@/src/application/queries/DetermineCurrentInventoryOperation';
 import RetrieveInventoryOperationByIDQuery from '@/src/application/queries/RetrieveInventoryOperationByIDQuery';
 
