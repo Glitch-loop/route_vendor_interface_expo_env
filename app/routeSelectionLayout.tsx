@@ -52,6 +52,7 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 
 // Utils
 import { determineIfCurrentDay } from '@/utils/date/momentFormat';
+import DAY_OPERATIONS from '@/src/core/enums/DayOperations';
 
 const routeSelectionLayout = () => {
   // Redux
@@ -95,7 +96,7 @@ const routeSelectionLayout = () => {
         dispatch(setStores(stores));
         dispatch(setProducts(products));
 
-        router.replace('/routeOperationMenuLayout');
+        router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}`);
 
       } else { // It is a new 'work' day.
         if (user === null) {

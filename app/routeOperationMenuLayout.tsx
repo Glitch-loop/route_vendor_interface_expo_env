@@ -215,9 +215,16 @@ const routeOperationMenuLayout = () => {
   }
 
   // Handlers
-  const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
+  const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { 
+    /*
+      This is only for "review" the inventory operation it is not an action.
 
-  const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}&id_inventory_operation_method=1`); };
+      That's way it's not necessary to ask for the inventory operation method.
+    */ 
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); 
+  };
+
+  const onRestockInventory = ():void => { router.push(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.restock_inventory}`); };
 
   const createNewClient = ():void => { router.push('/createNewClientLayout'); };
 
@@ -235,47 +242,26 @@ const routeOperationMenuLayout = () => {
 
   const onFinishInventory = async ():Promise<void> => {
     /*
-      When finishing the inventory, there are two 'movements' that are needed to be done:
+      When finishing the inventory, there are two 'movements' that are needed to be done as part of the 'final inventory process':
       - Product devolution inventory
       - Final inventory
 
-      First the product devolution inventory must be done, then the final inventory.
+      Firstly, product devolution inventory must be done, then the final inventory.
 
-      It's possible the user doesn't finish the full process, only making the product devolution, and then he nagivates to another view,
-      in this case, it's needed to determine if it already exists a produdct devolution inventory and if it is, then pass directly to the final inventory.
+      It's possible the user doesn't finish the entire process (due to erros, wrong navigation {user goes to another screen}
+      or just becuase he stops the process), in this scenario, it's likely that he only made the product devolution inventory, 
+      leaving the final inventory to be done later.
+      
+      So when the user wants to retake the process to finish it, it's needed to determine if it already exists a produdct devolution inventory 
+      and if it is, then pass directly to the final inventory.
     */
-
-    // let isProductDevolutionDone:boolean = false;
-    // const productDevolutionOperationIds:string[] = [];
-
     if (dayOperationsReduxState === null) {
       Toast.show({type: 'error', text1:'Error cargando operaciones del día', text2: 'Reinicia la aplicación'});
       return;
     }
-
-    // // Verify if there is alreadu an 'active' product devolution inventory.
-    // for (const dayOperation of dayOperationsReduxState) { 
-    //   if(dayOperation.operation_type === DAY_OPERATIONS.product_devolution_inventory) {
-    //     const { id_item } = dayOperation;
-    //     productDevolutionOperationIds.push(id_item);
-    //   }
-    // }
-
-    // const retrieveInventoryOperationQuery = di_container.resolve<RetrieveInventoryOperationByIDQuery>(RetrieveInventoryOperationByIDQuery);
     
-
-    // const productDevolutionOperations:InventoryOperationDTO[] = await retrieveInventoryOperationQuery.execute(productDevolutionOperationIds);
-
-    // for (const inventoryOperation of productDevolutionOperations) {
-    //   const { state } = inventoryOperation;
-    //   if (state === 1) {
-    //     isProductDevolutionDone = true;
-    //     break;
-    //   }
-    // }
-
-    if (await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}&id_inventory_operation_method=1`);
-    else router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}&id_inventory_operation_method=2`);
+    if (await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.end_shift_inventory}`);
+    else router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.product_devolution_inventory}`);
   };
 
   // Related with to the end of  the day.
@@ -291,7 +277,7 @@ const routeOperationMenuLayout = () => {
           type: 'info', 
             text1:'No se puede finalizar el día sin un inventario de devolución de productos', 
             text2: 'crea el inventario de devolución de productos primero.'});
-        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}&id_inventory_operation_method=1`);
+        router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.product_devolution_inventory}`);
         return;
         }
       if (!await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.end_shift_inventory)) {
@@ -299,7 +285,7 @@ const routeOperationMenuLayout = () => {
           type: 'info', 
             text1:'No se puede finalizar el día sin un inventario final.', 
             text2: 'crea el inventario final primero.'});
-        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}&id_inventory_operation_method=1`);
+        router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.end_shift_inventory}`);
         return;
       }      
 
