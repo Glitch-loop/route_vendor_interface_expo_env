@@ -217,7 +217,7 @@ const routeOperationMenuLayout = () => {
   // Handlers
   const onSelectInventoryOperation = (dayOperation: DayOperationDTO):void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); };
 
-  const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}`); };
+  const onRestockInventory = ():void => { router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.restock_inventory}&id_inventory_operation_method=1`); };
 
   const createNewClient = ():void => { router.push('/createNewClientLayout'); };
 
@@ -274,8 +274,8 @@ const routeOperationMenuLayout = () => {
     //   }
     // }
 
-    if (await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
-    else router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}`);
+    if (await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.product_devolution_inventory)) router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}&id_inventory_operation_method=1`);
+    else router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}&id_inventory_operation_method=2`);
   };
 
   // Related with to the end of  the day.
@@ -291,7 +291,7 @@ const routeOperationMenuLayout = () => {
           type: 'info', 
             text1:'No se puede finalizar el día sin un inventario de devolución de productos', 
             text2: 'crea el inventario de devolución de productos primero.'});
-        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}`);
+        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.product_devolution_inventory}&id_inventory_operation_method=1`);
         return;
         }
       if (!await doesAnActiveOperationTypeExist([ ...dayOperationsReduxState ], DAY_OPERATIONS.end_shift_inventory)) {
@@ -299,7 +299,7 @@ const routeOperationMenuLayout = () => {
           type: 'info', 
             text1:'No se puede finalizar el día sin un inventario final.', 
             text2: 'crea el inventario final primero.'});
-        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}&id_inventory_operation_method=1`);
         return;
       }      
 

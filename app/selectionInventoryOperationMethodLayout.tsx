@@ -2,7 +2,7 @@
 import tw from 'twrnc';
 import React from 'react';
 import { View } from 'react-native';
-import { Router, useRouter } from 'expo-router';
+import { Router, useLocalSearchParams, useRouter } from 'expo-router';
 
 // UI
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +12,17 @@ import RouteHeader from '@/components/shared-components/RouteHeader';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 
-const selectionRouteOperationLayout = () => {
+type typeParams = {
+  inventory_operation_type: string;
+}
+
+const selectionInventoryOperationMethodLayout = () => {
+  const params = useLocalSearchParams<typeParams>();
+
+  const {
+    inventory_operation_type
+  } = params as typeParams;
+
   //Router
   const router:Router = useRouter()
 
@@ -22,11 +32,11 @@ const selectionRouteOperationLayout = () => {
   };
 
   const handlerGoToInventoryWithManualMethod = () => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}&id_inventory_operation_method=1`);
+    router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}&inventory_operation_method=1`);
   };
 
   const handlerGoToInventoryWithAdminRegistrationMethod = () => {
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.start_shift_inventory}&id_inventory_operation_method=2`);
+    router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}&inventory_operation_method=2`);
   };
 
   return (
@@ -57,4 +67,4 @@ const selectionRouteOperationLayout = () => {
   );
 };
 
-export default selectionRouteOperationLayout;
+export default selectionInventoryOperationMethodLayout;

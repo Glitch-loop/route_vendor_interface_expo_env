@@ -176,18 +176,18 @@ const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], o
 }
 
 type typeSearchParams = {
-  id_type_of_operation_search_param: string;
+  inventory_operation_type: string;
   id_inventory_operation_search_param?: string;
-  id_inventory_operation_method?: string; // 1 = manual method, 2 = admin registration method
+  inventory_operation_method?: string; // 1 = manual method, 2 = admin registration method
 }
 
 const inventoryOperationLayout = () => {
   const params = useLocalSearchParams<typeSearchParams>();
 
   const { 
-    id_type_of_operation_search_param,
+    inventory_operation_type,
     id_inventory_operation_search_param,
-    id_inventory_operation_method = 1,
+    inventory_operation_method = 1,
   } = params as typeSearchParams;
 
 
@@ -260,11 +260,11 @@ const inventoryOperationLayout = () => {
   useEffect(() => {
     // Mirror in-screen cancel/back behavior when user presses native Android back.
     const backAction = () => {
-      if (id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+      if (inventory_operation_type !== DAY_OPERATIONS.consult_inventory) {
         dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovementsRef.current));
       }
 
-      if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+      if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
         router.replace('/routeSelectionLayout');
       } else {
         router.replace('/routeOperationMenuLayout');
@@ -274,7 +274,7 @@ const inventoryOperationLayout = () => {
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => backHandler.remove();
-  }, [dispatch, id_type_of_operation_search_param, inventoryOperationMovements, router]);
+  }, [dispatch, inventory_operation_type, inventoryOperationMovements, router]);
 
 
   // ======= Auxiliar functions ======
@@ -299,7 +299,7 @@ const inventoryOperationLayout = () => {
     // Internet validation
     const hasInternetConnection = await refreshNetworkState();
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
       /*
         Business rule:
         The user has to have internet at moment of starting a new workday.
@@ -359,8 +359,8 @@ const inventoryOperationLayout = () => {
     }
     
     // Validations for inventory operations
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory 
-    ||  id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.restock_inventory 
+    ||  inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
       if (productsInventoryReduxState === null) {
         Toast.show({
           type: 'error',
@@ -374,7 +374,7 @@ const inventoryOperationLayout = () => {
     }
 
     // Validations for consult inventory operation
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.consult_inventory) {
       if (inventoryOperationToConsult.length === 0) {
         Toast.show({
           type: 'error',
@@ -386,7 +386,7 @@ const inventoryOperationLayout = () => {
       }
     }
     
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) { 
+    if (inventory_operation_type === DAY_OPERATIONS.consult_inventory) { 
       setIsInventoryCancelable(isCancelable);
       setInventoryOperationToConsult(inventoryOperationToConsult[0]);
       const { id_inventory_operation_type, inventory_operation_descriptions  } = inventoryOperationToConsult[0];
@@ -472,7 +472,7 @@ const inventoryOperationLayout = () => {
       }
 
 
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
       /* Dispose the list of product and let the user to introduce the inventory movement. */
 
       // Looking for all the products available for the company
@@ -484,13 +484,13 @@ const inventoryOperationLayout = () => {
       setInventoryOutflow(true);
       setFinalOperation(true);
       setIssueInventory(true);      
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
       setCurrentShiftInventory(productsInventoryReduxState!);
       setAvailableProducts(availableProductsForInventoryOperation);
       setSuggestedInventory([]);      
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
       setAvailableProducts(availableProductsForInventoryOperation);
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
       setAvailableProducts(availableProductsForInventoryOperation);
       // setInitialShiftInventory([]);
       // setRestockInventories([inventoryOperationProducts]);
@@ -499,9 +499,9 @@ const inventoryOperationLayout = () => {
       /* Do nothing */
     }
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory
-    || id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory
-    || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory
+    || inventory_operation_type === DAY_OPERATIONS.end_shift_inventory
+    || inventory_operation_type === DAY_OPERATIONS.restock_inventory
     ) {
       // Note: Product devolution cannot be started from another inventory operation.
       // Set current inventory operation movements for starting the next inventory operation.
@@ -533,11 +533,11 @@ const inventoryOperationLayout = () => {
 
   // Handlers
   const handleGoBackOperationDayMenu = async ():Promise<void> => { 
-    if(id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+    if(inventory_operation_type !== DAY_OPERATIONS.consult_inventory) {
       dispatch(setTemporalInventoryOperationDescription(inventoryOperationMovements));
     }
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
       // TODO: If start shift inventory will be cancelable, then action needs a refactor to prevent send the user to the route selection screen when there is already and workday started.
       router.replace('/routeSelectionLayout');
     } else {
@@ -549,8 +549,8 @@ const inventoryOperationLayout = () => {
     let askToUserIfAgreeWithInventory: boolean = false;
 
     if (
-      // id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || 
-      id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+      // inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || 
+      inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
       if (getTotalAmountFromCashInventory(cashInventory) === 0 || !determineIfExistsOperationDescriptionMovement(inventoryOperationMovements)) askToUserIfAgreeWithInventory = true;
       else askToUserIfAgreeWithInventory = false;
     } else {
@@ -560,7 +560,7 @@ const inventoryOperationLayout = () => {
     if(askToUserIfAgreeWithInventory) {
       setShowDialog(true);
     } else {
-      if(id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) setShowWaitingScreen(true);
+      if(inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) setShowWaitingScreen(true);
       handleConfirmInventoryOperation();
     }
   }
@@ -575,7 +575,7 @@ const inventoryOperationLayout = () => {
     setShowDialog(false);
         
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory && !hasInternetConnection) {
       /*
         Business rule:
         The user has to have internet at moment of starting a new workday.
@@ -593,7 +593,7 @@ const inventoryOperationLayout = () => {
       return;
     }
 
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
       if (inventoryOperationMovementWithoutZeroAmount.length === 0) { 
         Toast.show({
           type: 'error',
@@ -628,7 +628,7 @@ const inventoryOperationLayout = () => {
       
 
     // Use cases - commands
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
       if (route === null || routeDay === null) {
         Toast.show({
           type: 'error',
@@ -718,7 +718,7 @@ const inventoryOperationLayout = () => {
         router.replace('/selectionRouteOperationLayout');
       }
 
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.restock_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
       if (workDayInformation === null || userSessionReduxState === null) {
         Toast.show({
           type: 'error',
@@ -762,7 +762,7 @@ const inventoryOperationLayout = () => {
         });
         router.replace('/routeOperationMenuLayout');
       }
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.product_devolution_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.product_devolution_inventory) {
       if (workDayInformation === null || userSessionReduxState === null) {
         Toast.show({
           type: 'error',
@@ -809,7 +809,7 @@ const inventoryOperationLayout = () => {
         router.replace('/routeOperationMenuLayout');
         } else {
         wasInventoryOperationSuccessful = true;
-        router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.end_shift_inventory}`);
+        router.replace(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.end_shift_inventory}`);
         }
       } catch (error) {
         Toast.show({
@@ -819,7 +819,7 @@ const inventoryOperationLayout = () => {
         });
         router.replace('/routeOperationMenuLayout');
       }          
-    } else if (id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory) {
+    } else if (inventory_operation_type === DAY_OPERATIONS.end_shift_inventory) {
       if (workDayInformation === null || userSessionReduxState === null) {
         Toast.show({
           type: 'error',
@@ -891,10 +891,10 @@ const inventoryOperationLayout = () => {
   }
 
   const handlerOnVendorCancelation = () => {
-    if (id_type_of_operation_search_param !== DAY_OPERATIONS.consult_inventory) {
+    if (inventory_operation_type !== DAY_OPERATIONS.consult_inventory) {
       dispatch(clearTemporalInventoryOperationDescription()); 
     }
-    if (id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory) {
+    if (inventory_operation_type === DAY_OPERATIONS.start_shift_inventory) {
       /*
         According with the workflow, if the vendor is making the start shift inventory, if he decides to
         cancel the operation, he has to return to the route selection screen and make the process again.
@@ -934,7 +934,7 @@ const inventoryOperationLayout = () => {
         }
       }
 
-      router.replace(`/inventoryOperationLayout?id_type_of_operation_search_param=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
+      router.replace(`/inventoryOperationLayout?inventory_operation_type=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
     }
   }
 
@@ -964,7 +964,7 @@ const inventoryOperationLayout = () => {
         syncingService.executeReplicationSession();
       }
 
-      router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
+      router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -998,19 +998,19 @@ const inventoryOperationLayout = () => {
             <ActionDialog
               visible={showDialog}
               onAcceptDialog={
-                id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+                inventory_operation_type === DAY_OPERATIONS.consult_inventory ?
                 handleInventoryOperationCancelationConfirmation :
                 handleConfirmInventoryOperation
               }
               onDeclinedialog={
-                id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 
+                inventory_operation_type === DAY_OPERATIONS.consult_inventory ? 
                 handleCancelInventoryOperationCancelationProcess :
                 handleCancelInventoryOperationProcess
                 }>
                 <View style={tw`w-11/12 flex flex-col`}>
                   <Text style={tw`text-center text-black text-xl`}>¿Estas seguró de continuar?</Text>
                   <Text style={tw`my-2 text-center text-black text-xl font-bold`}>
-                    { getTextForConfirmationDialog(id_type_of_operation_search_param as DAY_OPERATIONS) }
+                    { getTextForConfirmationDialog(inventory_operation_type as DAY_OPERATIONS) }
                   </Text>
                 </View>
             </ActionDialog>
@@ -1024,14 +1024,14 @@ const inventoryOperationLayout = () => {
             <View style={tw`mt-3 w-full flex flex-row items-center justify-center`}>
               <View style={tw`basis-2/3 flex flex-col items-center justify-center`}>
                 <Text style={
-                  id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+                  inventory_operation_type === DAY_OPERATIONS.consult_inventory ?
                   tw`text-center text-black text-xl` :
                   tw`text-center text-black text-2xl`}>
-                  { getTitleDayOperation(id_type_of_operation_search_param, inventoryOperationToConsult) }
+                  { getTitleDayOperation(inventory_operation_type, inventoryOperationToConsult) }
                 </Text>
               { inventoryOperationToConsult !== null && determineComponentForInventoryCancelation(inventoryOperationToConsult)}
               </View>
-              { (isInventoryCancelable && id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory) &&
+              { (isInventoryCancelable && inventory_operation_type === DAY_OPERATIONS.consult_inventory) &&
                 <Pressable
                   style={tw`bg-red-500 py-6 px-6 rounded-full ml-3`}
                   onPress={handleInventoryOperationCancelationProcess}>
@@ -1043,7 +1043,7 @@ const inventoryOperationLayout = () => {
             </View>
 
             {/* Depending on the action, it will be decided the menu to be displayed. */}
-            { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null ?
+            { inventory_operation_type === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null ?
               <View style={tw`flex basis-auto w-full mt-3`}>
                 <TableInventoryVisualization 
                   availableProducts               = {availableProducts}
@@ -1114,7 +1114,7 @@ const inventoryOperationLayout = () => {
                 }
               </View> :
               <View style={tw`flex basis-auto w-full mt-3`}>
-                { id_inventory_operation_method === '1' ?
+                { inventory_operation_method === '1' ?
                   <TableInventoryOperations
                       availableProducts={availableProducts}
                       productWithPrices={productClassMap}
@@ -1122,7 +1122,7 @@ const inventoryOperationLayout = () => {
                       currentInventory={currentShiftInventory}
                       movementsOfOperation={inventoryOperationMovements}
                       setInventoryOperation={setInventoryOperationMovements}
-                      id_type_of_operation={id_type_of_operation_search_param} />
+                      id_type_of_operation={inventory_operation_type} />
                   :
                   <CopyAndPasteInventoryOperation 
                     availableProducts={availableProducts}
@@ -1135,12 +1135,12 @@ const inventoryOperationLayout = () => {
             }
             {/* Cash reception section. */}
             {((
-            // id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory || 
-            id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory)) &&
+            // inventory_operation_type === DAY_OPERATIONS.start_shift_inventory || 
+            inventory_operation_type === DAY_OPERATIONS.end_shift_inventory)) &&
               <View style={tw`flex basis-auto w-full mt-3`}>
                 <Text style={tw`w-full text-center text-black text-2xl`}>
-                  {/* {id_type_of_operation_search_param === DAY_OPERATIONS.start_shift_inventory && 'Fondo'} */}
-                  {id_type_of_operation_search_param === DAY_OPERATIONS.end_shift_inventory && 'Dinero de venta (efectivo)'}
+                  {/* {inventory_operation_type === DAY_OPERATIONS.start_shift_inventory && 'Fondo'} */}
+                  {inventory_operation_type === DAY_OPERATIONS.end_shift_inventory && 'Dinero de venta (efectivo)'}
                 </Text>
                 <TableCashReception
                   cashInventoryOperation={cashInventory}
@@ -1152,7 +1152,7 @@ const inventoryOperationLayout = () => {
               </View>
             }
             {/* Total amount of petty cash */}
-            { id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
+            { inventory_operation_type === DAY_OPERATIONS.consult_inventory && inventoryOperationToConsult !== null && workDayInformation !== null &&
               <View style={tw`w-11/12 ml-3 flex flex-col basis-auto mt-3`}>
                 <Text style={tw`text-black text-lg text-center`}>
                   { determineTextOfCashInventoryVisualization(inventoryOperationToConsult, workDayInformation) }
@@ -1162,17 +1162,17 @@ const inventoryOperationLayout = () => {
             {/* User actions */}
             <View style={tw`flex basis-1/6 mt-3`}>
               <VendorConfirmation
-                onConfirm={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ?
+                onConfirm={inventory_operation_type === DAY_OPERATIONS.consult_inventory ?
                   handleStartInventoryOperationFromThisOperation : 
                   handleAcceptInventoryOperation 
                 }
-                onCancel={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 
+                onCancel={inventory_operation_type === DAY_OPERATIONS.consult_inventory ? 
                   handleGoBackOperationDayMenu : 
                   handlerOnVendorCancelation 
                 }
                 message={'Escribiendo mi numero de telefono y marcando el cuadro de texto acepto tomar estos productos.'}
-                confirmMessageButton={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 'Comenzar operación apartir de esta' : 'Aceptar'}
-                cancelMessageButton={id_type_of_operation_search_param === DAY_OPERATIONS.consult_inventory ? 'Volver al menú' : 'Cancelar'}
+                confirmMessageButton={inventory_operation_type === DAY_OPERATIONS.consult_inventory ? 'Comenzar operación apartir de esta' : 'Aceptar'}
+                cancelMessageButton={inventory_operation_type === DAY_OPERATIONS.consult_inventory ? 'Volver al menú' : 'Cancelar'}
                 requiredValidation={
                   false
                   //isOperation

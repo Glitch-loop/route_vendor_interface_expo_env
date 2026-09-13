@@ -6,14 +6,14 @@ import { Router, useRouter } from 'expo-router';
 // Redux States and reducers
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
-import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
+import { setRoute } from '@/redux/slices/routeSlice';
+import { logoutUser } from '@/redux/slices/userSlice';
+import { setStores } from '@/redux/slices/storesSlice';
 import { setProducts } from '@/redux/slices/productSlice';
 import { setRouteDay } from '@/redux/slices/routeDaySlice';
-import { setRoute } from '@/redux/slices/routeSlice';
+import { setDayOperations } from '@/redux/slices/dayOperationsSlice';
+import { setWorkDayInformation } from '@/redux/slices/workdayInformation';
 import { setProductInventory } from '@/redux/slices/productsInventorySlice';
-import { setStores } from '@/redux/slices/storesSlice';
-import { logoutUser } from '@/redux/slices/userSlice';
 
 // Constants
 import { DAYS_ARRAY } from '@/src/core/constants/days';
@@ -52,7 +52,6 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 
 // Utils
 import { determineIfCurrentDay } from '@/utils/date/momentFormat';
-import { FileLogger } from '@/src/infrastructure/services/FileLogger';
 
 const routeSelectionLayout = () => {
   // Redux
@@ -89,7 +88,7 @@ const routeSelectionLayout = () => {
         const productInventory: ProductInventoryDTO[] = await retrieveCurrentShiftInventoryQuery.execute();
         const stores: StoreDTO[] = await listAllRegisterdStoresQuery.execute();
         const products: ProductDTO[] = await listAllRegisterdProductQuery.execute();
-        console.log("Registered stores: ", stores.length)
+
         dispatch(setWorkDayInformation(workDayInformation));
         dispatch(setProductInventory(productInventory));
         dispatch(setDayOperations(dayOperations));

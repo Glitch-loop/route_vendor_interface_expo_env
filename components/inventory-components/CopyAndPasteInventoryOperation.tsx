@@ -27,13 +27,22 @@ type CopyAndPasteInventoryOperationProps = {
 */
 function parsePastedInventory(rawText: string): Map<string, number> {
   const parsedEntries = new Map<string, number>();
-
   rawText.split('\n').forEach((line) => {
     const trimmedLine = line.trim();
+    let quantity:number = 0;
     if (trimmedLine.length === 0) return;
 
     const [id_product, rawQuantity] = trimmedLine.split('\t');
-    const quantity = Number(rawQuantity);
+  
+    if (Number.isNaN(Number(rawQuantity)) === true) {
+      quantity = 0;
+    } else {
+      if (Number(rawQuantity) < 0) {
+        quantity = 0;
+      } else {
+        quantity = Number(rawQuantity);
+      }
+    }
 
     if (id_product !== undefined && !Number.isNaN(quantity)) {
       parsedEntries.set(id_product.trim(), quantity);
