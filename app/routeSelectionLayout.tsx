@@ -96,7 +96,7 @@ const routeSelectionLayout = () => {
         dispatch(setStores(stores));
         dispatch(setProducts(products));
 
-        router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}`);
+        router.replace(`/routeOperationMenuLayout`);
 
       } else { // It is a new 'work' day.
         if (user === null) {

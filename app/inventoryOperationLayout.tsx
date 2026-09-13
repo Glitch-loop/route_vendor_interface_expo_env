@@ -177,7 +177,7 @@ const doesAnActiveOperationTypeExist = async(dayOperations: DayOperationDTO[], o
 
 type typeSearchParams = {
   inventory_operation_type: string;
-  id_inventory_operation_search_param?: string;
+  id_inventory_operation?: string;
   inventory_operation_method?: string; // 1 = manual method, 2 = admin registration method
 }
 
@@ -186,7 +186,7 @@ const inventoryOperationLayout = () => {
 
   const { 
     inventory_operation_type,
-    id_inventory_operation_search_param,
+    id_inventory_operation,
     inventory_operation_method = 1,
   } = params as typeSearchParams;
 
@@ -351,11 +351,11 @@ const inventoryOperationLayout = () => {
 
     setProductClassMap(auxiliarProductClassMap);
     
-    if (id_inventory_operation_search_param === undefined) {
+    if (id_inventory_operation === undefined) {
       inventoryOperationToConsult = [];
     } else {
-      inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation_search_param ]);
-      isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation_search_param)
+      inventoryOperationToConsult = await retrieveInventoryOperationByIDQuery.execute([ id_inventory_operation ]);
+      isCancelable = await determineIfInventoryOperationCancelableUseCase.execute(id_inventory_operation)
     }
     
     // Validations for inventory operations
@@ -700,7 +700,6 @@ const inventoryOperationLayout = () => {
         
         router.replace('/routeOperationMenuLayout');
       } catch (error) {
-        console.log(error)
         Toast.show({
           type: 'error',
           text1: 'Ha habido un error durante el registro del inventario inicial.',
@@ -715,7 +714,7 @@ const inventoryOperationLayout = () => {
         dispatch(clearStores());
         dispatch(clearProducts());
 
-        router.replace('/selectionRouteOperationLayout');
+        router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${inventory_operation_type}`);
       }
 
     } else if (inventory_operation_type === DAY_OPERATIONS.restock_inventory) {
@@ -738,19 +737,20 @@ const inventoryOperationLayout = () => {
         const registerRestockOfProductCommand = di_container.resolve<RegisterRestockOfProductUseCase>(RegisterRestockOfProductUseCase);
         await registerRestockOfProductCommand.execute(inventoryOperationMovementWithoutZeroAmount, availableProducts, workDayInformation, userSessionReduxState.id_vendor);
         
-        const currentShiftInventory               = await retrieveCurrentShiftInventoryQuery.execute()
-        const currentDayOperationsResult          = await retrieveCurrentDayOperationsQuery.execute()
-        const allRegisteredProductsResult        = await listAllRegisteredProductsQuery.execute()
+        const currentShiftInventory       = await retrieveCurrentShiftInventoryQuery.execute()
+        const currentDayOperationsResult  = await retrieveCurrentDayOperationsQuery.execute()
+        const allRegisteredProductsResult = await listAllRegisteredProductsQuery.execute()
 
         dispatch(setProductInventory(currentShiftInventory));
         dispatch(setDayOperations(currentDayOperationsResult));
         dispatch(setProducts(allRegisteredProductsResult))
         
         Toast.show({
-              type: 'success',
-              text1: 'Se ha registrado el restock exitosamente.',
-              text2: 'Se ha actualizado el inventario actual.',
+          type: 'success',
+          text1: 'Se ha registrado el restock exitosamente.',
+          text2: 'Se ha actualizado el inventario actual.',
         });
+
         wasInventoryOperationSuccessful = true;
 
         router.replace('/routeOperationMenuLayout');
@@ -798,18 +798,19 @@ const inventoryOperationLayout = () => {
               text2: '',
         });
         /*
-          According with business rules, after registering a product devolution, the user registers the final shift inventory
+          According with business rules and part of the final inventory process, after registering a product devolution, 
+          the user registers the final shift inventory
         */
         if (await doesAnActiveOperationTypeExist(currentDayOperationsResult, DAY_OPERATIONS.end_shift_inventory)) {
-        Toast.show({
-          type: 'info',
-          text1: 'Redirigiendo a menu principal.',
-          text2: 'Se ha detectado que existe un inventario final activo.',
-        });
-        router.replace('/routeOperationMenuLayout');
+          Toast.show({
+            type: 'info',
+            text1: 'Redirigiendo a menu principal.',
+            text2: 'Se ha detectado que existe un inventario final activo.',
+          });
+          router.replace('/routeOperationMenuLayout');
         } else {
-        wasInventoryOperationSuccessful = true;
-        router.replace(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.end_shift_inventory}`);
+          wasInventoryOperationSuccessful = true;
+          router.replace(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.end_shift_inventory}`);
         }
       } catch (error) {
         Toast.show({
@@ -934,7 +935,7 @@ const inventoryOperationLayout = () => {
         }
       }
 
-      router.replace(`/inventoryOperationLayout?inventory_operation_type=${typeOfOperationToStart}&id_inventory_operation_search_param=${id_inventory_operation}`);
+      router.replace(`/inventoryOperationLayout?inventory_operation_type=${typeOfOperationToStart}&id_inventory_operation=${id_inventory_operation}`);
     }
   }
 
@@ -948,8 +949,8 @@ const inventoryOperationLayout = () => {
     const determineIfInventoryIsCancelableUseCase  = di_container.resolve<DetermineIfInventoryOperationCancelableUseCase>(DetermineIfInventoryOperationCancelableUseCase);
     
     try {
-      await cancelInventoryOperationUseCase.execute(id_inventory_operation_search_param!);
-      setIsInventoryCancelable(await determineIfInventoryIsCancelableUseCase.execute(id_inventory_operation_search_param!));
+      await cancelInventoryOperationUseCase.execute(id_inventory_operation!);
+      setIsInventoryCancelable(await determineIfInventoryIsCancelableUseCase.execute(id_inventory_operation!));
       dispatch(setProductInventory(await retrieveCurrentShiftInventoryQuery.execute()));
       dispatch(setDayOperations(await retrieveCurrentDayOperationsQuery.execute()));
       Toast.show({
@@ -964,7 +965,7 @@ const inventoryOperationLayout = () => {
         syncingService.executeReplicationSession();
       }
 
-      router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${id_inventory_operation_search_param}`);      
+      router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation=${id_inventory_operation}`);      
     } catch (error) {
       Toast.show({
         type: 'error',

@@ -221,7 +221,7 @@ const routeOperationMenuLayout = () => {
 
       That's way it's not necessary to ask for the inventory operation method.
     */ 
-    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation_search_param=${dayOperation.id_item}`); 
+    router.push(`/inventoryOperationLayout?id_type_of_operation_search_param=${DAY_OPERATIONS.consult_inventory}&id_inventory_operation=${dayOperation.id_item}`); 
   };
 
   const onRestockInventory = ():void => { router.push(`/selectionInventoryOperationMethodLayout?inventory_operation_type=${DAY_OPERATIONS.restock_inventory}`); };

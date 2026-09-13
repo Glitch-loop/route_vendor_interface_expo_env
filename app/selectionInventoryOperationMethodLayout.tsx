@@ -2,7 +2,7 @@
 import tw from 'twrnc';
 import React from 'react';
 import { View } from 'react-native';
-import { Router, useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, Router, useLocalSearchParams, useRouter } from 'expo-router';
 
 // UI
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,15 +12,26 @@ import RouteHeader from '@/components/shared-components/RouteHeader';
 import { DAY_OPERATIONS } from '@/src/core/enums/DayOperations';
 import ProjectButton from '@/components/shared-components/ProjectButton';
 
+
+/*
+  id_inventory_operation params is necessary because each time the user
+  will start an inventory operation the application asks for the method
+  to be used.
+
+  In this way, when the user wants to start an inventory operation from 
+  another, it is necessary to pass the id of the inventory operation.
+*/
 type typeParams = {
   inventory_operation_type: string;
+  id_inventory_operation?: string
 }
 
 const selectionInventoryOperationMethodLayout = () => {
   const params = useLocalSearchParams<typeParams>();
 
   const {
-    inventory_operation_type
+    inventory_operation_type,
+    id_inventory_operation
   } = params as typeParams;
 
   //Router
@@ -32,11 +43,25 @@ const selectionInventoryOperationMethodLayout = () => {
   };
 
   const handlerGoToInventoryWithManualMethod = () => {
-    router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}&inventory_operation_method=1`);
+    router.push({
+      pathname: '/inventoryOperationLayout',
+      params: {
+        inventory_operation_type,
+        id_inventory_operation: id_inventory_operation,
+        inventory_operation_method: '1'
+      }
+    });
   };
 
   const handlerGoToInventoryWithAdminRegistrationMethod = () => {
-    router.push(`/inventoryOperationLayout?inventory_operation_type=${DAY_OPERATIONS.start_shift_inventory}&inventory_operation_method=2`);
+    router.push({
+      pathname: '/inventoryOperationLayout',
+      params: {
+        inventory_operation_type,
+        id_inventory_operation: id_inventory_operation,
+        inventory_operation_method: '2'
+      }
+    });
   };
 
   return (
